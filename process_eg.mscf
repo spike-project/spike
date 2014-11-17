@@ -57,12 +57,6 @@ do_urqrd = False
 urqrd_rank = 25
 
 
-# do_recital : if True, uses Recital instead of FT
-do_recital = False
-recital_miniterations = 300
-recital_iterations = 4
-recital_scale_noise = 0.35
-
 # do_flip : if True, the F1 offset correction will be applied
 do_flip = True
 # do_modulus : if True, a modulus will be applied at the end of the processing

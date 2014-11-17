@@ -1,8 +1,8 @@
 # README #
 
-This is the beta version of the NPV2 program. A joined development by NMRTEC and CNRS.
+This is the beta version of the SPIKE program. A joined development by NMRTEC and CNRS.
 
-### What is NPK-V2 ? ###
+### What is SPIKE ? ###
 
 * NPK-V2 is a program that allows the processing, the display and the analysis of data-sets
  obtained from various Fourier-Transform spectroscopies.
@@ -72,11 +72,11 @@ a small description of the files:
 #### Directories
 - Algo
    contains algorithms to process data-sets
-   (MaxEnt, Fista, Laplace, etc...) not everything active !
+   (MaxEnt, Laplace, etc...) not everything active !
 - Display
    a small utility to choose either for regular matplotlib display of fake no-effect display (for tests)
 - File
-   Importers for various file format for spectrometry, as well as the HDF5 NPK native format.
+   Importers for various file format for spectrometry, as well as the HDF5 SPIKE native format.
 - Miscellaneous
    "en vrac"
 - Visu
@@ -85,19 +85,15 @@ a small description of the files:
    set of low-level tools used all over in the code
 - v1
    a library implementing a compatibility with the NPKV_V1 program
-- NPKv2_usage_eg
+- SPIKE_usage_eg
    example python programs using the various library available
 
 - example of configuration files
     - process_eg.mscf
     - test.mscf
-    - Applic_Fista_eg.mscf
-    - Applic_urqrd_eg.mscf
 
 - and various utilities
 
-    - Applic_Fista.py		test code for Fista/Recital
-    - Applic_urqrd.py		test code for urQRd
     - NPKConfigParser.py	reads .mscf files
     - NPKError.py			generates error msg
     - QC.py				Quality Check
@@ -105,7 +101,6 @@ a small description of the files:
     - dev_setup.py			rolls a new version
     - version.py			defines version number
     - __init__.py			defines library
-    - autom_Tests.py
     - rcpylint				
     - To_Do_list.txt
     - QC.txt
@@ -116,7 +111,7 @@ a small description of the files:
 Authors for this code are :
 
 - Marc-André Delsuc - CNRS
-- Lionel Chiron - CNRS then NMRTEC
+- Lionel Chiron - CNRS then NMRTEC then Casc4de
 - Marie-Aude Coutouly - NMRTEC
 
 Covered code is provided under this license on an "as is" basis, without warranty of any kind, either expressed or implied, including, without limitation, warranties that the covered code is free of defects. The entire risk as to the quality and performance of the covered code is with you. Should any covered code prove defective in any respect, you (not the initial developer or any other contributor) assume the cost of any necessary servicing, repair or correction.
