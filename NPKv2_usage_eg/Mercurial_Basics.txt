@@ -1,0 +1,15 @@
+# Mercurial Management: 
+    Tortoise, Murky etc.. 
+Where to find practical repository manager
+	http://tortoisehg.bitbucket.org/download/
+
+Mercurial commands
+
+# to update NPKv2, make a pull and update.. 
+hg pull
+hg update ( simpler : hg up)
+
+# to clone a new repository
+hg clone https://MS_Users@bitbucket.org/NPK_v2/draft
+then give the password.
+

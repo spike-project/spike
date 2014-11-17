@@ -1,0 +1,325 @@
+%
+%  untitled
+%
+%  Created by Marc-André on 2010-01-15.
+%  Copyright (c) 2010 IGBMC. All rights reserved.
+%
+\documentclass[]{article}
+%\documentclass{scrartcl}	% on va utiliser KOMA script
+
+% Use utf-8 encoding for foreign characters
+\usepackage[utf8]{inputenc}
+\usepackage[english,francais]{babel}
+\usepackage{eurosym}  % \euro
+
+% gérer les URL
+\usepackage[pdftex]{hyperref}	% lien actif \href{url}{texte}
+\usepackage{url}	% mise en page \url{url}
+
+% Uncomment some of the following if you use the features
+
+% Setup for fullpage use
+\usepackage{fullpage}	% not needed in KOMAscript
+
+% Running Headers and footers
+%\usepackage{fancyhdr}
+
+% Multipart figures
+%\usepackage{subfigure}
+
+% More symbols
+%\usepackage{amsmath}
+\usepackage{amssymb}
+%\usepackage{latexsym}
+
+% Surround parts of graphics with box
+%\usepackage{boxedminipage}
+
+% Package for including code in the document
+%\usepackage{listings}
+
+% If you want to generate a toc for each chapter (use with book)
+%\usepackage{minitoc}
+
+% This is now the recommended way for checking for PDFLaTeX:
+\usepackage{ifpdf}
+\ifpdf
+\usepackage[pdftex]{graphicx}
+\DeclareGraphicsExtensions{.pdf, .jpg, .tif}
+\else
+\usepackage{graphicx}
+\DeclareGraphicsExtensions{.eps, .jpg}
+\fi
+
+\newcommand{\deriv}[2]{\frac{\partial #1}{\partial #2}}
+\def\c2{$\chi^2$}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{MaxEnt}
+\author{M-A Delsuc  }
+
+%\date{2010-01-15}
+
+\begin{document}
+
+\maketitle
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{abstract}
+First draft of calculus for MaxEnt computation.
+\end{abstract}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+%---------------------------------
+\subsection{scene} % (fold)
+We have the experimental data : $D$ of size $N$.
+The uncertainty on each data point $D_i$ is equal to $\sigma_i$.
+
+This data are produced by a "Ideal" object (a spectrum) $I$ through a transfer function :
+\begin{equation}
+	D = T_f(I) + \sigma
+\end{equation}
+where $T_f$ is the measure transfer function.
+
+From it we want to reconstruct an image of the object : $F$ of size $M$ such that :
+\begin{itemize}
+	\item it is able to reproduce fairly the data : i.e. $T_f(F)$ is close to $D$
+	\item makes as less assumption as possible on I (\emph{Occam razor}).
+\end{itemize}
+
+%---------------------------------
+\subsection{$\chi^2$} % (fold)
+The way $F$ is able to reproduce $D$ is estimated by a $\chi^2$ :
+\begin{equation}
+	\chi^2 = \frac 1 N \sum^N \left (\frac{T_f(F)-D}{\sigma}\right )^2
+\end{equation}
+with
+\begin{eqnarray}
+	\tilde{D} &=& T_f(F)	\\
+	\tilde{D_i} &=& \sum_{k=1}^M T_{ik}F_k	\\
+\end{eqnarray}
+and $\sigma$ being the standard deviation of the measure (the noise level).
+
+we get
+\begin{equation}
+		\chi^2 = \frac 1 N \sum_{l=1}^{N}\left (\frac{\tilde{D}_l-D_l}{\sigma_l}\right )^2
+\end{equation}
+If the estimate $F$ is close to the ideal object $I$, then $(\tilde{D}-D)$ is close to $\sigma$, and $\chi^2$ is close to 1. It actually follows a Khi2 law or degree $M$.
+% subsection chi2 (end)
+%-----------------------
+\subsection{entropy} % (fold)
+The amount of \emph{information} into the image $F$ is measured as the inverse of the entropy $S$ of the image.
+Thus, the cost of $F$ is computed with the Shannon Entropy $S$.
+The standard definition (\emph{Skilling} Entropy) is :
+\begin{eqnarray}
+	S &=& -\sum_{k=1}^{M}P_k \log(P_k) \\
+  \mbox{with} \quad P_i &=& F_i / A
+\end{eqnarray}
+where $A$ is a constant, considered as the prior knowledge on the mean level of data in the image.
+
+\emph{Gifa} Entropy has a different definition of $A$:
+\begin{eqnarray}
+ \quad A = \sum F_i
+\end{eqnarray}
+which implies a slightly different derivative.
+
+Another entropy is possible, which allows a \emph{prior} knowledge $A_k$ on the image :
+\begin{eqnarray}
+	S &=& -\sum_{k=1}^{M} ( F_k - A_k + F_k \log(P_k) ) \\
+  \mbox{with} \quad P_i &=& F_i / A_i
+\end{eqnarray}
+
+Finally, the prior $A_k$ can be estimated from the current image itself, for instance by using a \emph{blurred} version of the image (gaussian blurring, median blurring, etc...). 
+
+These definitions of Entropy are all used into \texttt{NPK}.
+
+% subsection entropy (end)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{derivatives} % (fold)
+We can compute the derivatives now
+\subsection{\c2} % (fold)
+\begin{eqnarray}
+	\deriv{\chi^2}{F_i} &=& \frac 2 N \sum_{l=1}^{N} \deriv {\tilde{D}_l}{F_i} \left ( \frac {\tilde{D}_l - D_l} {\sigma_l} \right ) \\
+\mbox{with} \quad
+	\deriv {\tilde{D}_l}{F_i} &=& T_{li} \\
+\mbox{so} \quad
+	\deriv{\chi^2}{F_i} &=& \frac 2 N \sum_{l=1}^{N} T_{li} \left ( \frac {\tilde{D}_l - D_l} {\sigma_l} \right )  \\
+\mbox{which gives} \quad
+	\nabla \chi^2 &=& \frac 2 N \: ^t T_f \left ( \frac {\tilde{D} - D} {\sigma} \right ) \label{dchi2}
+\end{eqnarray}
+Where $^t T_f()$ is the transpose of $T_f()$ (remember that $T_f()$ is assumed to be linear).
+% subsection c2 (end)
+\subsection{entropy} % (fold)
+Similarly we can compute $\nabla S$. 
+The calculus is done first for the classical entropy (\emph{easier}).
+\begin{eqnarray}
+	\deriv{S}{F_i} &=& - \sum_{k=1}^M \left (
+		 \deriv{P_k}{F_i}\log{P_k} + P_k \deriv{\log{P_k}}{F_i}
+		\right ) \\
+	&=& - \left ( \frac{\log{P_i}}{A} + \frac{1}{A}
+		\right ) \\
+	&=& - \frac{1}{A} \left ( \log{P_i} + 1 \right )	\label{dSclass}  % + ou - ????
+	% noté - dans les calcusl historiques, mais je trouve + ici !!!
+\end{eqnarray}
+\emph{Gifa} entropy is a bit more tricky.
+
+First, remind that
+\begin{eqnarray*}
+		\left ( \frac f g \right )^\prime &=& \frac{f'g -fg'}{g^2} 
+	\quad (\textrm{with} \:  f = F_k \: \textrm{and} \: g = A ) \\
+	(g \circ f)' &=& (g' \circ f).f' 
+	\quad (\textrm{with} \:  f = P_k \: \textrm{and} \: g = \log )
+\end{eqnarray*}
+then it comes :
+\begin{eqnarray}
+	\deriv{P_k}{F_i} &=&  \frac{\delta_{ki} A - F_k}{A^2} \\
+			&=&   \frac{1}{A}(\delta_{ki} - P_k)
+\end{eqnarray}
+where
+\begin{equation}
+ \delta_{ki}=1 \quad \textrm{iff} \quad k = i  \quad
+ \textrm{and} \quad  \delta_{ki}=0 \quad \textrm{otherwise}
+\end{equation}
+and, 
+\begin{eqnarray}
+	\deriv{\log{P_k}}{F_i}
+	&=& \frac {1}{P_k}\deriv{P_k}{F_i} \\
+	&=& \frac {(\delta_{ki} - P_k)}{A P_k}
+\end{eqnarray}
+then it comes
+\begin{eqnarray}
+	\deriv{S}{F_i}
+	&=& - \sum_{k=1}^M \left (
+		 \deriv{P_k}{F_i}\log{P_k} + P_k \deriv{\log{P_k}}{F_i}
+		\right ) \\
+	&=&  - \sum_{k=1}^M \left (
+	\frac{\log{P_k}}{A}(\delta_{ki} - P_k)
+	+ \frac {(\delta_{ki} - P_k)}{A}
+		\right ) \\   % OK
+	&=&  
+	- \frac {\log{P_i} + 1}{A}
+	- \sum_{k=1}^M \left (
+	 \frac{ - P_k\log{P_k}}{A}
+	- \frac {P_k}{A}
+		\right ) \\
+	&=&  \frac {1}{A} \left (
+	-\log{P_i} - 1 - S + 1
+		\right ) \\
+	&=& - \frac {1}{A}  ( \log{P_i} +S ) 	\label{dSgifa}
+\end{eqnarray}
+% subsection entropy (end)
+Prior entropy derivative is as follow :
+\begin{equation}
+	\deriv{S}{F_i} = - \log P_i	
+\end{equation}
+
+Equations (\ref{dSgifa}), (\ref{dSclass}) and (\ref{dchi2}) are the principal results at this stage.
+
+% section derivative (end)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Iteration}
+We want to maximize the entropy while minimizing the \c2.
+This can be done by setting a Lagrange multiplier $\lambda$, a``weight'' between each values, 
+and maximizing a function $Q$ :
+\begin{equation} \label{Q_ref}
+	Q = S - \lambda \chi^2
+\end{equation}
+We'll see later how the value of $\lambda$ is determined.
+%-------------------------------------------------
+\subsection{Steepest descend} % (fold)
+The simplest technique consists in computing the derivative $\nabla Q$ at the current location, and do a simple line-search along the axis defined by this derivative, searching for a maximum of $Q$ along this axis. Iterating this procedure should bring the solution.
+The line-search is performed using the \emph{Brent} algorithm, which is able to maximize (minimize) a 1D $\mathbb{R} \rightarrow \mathbb{R}$ function.
+% subsection Steepest_descend (end)
+%-------------------------------------------------
+\subsection{fixed point} % (fold)
+We want to reach a maximum, so we know that at this point $\nabla Q = 0$.
+We can write this down :
+\begin{eqnarray}
+	\deriv{Q}{F_i} &=& \deriv{S}{F_i} - \lambda \deriv{\chi^2}{F_i} = 0
+\end{eqnarray}
+With the \emph{Skilling} equation for Entropy (\ref{dSclass}), it comes :
+\begin{equation}
+	\deriv{Q}{F_i} = - \frac{1}{A} \left ( \log{P_i} + 1 \right )
+	- \frac {2 \lambda} N \sum_{l=1}^{N} T_{li} \left ( \frac {\tilde{D}_l - D_l} {\sigma_l} \right ) =0
+\end{equation}
+so it comes
+\begin{eqnarray}
+	\log{P_i} + 1 &=&  -  \frac {2 A \lambda} N  \sum_{l=1}^{N} T_{li} \left ( \frac {\tilde{D}_l - D_l}  {\sigma_l} \right ) \\
+	F_i &=&  A \exp \left ( - \frac {2 A \lambda} N \sum_{l=1}^{N} T_{li} \left ( \frac {\tilde{D}_l - D_l}  {\sigma_l} \right ) - 1 \right )
+	\label{fpclass} \\
+	or \\
+	F_i &=&  A \exp \left ( -  A \lambda \nabla \chi^2 - 1 \right )	
+\end{eqnarray}
+With the \emph{Gifa} entropy (\ref{dSgifa}), it comes
+\begin{eqnarray}
+	F_i &=&  A \exp \left ( -  A \lambda \nabla \chi^2 - S \right )	
+	\label{fpgifa}
+\end{eqnarray}
+With the \emph{prior} entropy, it comes
+\begin{eqnarray}
+	F_i &=&  A \exp \left ( -  A \lambda \nabla \chi^2 \right )	
+	\label{fpprior}
+\end{eqnarray}
+
+To soften the explosive effect of the $\exp$ function, a modified version is used, which is replaced by a straight line, at a given point $a$ :
+% section fixed_point (end)
+
+Actually, the fixed-point step is quite inaccurate, a stabilising method consists in taking the axis from the current point to the next point, as defined in eq \ref{fpgifa} or \ref{fpprior} as a search axis.
+Applying a brent research as in the steepest descend approach.
+
+\subsection{control of $\lambda$} % (fold)
+We have eq \ref{Q_ref} for $Q$ and $\lambda$ :
+\begin{equation}
+    Q = S - \lambda \chi^2
+\end{equation}
+so
+\begin{equation}
+    \nabla{Q} = \nabla{S} - \lambda \nabla{\chi^2}
+\end{equation}
+
+In this superdimensional space, $\nabla Q$, $\nabla S$ and $\nabla \chi^2$ are axes pointing to a descent direction.
+The one to follow is $\nabla Q$, which is defined by $\lambda$.
+Several possibilities are possible for the ``best $\lambda$ ''
+\begin{itemize}
+    \item the best lambda could be such as $\nabla Q . \nabla S = 0$ \emph{i.e.} descending $Q$ does not modify the entropy.
+        In which case we have ( \texttt{lambcont == ``angle''} ):
+\begin{eqnarray}
+    \|\nabla S\|^2 - \lambda \nabla S . \nabla \chi^2 = 0 \\
+    \lambda = \frac{\|\nabla S\|^2}{\nabla S . \nabla \chi^2}
+\end{eqnarray}
+    \item It could also be such that the angle $(\nabla Q, \nabla S)$ is equal to $(\nabla Q, -\nabla \chi^2)$
+    In which case we have \emph{for readibility I write $\nabla{\chi}$ instead of $\nabla{\chi^2}$}:
+    \begin{eqnarray}
+\cos(\nabla Q, \nabla S) =  \cos(\nabla Q, -\nabla \chi) \\
+\frac{\nabla Q . \nabla S}{\|\nabla Q\| \|\nabla S\|} =  -\frac{\nabla Q . \nabla \chi}{\|\nabla Q\| \|\nabla \chi\|} \\
+%
+\frac{\|\nabla S\|^2 - \lambda \nabla{\chi} . \nabla S}{ \|\nabla S\|} = 
+-\frac{\nabla S .\nabla \chi - \lambda \|\nabla \chi \|^2}{ \|\nabla \chi\|} \\
+%
+\|\nabla \chi\| . \|\nabla S\|^2 - \lambda \|\nabla \chi\|. \nabla \chi . \nabla S = 
+- \|\nabla S\| . \nabla S .\nabla \chi - \lambda \|\nabla S\|. \|\nabla \chi \|^2 \\
+%
+  \lambda ( \|\nabla \chi\|. \nabla \chi . \nabla S - \|\nabla S\|. \|\nabla \chi \|^2  )= 
+\|\nabla \chi\| . \|\nabla S\|^2 + \|\nabla S\| . \nabla S .\nabla \chi \\
+%
+  \lambda = 
+\frac {\|\nabla \chi\| . \|\nabla S\|^2 + \|\nabla S\| . \nabla S .\nabla \chi }   {  \|\nabla \chi\|. \nabla \chi . \nabla S - \|\nabla S\|. \|\nabla \chi \|^2  }\\
+% %
+    \end{eqnarray}
+\textbf{Ouf !}
+\end{itemize}
+
+% #         => lambda = dC dS / dS dS
+%         lambda_optim = 
+% #     and if conv.gt.0.0  (dC dS angle larger than pi/2)
+% #     or such as cos(dQ,-dC) = cos(dQ.dS)           if lambcont == "cosine"
+% #         => lambda = dS dS / dS dC
+% #     tt1=dS.dS tt2=dC.dC tt3=dS.dC
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bibliographystyle{plain}
+\bibliography{machin.bib}
+\end{document}
