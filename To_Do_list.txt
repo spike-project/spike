@@ -1,0 +1,336 @@
+enlever sampling dans transformations.__init__()
+
+
+liste de point d'entrée à créer dans Kore
+N : fonction a implanter dans NPKData
+K : fonction a implanter dans Kore (pas utile en dehors de Kore)
+
+f : fait
+F : Fini (debogé documenté)
+
+	MAC	MAD		?	a jeter					N'est pas utilisé
+	
+		abs
+				absmax
+f		addbase
+f		adddata
+f		addnoise
+				algo
+		apply
+				approx
+				ar2dt
+				ar2rt
+				ar2rt2
+				ar2sp
+				arlist
+				bcorr
+				bcorrp
+				bcorrp0
+				bcorrp1
+				bcorrp_q
+				blciter
+				blcu
+				blcv
+				blocbase
+										bruker_corr
+N		burg
+					calibdi
+F	chsize
+f	col
+				dcalgo
+				dcdistance
+				dcfactor
+				dciter
+				degre
+f	dfactor
+f	diag
+f	dim
+					dist
+f	dmax
+f	dmin
+				domain
+				dsa
+				dt2ar
+				dt2svd
+f	em	apod_em dans N   dans K, il faut K.lb
+f	escale
+N	evaln
+f	exchdata
+				explim
+f	extract  il faut changer les descripteurs d'axes !
+				filter
+				fitexp
+f		flip
+f		flop
+f	freq
+?	freqlist
+f		ft
+f		ftbis					s'appelle fftr dans NPKD
+K	gb
+f	get
+KN	gm	apod_gm dans N   dans K, il faut K.gb
+?	hilf
+N											hphase
+f		ift
+f		iftbis					s'appelle iffier dans NPKD
+				increm
+N	int1d
+					integ
+f		invf					s'appelle conjg dans NPKD
+				invlap
+				invlapcont
+				invtlap
+				invtlapcont
+f		irft
+				iter
+				iterma2
+f	itype
+				ivalue
+				jcons
+				jmult
+				lambcont
+				lambda
+				lambsp
+				laplace
+f	lb
+				levelhyste
+				levelsegm2
+		linefit
+		linefitd
+f	max
+f	maxdata
+		maxent
+		maxentcont
+KN											maxinbox
+N		median
+				meth
+f	mindata
+K				minimax
+		miniter
+f	minus
+N		mirror
+f		modifysize
+N		modulus
+				morphob
+				morphos
+f	mult
+f	mult1d
+f	multdata
+		nchannel
+		ndisp
+f	noise
+f	offset
+f	one
+K		order
+		overit
+N		peak
+f	phase
+		pk2dt
+		pkclean
+		pkclear
+		pkfilter
+				pklabel
+		pkproj
+		pkreset
+		pkrm
+		pkselect
+		pksym
+f	plane
+f	plus
+				point2pk
+				point_clear
+				point_input
+				point_pop
+				point_push
+f	proj
+f	put
+					rcryst
+f	real
+					relaxrate
+					residue
+f	reverse
+f	revf
+f		rft
+f	row
+		rt2ar
+		rt2pk
+		rtclean
+		rtinv
+		rtlist
+		rtmatch
+		rtpiv
+		rtreflect
+		rtselect
+				scb
+				scs
+				sdb
+				sds
+				segm1
+				segm2
+				setpeak
+				setpeakid
+f	setval
+K				shift
+		sign_peak
+N		simu
+N		simun
+				simunoe
+f	sin
+				slope
+N		smooth
+N											smooth1
+f	specw
+f	sqsin
+		sumcons
+N											sumrec
+		svd2ar
+		svd2dt
+		svdclean1
+		svdclean2
+		svdlist
+N		swa
+N	sym
+		tlaplace
+N	tm
+		tolerance
+		translap
+N											transpose
+		transtlap
+N		uswa
+f	vert
+K											window
+		window_mode
+K	window_reset
+				winlin
+				winma
+				winma2
+				winsegm2
+f	zero
+				zero_qu
+N											zeroing
+		zhu
+?	zoom
+				# get_absmax
+	# get_c_absmax
+	# get_c_dfactor
+	# get_c_dim
+	# get_c_dmax
+	# get_c_dmin
+	# get_c_freq
+	# get_c_freq1
+	# get_c_freq2
+	# get_c_freq3
+	# get_c_header
+	# get_c_joined
+	# get_c_offsf1
+	# get_c_offsf2
+	# get_c_offsf3
+	# get_c_sizef1
+	# get_c_sizef2
+	# get_c_sizef3
+	# get_c_specwf1
+	# get_c_specwf2
+	# get_c_specwf3
+	# get_c_type
+		# get_chi2
+f	# get_col
+f	# get_dfactor
+f	# get_dim
+				# get_dist
+f	# get_dmax
+f	# get_dmin
+f	# get_freq
+f	# get_freq_1_2d
+f	# get_freq_1_3d
+f	# get_freq_1d
+f	# get_freq_2_2d
+f	# get_freq_2_3d
+f	# get_freq_3_3d
+	# get_gb1
+	# get_gb2
+	# get_gb3
+f	# get_itype_1d
+f	# get_itype_2d
+f	# get_itype_3d
+	# get_lb1
+	# get_lb2
+	# get_lb3
+		# get_nar
+f	# get_noise
+f		# get_npk1d
+f		# get_npk2d
+f		# get_npk3d
+				# get_npoint
+		# get_nrt
+		# get_nsvd
+f	# get_offset_1_2d
+f	# get_offset_1_3d
+f	# get_offset_1d
+f	# get_offset_2_2d
+f	# get_offset_2_3d
+f	# get_offset_3_3d
+		# get_order
+	# get_ph0
+	# get_ph1
+				# get_pkname
+				# get_pkradius
+		# get_random
+		# get_randomg
+		# get_randomz
+				# get_rcryst
+				# get_relax
+f	# get_row
+	# get_shift
+f	# get_si1_1d
+f	# get_si1_2d
+f	# get_si1_3d
+f	# get_si2_2d
+f	# get_si2_3d
+f	# get_si3_3d
+f	# get_si_tab
+		# get_sign_peak
+f	# get_specw_1_2d
+f	# get_specw_1_3d
+f	# get_specw_1d
+f	# get_specw_2_2d
+f	# get_specw_2_3d
+f	# get_specw_3_3d
+		# get_sumrec
+		# get_sumrec_err
+	# get_version
+				# geta_calibdi
+f	# geta_max
+		# geta_pk1d_a
+		# geta_pk1d_a_err
+		# geta_pk1d_f
+		# geta_pk1d_f_err
+		# geta_pk1d_p
+		# geta_pk1d_t
+		# geta_pk1d_w
+		# geta_pk1d_w_err
+		# geta_pk2d_a
+		# geta_pk2d_a_err
+		# geta_pk2d_f1f
+		# geta_pk2d_f1f_err
+		# geta_pk2d_f1w
+		# geta_pk2d_f1w_err
+		# geta_pk2d_f2f
+		# geta_pk2d_f2f_err
+		# geta_pk2d_f2w
+		# geta_pk2d_f2w_err
+		# geta_pk3d_a
+		# geta_pk3d_f1f
+		# geta_pk3d_f1w
+		# geta_pk3d_f2f
+		# geta_pk3d_f2w
+		# geta_pk3d_f3f
+		# geta_pk3d_f3w
+	# geta_plane
+	# geta_tab
+f	itop
+f	ptoi
+f	itoh
+f	ptoh
+f	htoi
+f	htop
+	

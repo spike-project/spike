@@ -1,0 +1,76 @@
+# configuration file used for testing
+
+[import]
+apex = ../DATA_test/ubiquitine_2D_000002.d
+format = Apex
+F1_specwidth = 500000
+F2_specwidth = 500000
+highmass = 2500
+
+[processing]
+# input file, if not present, will be created from apex above
+infile = ../DATA_test/ubiquitine_2D_000002.msh5
+# optionnal intermediate file name
+# be careful, this one can be larger than both in and out files.
+# if interfile absent, the temporary file will created in the designed temp directory and deleted at the end
+#interfile = ../DATA_test/ubiquitine_temp.msh5
+tempdir = ../DATA_test
+# output file
+outfile =  ../DATA_test/ubiquitine_2D_000002_mr.msh5
+
+# file can be internally compressed by removing the weakest value lost in the noise
+compress_outfile = True
+# compress_level is the ratio of noise level that will be discarded, up to 3.0 (3 x sigma) it should be ok.
+# the highest compress_level, the better the compression, but expect some distortions
+compress_level = 3.0
+
+# if samplingfile is defined, means we have a NUS acquisition
+# NUS requires either do_urQRd or do_recital
+# samplingfile =  ../DATA_test/ubiquitine_2D_000002_Sampling_2k.list
+# samplingfile_fake = True
+#zerofilling = -1 -3
+sizemultipliers = 0.5 0.5
+
+largest_file = 64G      # largest autorized file - in bytes
+
+# do_F2 : if false, processing along F2 (horizontal) is not performed
+do_F2 = True
+# do_F1 : if false, processing along F1 (vertical) is not performed
+do_F1 = True
+
+# special flags
+# use_multiprocessing : if True, will use the python/multiprocessing to speed-up F1 computation
+# will deploy on nb_proc core. - seems to be buggy on certain dstribution of python
+# note that for large data-files   MPI   should be favored when available.
+# in which case, use_multiprocessing and nb_proc are ignored
+use_multiprocessing = True
+nb_proc = 4
+# do_urqrd : if True, the urQRd denoising is applied in F1
+do_urqrd = False
+# rank used for urqrd - 2 to 3 times the number of lines expected in columns
+# urQRd processing time is proportionnal to this
+urqrd_rank = 100
+# do_recital : if True, uses Recital instead of FT
+do_recital = False
+# recital_miniterations is the maximum number of itereation of the algorithm
+recital_miniterations = 100
+# recital_iterations is the number of time a new lambda (threshold) will be tried
+recital_iterations = 2
+# recital_scale_noise is a scaling factor for the automatic noise estimator <1 means extracting more from the signal
+recital_scale_noise = 1.0
+#samplingfile
+#samplingfile_fake
+
+# do_flip : if True, the F1 offset correction will be applied
+do_flip = True
+# do_modulus : if True, a modulus will be applied at the end of the processing
+do_modulus = True
+# do_rem_ridge : if True, vertical ridges will be applied
+do_rem_ridge = True
+
+[visu2d]
+# file to display
+multresfile = ../DATA_test/ubiquitine_2D_000002_mr.msh5
+#multresfile = ../DATA_test/seq.msh5
+
+

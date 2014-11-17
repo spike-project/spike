@@ -1,0 +1,13 @@
+##########################################################
+[Cadzow]
+# configuration file for Cadzow or rQRd computation
+namein = ../DATA_test/ubiquitine_2D_000002.msh5       # should be .msh5 files
+nameout = ../DATA_test/ubiquitine_2D_000002_cad.msh5          # should be .msh5 files
+
+algorithm = Cadzow     # Cadzow rQRd or urQRd
+n_of_lines = 10          # nombre max de signaux dans chaque colonne
+n_of_iters = 1           # nombre d'iteration de cadzow
+order = 100             # ordre du calcul, compris entre 2*n_of_line et sizeF1/2 - determine qualite et duree du calcul
+n_of_column = 100    # nombre de colonnes à traiter, all column if 0
+
+##########################################################

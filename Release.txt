@@ -1,0 +1,5 @@
+3.2.2
+New FTICR class
+	FTICRData()  FTICRAxis()
+	with display in m/z
+	new computing of the m/z values, probably more accurate - to be tested

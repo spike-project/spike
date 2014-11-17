@@ -1,0 +1,12 @@
+#Configuration file for the FTICR visualizer
+
+# File to be saved as visu2D.mscf after having made the changes here under.
+# the infos to provide are te input directory, input file, the outputfile (intermediate file)
+[visu2d]
+# Here directory where the browser will look first.
+# the multiresolution file. 
+multresfile = ../DATA_test/ubiquitine_2D_000002_mr.msh5
+
+[Tests] # Infos for HDF5File and Apex testings, in TestFolder you will get a bunch of files and DataFolder must be a folder for data (like if you want to import stuff)
+TestFolder = 
+DataFolder =
