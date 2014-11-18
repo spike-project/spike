@@ -4,8 +4,8 @@ This is the beta version of the SPIKE program. A joined development by NMRTEC an
 
 ### What is SPIKE ? ###
 
-* NPK-V2 is a program that allows the processing, the display and the analysis of data-sets
- obtained from various Fourier-Transform spectroscopies.
+* SPIKE is a program coming from a first-development oriented one named NPK-V2 that allows the processing, the display and the analysis of data-sets obtained from various Fourier-Transform spectroscopies.
+It stands for Spectrometry Processing Innovative KErnel.
 * For the moment, il handles the following data-sets
     * NMR - 1D and 2D are fully supported
     * FT-ICR - 1D and 2D are fully supported
@@ -26,10 +26,10 @@ or interactively using the processing.py batch program (aimed towad FT-ICR for t
 The program is in python 2.7.
 
 A good documentation is lacking !!
-look at the exmples files (eg_*.py) and at configuration files (*.mscf)
-they contains valuable examples et some documentation.
+look at the examples files (eg_*.py) and at configuration files (*.mscf)
+they contain valuable examples and some documentation.
 
-NPKV2 requires the following libraries :
+SPIKE requires the following libraries :
 * numpy
 * scipy
 * matplotlib
@@ -38,14 +38,15 @@ NPKV2 requires the following libraries :
 * mpi4py
 * ...
 
-It has been successfully tested in the **Enthought** and **anaconda** distribution.
+It has been successfully tested in the **Enthought** and **anaconda** [link](http://continuum.io/downloads) distributions.
+
 
 ### Organisation of the Code ###
 
-The main program is NPKData.py, which defines NPKData object on which everything is built
+The main program is NPKData.py, which defines NPKData object on which everything is built.
 
 Spectroscopies are defined in the FTICR.py and Orbitrap.py code, which sub class NPKData
-It is prototyped as an NMR data-set, but this will change
+It is prototyped as an NMR data-set, but this will change.
 
 Many programs contain routines tests (in an object unittest) that also serve as an example of use.
 
