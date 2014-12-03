@@ -1,0 +1,1031 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>inside Visu2D &mdash; spike 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-3.0.0/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-3.0.0/css/bootstrap-theme.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="spike 1.0 documentation" href="../index.html" />
+    <link rel="up" title="Code" href="code.html" />
+    <link rel="next" title="Licenses" href="licenses.html" />
+    <link rel="prev" title="Code" href="code.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          spike</a>
+        <span class="navbar-text navbar-version pull-left"><b>1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code.html">Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="licenses.html">Licenses</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">inside Visu2D</a><ul>
+<li><a class="reference internal" href="#initialize-and-handle">Initialize and handle</a><ul>
+<li><a class="reference internal" href="#module-Visu.interface">interface</a></li>
+<li><a class="reference internal" href="#module-Visu.interface_actions">interface_actions</a></li>
+<li><a class="reference internal" href="#module-Visu.Pyside_PyQt4">Pyside_PyQt4</a></li>
+<li><a class="reference internal" href="#module-Visu.Load">Load</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#visualization">Visualization</a><ul>
+<li><a class="reference internal" href="#module-Visu.paramzoom">paramzoom</a></li>
+<li><a class="reference internal" href="#module-Visu.display">display</a></li>
+<li><a class="reference internal" href="#module-Visu.canvas_event">canvas_event</a></li>
+<li><a class="reference internal" href="#module-Visu.canvas">canvas</a></li>
+<li><a class="reference internal" href="#module-Visu.convert">convert</a></li>
+<li><a class="reference internal" href="#module-Visu.Matplotlib_generictools">Matplotlib_generictools</a></li>
+<li><a class="reference internal" href="#module-Visu.profile_popup">profile_popup</a></li>
+<li><a class="reference internal" href="#module-Visu.zooming">zooming</a></li>
+<li><a class="reference internal" href="#module-Visu.zoom_plot">zoom_plot</a></li>
+<li><a class="reference internal" href="#module-Visu.zoom_tools">zoom_tools</a></li>
+<li><a class="reference internal" href="#module-Visu.label_2D">label_2D</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#miscellaneous">Miscellaneous</a><ul>
+<li><a class="reference internal" href="#module-Visu.Saving">Saving</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="code.html" title="Previous Chapter: Code"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm">&laquo; Code</span>
+    </a>
+  </li>
+  <li>
+    <a href="licenses.html" title="Next Chapter: Licenses"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm">Licenses &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../_sources/rst/visu2d.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      
+  <div class="section" id="inside-visu2d">
+<h1>inside Visu2D<a class="headerlink" href="#inside-visu2d" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="initialize-and-handle">
+<h2>Initialize and handle<a class="headerlink" href="#initialize-and-handle" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-Visu.interface">
+<span id="interface"></span><h3>interface<a class="headerlink" href="#module-Visu.interface" title="Permalink to this headline">¶</a></h3>
+<p>Created by Lionel Chiron  02/10/2013 
+Copyright (c) 2013 __NMRTEC__. All rights reserved.</p>
+<dl class="class">
+<dt id="Visu.interface.INTERFACE">
+<em class="property">class </em><tt class="descclassname">Visu.interface.</tt><tt class="descname">INTERFACE</tt><a class="headerlink" href="#Visu.interface.INTERFACE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creation of the graphic window
+Methods :</p>
+<blockquote>
+<div>init_interf
+makelayout
+makecanvas
+clearlayout
+run</div></blockquote>
+<dl class="method">
+<dt id="Visu.interface.INTERFACE.clearlayout">
+<tt class="descname">clearlayout</tt><big>(</big><em>layout</em><big>)</big><a class="headerlink" href="#Visu.interface.INTERFACE.clearlayout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clear the layout of the centralwidget</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.interface.INTERFACE.init_interf">
+<tt class="descname">init_interf</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.interface.INTERFACE.init_interf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialization of the interface</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.interface.INTERFACE.makelayout">
+<tt class="descname">makelayout</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.interface.INTERFACE.makelayout" title="Permalink to this definition">¶</a></dt>
+<dd><p>make the layout in the centralwidget</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.interface.INTERFACE.pr">
+<tt class="descname">pr</tt><big>(</big><em>var</em>, <em>message=''</em><big>)</big><a class="headerlink" href="#Visu.interface.INTERFACE.pr" title="Permalink to this definition">¶</a></dt>
+<dd><p>print</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-Visu.interface_actions">
+<span id="interface-actions"></span><h3>interface_actions<a class="headerlink" href="#module-Visu.interface_actions" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="module-Visu.Pyside_PyQt4">
+<span id="pyside-pyqt4"></span><h3>Pyside_PyQt4<a class="headerlink" href="#module-Visu.Pyside_PyQt4" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="module-Visu.Load">
+<span id="load"></span><h3>Load<a class="headerlink" href="#module-Visu.Load" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="Visu.Load.LOAD">
+<em class="property">class </em><tt class="descclassname">Visu.Load.</tt><tt class="descname">LOAD</tt><big>(</big><em>configfile=None</em>, <em>msh5file=None</em><big>)</big><a class="headerlink" href="#Visu.Load.LOAD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to load the resolutions from the visu2D.mscf file</p>
+<dl class="method">
+<dt id="Visu.Load.LOAD.loadres">
+<tt class="descname">loadres</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.Load.LOAD.loadres" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the different resolutions from Hdf5 files
+and put the in a list of FTICRdata objects.
+This list is in self.d
+self.d[0]
+Count also the number of resolutions</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.Load.LOAD.pr">
+<tt class="descname">pr</tt><big>(</big><em>var</em>, <em>message=''</em><big>)</big><a class="headerlink" href="#Visu.Load.LOAD.pr" title="Permalink to this definition">¶</a></dt>
+<dd><p>print</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="Visu.Load.Visu_Parameters">
+<em class="property">class </em><tt class="descclassname">Visu.Load.</tt><tt class="descname">Visu_Parameters</tt><big>(</big><em>configfile=None</em><big>)</big><a class="headerlink" href="#Visu.Load.Visu_Parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>this class is a container for visualization parameters</p>
+<dl class="method">
+<dt id="Visu.Load.Visu_Parameters.load">
+<tt class="descname">load</tt><big>(</big><em>cp</em><big>)</big><a class="headerlink" href="#Visu.Load.Visu_Parameters.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads in self the information from the configfile.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.Load.Visu_Parameters.pr">
+<tt class="descname">pr</tt><big>(</big><em>var</em>, <em>message=''</em><big>)</big><a class="headerlink" href="#Visu.Load.Visu_Parameters.pr" title="Permalink to this definition">¶</a></dt>
+<dd><p>print</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.Load.Visu_Parameters.report">
+<tt class="descname">report</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.Load.Visu_Parameters.report" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show all the parameters in self for the class Visu_parameters.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="visualization">
+<h2>Visualization<a class="headerlink" href="#visualization" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-Visu.paramzoom">
+<span id="paramzoom"></span><h3>paramzoom<a class="headerlink" href="#module-Visu.paramzoom" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="Visu.paramzoom.PARAM_ZOOM">
+<em class="property">class </em><tt class="descclassname">Visu.paramzoom.</tt><tt class="descname">PARAM_ZOOM</tt><big>(</big><em>data</em><big>)</big><a class="headerlink" href="#Visu.paramzoom.PARAM_ZOOM" title="Permalink to this definition">¶</a></dt>
+<dd><p>Central object for zoom management.</p>
+<dl class="method">
+<dt id="Visu.paramzoom.PARAM_ZOOM.zoom_diag_vector">
+<tt class="descname">zoom_diag_vector</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.paramzoom.PARAM_ZOOM.zoom_diag_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Vector from diagonal for drag etc..</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-Visu.display">
+<span id="display"></span><h3>display<a class="headerlink" href="#module-Visu.display" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="Visu.display.DISPLAY">
+<em class="property">class </em><tt class="descclassname">Visu.display.</tt><tt class="descname">DISPLAY</tt><big>(</big><em>QtMplCv</em>, <em>data</em>, <em>interface</em>, <em>paramz</em><big>)</big><a class="headerlink" href="#Visu.display.DISPLAY" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fill Canvas with Matplotlib figures.
+Handle connect disconnect.</p>
+<dl class="method">
+<dt id="Visu.display.DISPLAY.aff_resolution">
+<tt class="descname">aff_resolution</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.display.DISPLAY.aff_resolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shows the resolution in the interface.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.display.DISPLAY.affd">
+<tt class="descname">affd</tt><big>(</big><em>d1</em>, <em>d2</em>, <em>layout1</em>, <em>layout2=None</em>, <em>zoom=True</em>, <em>message=None</em><big>)</big><a class="headerlink" href="#Visu.display.DISPLAY.affd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Routine to show the Mpl in qt zoom in main window and global window
+d1 and d2 are the data to be plotted.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.display.DISPLAY.affi">
+<tt class="descname">affi</tt><big>(</big><em>canvas</em>, <em>d</em><big>)</big><a class="headerlink" href="#Visu.display.DISPLAY.affi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Routine to print the 2d datas in Qt embedded environment
+It uses the coordinates of the zoom for a given resolution.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.display.DISPLAY.affichd">
+<tt class="descname">affichd</tt><big>(</big><em>canvas</em>, <em>d</em>, <em>zoom=True</em><big>)</big><a class="headerlink" href="#Visu.display.DISPLAY.affichd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes the display with NPKv2.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.display.DISPLAY.afflistco">
+<tt class="descname">afflistco</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.display.DISPLAY.afflistco" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints the element of listco containing (zoom, resolution, scale)
+at position self.paramz.listview_index.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.display.DISPLAY.change_resolution">
+<tt class="descname">change_resolution</tt><big>(</big><em>layout1=None</em>, <em>layout2=None</em><big>)</big><a class="headerlink" href="#Visu.display.DISPLAY.change_resolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Changes the resolution.
+self.currentd is selected according to vis.resolu.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.display.DISPLAY.connect">
+<tt class="descname">connect</tt><big>(</big><em>event</em>, <em>action</em>, <em>window='C'</em><big>)</big><a class="headerlink" href="#Visu.display.DISPLAY.connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connect</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.display.DISPLAY.disconnect">
+<tt class="descname">disconnect</tt><big>(</big><em>object_action</em>, <em>window='C'</em><big>)</big><a class="headerlink" href="#Visu.display.DISPLAY.disconnect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disconnect</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.display.DISPLAY.distrib">
+<tt class="descname">distrib</tt><big>(</big><em>f</em>, <em>arg</em><big>)</big><a class="headerlink" href="#Visu.display.DISPLAY.distrib" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applying f to pairs of arg.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.display.DISPLAY.list_res">
+<tt class="descname">list_res</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.display.DISPLAY.list_res" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make list with the resolutions</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.display.DISPLAY.local_abs_max">
+<tt class="descname">local_abs_max</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.display.DISPLAY.local_abs_max" title="Permalink to this definition">¶</a></dt>
+<dd><p>maximum from local view</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.display.DISPLAY.message">
+<tt class="descname">message</tt><big>(</big><em>message</em>, <em>posx=None</em>, <em>posy=None</em>, <em>colorlab=(1.0</em>, <em>0.7</em>, <em>0.7)</em><big>)</big><a class="headerlink" href="#Visu.display.DISPLAY.message" title="Permalink to this definition">¶</a></dt>
+<dd><p>function to label the peaks</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.display.DISPLAY.multzoom_coord">
+<tt class="descname">multzoom_coord</tt><big>(</big><em>alpha</em>, <em>beta</em><big>)</big><a class="headerlink" href="#Visu.display.DISPLAY.multzoom_coord" title="Permalink to this definition">¶</a></dt>
+<dd><p>change the coordinates of the window with different
+factors (alpha, beta) according to the direction.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.display.DISPLAY.pr">
+<tt class="descname">pr</tt><big>(</big><em>var</em>, <em>message=''</em><big>)</big><a class="headerlink" href="#Visu.display.DISPLAY.pr" title="Permalink to this definition">¶</a></dt>
+<dd><p>print</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.display.DISPLAY.register_coordinates">
+<tt class="descname">register_coordinates</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.display.DISPLAY.register_coordinates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Keeps in a list &#8220;self.paramz.listview&#8221; the zooms coordinates and the associated resolutions.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.display.DISPLAY.res2dd">
+<tt class="descname">res2dd</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.display.DISPLAY.res2dd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to load the resolution from the current vis.resolu name</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.display.DISPLAY.right_order_coord">
+<tt class="descname">right_order_coord</tt><big>(</big><em>llx</em>, <em>lly</em>, <em>urx</em>, <em>ury</em><big>)</big><a class="headerlink" href="#Visu.display.DISPLAY.right_order_coord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restablishes right order for coordinates.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.display.DISPLAY.select_best_resolution">
+<tt class="descname">select_best_resolution</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.display.DISPLAY.select_best_resolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>In function of the size of the zoom chose the best resolution.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.display.DISPLAY.set_canvasC">
+<tt class="descname">set_canvasC</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.display.DISPLAY.set_canvasC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes the canvas C</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.display.DISPLAY.set_canvasD">
+<tt class="descname">set_canvasD</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.display.DISPLAY.set_canvasD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes the canvas D</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.display.DISPLAY.setcursor">
+<tt class="descname">setcursor</tt><big>(</big><em>name</em>, <em>window='C'</em><big>)</big><a class="headerlink" href="#Visu.display.DISPLAY.setcursor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the type of cursor used.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.display.DISPLAY.zoom_area">
+<tt class="descname">zoom_area</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.display.DISPLAY.zoom_area" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates area from zoom coordinates.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-Visu.canvas_event">
+<span id="canvas-event"></span><h3>canvas_event<a class="headerlink" href="#module-Visu.canvas_event" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="Visu.canvas_event.CANVAS_EVENT">
+<em class="property">class </em><tt class="descclassname">Visu.canvas_event.</tt><tt class="descname">CANVAS_EVENT</tt><big>(</big><em>display</em>, <em>interf</em>, <em>data</em>, <em>paramz</em>, <em>gtools</em>, <em>convert</em>, <em>stools</em>, <em>mwind</em>, <em>zoom</em><big>)</big><a class="headerlink" href="#Visu.canvas_event.CANVAS_EVENT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gestion of the events with the interface Canvas.</p>
+<dl class="method">
+<dt id="Visu.canvas_event.CANVAS_EVENT.aff_param">
+<tt class="descname">aff_param</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.canvas_event.CANVAS_EVENT.aff_param" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show resolution and print coordinates in lineEdit.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.canvas_event.CANVAS_EVENT.detect_corner">
+<tt class="descname">detect_corner</tt><big>(</big><em>event</em><big>)</big><a class="headerlink" href="#Visu.canvas_event.CANVAS_EVENT.detect_corner" title="Permalink to this definition">¶</a></dt>
+<dd><p>detect position for stretching window and put the good mouse&#8217;s shape</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.canvas_event.CANVAS_EVENT.interact_with_canvasC">
+<tt class="descname">interact_with_canvasC</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.canvas_event.CANVAS_EVENT.interact_with_canvasC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connects event to canvas C. Press, release, corner detection.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.canvas_event.CANVAS_EVENT.make_coord_manual">
+<tt class="descname">make_coord_manual</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.canvas_event.CANVAS_EVENT.make_coord_manual" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mouse coordinates are automatically written in the interface for manual interaction.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.canvas_event.CANVAS_EVENT.on_motion">
+<tt class="descname">on_motion</tt><big>(</big><em>event</em><big>)</big><a class="headerlink" href="#Visu.canvas_event.CANVAS_EVENT.on_motion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Activate on mouse motion.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.canvas_event.CANVAS_EVENT.on_press">
+<tt class="descname">on_press</tt><big>(</big><em>event</em><big>)</big><a class="headerlink" href="#Visu.canvas_event.CANVAS_EVENT.on_press" title="Permalink to this definition">¶</a></dt>
+<dd><p>When pressed, triggers the rectangle drawing
+Waits for the mouse button&#8217;s release to make the zoom. 
+Calls self.on_press_D_event and self.on_press_C_event</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.canvas_event.CANVAS_EVENT.on_press_C_event">
+<tt class="descname">on_press_C_event</tt><big>(</big><em>event</em>, <em>xpress</em>, <em>ypress</em><big>)</big><a class="headerlink" href="#Visu.canvas_event.CANVAS_EVENT.on_press_C_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes the drawing of the zoom window in the layout C.
+If a click is produced again in the window, it makes the zoom.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.canvas_event.CANVAS_EVENT.on_press_D_event">
+<tt class="descname">on_press_D_event</tt><big>(</big><em>event</em>, <em>xpress</em>, <em>ypress</em><big>)</big><a class="headerlink" href="#Visu.canvas_event.CANVAS_EVENT.on_press_D_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Permits to interact with the zoom in window D.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.canvas_event.CANVAS_EVENT.on_release">
+<tt class="descname">on_release</tt><big>(</big><em>event</em><big>)</big><a class="headerlink" href="#Visu.canvas_event.CANVAS_EVENT.on_release" title="Permalink to this definition">¶</a></dt>
+<dd><p>On release keep the rectangle and makes the zoom
+on_released is used to make lines .
+self.paramz.listview, list of all the zooms.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.canvas_event.CANVAS_EVENT.on_release_C_event">
+<tt class="descname">on_release_C_event</tt><big>(</big><em>dx</em>, <em>dy</em><big>)</big><a class="headerlink" href="#Visu.canvas_event.CANVAS_EVENT.on_release_C_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Release C event</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.canvas_event.CANVAS_EVENT.on_release_D_event">
+<tt class="descname">on_release_D_event</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.canvas_event.CANVAS_EVENT.on_release_D_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Release D event</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.canvas_event.CANVAS_EVENT.pr">
+<tt class="descname">pr</tt><big>(</big><em>var</em>, <em>message=''</em><big>)</big><a class="headerlink" href="#Visu.canvas_event.CANVAS_EVENT.pr" title="Permalink to this definition">¶</a></dt>
+<dd><p>print</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.canvas_event.CANVAS_EVENT.recupxy">
+<tt class="descname">recupxy</tt><big>(</big><em>event</em><big>)</big><a class="headerlink" href="#Visu.canvas_event.CANVAS_EVENT.recupxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take the event coordinates and transform from &#8220;m/z&#8221; to &#8220;point&#8221; if necessary.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.canvas_event.CANVAS_EVENT.release_refrechC">
+<tt class="descname">release_refrechC</tt><big>(</big><em>name_profile=None</em><big>)</big><a class="headerlink" href="#Visu.canvas_event.CANVAS_EVENT.release_refrechC" title="Permalink to this definition">¶</a></dt>
+<dd><p>When mouse is released, refreshes layout C.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-Visu.canvas">
+<span id="canvas"></span><h3>canvas<a class="headerlink" href="#module-Visu.canvas" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="Visu.canvas.Qt4MplCanvas">
+<em class="property">class </em><tt class="descclassname">Visu.canvas.</tt><tt class="descname">Qt4MplCanvas</tt><big>(</big><em>parent</em>, <em>paramz</em><big>)</big><a class="headerlink" href="#Visu.canvas.Qt4MplCanvas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for integrating Matplotlib in Qt</p>
+<dl class="method">
+<dt id="Visu.canvas.Qt4MplCanvas.contextMenuEvent">
+<tt class="descname">contextMenuEvent</tt><big>(</big><em>event</em><big>)</big><a class="headerlink" href="#Visu.canvas.Qt4MplCanvas.contextMenuEvent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Context menu</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.canvas.Qt4MplCanvas.pr">
+<tt class="descname">pr</tt><big>(</big><em>var</em>, <em>message=''</em><big>)</big><a class="headerlink" href="#Visu.canvas.Qt4MplCanvas.pr" title="Permalink to this definition">¶</a></dt>
+<dd><p>print</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-Visu.convert">
+<span id="convert"></span><h3>convert<a class="headerlink" href="#module-Visu.convert" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="Visu.convert.CONVERT">
+<em class="property">class </em><tt class="descclassname">Visu.convert.</tt><tt class="descname">CONVERT</tt><big>(</big><em>display</em>, <em>data</em>, <em>paramz</em><big>)</big><a class="headerlink" href="#Visu.convert.CONVERT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Conversion between m/z and points.</p>
+<dl class="method">
+<dt id="Visu.convert.CONVERT.itomz_all">
+<tt class="descname">itomz_all</tt><big>(</big><em>d</em>, <em>llx</em>, <em>lly</em>, <em>urx</em>, <em>ury</em><big>)</big><a class="headerlink" href="#Visu.convert.CONVERT.itomz_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>transforming from &#8220;point&#8221; coordinates to &#8220;mz&#8221; coordinates.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.convert.CONVERT.maxres">
+<tt class="descname">maxres</tt><big>(</big><em>llx</em>, <em>lly</em>, <em>urx</em>, <em>ury</em><big>)</big><a class="headerlink" href="#Visu.convert.CONVERT.maxres" title="Permalink to this definition">¶</a></dt>
+<dd><p>If mode point, converts to coordinates with maximal resolution</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.convert.CONVERT.mztoi">
+<tt class="descname">mztoi</tt><big>(</big><em>d</em>, <em>coorr</em>, <em>ax</em><big>)</big><a class="headerlink" href="#Visu.convert.CONVERT.mztoi" title="Permalink to this definition">¶</a></dt>
+<dd><p>mz to point for each coordinate</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.convert.CONVERT.mztoi_all">
+<tt class="descname">mztoi_all</tt><big>(</big><em>d</em>, <em>llx</em>, <em>lly</em>, <em>urx</em>, <em>ury</em><big>)</big><a class="headerlink" href="#Visu.convert.CONVERT.mztoi_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>transforming from &#8220;m/z&#8221; coordinate to &#8220;point&#8221; coordinates of coorr (zoom window)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.convert.CONVERT.pass_to_curr_mode">
+<tt class="descname">pass_to_curr_mode</tt><big>(</big><em>llx</em>, <em>lly</em>, <em>urx</em>, <em>ury</em><big>)</big><a class="headerlink" href="#Visu.convert.CONVERT.pass_to_curr_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>If in mz/mode pass coordinates in &#8220;m/z mode&#8221;, if in point mode pass the coordinates in &#8220;point mode&#8221;.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.convert.CONVERT.pass_to_pt">
+<tt class="descname">pass_to_pt</tt><big>(</big><em>llx</em>, <em>lly</em>, <em>urx</em>, <em>ury</em><big>)</big><a class="headerlink" href="#Visu.convert.CONVERT.pass_to_pt" title="Permalink to this definition">¶</a></dt>
+<dd><p>transforming from point coordinate to m/z coordinates with mode point or m/z conditon</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.convert.CONVERT.pr">
+<tt class="descname">pr</tt><big>(</big><em>var</em>, <em>message=''</em><big>)</big><a class="headerlink" href="#Visu.convert.CONVERT.pr" title="Permalink to this definition">¶</a></dt>
+<dd><p>print</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.convert.CONVERT.set">
+<tt class="descname">set</tt><big>(</big><em>xa</em>, <em>ya</em>, <em>xb</em>, <em>yb</em><big>)</big><a class="headerlink" href="#Visu.convert.CONVERT.set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setter to put the coordinate in the right order and avoid having values outside.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.convert.CONVERT.to_npk">
+<tt class="descname">to_npk</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.convert.CONVERT.to_npk" title="Permalink to this definition">¶</a></dt>
+<dd><p>return npk formated zoom</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-Visu.Matplotlib_generictools">
+<span id="matplotlib-generictools"></span><h3>Matplotlib_generictools<a class="headerlink" href="#module-Visu.Matplotlib_generictools" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="module-Visu.profile_popup">
+<span id="profile-popup"></span><h3>profile_popup<a class="headerlink" href="#module-Visu.profile_popup" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="Visu.profile_popup.Dialog">
+<em class="property">class </em><tt class="descclassname">Visu.profile_popup.</tt><tt class="descname">Dialog</tt><big>(</big><em>data</em>, <em>save</em>, <em>toolbar</em><big>)</big><a class="headerlink" href="#Visu.profile_popup.Dialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dialog box for saving CSV and PDF files.</p>
+<dl class="method">
+<dt id="Visu.profile_popup.Dialog.open_file_dialog">
+<tt class="descname">open_file_dialog</tt><big>(</big><em>kind_saved</em><big>)</big><a class="headerlink" href="#Visu.profile_popup.Dialog.open_file_dialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Opens a file dialog 
+Permits to save CSV and PDF.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.profile_popup.Dialog.pr">
+<tt class="descname">pr</tt><big>(</big><em>var</em>, <em>message=''</em><big>)</big><a class="headerlink" href="#Visu.profile_popup.Dialog.pr" title="Permalink to this definition">¶</a></dt>
+<dd><p>print</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="Visu.profile_popup.NavigToolbar">
+<em class="property">class </em><tt class="descclassname">Visu.profile_popup.</tt><tt class="descname">NavigToolbar</tt><big>(</big><em>canvas</em>, <em>parent</em>, <em>data</em>, <em>save</em>, <em>fig</em>, <em>axes</em>, <em>name_profile</em>, <em>namefile</em><big>)</big><a class="headerlink" href="#Visu.profile_popup.NavigToolbar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Customized navigation toolbar with CSV and PDF added functions.</p>
+<dl class="method">
+<dt id="Visu.profile_popup.NavigToolbar.Button_template">
+<tt class="descname">Button_template</tt><big>(</big><em>add_icon</em>, <em>action</em><big>)</big><a class="headerlink" href="#Visu.profile_popup.NavigToolbar.Button_template" title="Permalink to this definition">¶</a></dt>
+<dd><p>General Button template. 
+Used in custom_button_csv and custom_button_pdf</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.profile_popup.NavigToolbar.custom_button_csv">
+<tt class="descname">custom_button_csv</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.profile_popup.NavigToolbar.custom_button_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Button for saving as CSV. 
+Makes double columns CSV files using NPKv2 csv code.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.profile_popup.NavigToolbar.custom_button_fullscale">
+<tt class="descname">custom_button_fullscale</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.profile_popup.NavigToolbar.custom_button_fullscale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Button for rescalling at fullscale.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.profile_popup.NavigToolbar.custom_button_pdf">
+<tt class="descname">custom_button_pdf</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.profile_popup.NavigToolbar.custom_button_pdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Button for saving PDFs.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.profile_popup.NavigToolbar.pr">
+<tt class="descname">pr</tt><big>(</big><em>var</em>, <em>message=''</em><big>)</big><a class="headerlink" href="#Visu.profile_popup.NavigToolbar.pr" title="Permalink to this definition">¶</a></dt>
+<dd><p>print</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="Visu.profile_popup.PROFILE">
+<em class="property">class </em><tt class="descclassname">Visu.profile_popup.</tt><tt class="descname">PROFILE</tt><big>(</big><em>data_profile</em>, <em>save</em>, <em>name_profile</em>, <em>namefile</em>, <em>ptlx=None</em><big>)</big><a class="headerlink" href="#Visu.profile_popup.PROFILE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Popup window for the profiles.
+Creates a QMainWindow in which is made a customized toolbar.
+-Possible to save in PDF, CSV
+-Function for having full scale.</p>
+<dl class="method">
+<dt id="Visu.profile_popup.PROFILE.axes_mz">
+<tt class="descname">axes_mz</tt><big>(</big><em>data</em><big>)</big><a class="headerlink" href="#Visu.profile_popup.PROFILE.axes_mz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates axes in the case of x or y profile.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.profile_popup.PROFILE.make_window">
+<tt class="descname">make_window</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.profile_popup.PROFILE.make_window" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes the profile window</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.profile_popup.PROFILE.plot_profile">
+<tt class="descname">plot_profile</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.profile_popup.PROFILE.plot_profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the profile in the window</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.profile_popup.PROFILE.pr">
+<tt class="descname">pr</tt><big>(</big><em>var</em>, <em>message=''</em><big>)</big><a class="headerlink" href="#Visu.profile_popup.PROFILE.pr" title="Permalink to this definition">¶</a></dt>
+<dd><p>print</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.profile_popup.PROFILE.prepare_window">
+<tt class="descname">prepare_window</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.profile_popup.PROFILE.prepare_window" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepares the window with name, size, canvas</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="Visu.profile_popup.profile_popup">
+<tt class="descclassname">Visu.profile_popup.</tt><tt class="descname">profile_popup</tt><big>(</big><em>data</em><big>)</big><a class="headerlink" href="#Visu.profile_popup.profile_popup" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-Visu.zooming">
+<span id="zooming"></span><h3>zooming<a class="headerlink" href="#module-Visu.zooming" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="Visu.zooming.ZOOM3D">
+<em class="property">class </em><tt class="descclassname">Visu.zooming.</tt><tt class="descname">ZOOM3D</tt><a class="headerlink" href="#Visu.zooming.ZOOM3D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Zoom 3D</p>
+<dl class="method">
+<dt id="Visu.zooming.ZOOM3D.drawrect">
+<tt class="descname">drawrect</tt><big>(</big><em>llx</em>, <em>lly</em>, <em>urx</em>, <em>ury</em><big>)</big><a class="headerlink" href="#Visu.zooming.ZOOM3D.drawrect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws rectangle for showing the area where the 3D is performed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.zooming.ZOOM3D.make_mz_xyz">
+<tt class="descname">make_mz_xyz</tt><big>(</big><em>d</em>, <em>pt1min</em>, <em>pt1max</em>, <em>pt2min</em>, <em>pt2max</em><big>)</big><a class="headerlink" href="#Visu.zooming.ZOOM3D.make_mz_xyz" title="Permalink to this definition">¶</a></dt>
+<dd><p>From the resolution d and frequency coordinates,
+returns the m/z coordinates x, y, z for making the irregular meshgrid.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.zooming.ZOOM3D.makemesh">
+<tt class="descname">makemesh</tt><big>(</big><em>d</em>, <em>pt1min</em>, <em>pt1max</em>, <em>pt2min</em>, <em>pt2max</em><big>)</big><a class="headerlink" href="#Visu.zooming.ZOOM3D.makemesh" title="Permalink to this definition">¶</a></dt>
+<dd><p>from frequencies limits pt1min, pt1max, pt2min, pt2max, makes the 3D mesh X, Y, Z.
+Calls make_mz_xyz() then makemeshfromirreg().</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.zooming.ZOOM3D.makemeshfromirreg">
+<tt class="descname">makemeshfromirreg</tt><big>(</big><em>x</em>, <em>y</em>, <em>z</em>, <em>sizef1</em>, <em>sizef2</em><big>)</big><a class="headerlink" href="#Visu.zooming.ZOOM3D.makemeshfromirreg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes the meshgrid from irregular mesh (x, y) in m/z coordinates.
+Called after make_mz_xyz()</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.zooming.ZOOM3D.plotregion3d">
+<tt class="descname">plotregion3d</tt><big>(</big><em>d</em>, <em>pt1min</em>, <em>pt1max</em>, <em>pt2min</em>, <em>pt2max</em>, <em>visible=False</em><big>)</big><a class="headerlink" href="#Visu.zooming.ZOOM3D.plotregion3d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes the 3D plot from the meshgrid.
+Makes the json that is read by FTICR2D_3d.html</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.zooming.ZOOM3D.pr">
+<tt class="descname">pr</tt><big>(</big><em>var</em>, <em>message=''</em><big>)</big><a class="headerlink" href="#Visu.zooming.ZOOM3D.pr" title="Permalink to this definition">¶</a></dt>
+<dd><p>print</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="Visu.zooming.ZOOMING">
+<em class="property">class </em><tt class="descclassname">Visu.zooming.</tt><tt class="descname">ZOOMING</tt><big>(</big><em>display</em>, <em>interf</em>, <em>data</em>, <em>paramz</em>, <em>gtools</em>, <em>convert</em>, <em>stools</em>, <em>mwind</em><big>)</big><a class="headerlink" href="#Visu.zooming.ZOOMING" title="Permalink to this definition">¶</a></dt>
+<dd><p>Zoom and draw a rectangle around the zooming area
+The coordinates are in &#8220;point&#8221; format at the root of the treatment
+so as to simplify all the procedure.</p>
+<dl class="method">
+<dt id="Visu.zooming.ZOOMING.change_view">
+<tt class="descname">change_view</tt><big>(</big><em>change_layoutD=False</em><big>)</big><a class="headerlink" href="#Visu.zooming.ZOOMING.change_view" title="Permalink to this definition">¶</a></dt>
+<dd><p>Changes views.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.zooming.ZOOMING.change_view_from_list">
+<tt class="descname">change_view_from_list</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.zooming.ZOOMING.change_view_from_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Refreshes views from history.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.zooming.ZOOMING.change_zoom">
+<tt class="descname">change_zoom</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.zooming.ZOOMING.change_zoom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes zoom and resolution if necessary, condition = self.areazoom() &gt;= AREAMIN
+Keeps both zoom and resolution in a list.
+vis.resolu is the name of the current resolution.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.zooming.ZOOMING.debug_trig">
+<tt class="descname">debug_trig</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.zooming.ZOOMING.debug_trig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Debug for canvas event</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.zooming.ZOOMING.find_numbpix">
+<tt class="descname">find_numbpix</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.zooming.ZOOMING.find_numbpix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Numper of pixels in the zoom area.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.zooming.ZOOMING.on_scroll">
+<tt class="descname">on_scroll</tt><big>(</big><em>event</em><big>)</big><a class="headerlink" href="#Visu.zooming.ZOOMING.on_scroll" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use of scrolling function to control the level</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.zooming.ZOOMING.plot_zooms">
+<tt class="descname">plot_zooms</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.zooming.ZOOMING.plot_zooms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the coordinates of the zoom and prints in both windows</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.zooming.ZOOMING.pr">
+<tt class="descname">pr</tt><big>(</big><em>var</em>, <em>message=''</em><big>)</big><a class="headerlink" href="#Visu.zooming.ZOOMING.pr" title="Permalink to this definition">¶</a></dt>
+<dd><p>print</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.zooming.ZOOMING.press_zoom">
+<tt class="descname">press_zoom</tt><big>(</big><em>xpress</em>, <em>ypress</em><big>)</big><a class="headerlink" href="#Visu.zooming.ZOOMING.press_zoom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Zoom activated or not after pressing the left mouse button</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.zooming.ZOOMING.press_zoomready_and_in">
+<tt class="descname">press_zoomready_and_in</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.zooming.ZOOMING.press_zoomready_and_in" title="Permalink to this definition">¶</a></dt>
+<dd><p>Activated when zoom is ready and pressed is in the zoom window.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.zooming.ZOOMING.press_zoomready_and_out">
+<tt class="descname">press_zoomready_and_out</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.zooming.ZOOMING.press_zoomready_and_out" title="Permalink to this definition">¶</a></dt>
+<dd><p>Activated when zoom is ready an pressed is outside the zoom window</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.zooming.ZOOMING.stretchrect">
+<tt class="descname">stretchrect</tt><big>(</big><em>dx</em>, <em>dy</em><big>)</big><a class="headerlink" href="#Visu.zooming.ZOOMING.stretchrect" title="Permalink to this definition">¶</a></dt>
+<dd><p>function to stretch the zoom by taking the corners</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.zooming.ZOOMING.zoom_check_size">
+<tt class="descname">zoom_check_size</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.zooming.ZOOMING.zoom_check_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>If zoom too small reinitializes ie self.paramz.zoom_coord = [], disconnects the mouse
+and sets flag self.newrectcready to True</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-Visu.zoom_plot">
+<span id="zoom-plot"></span><h3>zoom_plot<a class="headerlink" href="#module-Visu.zoom_plot" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="Visu.zoom_plot.ZOOM_PLOT">
+<em class="property">class </em><tt class="descclassname">Visu.zoom_plot.</tt><tt class="descname">ZOOM_PLOT</tt><big>(</big><em>display</em>, <em>interf</em>, <em>data</em>, <em>paramz</em>, <em>gtools</em><big>)</big><a class="headerlink" href="#Visu.zoom_plot.ZOOM_PLOT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes the zoom rectangles for C and D window and the greyarea.</p>
+<dl class="method">
+<dt id="Visu.zoom_plot.ZOOM_PLOT.drawrect">
+<tt class="descname">drawrect</tt><big>(</big><em>llx</em>, <em>lly</em>, <em>urx</em>, <em>ury</em>, <em>layout1=None</em>, <em>layout2=None</em><big>)</big><a class="headerlink" href="#Visu.zoom_plot.ZOOM_PLOT.drawrect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws rectangles with absolute coordinates llx, lly, urx, ury in C and D windows</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.zoom_plot.ZOOM_PLOT.drawrectC">
+<tt class="descname">drawrectC</tt><big>(</big><em>llx</em>, <em>lly</em>, <em>urx</em>, <em>ury</em>, <em>layout1=None</em><big>)</big><a class="headerlink" href="#Visu.zoom_plot.ZOOM_PLOT.drawrectC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws the zoom rectangle in the C windows</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.zoom_plot.ZOOM_PLOT.drawrectD">
+<tt class="descname">drawrectD</tt><big>(</big><em>llx</em>, <em>lly</em>, <em>urx</em>, <em>ury</em>, <em>layout2=None</em><big>)</big><a class="headerlink" href="#Visu.zoom_plot.ZOOM_PLOT.drawrectD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws the zoom rectangle in the D windows</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.zoom_plot.ZOOM_PLOT.greyzoom">
+<tt class="descname">greyzoom</tt><big>(</big><em>llx</em>, <em>lly</em>, <em>urx</em>, <em>ury</em><big>)</big><a class="headerlink" href="#Visu.zoom_plot.ZOOM_PLOT.greyzoom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Grey area around the zoom</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.zoom_plot.ZOOM_PLOT.pr">
+<tt class="descname">pr</tt><big>(</big><em>var</em>, <em>message=''</em><big>)</big><a class="headerlink" href="#Visu.zoom_plot.ZOOM_PLOT.pr" title="Permalink to this definition">¶</a></dt>
+<dd><p>print</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-Visu.zoom_tools">
+<span id="zoom-tools"></span><h3>zoom_tools<a class="headerlink" href="#module-Visu.zoom_tools" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="module-Visu.label_2D">
+<span id="label-2d"></span><h3>label_2D<a class="headerlink" href="#module-Visu.label_2D" title="Permalink to this headline">¶</a></h3>
+<p>Illustrate simple contour plotting, contours on an image with
+a colorbar for the contours, and labelled contours.</p>
+<p>See also contour_image.py.</p>
+<dl class="class">
+<dt id="Visu.label_2D.PEAKPICK">
+<em class="property">class </em><tt class="descclassname">Visu.label_2D.</tt><tt class="descname">PEAKPICK</tt><big>(</big><em>data</em>, <em>display</em>, <em>convert</em>, <em>paramz</em><big>)</big><a class="headerlink" href="#Visu.label_2D.PEAKPICK" title="Permalink to this definition">¶</a></dt>
+<dd><p>Peakpicking</p>
+<dl class="method">
+<dt id="Visu.label_2D.PEAKPICK.baryc_far">
+<tt class="descname">baryc_far</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.label_2D.PEAKPICK.baryc_far" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes the points far from the self.barycenter.
+self.lx, self.ly defined from a small division fo the window dimensions.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.label_2D.PEAKPICK.barycenter_method">
+<tt class="descname">barycenter_method</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.label_2D.PEAKPICK.barycenter_method" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes the labels far one from another and all the labels far from the peaks
+1) Begins by  making a self.barycenter and getting the labels at the opposite of the vector &#8216;peak to self.barycenter&#8217; 
+at the distance dist_min.
+2) Makes a correction on the labels ovelapping the peaks
+3) Makes a correction on the labels ovelapping each other.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.label_2D.PEAKPICK.correc_label_label">
+<tt class="descname">correc_label_label</tt><big>(</big><em>correct</em><big>)</big><a class="headerlink" href="#Visu.label_2D.PEAKPICK.correc_label_label" title="Permalink to this definition">¶</a></dt>
+<dd><p>Correction between labels</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.label_2D.PEAKPICK.correc_peak_label">
+<tt class="descname">correc_peak_label</tt><big>(</big><em>correct</em><big>)</big><a class="headerlink" href="#Visu.label_2D.PEAKPICK.correc_peak_label" title="Permalink to this definition">¶</a></dt>
+<dd><p>Correction between peaks and labels</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.label_2D.PEAKPICK.decrossing">
+<tt class="descname">decrossing</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.label_2D.PEAKPICK.decrossing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Avoidance of arrow crossing.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.label_2D.PEAKPICK.find_peaks">
+<tt class="descname">find_peaks</tt><big>(</big><em>thresh</em>, <em>zoom</em>, <em>maxpeaks</em><big>)</big><a class="headerlink" href="#Visu.label_2D.PEAKPICK.find_peaks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the peaks in the 2D dataset.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.label_2D.PEAKPICK.get_far">
+<tt class="descname">get_far</tt><big>(</big><em>method='barycenter'</em><big>)</big><a class="headerlink" href="#Visu.label_2D.PEAKPICK.get_far" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take the labels far one from another and from peaks
+Two methods: barycenter</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.label_2D.PEAKPICK.make_labels">
+<tt class="descname">make_labels</tt><big>(</big><em>method='barycenter'</em><big>)</big><a class="headerlink" href="#Visu.label_2D.PEAKPICK.make_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds positions of the labels and plots.
+self.lx, self.ly defined from dimension of the window.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.label_2D.PEAKPICK.peaklabel">
+<tt class="descname">peaklabel</tt><big>(</big><em>i</em><big>)</big><a class="headerlink" href="#Visu.label_2D.PEAKPICK.peaklabel" title="Permalink to this definition">¶</a></dt>
+<dd><p>function to label the peaks.
+Plots the labels if the labels are not calculated outside the limited range.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.label_2D.PEAKPICK.pr">
+<tt class="descname">pr</tt><big>(</big><em>var</em>, <em>message=''</em><big>)</big><a class="headerlink" href="#Visu.label_2D.PEAKPICK.pr" title="Permalink to this definition">¶</a></dt>
+<dd><p>print</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.label_2D.PEAKPICK.test_correct">
+<tt class="descname">test_correct</tt><big>(</big><em>pt0</em>, <em>pt1</em>, <em>correct=False</em>, <em>kind=None</em><big>)</big><a class="headerlink" href="#Visu.label_2D.PEAKPICK.test_correct" title="Permalink to this definition">¶</a></dt>
+<dd><p>correct permits to chose between correction (True) and simple test (False).. 
+kind be set to &#8216;label_label&#8217; or &#8216;peak_label&#8217;</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="miscellaneous">
+<h2>Miscellaneous<a class="headerlink" href="#miscellaneous" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-Visu.Saving">
+<span id="saving"></span><h3>Saving<a class="headerlink" href="#module-Visu.Saving" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="Visu.Saving.SAVE">
+<em class="property">class </em><tt class="descclassname">Visu.Saving.</tt><tt class="descname">SAVE</tt><big>(</big><em>data</em><big>)</big><a class="headerlink" href="#Visu.Saving.SAVE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for savings the 2D, 3D, profiles etc.. 
+Permits to save the object in the same location : a directory named with the date etc..</p>
+<dl class="method">
+<dt id="Visu.Saving.SAVE.dir_save">
+<tt class="descname">dir_save</tt><big>(</big><big>)</big><a class="headerlink" href="#Visu.Saving.SAVE.dir_save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes a directory for the data if it doesn&#8217;t exist
+The directory is named with the day, the month, the year and the hour.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.Saving.SAVE.pr">
+<tt class="descname">pr</tt><big>(</big><em>var</em>, <em>message=''</em><big>)</big><a class="headerlink" href="#Visu.Saving.SAVE.pr" title="Permalink to this definition">¶</a></dt>
+<dd><p>print</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Visu.Saving.SAVE.prep_path_save">
+<tt class="descname">prep_path_save</tt><big>(</big><em>namefile</em><big>)</big><a class="headerlink" href="#Visu.Saving.SAVE.prep_path_save" title="Permalink to this definition">¶</a></dt>
+<dd><p>prepares address path_save.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2014, a.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

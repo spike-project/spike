@@ -1,0 +1,280 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Tutorial &mdash; spike 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-3.0.0/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-3.0.0/css/bootstrap-theme.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="spike 1.0 documentation" href="../index.html" />
+    <link rel="next" title="Code" href="code.html" />
+    <link rel="prev" title="Introduction" href="introduction.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          spike</a>
+        <span class="navbar-text navbar-version pull-left"><b>1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code.html">Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="licenses.html">Licenses</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#fticr">FTICR</a><ul>
+<li><a class="reference internal" href="#simple-import-of-native-dataset">simple import of native dataset</a></li>
+<li><a class="reference internal" href="#show-the-fid">Show the FID</a></li>
+<li><a class="reference internal" href="#show-the-half-truncated-fid-and-full-fid">Show the half truncated FID and full FID</a></li>
+<li><a class="reference internal" href="#doing-fft-with-zerofilling">Doing FFT with zerofilling</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#orbitrap">Orbitrap</a><ul>
+<li><a class="reference internal" href="#id1">simple import of native dataset</a></li>
+<li><a class="reference internal" href="#show-fid">Show FID</a></li>
+<li><a class="reference internal" href="#fft-with-zerofilling">FFT with zerofilling</a></li>
+<li><a class="reference internal" href="#fft-with-zerofilling-processing-cutting-the-pipes">FFT with zerofilling, processing cutting the pipes.</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#urqrd">urQRd</a><ul>
+<li><a class="reference internal" href="#additional-tricks">Additional tricks</a></li>
+<li><a class="reference internal" href="#spike-arcanes">SPIKE arcanes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="introduction.html" title="Previous Chapter: Introduction"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm">&laquo; Introduction</span>
+    </a>
+  </li>
+  <li>
+    <a href="code.html" title="Next Chapter: Code"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm">Code &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../_sources/rst/tutorial.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      
+  <div class="section" id="tutorial">
+<h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
+<p>Few examples of how to use SPIKE.
+We begin first with simple import for both FTICR datasets and Orbitrap datasets then we show how to make more elaborated commands involving data treatment algorithms such as RECITAL and urQRd.</p>
+<p>First, open in SPIKE directory a terminal and launch a IPython Notebook document writing:</p>
+<blockquote>
+<div>ipython notebook</div></blockquote>
+<p>We assume that the data are in a directory next to SPIKE directory named DATA_test.</p>
+<div class="section" id="fticr">
+<h2>FTICR<a class="headerlink" href="#fticr" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>simple import of native dataset</li>
+<li>Show the FID</li>
+<li>Show the half truncated FID and full FID</li>
+<li>Doing FFT with zerofilling</li>
+</ul>
+<div class="section" id="simple-import-of-native-dataset">
+<h3>simple import of native dataset<a class="headerlink" href="#simple-import-of-native-dataset" title="Permalink to this headline">¶</a></h3>
+<p>from File.Apex import Import_1D</p>
+<p>import numpy as np</p>
+<p>import matplotlib.pyplot as plt</p>
+<p>from FTICR import FTICRData</p>
+<p>Import from Apex</p>
+<p>f = Import_1D(&#8221;../DATA_test/angio_ms_000005.d&#8221;)</p>
+</div>
+<div class="section" id="show-the-fid">
+<h3>Show the FID<a class="headerlink" href="#show-the-fid" title="Permalink to this headline">¶</a></h3>
+<p>f = Import_1D(&#8221;../DATA_test/angio_ms_000005.d&#8221;)</p>
+<p>f.display(label = &#8220;FID&#8221;)</p>
+</div>
+<div class="section" id="show-the-half-truncated-fid-and-full-fid">
+<h3>Show the half truncated FID and full FID<a class="headerlink" href="#show-the-half-truncated-fid-and-full-fid" title="Permalink to this headline">¶</a></h3>
+<p>f = Import_1D(&#8221;../DATA_test/angio_ms_000005.d&#8221;)</p>
+<p>f.chsize(len(f.buffer)/2)</p>
+<p>ff = f.copy()</p>
+<p>ff.buffer = ff.buffer[:len(f.buffer)/2]/2</p>
+<p>f.display(label = &#8220;FID&#8221;)</p>
+<p>f.display(label = &#8220;FID cut&#8221;, new_fig = False)</p>
+</div>
+<div class="section" id="doing-fft-with-zerofilling">
+<h3>Doing FFT with zerofilling<a class="headerlink" href="#doing-fft-with-zerofilling" title="Permalink to this headline">¶</a></h3>
+<p>Classical FFT with apodisation and zerofilling.</p>
+<p>FFT with zerofilling, processing cutting the pipes.</p>
+<p>Here instead of writing a single long command with pipelines, the command is cut in many chunks.
+This can be used for performing intermediate operations not present in SPIKE.</p>
+</div>
+</div>
+<div class="section" id="orbitrap">
+<h2>Orbitrap<a class="headerlink" href="#orbitrap" title="Permalink to this headline">¶</a></h2>
+<p>Some examples on how to use NPKv2.</p>
+<ul class="simple">
+<li>simple import of native dataset.</li>
+<li>simple FID handling, processing and display</li>
+<li>FFT with zerofilling</li>
+</ul>
+<p>We begin first with simple import then we show how to make more elaborated commands involving data treatment algorithms such as RECITAL and urQRd.</p>
+<div class="section" id="id1">
+<h3>simple import of native dataset<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>o = Import_1D(&#8220;C:/Users/Egor/NPK_V2/DATA_test/ubiquitin_5_scan_res_30000_1.dat&#8221;)</p>
+</div>
+<div class="section" id="show-fid">
+<h3>Show FID<a class="headerlink" href="#show-fid" title="Permalink to this headline">¶</a></h3>
+<p>o.display(label = &#8220;FID&#8221;)</p>
+</div>
+<div class="section" id="fft-with-zerofilling">
+<h3>FFT with zerofilling<a class="headerlink" href="#fft-with-zerofilling" title="Permalink to this headline">¶</a></h3>
+<p>print o</p>
+<p>o.apod_sin(maxi = 0.5).chsize(o.buffer.size*2).rfft().modulus()</p>
+<p>o.units = &#8216;m/z&#8217;</p>
+<p>o.display(label = &#8220;zerofill x2&#8221;)</p>
+</div>
+<div class="section" id="fft-with-zerofilling-processing-cutting-the-pipes">
+<h3>FFT with zerofilling, processing cutting the pipes.<a class="headerlink" href="#fft-with-zerofilling-processing-cutting-the-pipes" title="Permalink to this headline">¶</a></h3>
+<p>o = Import_1D(filename)</p>
+<p>o.units = &#8216;m/z&#8217;</p>
+<p>o.apod_sin(maxi = 0.5)</p>
+<p>o.chsize(o.buffer.size*4)</p>
+<p>o.rfft()</p>
+<p>o.modulus().display(label = &#8220;zerofill x4&#8221;)</p>
+</div>
+</div>
+<div class="section" id="urqrd">
+<h2>urQRd<a class="headerlink" href="#urqrd" title="Permalink to this headline">¶</a></h2>
+<p>is a preprocessing technique used for reducing the noise.
+The parameter $k$ given to urQRd is related to the number of expected lines in the spectrum.
+It should be chosen 2 to 3 times larger than this expected number.
+Be carefull than the processing time <strong>and</strong> the memory footprint are both proportionnal to this value.</p>
+<p>data.units = &#8216;m/z&#8217;</p>
+<p>data.urqrd(k = 300).rfft().modulus().display(label = &#8220;urQRd, rank = 300&#8221;)</p>
+<div class="section" id="additional-tricks">
+<h3>Additional tricks<a class="headerlink" href="#additional-tricks" title="Permalink to this headline">¶</a></h3>
+<p>IPython shortcuts.</p>
+<p>there are <em>many</em> shortcuts and tricks in IPython, read the doc !</p>
+<p>a couple of them are really helpfull for MS processing</p>
+<ul class="simple">
+<li>you can execute a cell by hitting <cite>shift-return</cite></li>
+<li>you can get the documentation of any function by adding a ? at the end of its name, eg <cite>o.rfft?</cite></li>
+<li>you can get all possible values by hitting the <cite>&lt;TAB&gt;</cite> key. Try for instance typing <cite>o. &lt;TAB&gt;</cite></li>
+</ul>
+</div>
+<div class="section" id="spike-arcanes">
+<h3>SPIKE arcanes<a class="headerlink" href="#spike-arcanes" title="Permalink to this headline">¶</a></h3>
+<p>If needed, you can directly manipulate the numeric data held into the SPIKE dataset:</p>
+<ul class="simple">
+<li>the <cite>.get_buffer()</cite> method returns the underlying <cite>numpy</cite> array.</li>
+<li>The <cite>.set_buffer()</cite> method sets it, data can be real or complex.</li>
+<li>Do <cite>.adapt_size()</cite> afterwards if you changed the number of points.</li>
+</ul>
+<p>It is also possible to use this sheet as a simple calculator, can be handy some time, for instance for checking charge state.</p>
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2014, a.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>
