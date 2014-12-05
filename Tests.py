@@ -102,16 +102,16 @@ def do_Test():
     elaps = time.time()-t0
     to_mail = []
     if results.wasSuccessful():
+        to_mail.append( msg("CONGRATULATIONS - all the {} SPIKE tests performed succesfully ".format(len(list_of_modules))) )
         to_mail.append( msg("modules tested were:"))
         for mod in list_of_modules:
             print mod
             to_mail.append(mod)
-        to_mail.append( msg("CONGRATULATIONS - all the {} tests performed succesfully ".format(len(list_of_modules))) )
         to_mail.append( msg("test performed in %.2f sec"%elaps) )
     else:
         to_mail.append( msg("Tests Failed, Please revise error codes", sep = '!') )
     for address in list_of_mails:
-        mail(address, "msg from python Test.py", "\n".join(to_mail) )
+        mail(address, "msg from python Test.py in SPIKE", "\n".join(to_mail) )
         
 if __name__ == '__main__':
     import Display.testplot as testplot
