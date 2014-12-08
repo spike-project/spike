@@ -27,7 +27,7 @@ The program is in python 2.7.
 
 look at the examples files (eg_*.py) and at configuration files (*.mscf)
 they contain valuable examples and some documentation.
-A more complete documentation is available at [extensive documentation](https://bitbucket.org/delsuc/spike/_build/html/index.html).  
+A more complete documentation is available at [extensive documentation](https://bitbucket.org/delsuc/spike-doc/index.html).  
 
 SPIKE requires the following libraries :
 * numpy
