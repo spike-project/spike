@@ -25,9 +25,9 @@ or interactively using the processing.py batch program (aimed towad FT-ICR for t
 ### How do I get set up? ###
 The program is in python 2.7.
 
-A good documentation is lacking !!
 look at the examples files (eg_*.py) and at configuration files (*.mscf)
 they contain valuable examples and some documentation.
+A more complete documentation is available at [extensive documentation]('_build/html/index.html').
 
 SPIKE requires the following libraries :
 * numpy
