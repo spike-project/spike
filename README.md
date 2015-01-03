@@ -37,7 +37,7 @@ SPIKE allows to process datasets interactively from an ipython prompt, and is pe
 * The batch mode supports multiprocessing, both with MPI and natively on multi-core machines (still in-progress)
 * large 2D-FT-ICR are stored in a hierarchical format, easyly displayed with an interactive program.
 * data-sets are handled in the HDF5 standard file-format, which allows virtually unlimited file size ( _tested up to 200 Gb_ ).
-* Version : this is 0.5 beta version
+* Version : this is 0.6 beta version
 
 A more complete documentation is available [here](https://spikydoc.bitbucket.org).  
 
@@ -46,6 +46,7 @@ A more complete documentation is available [here](https://spikydoc.bitbucket.org
 SPIKE is written in pure python 2.7, and relies on several external libraries.
 
 It requires the following non-standard python libraries :
+
 * [numpy](http://docs.scipy.org/doc/numpy/reference/)
 * [scipy](http://docs.scipy.org/doc/scipy/reference/)
 * [matplotlib](http://matplotlib.org/contents.html)
