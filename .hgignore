@@ -1,0 +1,11 @@
+# files ignored by hg
+syntax: glob
+
+*.pyc
+.DS_Store
+*/.DS_Store
+.svn/*
+*.synctex.gz
+*~
+*.log
+
