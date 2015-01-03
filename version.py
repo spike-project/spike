@@ -8,10 +8,10 @@ try:
     revision = re.search('^parent: ([\d]*):', hg, re.MULTILINE).group(1)
 except:
     revision = "--not determined--"
-ProgramName = 'NPKv2'
+ProgramName = 'SPIKE'
 VersionName = 'Development version - beta'
-version = '0.5.1'
-rev_date = '26-03-2014'
+version = '0.6.0'
+rev_date = '03-01-2015'
 
 def report():
     "prints version name when NPK starts"

@@ -5,13 +5,12 @@ dev_setup.py
 To be called any time a new version is rolled out !
 
 Created by Marc-André on 2010-07-20.
-Copyright (c) 2010 IGBMC. All rights reserved.
 """
 
 
-ProgramName = "NPKv2"
+ProgramName = "SPIKE"
 VersionName = "Development version - beta"
-VersionInfo = ["0", "5", "1"]   # Major - Minor - Micro
+VersionInfo = ["0", "6", "0"]   # Major - Minor - Micro
 
 # Major.minor.micro (int) + name eg NPK_2_19_5
 # N.M.L
@@ -22,6 +21,11 @@ VersionInfo = ["0", "5", "1"]   # Major - Minor - Micro
 # bug fixes L+1
 
 """
+0.6.0 - dec 2014
+    - Fork to SPIKE
+    - Large improvements of the display program, renamed visu2D
+    - Corrected a bug in the hypercomplex modulus, resulting in splitting in 2D-FT-ICR
+    - many improvements everywhere
 0.5.1 - 26 mar 2014
     - processing2.py renamed to processing.py   with added features
         - urQRd
@@ -150,9 +154,11 @@ Revision Id  :  %s
     generate_file("version.py")
 #    plier()
     # then tests
-    import Tests
-    Tests.CLEAN = True  # tels test suite to remove ALL temporary files - will produce them again
-    import Display.testplot as testplot
-    testplot.PLOT = False   # switches off the display for automatic tests
-    Tests.do_Test()
+    test = False
+    if test:
+        import Tests
+        Tests.CLEAN = True  # tels test suite to remove ALL temporary files - will produce them again
+        import Display.testplot as testplot
+        testplot.PLOT = False   # switches off the display for automatic tests
+        Tests.do_Test()
     
