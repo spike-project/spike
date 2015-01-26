@@ -45,8 +45,7 @@ Created by Lionel Chiron and Marc-Andr\'e on 2013-10-13.
 version 2.0 
 28/oct/2013
 """
-# import sys
-# sys.path.append('util')
+
 import numpy as np
 import numpy.linalg as linalg
 from numpy.fft import fft, ifft
@@ -56,7 +55,7 @@ from Algo.urQRd_optk import OPTK
 
 debug = 1 # put to 1 for debuging message
 
-def urQRd(data, k, orda = None, iterations = 1, optk = False):
+def urQRd(data, k, orda = None, iterations = 1, optk = False, trick = False):
     
     """ 
     urQRd algorithm. Name stands for uncoiled random QR denoising.
@@ -77,12 +76,18 @@ def urQRd(data, k, orda = None, iterations = 1, optk = False):
     BECAREFUL datasize must be different from a product of primes !!!!!!..
     a processing with a datasize of 120022 for example will be 50 times longer than
     a procesing of a datasize of 120000.
+    ###
+    urQRd uses a new trick for performing a better denoising.
+    A rank a little above the number of peaks as to be given. 
+    this permit to make a filtering matrix containing the signal quasi only after a first pass.
+    On a second pass the full signal is projected on a new filtering subspace done from preceding denoising.
+    A higher number of iterations will decrease even more the smallest amplitudes. 
     ##########
     """
     if optk:                                                            #  optimal rank, ensures that all the signal part is retrieved.
         optrank = OPTK(data, orda)
         k = optrank.find_best_rank()  
-    if np.allclose(data,0.0):                                           # dont do anything if data is empty
+    if np.allclose(data, 0.0):                                           # dont do anything if data is empty
         return data
     if not orda:
         orda = (data.size)/2                                            # defining orda if not given.
@@ -90,28 +95,33 @@ def urQRd(data, k, orda = None, iterations = 1, optk = False):
         raise(Exception('order is too large'))
     if (k >= orda):                                                     # checks if rank not too large
         raise(Exception('rank is too large'))
-    N = len(data)-orda+1
-    dd = data
-    for i in range(iterations):
-        Omega = np.random.normal(size=(N,k))                            # Omega random real gaussian matrix Nxk
-        Q, QstarH = urQRdCore(dd, Omega)                                # H = QQ*H
-    dd = Fast_Hankel2dt(Q,QstarH)
+    N = len(data)-orda + 1
+    dd = data.copy()
+    for i in range(iterations+1):
+        Omega = np.random.normal(size = (N, k))                            # Omega random real gaussian matrix Nxk
+        if i == 1 and trick:
+            dataproj = data.copy()          # Projecting orignal dataset on denoised basis
+        else:
+            if not trick and i != 1:        # Makes normal urQRd iterations
+            dataproj = dd.copy()
+        Q, QstarH = urQRdCore(dd, dataproj, Omega)                                # H = QQ*H   data.copy()
+        dd = Fast_Hankel2dt(Q, QstarH)
     denoised = dd
     if data.dtype == "float":                                           # this is a kludge, as a complex data-set is to be passed - use the analytic signal if your data are real
         denoised = np.real(denoised)
     return denoised
 
-def urQRdCore(data, Omega):
+def urQRdCore(dd, data, Omega):
     '''
     Core of urQRd algorithm
     '''
-    Y =  FastHankel_prod_mat_mat(data, Omega)
-    Q,r = linalg.qr(Y)                                                  # QR decompsition of Y
+    Y =  FastHankel_prod_mat_mat(dd, Omega)
+    Q, r = linalg.qr(Y)                                                  # QR decompsition of Y
     del(r)                                                              # we don't need it any more
     QstarH = FastHankel_prod_mat_mat(data.conj(), Q).conj().T# 
     return Q, QstarH                                                    # H approximation given by QQ*H    
 
-def vec_mean(M,L):
+def vec_mean(M, L):
     '''
     Vector for calculating the mean from the sum on the antidiagonal.
     data = vec_sum*vec_mean
@@ -130,7 +140,7 @@ def FastHankel_prod_mat_mat(gene_vect, matrix):
     M = L-N+1
     data = np.zeros(shape = (M, K), dtype = complex)
     for k in range(K):
-        prod_vect = matrix[:,k] 
+        prod_vect = matrix[:, k] 
         data[:,k] = FastHankel_prod_mat_vec(gene_vect, prod_vect) 
     return data
 
@@ -147,7 +157,7 @@ def FastHankel_prod_mat_vec(gene_vect, prod_vect):
     fft0, fft1 = fft(gene_vect), fft(prod_vect_zero)                    # FFT transforms of generator vector and 
     prod = fft0*fft1                                                    # FFT product performing the convolution product. 
     c = ifft(prod)                                                      # IFFT for going back 
-    return np.roll(c,+1)[:M]
+    return np.roll(c, +1)[:M]
 
 def Fast_Hankel2dt(Q,QH):
     '''
@@ -163,17 +173,17 @@ def Fast_Hankel2dt(Q,QH):
         gene_vect = np.concatenate((np.zeros(N-1), Q[:, k], np.zeros(N-1))) # generator vector for Toeplitz matrix
         vec_k = FastHankel_prod_mat_vec(gene_vect, prod_vect[::-1])         # used as fast Toeplitz
         vec_sum += vec_k 
-    datadenoised = vec_sum*vec_mean(M,L)                                    # from the sum on the antidiagonal to the mean
+    datadenoised = vec_sum*vec_mean(M, L)                                    # from the sum on the antidiagonal to the mean
     return datadenoised
 
 
 class urQRd_Tests(unittest.TestCase):
     def test_urQRd(  self,
                     lendata = 10000,
-                    rank = 100,
+                    rank = 4,
                     orda = 4000,
-                    nbpeaks = 20,
-                    noise = 200.0,
+                    nbpeaks = 2,
+                    noise = 50.0,
                     noisetype = "additive"):
         """
         ============== example of use of urQRd on a synthetic data-set ===============
@@ -181,7 +191,9 @@ class urQRd_Tests(unittest.TestCase):
         import Display.testplot as testplot
         plt = testplot.plot()
         from util.dynsubplot import subpl
-        from util.signal_tools import fid_signoise_type, SNR_dB, mfft
+        from util.signal_tools import fid_signoise, fid_signoise_type, SNR_dB, mfft
+        superimpose = False
+        nb_iterat = 1
         ###########
         print "=== Running rQR algo ===",
         print "lendata:", lendata,
@@ -192,11 +204,10 @@ class urQRd_Tests(unittest.TestCase):
         noise = 0
         data0 = fid_signoise_type(nbpeaks,lendata, noise, noisetype)                # clean signal
         fdata = mfft(data0)
-        
         iSNR = SNR_dB(data,data0)
         print "Initial Noisy Data SNR: %.2f dB - noise type : %s"%(iSNR, noisetype)
         t0 = time.time()
-        dataurqrd = urQRd(data, k = rank, orda = orda, optk =True)                  # denoise signal with urQRd
+        dataurqrd = urQRd(data, k = rank, orda = orda, optk = False, iterations = nb_iterat)                  # denoise signal with urQRd
         turQRd = time.time()-t0
         fdataurqrd  = mfft(dataurqrd )# FFT of urQRd denoised signal
         print "=== Result ==="
@@ -217,6 +228,8 @@ class urQRd_Tests(unittest.TestCase):
         sub.next()
         sub.plot(data,'k', label = "noisy signal")                                  # plot the noisy fid
         sub.next()
+        if superimpose:
+            sub.plot(fdataurqrd ,'r', label = 'urQRd {} iteration(s)'.format(nb_iterat))
         sub.plot(fdatanoise,'k', label = "noisy spectrum")                          # plot the noisy spectrum
         #######################
         sub.next()
