@@ -100,12 +100,15 @@ def urQRd(data, k, orda = None, iterations = 1, optk = False, trick = False):
     for i in range(iterations+1):
         Omega = np.random.normal(size = (N, k))                            # Omega random real gaussian matrix Nxk
         if i == 1 and trick:
-            dataproj = data.copy()          # Projecting orignal dataset on denoised basis
-        else:
-            if not trick and i != 1:        # Makes normal urQRd iterations
-            dataproj = dd.copy()
-        Q, QstarH = urQRdCore(dd, dataproj, Omega)                                # H = QQ*H   data.copy()
-        dd = Fast_Hankel2dt(Q, QstarH)
+            dataproj = data.copy()          # will project orignal dataset "data.copy()" on denoised basis "dd"
+        else:    
+            dataproj = dd.copy()            # Makes normal urQRd iterations, for urQrd_trick, it is the first passage.
+        if trick:
+            Q, QstarH = urQRdCore(dd, dataproj, Omega)                                # Projection :  H = QQ*H   
+            dd = Fast_Hankel2dt(Q, QstarH)
+        elif i != 1 and not trick:  # eliminate from classical urQrd the case i == 1.
+            Q, QstarH = urQRdCore(dd, dataproj, Omega)                                # Projection :  H = QQ*H   
+            dd = Fast_Hankel2dt(Q, QstarH)
     denoised = dd
     if data.dtype == "float":                                           # this is a kludge, as a complex data-set is to be passed - use the analytic signal if your data are real
         denoised = np.real(denoised)
