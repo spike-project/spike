@@ -55,7 +55,7 @@ from Algo.urQRd_optk import OPTK
 
 debug = 1 # put to 1 for debuging message
 
-def urQRd(data, k, orda = None, iterations = 1, optk = False, trick = False):
+def urQRd(data, k, orda = None, iterations = 1, optk = False, trick = False, ktrick = False):
     
     """ 
     urQRd algorithm. Name stands for uncoiled random QR denoising.
@@ -98,7 +98,10 @@ def urQRd(data, k, orda = None, iterations = 1, optk = False, trick = False):
     N = len(data)-orda + 1
     dd = data.copy()
     for i in range(iterations+1):
-        Omega = np.random.normal(size = (N, k))                            # Omega random real gaussian matrix Nxk
+        if i == 1 and ktrick:
+            Omega = np.random.normal(size = (N, ktrick))                            # Omega random real gaussian matrix Nxk
+        else:
+            Omega = np.random.normal(size = (N, k))                            # Omega random real gaussian matrix Nxk
         if i == 1 and trick:
             dataproj = data.copy()          # will project orignal dataset "data.copy()" on denoised basis "dd"
         else:    
