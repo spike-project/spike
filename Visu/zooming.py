@@ -306,6 +306,8 @@ class ZOOM3D(object):
         Makes the 3D plot from the meshgrid.
         Makes the json that is read by FTICR2D_3d.html
         '''
+        if debug(self):
+            print "pt1min, pt1max, pt2min, pt2max",pt1min, pt1max, pt2min, pt2max
         X, Y, Z = self.makemesh(d, pt1min, pt1max, pt2min, pt2max)                                   # makes the meshgrid
         data = []
         dimx, dimy = X.shape[0], X.shape[1]

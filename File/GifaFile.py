@@ -13,8 +13,8 @@ This module provides a simple access to NMR files in the Gifa format.
 
 import re
 import numpy as np
-import NPKData as npkd
-from NPKError import NPKError
+import spike.NPKData as npkd
+from spike.NPKError import NPKError
 import unittest
 import os
 

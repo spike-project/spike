@@ -507,12 +507,13 @@ class INTERACT(object):
         if debug(self): print "f2min, f2max, f1min, f1max ",f2min, f2max, f1min, f1max
         area = abs(f1min - f1max)*abs(f2min - f2max)                                                # calculates the zoom area.
         if debug(self): print area
-        if area < self.paramz.area3Dmax:                                                                   # test if area is small enough
+        if area < 1e9: #self.paramz.area3Dmax                                                                   # test if area is small enough
             if self.data.mode_point:
                 print "point"
             else:
                 print "in m/z mode"
             d = self.display.data.d[len(self.display.data.d)-1]                                       # lowest resolution
+            #d = self.display.data.currentd 
             self.zoom3d.trunc = 1
             self.zoom3d.plotregion3d(d, f1min, f1max, f2min, f2max, visible = True)                 # plot the 3D view
             plt.show()

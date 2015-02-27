@@ -13,8 +13,8 @@ import version
 import numpy as np
 import numpy.fft as npfft
 import copy
-import File.GifaFile
-import File.csv
+import spike.File.GifaFile
+import spike.File.csv
 from NPKError import NPKError
 import itertools as it
 import unittest
@@ -2030,7 +2030,7 @@ class NPKData(object):
                 buff = as_cpx(_base_ifft(_base_rfft(self.buffer)))       # real case, go to analytical signal
             else:   #complex
                 buff = self.get_buffer()                       # complex case, makes complex
-            urqrd_result = urQRd( buff , k, orda = orda, iterations = iterations) # performs denoising
+            urqrd_result = urQRd( buff, k, orda = orda, iterations = iterations) # performs denoising
             if self.axis1.itype == 0:   # real
                 buff = _base_irfft(_base_fft(as_float(urqrd_result)))      # real case, comes back to real
                 self.set_buffer(buff)
