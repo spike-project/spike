@@ -308,7 +308,7 @@ def findnoiselevel(fid, nbseg = 20):
     import numpy as np
     less = len(fid)%nbseg     # rest of division of length of data by nb of segment
     restpeaks = fid[less:]   # remove the points that avoid to divide correctly the data in segment of same size.
-    newlist = np.array(np.hsplit(restpeaks,nbseg))    #Cutting in segments
+    newlist = np.array(np.hsplit(restpeaks, nbseg))    #Cutting in segments
     levels = newlist.std(axis = 1)
     levels.sort()
     if nbseg < 4:

@@ -1,13 +1,7 @@
 
 # This file is generated automatically by dev_setup.py 
 # Do not edit
-from subprocess import Popen, PIPE
-import re
-try:
-    hg = Popen(["hg", "summary"], stdout=PIPE).communicate()[0]
-    revision = re.search('^parent: ([\d]*):', hg, re.MULTILINE).group(1)
-except:
-    revision = "--not determined--"
+
 ProgramName = 'SPIKE'
 VersionName = 'Development version - beta'
 version = '0.6.0'
@@ -21,6 +15,6 @@ def report():
     ========================
     Version     : %s
     Date        : %s
-    Revision Id : %s
-    ========================'''%(ProgramName, version, rev_date, revision)
+ 
+    ========================'''%(ProgramName, version, rev_date)
 report()
