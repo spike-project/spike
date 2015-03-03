@@ -154,9 +154,9 @@ class Test_dynsubplot(unittest.TestCase):
     '''      
     def test_dynsub(self):
         # from matplotlib import pyplot as plt
-        import Display.testplot as testplot
-        plt = testplot.plot()
+        import spike.Display.testplot as testplot
         global plt
+        plt = testplot.plot()
         ## from matplotlib.ticker import MaxNLocator
         sub = subpl(nbsub_h = 2) # suplot organized in two columns
         sub.next() # adding subplot 1
