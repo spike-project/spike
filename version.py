@@ -4,8 +4,8 @@
 
 ProgramName = 'SPIKE'
 VersionName = 'Development version - beta'
-version = '0.6.0'
-rev_date = '03-01-2015'
+version = '0.6.3'
+rev_date = '03-03-2015'
 
 def report():
     "prints version name when NPK starts"
