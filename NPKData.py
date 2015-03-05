@@ -2022,8 +2022,7 @@ class NPKData(object):
         Manages real and complex cases.
         Handles the case of hypercomplex for denoising of 2D FTICR for example.
         """
-        #from Algo.urQRd import urQRd
-        from Algo.urQRd_trick import urQRd
+        from Algo.urQRd import urQRd
         from util.signal_tools import filtering
         if self.dim == 1:
             if self.axis1.itype == 0:   # real
