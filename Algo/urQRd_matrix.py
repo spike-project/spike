@@ -248,7 +248,8 @@ class rQRd_Tests(unittest.TestCase):
             self.assertTrue( fSNR-iSNR>17.0 )   # should give 18 dB on 100000 points
         ################################################################# Plotting
         if do_plot:
-            import matplotlib.pyplot as plt
+            import Display.testplot as testplot
+            plt = testplot.plot()
             plt.subplot(321)
             plt.plot(data0,'b',label="clean signal")# rQR normal rQR
             plt.title('data series')

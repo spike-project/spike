@@ -9,6 +9,7 @@ Copyright (c) 2011 IGBMC. All rights reserved.
 
 from subprocess import Popen, PIPE
 import sys
+import re
 #import glob
 
 CMD = "pylint"
@@ -48,16 +49,38 @@ def tracked_files(excluded=('none',)):
             modif.append(sp[1])
     return (hg, modif)
 class WritableObject(object):
-    "dummy output stream for pylint"
+    "dummy input/output stream for pylint"
     def __init__(self):
         self.content = []
     def write(self, string):
         "dummy write"
         self.content.append(string)
-    def read(self):
+    def readlines(self):
         "dummy read"
         return self.content
-    
+    def readline(self):
+        "dummy read"
+        return self.content.pop(0)
+    def __iter__(self):
+        return self
+    def next(self):
+        if self.content:
+            return self.content.pop(0)
+        else:
+            raise(StopIteration)
+def find_depedencies(reader):
+    "goes thru the pylint report reader, gather dependencies, and return as a set"
+    dep = set()
+    for l in reader:
+        if l == "Duplication":
+            break
+        m = re.search(r"^\s*(\w+)", l)
+        if m:
+            print m.group(1)
+            dep.add(m.group(1))
+    print dep
+    return dep
+
 def run_pylint(fich):
     "run pylint on the given file and return synthetic results (note, error, reorder, warning)"
     import re
@@ -72,7 +95,7 @@ def run_pylint(fich):
     warn = 0
     reorder = 0
     note = 0
-    for l in pylint_output.read():
+    for l in pylint_output:
         if l.startswith('E0001'):
             errors = 10000  # indicates crash
             break
@@ -87,6 +110,10 @@ def run_pylint(fich):
         elif l.startswith('Your code has been rated'):
             m = re.match('Your code has been rated at (-?\d+.\d.)/10', l)
             note = float(m.group(1))
+        # elif l.find('External dependencies') !=-1:
+        #     print "##############"
+        #     dep = find_depedencies(pylint_output)
+        #     print "##############"
     if errors == 10000:    # means crash
         note = -100
     return (note, errors, warn, reorder )
@@ -194,7 +221,7 @@ def main(excluded = ['.hgignore',], files = 'hg'):
         msg("Warning, the following files are modified but not commited", sep="*")
         for i in modif:
             print i
-    stats = processmp(hg)
+    stats = process(hg)
     t = report(stats, modif)
     print t
     F = open("QC.txt","w")

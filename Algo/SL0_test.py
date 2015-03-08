@@ -17,7 +17,8 @@ Copyright (c) 2011 IGBMC. All rights reserved.
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
+import Display.testplot as testplot
+plt = testplot.plot()
 import scipy.fftpack as fft
 from scipy.linalg import norm
 
