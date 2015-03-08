@@ -13,8 +13,8 @@ import version
 import numpy as np
 import numpy.fft as npfft
 import copy
-import spike.File.GifaFile
-import spike.File.csv
+#import spike.File.GifaFile
+#import spike.File.csv
 from NPKError import NPKError
 import itertools as it
 import unittest
@@ -482,6 +482,7 @@ class NPKData(object):
         
         the first found takes over the others which are not used
         """
+        from spike.File.GifaFile import GifaFile
         self.debug = debug
         self.frequency = 400.0
         self.absmax = 0.0
@@ -490,7 +491,7 @@ class NPKData(object):
         self.level = None
 
         if name is not None:
-            Go = File.GifaFile.GifaFile(name,"r")
+            Go = GifaFile(name,"r")
             Go.load()
             Go.close()
             B = Go.get_data()
@@ -1280,7 +1281,7 @@ class NPKData(object):
         elif self.dim == 2:
             test = self.axis1.check_zoom(zoom[0]) and self.axis2.check_zoom(zoom[1])        
         return test
-    def display(self, scale = 1.0, absmax = 0.0, show = False, label = None, new_fig = True, axis = None,
+    def display(self, scale = 1.0, absmax = None, show = False, label = None, new_fig = True, axis = None,
                 mode3D = False, zoom = None, xlabel="_def_", ylabel = "_def_", figure = None ):
 
         """
@@ -1314,15 +1315,15 @@ class NPKData(object):
             fig = plot.subplot(111)
         else:
             fig = figure
-        if not absmax:  # absmax is the largest point on secptrum, either given from call, or handled internally
-            if not self.absmax:     # compute it if absent
-                #print "computing absmax...",
-                self.absmax = np.nanmax( np.abs(self.buffer) )
-        else:
-            self.absmax = absmax
-        mmin = -self.absmax/scale
-        mmax = self.absmax/scale
         if self.dim == 1:
+            if not absmax:  # absmax is the largest point on spectrum, either given from call, or handled internally
+                if not self.absmax:     # compute it if absent
+                    #print "computing absmax...",
+                    self.absmax = np.nanmax( np.abs(self.buffer) )
+            else:
+                self.absmax = absmax
+            mmin = -self.absmax/scale
+            mmax = self.absmax/scale
             step = self.axis1.itype+1
             if zoom:
                 z1 = zoom[0]
@@ -1355,6 +1356,12 @@ class NPKData(object):
                 z1up=self.size1-1
                 z2lo=0
                 z2up=self.size2-1
+            if not absmax:  # absmax is the largest point on spectrum, either given from call, or handled internally
+                if not self.absmax:     # compute it if absent  - but do it on zoom window ! as this is a killer for large onfile datasets
+                    absmax = np.nanmax( np.abs(self.buffer[z1lo:z1up:step1,z2lo:z2up:step2]) )
+            else:
+                self.absmax = absmax
+#            print absmax, self.absmax
             if mode3D:
                 print "3D not implemented"
                 # from enthought.tvtk.tools import mlab
@@ -1372,13 +1379,11 @@ class NPKData(object):
                 if self.level:
                     level = self.level
                 else:
-                    m = self.absmax/scale
+                    m = absmax/scale
                     level = (m*0.5, m*0.25, m*0.1, m*0.05)
-                    
                     if xlabel == "" and ylabel == "":
                         fig.set_xticklabels('')
                         fig.set_yticklabels('')
-                    
                 if axis is None:
                     fig.contour(np.arange(z2lo,z2up,step2),np.arange(z1lo,z1up,step1),self.buffer[z1lo:z1up:step1,z2lo:z2up:step2], level)
                 else:
@@ -1402,7 +1407,8 @@ class NPKData(object):
     #----------------------------------------------
     def load(self, name):
         """load data from a file"""
-        Go = File.GifaFile.GifaFile(name,"r")
+        from spike.File.GifaFile import GifaFile
+        Go = GifaFile(name,"r")
         Go.load()
         Go.close()
         B = Go.get_data()
@@ -1415,7 +1421,8 @@ class NPKData(object):
     #----------------------------------------------
     def save(self, name):
         """save data to a file"""
-        Go = File.GifaFile.GifaFile(name,"w")
+        from spike.File.GifaFile import GifaFile
+        Go = GifaFile(name,"w")
         Go.set_data(self)
         Go.save()
         Go.close()
@@ -1426,6 +1433,7 @@ class NPKData(object):
     #----------------------------------------------
     def save_txt(self, name):
         "save 1D data in texte, single column, no unit - with attributes as pseudo comments "
+        from spike.File import csv
         if self.dim>1:
             raise NPKError("text only possible on 1D", data=self)
         File.csv.save(self, name)
@@ -1433,7 +1441,8 @@ class NPKData(object):
     #----------------------------------------------
     def load_txt(self, name):
         "load 1D data in texte, single column, no unit - with attributes as pseudo comments "
-        buf, att = File.csv.load(name)
+        from spike.File import csv
+        buf, att = csv.load(name)
         self.buffer = buf
         for k,v in att.items():
             if k in self.axis1.attributes:
@@ -1451,9 +1460,10 @@ class NPKData(object):
         
         data can be read back with File.csv.Import_1D()
         """
+        from spike.File import csv
         if self.dim>1:
             raise NPKError("csv only possible on 1D", data=self)
-        File.csv.save_unit(self, name)
+        csv.save_unit(self, name)
         return self
     #----------------------------------------------
     def report(self):
@@ -2945,8 +2955,8 @@ class NPKData(object):
 
 class NPKDataTests(unittest.TestCase):
     """ - Testing NPKData basic behaviour - """
-    name1D = "../DATA_test/proj.gs1"
-    name2D = "../DATA_test//dosy-cluster2.gs2"       # Byteorder = big_endian
+    name1D = "DATA_test/proj.gs1"
+    name2D = "DATA_test//dosy-cluster2.gs2"       # Byteorder = big_endian
     def test_fft(self):
         " - Testing FFT methods - "
         print self.test_fft.__doc__

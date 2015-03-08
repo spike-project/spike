@@ -574,8 +574,8 @@ class GifaFileTests(unittest.TestCase):
     "  - Testing GifaFile on various 1D and 2D files - "
     # basic files
     import tempfile
-    name1D = "../DATA_test/proj.gs1"
-    name2D = "../DATA_test/dosy-cluster2.gs2"       # Byteorder = big_endian
+    name1D = "DATA_test/proj.gs1"
+    name2D = "DATA_test/dosy-cluster2.gs2"       # Byteorder = big_endian
 #    name2D = "/DATA/noesy_Agathe/noesy.gs2"
     name2D_little_endian = "../DATA_test/dosy-cluster2-corr.gs2"   # Byteorder = little_endian
     verbose = 1    # verbose > 0 switches messages on

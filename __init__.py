@@ -1,5 +1,5 @@
 """
-The NPK Package
+The Spike Package
 
 """
 from __future__ import absolute_import

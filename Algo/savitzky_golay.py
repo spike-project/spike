@@ -12,7 +12,7 @@ def savitzky_golay(y, window_size, order, deriv=0):
     The Savitzky-Golay filter removes high frequency noise from data.
     It has the advantage of preserving the original shape and
     features of the signal better than other types of filtering
-    approaches, such as moving averages techhniques.
+    approaches, such as moving averages techniques.
     Parameters
     ----------
     y : array_like, shape (N,)
@@ -176,13 +176,16 @@ if __name__ == "__main__":
     zn = z + np.random.normal( 0, 0.1, z.shape )
     # filter it
     zf = savitzky_golay( zn, window_size=29, order=4)
+    zfd = savitzky_golay( zn, window_size=29, order=4, deriv=1)
     # do some plotting
-    plt.subplot(3,2,1)
+    plt.subplot(4,2,1)
     plt.plot(z)
-    plt.subplot(3,2,3)
+    plt.subplot(4,2,3)
     plt.plot(zn)
-    plt.subplot(3,2,5)
+    plt.subplot(4,2,5)
     plt.plot(zf)
+    plt.subplot(4,2,7)
+    plt.plot(zfd)
 
     ######## test 2D #####################
     # create some sample twoD data
@@ -196,12 +199,15 @@ if __name__ == "__main__":
 
     # filter it
     Zf = savitzky_golay2D( Zn, window_size=29, order=4)
+    Zfd = savitzky_golay2D( Zn, window_size=29, order=4, derivative="row")
 
     # do some plotting
-    plt.subplot(3,2,2)
+    plt.subplot(4,2,2)
     plt.contour(Z)
-    plt.subplot(3,2,4)
+    plt.subplot(4,2,4)
     plt.contour(Zn)
-    plt.subplot(3,2,6)
+    plt.subplot(4,2,6)
     plt.contour(Zf)
+    plt.subplot(4,2,8)
+    plt.contour(Zfd)
     plt.show()

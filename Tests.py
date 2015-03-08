@@ -12,7 +12,11 @@ import os
 from util.sendgmail import mail
 
 # when CLEAN is set to true, unwanted files in test directory will be removed.
-CLEAN = True #True
+CLEAN = True
+
+# when MAIL is set to true, a mail with results is sent to e-mail add defined in list_of_mails
+MAIL = True # False 
+list_of_mails =  ["madelsuc@unistra.fr", "lionel.chiron@gmail.com"]  # []
 
 # Add your module here
 mod_util = ('util.dynsubplot', 'util.debug_tools') #'util.read_msh5', 
@@ -25,8 +29,6 @@ mod_user = ('processing',)
 
 list_of_modules =  mod_algo + mod_user + mod_basicproc + mod_file  + mod_util
 
-list_of_mails =  ["madelsuc@unistra.fr", "lionel.chiron@gmail.com"]  # []
-
 def msg(st, sep = '='):
     '''
     Message in Tests.py
@@ -34,7 +36,7 @@ def msg(st, sep = '='):
     s = sep*(len(st) + 4)+"\n"
     s = s+ '| '+ st+ ' |'+"\n"
     s = s + sep*(len(st) + 4)+"\n"
-    print s
+#    print s
     return s
 
 def cleandraft():
@@ -110,10 +112,15 @@ def do_Test():
         to_mail.append( msg("test performed in %.2f sec"%elaps) )
     else:
         to_mail.append( msg("Tests Failed, Please revise error codes", sep = '!') )
-    for address in list_of_mails:
-        mail(address, "msg from python Test.py in SPIKE", "\n".join(to_mail) )
-        
-if __name__ == '__main__':
+    print "\n".join(to_mail)
+    if MAIL:
+        for address in list_of_mails:
+            mail(address, "msg from python Test.py in SPIKE", "\n".join(to_mail) )
+
+def main():
     import Display.testplot as testplot
     testplot.PLOT = False   # switches off the display for automatic tests
     do_Test()
+    
+if __name__ == '__main__':
+    main()

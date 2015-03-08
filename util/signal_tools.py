@@ -165,7 +165,7 @@ class SIGNAL_NOISE(object):
             nAmp = self.Amp[i]
             nFreq = self.Freq[i]
             if ampl:
-                nAmp += self.mult_Anoise*np.random.randn(self.x.size)
+                nAmp *= self.mult_Anoise*np.random.randn(self.x.size)
             if freq:
                 nFreq += self.mult_Fnoise*np.random.randn(self.x.size) 
             self.fid +=  nAmp * np.exp(nFreq*self.x)
@@ -305,7 +305,6 @@ def findnoiselevel(fid, nbseg = 20):
     
     nbseg=10   nb of segment to cut the spectrum
     """
-    import numpy as np
     less = len(fid)%nbseg     # rest of division of length of data by nb of segment
     restpeaks = fid[less:]   # remove the points that avoid to divide correctly the data in segment of same size.
     newlist = np.array(np.hsplit(restpeaks, nbseg))    #Cutting in segments
@@ -321,7 +320,6 @@ def findnoiselevel_2D(data_array, nbseg = 20):
     """
  
     """
-    import numpy as np
     dim_array = data_array.size
     x = np.random.randint(dim_array, size = dim_array[0])
     y = np.random.randint(dim_array, size = dim_array[1])

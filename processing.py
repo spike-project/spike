@@ -648,7 +648,7 @@ def main(argv = None):
     ### prepare intermediate file
     if debug>0: print "preparing intermediate file "
     if param.interfile is None:     # We have to create one !
-        interfile = os.path.join(param.tempdir,'tmpfile_for_{}.msh5'.format(os.path.basename(param.outfile[:-4])))  
+        interfile = os.path.join(param.tempdir,'tmpfile_for_{}'.format(os.path.basename(param.outfile)))  
         print "creating TEMPFILE:",interfile
     else:
         interfile = param.interfile
