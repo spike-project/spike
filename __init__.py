@@ -15,11 +15,11 @@ from version import ProgramName as __program_name__
 from version import rev_date as __date__
 
 __author__ = "Marc A. Delsuc <delsuc@igbmc.fr>, Marie-Aude Coutouly, Lionel Chiron"
-global NPK_version
-NPK_version = __version__
+global SPIKE_version
+SPIKE_version = __version__
 
 
-#### Header to set-up the whole NPK environment
+#### Header to set-up the whole SPIKE environment
 
 import NPKData
 # print dir()
