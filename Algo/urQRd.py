@@ -51,12 +51,11 @@ import numpy.linalg as linalg
 from numpy.fft import fft, ifft
 import unittest
 import time
-from Algo.urQRd_optk import OPTK
+from urQRd_optk import OPTK
 
 debug = 1 # put to 1 for debuging message
 
 def urQRd(data, k, orda = None, iterations = 1, optk = False, trick = False, ktrick = False):
-    
     """ 
     urQRd algorithm. Name stands for uncoiled random QR denoising.
     From a data series return a denoised series denoised
@@ -194,10 +193,10 @@ class urQRd_Tests(unittest.TestCase):
         """
         ============== example of use of urQRd on a synthetic data-set ===============
         """
-        import Display.testplot as testplot
+        import spike.Display.testplot as testplot
         plt = testplot.plot()
-        from util.dynsubplot import subpl
-        from util.signal_tools import fid_signoise, fid_signoise_type, SNR_dB, mfft
+        from spike.util.dynsubplot import subpl
+        from spike.util.signal_tools import fid_signoise, fid_signoise_type, SNR_dB, mfft
         superimpose = False
         nb_iterat = 1
         ###########

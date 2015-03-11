@@ -12,10 +12,10 @@ import unittest
 import glob
 import os.path as op
 import numpy as np
-import NPKData as npkd
-from FTICR import FTICRData
-import File.HDF5File as hf
 import tables
+import spike.NPKData as npkd
+from spike.FTICR import FTICRData
+import HDF5File as hf
 # tables.parameters.NODE_CACHE_SLOTS = 0
 #tables.parameters.CHUNK_CACHE_SIZE = 0*1024*1024
 # tables.parameters.METADATA_CACHE_SIZE  = 10*1024*1024
@@ -211,7 +211,6 @@ def Ser2D_to_H5f(sizeF1, sizeF2, filename = "ser",outfile = "H5f.h5",chunks = No
     """
     Charge any ser file directly in H5f file
     """
-    import tables
     import array
     print filename
     print outfile
@@ -293,18 +292,19 @@ def write_ser(bufferdata,filename="ser"):
 #----------------------------------------------
 class Apex_Tests(unittest.TestCase):
     def setUp(self):
-        import ConfigParser
+        from spike.Tests import filename, directory
+        
         rootfiles = os.getcwd()
-        self.TestFolder = '../DATA_test'
-        self.DataFolder = '../DATA_test/cytoC_2D_000001.d'
-        self.serfile = '../DATA_test/cytoC_2D_000001.d/ser'
-        self.outHDF = '../DATA_test/cytoC_2D_000001_direct.msh5'
-        self.name_write = os.path.join(self.TestFolder,"file_write")
-        self.name_fticr = os.path.join(self.TestFolder,"file_fticr")
-        self.name_npar = os.path.join(self.TestFolder,"file_npar")
-        self.npar_fticr = os.path.join(self.TestFolder,"npar_fticr")
-        self.name_chunk = os.path.join(self.TestFolder,"Chunk.hf")
-        self.name_get = os.path.join(self.TestFolder,"file_fticr")
+        self.TestFolder = directory()
+        self.DataFolder = filename('cytoC_2D_000001.d')
+        self.serfile = filename('cytoC_2D_000001.d/ser')
+        self.outHDF = filename('cytoC_2D_000001_direct.msh5')
+        self.name_write = filename("file_write")
+        self.name_fticr = filename("file_fticr")
+        self.name_npar = filename("file_npar")
+        self.npar_fticr = filename("npar_fticr")
+        self.name_chunk = filename("Chunk.hf")
+        self.name_get = filename("file_fticr")
         
         self.verbose = 1    # verbose > 0 switches messages on
     def announce(self):
@@ -316,7 +316,7 @@ class Apex_Tests(unittest.TestCase):
         from time import time
         self.announce()
         t0 = time()
-        d = Import_2D(self.DataFolder,self.name_get)
+        d = Import_2D(self.DataFolder, self.name_get)
         #d = Import_2D("/Volumes/XeonData/Developement/MS-FTICR/cytoC_2D_000006.d")
         print "import",time()-t0,"secondes"
         """
@@ -330,7 +330,7 @@ class Apex_Tests(unittest.TestCase):
         from time import time
         self.announce()
         t0 = time()
-        d = Import_2D("../DATA_test/cytoC_2D_000001.d")
+        d = Import_2D( self.DataFolder )
         #d = Import_2D("/Volumes/XeonData/Developement/MS-FTICR/cytoC_2D_000006.d")
         print "import",time()-t0,"secondes"
         """

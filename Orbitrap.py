@@ -20,10 +20,10 @@ Copyright (c) 2014 IGBMC. All rights reserved.
 import math
 import unittest
 import numpy as np
-import File.HDF5File
-import NPKData
-import FTMS
-from NPKError import NPKError
+from spike.File.HDF5File import HDF5File
+from spike import NPKData
+from spike import FTMS
+from spike.NPKError import NPKError
 
 
 FREQ0 = 1E7
@@ -90,7 +90,7 @@ class OrbiData(FTMS.FTMSData):
         if name:
             if name.endswith(".msh5"):  # try loading .msh5 file
                 if debug>0: print "reading msh5"
-                H = File.HDF5File.HDF5File(name,"r")
+                H = HDF5File(name,"r")
                 H.load(mode=mode)      # load into memory by default !
                 super(OrbiData, self).__init__(buffer=H.data.buffer, debug=debug)
                 NPKData.copyaxes(H.data, self)  # and deep copy all axes from file

@@ -10,8 +10,7 @@ Copyright (c) 2012 IGBMC. All rights reserved.
 import numpy as np
 import math
 import maxent as me
-from maxent import plot
-import Display.testplot as testplot
+import spike.Display.testplot as testplot
 plt = testplot.plot()
 ################################################################################
 class TfILT(me.TransferFunction):
@@ -114,7 +113,7 @@ def test_ILT():
     # initialize ExpData and load data
     D = me.ExpData(Exp)
     D.noise = sc*noise
-    dfig = plot(D.data,"exp data")
+    dfig = me.plot(D.data,"exp data")
     # initialize solver
     M = me.MaxEnt(T, D, debug=1, iterations = 300)
     M.true_s = Ideal
@@ -122,14 +121,14 @@ def test_ILT():
     M.solve()
     #show evol
     if M.debug > 0 :
-        f = plot(Ideal,'ideal')
-        plot(M.image,'finale',fig=f)
-        plot(D.data,'exp')
+        f = me.plot(Ideal,'ideal')
+        me.plot(M.image,'finale',fig=f)
+        me.plot(D.data,'exp')
         residu = T.transform(M.image)-D.data
-        plot(residu, 'residu')
+        me.plot(residu, 'residu')
     # compare results
     Dd = T.transform(M.image)
-    plot(Dd,"fitted data",dfig)
+    me.plot(Dd,"fitted data",dfig)
     plt.show()
 def main():
     test_ILT()

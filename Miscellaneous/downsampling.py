@@ -12,12 +12,12 @@ import os
 import unittest
 import time
 from scipy.signal import decimate, lfilter, cheby1, medfilt, medfilt2d
-from NPKConfigParser import NPKConfigParser
-from FTICR import *
-from Apex import Import_2D
-from NPKData import copyaxes
-from HDF5File import File.HDF5File, determine_chunkshape
-from rQRd import rQRd
+from spike.NPKConfigParser import NPKConfigParser
+from spike.FTICR import *
+from spike.File.Apex import Import_2D
+from spike.NPKData import copyaxes
+from spike.HDF5File import HDF5File, determine_chunkshape
+from spike.Algo.urQRd import urQRd
 from numpy import fft
 
 debug = 1
@@ -247,7 +247,7 @@ def _do_proc_F1_flip_modu(data):
     #pbuf = fft.ifft(fft.rfft(d.col(0).buffer))
     pbuf = d.col(0).buffer
     if do_rqrd:
-        pbuf = rQRd(pbuf,rqrd_rank) #integrated rQRd
+        pbuf = urQRd(pbuf,rqrd_rank) #integrated rQRd
     p = FTICRData( buffer=pbuf )
     apod(p, size)
     p.rfft()
@@ -290,7 +290,7 @@ def do_proc_F1_flip_modu(dinp, doutp, parameter, nproc=None):
             p = d.col(0)
             apod(p, size)       # avant ou apres ???
             if parameter.do_rqrd: 
-                p.buffer = rQRd(p.buffer,parameter.rqrd_rank) #integrated rQRd
+                p.buffer = urQRd(p.buffer,parameter.rqrd_rank) #integrated rQRd
             
             p.rfft()    
             p.modulus()

@@ -14,9 +14,8 @@ Copyright (c) 2014 IGBMC. All rights reserved.
 import math
 import unittest
 import numpy as np
-import File.HDF5File
-import NPKData
-from NPKError import NPKError
+from spike import NPKData
+from spike.NPKError import NPKError
 
 
 HighestMass = 100000.0  # the highest m/z of interest ever
@@ -151,13 +150,14 @@ class FTMSData(NPKData.NPKData):
         
         Use as a template, this method should be overwriten by subclasser
         """
+        from spike.File.HDF5File import HDF5File, determine_chunkshape
         self.axis1 = FTMSAxis()    # this creates an FTMSAxis so that pylint does not complain - will be overwritten
         if dim == 2:
             self.axis2 = FTMSAxis()
         if name:
             if name.endswith(".msh5"):  # try loading .msh5 file
                 if debug>0: print "reading msh5"
-                H = File.HDF5File.HDF5File(name,"r")
+                H = HDF5File(name,"r")
                 H.load(mode=mode)      # load into memory by default !
                 super(FTMSData, self).__init__(buffer=H.data.buffer, debug=debug)
                 NPKData.copyaxes(H.data, self)  # and deep copy all axes from file
@@ -314,9 +314,10 @@ class FTMSData(NPKData.NPKData):
         experimental !
         """
         import tables
-        hf_file = File.HDF5File.HDF5File(name,"w")
+        from spike.File.HDF5File import HDF5File, determine_chunkshape
+        hf_file = HDF5File(name,"w")
         if self.dim == 2:
-            chunks = File.HDF5File.determine_chunkshape(self.size1, self.size2)
+            chunks = determine_chunkshape(self.size1, self.size2)
         else:
             chunks = None
         hf_file.create_tables()

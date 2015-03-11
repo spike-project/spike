@@ -17,7 +17,7 @@ Copyright (c) 2011 IGBMC. All rights reserved.
 """
 
 import numpy as np
-import Display.testplot as testplot
+import spike.Display.testplot as testplot
 plt = testplot.plot()
 import scipy.fftpack as fft
 from scipy.linalg import norm
@@ -295,7 +295,7 @@ def test_FTgene(N_line=10):
     plt.show()
 def test_FTgene2(N_line=10):
     from functools import partial
-    from util.SignalToNoise import findnoiselevel
+    from spike.util.SignalToNoise import findnoiselevel
     M = 500
     N = 5*1024
     noise = 0.01

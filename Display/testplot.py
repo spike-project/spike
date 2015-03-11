@@ -24,7 +24,7 @@ def plot():
     import the current plotpackage
     usage:
 
-    import Display.testplot as testplot
+    import spike.Display.testplot as testplot
     plt = testplot.plot()
     
     then use plt as matplotlib
@@ -38,4 +38,4 @@ def plotname():
     if PLOT:
         return "matplotlib.pyplot"
     else:
-        return "Display.fakeplot"
+        return "spike.Display.fakeplot"

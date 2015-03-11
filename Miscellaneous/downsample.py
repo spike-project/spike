@@ -10,7 +10,7 @@ import sys
 import os
 import numpy as np
 from scipy.signal import decimate, lfilter, cheby1, medfilt, medfilt2d
-import NPKData
+from spike import NPKData
 
 
 def downsample2D_med(data, n1=2, n2=2):

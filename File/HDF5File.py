@@ -618,18 +618,18 @@ def up0p7_to_0p8(fname, debug = 1):
 
 #----------------------------------------------
 class HDF5_Tests(unittest.TestCase):
-
     def setUp(self):
+        from spike.Tests import filename, directory
         rootfiles = os.getcwd()
         # make ini file from example
-        self.TestFolder = os.path.join('..','DATA_test')
-        self.DataFolder = os.path.join(self.TestFolder, 'cytoC_2D_000001.d')
-        self.name_write = os.path.join(self.TestFolder,"file_write")
-        self.name_fticr = os.path.join(self.TestFolder,"file_fticr")
-        self.name_npar = os.path.join(self.TestFolder,"file_npar")
-        self.npar_fticr = os.path.join(self.TestFolder,"npar_fticr")
-        self.name_chunk = os.path.join(self.TestFolder,"file_fticr")
-        self.name_get = os.path.join(self.TestFolder,"file_fticr")
+        self.TestFolder = directory()
+        self.DataFolder = filename('cytoC_2D_000001.d')
+        self.name_write = filename("file_write")
+        self.name_fticr = filename("file_fticr")
+        self.name_npar = filename("file_npar")
+        self.npar_fticr = filename("npar_fticr")
+        self.name_chunk = filename("file_fticr")
+        self.name_get = filename("file_fticr")
                 
         self.verbose = 1    # verbose > 0 switches messages on
     def announce(self):

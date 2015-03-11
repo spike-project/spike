@@ -2,7 +2,6 @@
 # encoding: utf-8
 """
 Created by Marc-André Delsuc and Lionel Chiron on 2011-07
-Copyright (c) 2010 IGBMC. All rights reserved.
 
 Cadzow en mode MPI
 code de Cyrille Bonamy pour la partie MPI
@@ -15,14 +14,14 @@ note that the cadzow algo is multithreaded if running over the MKL library.
 So if MKL is installed, run only on instance per node, as all cores from the node will be solicited.
 """
 import Cadzow
-from NPKData import NPKData
+from spike.NPKData import NPKData
 import sys
 import os
 import numpy as np
 from mpi4py import MPI
 import time
-import rQRd
-#import matplotlib.pylab as plt
+import urQRd
+
 '''
 syntaxe example :
 mpirun -n nbproc python Cadzow_mpi.py start_rQR
@@ -166,7 +165,7 @@ def mpirQRd(d2D, p, N, n_of_line=5,k=10, n_of_iter=5, orda=100):
         if i%N == p:
             print "processing column %d / %d"%(i+1, d2D.size2), p, N
             d1D = d2D.col(i)
-            corr = rQrd.rQRd(fid=d1D.buffer, k=k, n_of_iter=n_of_iter, orda=orda) #(d1D.buffer, n_of_line, k, n_of_iter, orda)
+            corr = urQRd.urQRd(fid=d1D.buffer, k=k, n_of_iter=n_of_iter, orda=orda) #(d1D.buffer, n_of_line, k, n_of_iter, orda)
             d1D.buffer = corr
             d2D.set_col(i, d1D)
         else:

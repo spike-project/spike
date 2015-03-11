@@ -85,7 +85,7 @@ class OPTK(object):
 
 class optim_urQRd_Tests(unittest.TestCase):  
     def test_optim(self):
-        import Display.testplot as testplot
+        import spike.Display.testplot as testplot
         plt = testplot.plot()
         from util.signal_tools import fid_signoise
         nbpeaks = 15                                                                       # number of peaks
