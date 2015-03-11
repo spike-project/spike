@@ -3,24 +3,22 @@
 """
 NPKData.py
 
-Implement the basic mechanisms for NMR data-sets
+Implement the basic mechanisms for spectral data-sets
 
 Created by Marc-André and Marie-Aude on 2010-03-17.
-Copyright (c) 2010 IGBMC and NMRTEC. All rights reserved.
 """
 
-import version
 import numpy as np
 import numpy.fft as npfft
 import copy
-#import spike.File.GifaFile
-#import spike.File.csv
-from NPKError import NPKError
 import itertools as it
 import unittest
 import math
 import re
 import time
+
+import version
+from spike.NPKError import NPKError
 
 __version__ = "0.3.3"   # this is NPKData version
 __date__ = "11/Jul/2011"
@@ -268,7 +266,7 @@ class Axis(object):
         
         sampling is loaded into self.sampling  and self.sampling_info is a dictionnary with information
         """
-        import Algo.CS_transformations as cstr
+        import spike.Algo.CS_transformations as cstr
         S = cstr.sampling_load(filename)
         self.sampling = S[0]
         #print 'self.sampling ', self.sampling
@@ -1283,7 +1281,6 @@ class NPKData(object):
         return test
     def display(self, scale = 1.0, absmax = None, show = False, label = None, new_fig = True, axis = None,
                 mode3D = False, zoom = None, xlabel="_def_", ylabel = "_def_", figure = None ):
-
         """
         not so quick and dirty display using matplotlib or mlab - still a first try
         
@@ -1308,7 +1305,7 @@ class NPKData(object):
         if not self.check_zoom(zoom):
             raise NPKError("wrong zoom window : %s "%(str(zoom)), data=self)
         if not figure:
-            import Display.testplot as testplot
+            import spike.Display.testplot as testplot
             plot = testplot.plot()
             if new_fig:
                 plot.figure()
@@ -1436,7 +1433,7 @@ class NPKData(object):
         from spike.File import csv
         if self.dim>1:
             raise NPKError("text only possible on 1D", data=self)
-        File.csv.save(self, name)
+        csv.save(self, name)
         return self
     #----------------------------------------------
     def load_txt(self, name):
@@ -2032,8 +2029,8 @@ class NPKData(object):
         Manages real and complex cases.
         Handles the case of hypercomplex for denoising of 2D FTICR for example.
         """
-        from Algo.urQRd import urQRd
-        from util.signal_tools import filtering
+        from spike.Algo.urQRd import urQRd
+        from spike.util.signal_tools import filtering
         if self.dim == 1:
             if self.axis1.itype == 0:   # real
                 buff = as_cpx(_base_ifft(_base_rfft(self.buffer)))       # real case, go to analytical signal
@@ -2798,7 +2795,7 @@ class NPKData(object):
     #-------------------------------------------------------
     def display_peaks(self, axis = None, peak_label = False, zoom = None, show = False):
         """displays peaks generated with peak()"""
-        import Display.testplot as testplot
+        import spike.Display.testplot as testplot
         plot = testplot.plot()
         
         if zoom:
@@ -2836,7 +2833,7 @@ class NPKData(object):
         axis: int
             the axis on which the noise is evaluated, default is fastest varying dimension
         """
-        from util.signal_tools import findnoiselevel
+        from spike.util.signal_tools import findnoiselevel
         todo = self.test_axis(axis)
         if self.dim == 1:
             noise = findnoiselevel(self.get_buffer(), nbseg=nbseg)
@@ -2864,7 +2861,7 @@ class NPKData(object):
         axis: int
             the axis on which the filter is to be applied, default is fastest varying dimension
         """
-        import Algo.savitzky_golay as sgm
+        import spike.Algo.savitzky_golay as sgm
         todo = self.test_axis(axis)
         m = sgm.sgolay_coef(window_size, order, deriv=0)
         if self.dim == 1:
@@ -2891,7 +2888,7 @@ class NPKData(object):
             the direction of the derivative to compute (default = None means only smoothing)
         can be applied to a 2D only.
         """
-        import Algo.savitzky_golay as sgm
+        import spike.Algo.savitzky_golay as sgm
         self.check2D()
         self.buffer[:] = sgm.savitzky_golay2D(self.buffer[:], window_size, order, derivative=None)
         return self
@@ -2955,8 +2952,9 @@ class NPKData(object):
 
 class NPKDataTests(unittest.TestCase):
     """ - Testing NPKData basic behaviour - """
-    name1D = "DATA_test/proj.gs1"
-    name2D = "DATA_test//dosy-cluster2.gs2"       # Byteorder = big_endian
+    from spike.Tests import filename
+    name1D = filename("proj.gs1")
+    name2D = filename("dosy-cluster2.gs2")       # Byteorder = big_endian
     def test_fft(self):
         " - Testing FFT methods - "
         print self.test_fft.__doc__

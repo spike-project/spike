@@ -11,7 +11,7 @@ __date__ = "april 2014"
 import os
 import unittest
 import numpy as np
-from Orbitrap import OrbiData
+from spike.Orbitrap import OrbiData
 import re
 
 def read_thermo(filename):
@@ -78,21 +78,11 @@ def Import_1D(filename):
     return data
 #----------------------------------------------
 class Thermo_Tests(unittest.TestCase):
-    """ A FAIRE"""
+    """ A FAIRE """
     def setUp(self):
+        from spike.Tests import filename, directory
         import ConfigParser
-        rootfiles = os.getcwd()
-        self.TestFolder = '../DATA_test'
-        self.DataFolder = '../DATA_test/cytoC_2D_000001.d'
-        self.serfile = '../DATA_test/cytoC_2D_000001.d/ser'
-        self.outHDF = '../DATA_test/cytoC_2D_000001_direct.msh5'
-        self.name_write = os.path.join(self.TestFolder,"file_write")
-        self.name_fticr = os.path.join(self.TestFolder,"file_fticr")
-        self.name_npar = os.path.join(self.TestFolder,"file_npar")
-        self.npar_fticr = os.path.join(self.TestFolder,"npar_fticr")
-        self.name_chunk = os.path.join(self.TestFolder,"Chunk.hf")
-        self.name_get = os.path.join(self.TestFolder,"file_fticr")
-        
+        rootfiles = os.getcwd()        
         self.verbose = 1    # verbose > 0 switches messages on
     def announce(self):
         if self.verbose >0:

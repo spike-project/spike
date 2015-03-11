@@ -83,9 +83,9 @@ def Import_1D(filename, column=0, delimiter=','):
     then one value per line
     column and delimiter  as in load()
     """
-    from NPKData import NPKData
-    from FTICR import FTICRData
-    from Orbitrap import OrbiData
+    from spike.NPKData import NPKData
+    from spike.FTICR import FTICRData
+    from spike.Orbitrap import OrbiData
     buf, att = load(filename, column=column, delimiter=delimiter)
     if "NMR" in att.keys():
         d = NPKData(buffer=buf)
@@ -102,31 +102,32 @@ def Import_1D(filename, column=0, delimiter=','):
     return d
 
 
-class NPKDataTests(unittest.TestCase):
+class csvTests(unittest.TestCase):
     """ - Testing NPKData basic behaviour - """
-    name2D = "../DATA_test/dosy-cluster2.gs2"
     def test_csv(self):
-        import FTICR
-        A = FTICR.FTICRData(buffer=np.zeros(10000))
+        from spike.Tests import filename, directory
+        from spike.FTICR import FTICRData
+        from spike.NPKData import NPKData
+        name2D = filename("dosy-cluster2.gs2")
+        A = FTICRData(buffer=np.zeros(10000))
         A.specwidth = 1667000
         A.ref_mass = 344.0974
         A.ref_freq = 419620.0
         A.highmass = 1000.0
         A.units="m/z"
-        A.save_txt("1D_test.txt")
-        B = FTICR.FTICRData(dim=2)
-        B.load_txt("1D_test.txt")
+        A.save_txt(filename("1D_test.txt"))
+        B = FTICRData(dim=2)
+        B.load_txt(filename("1D_test.txt"))
         self.assertAlmostEqual((A-B).get_buffer().max(), 0.0)
-        os.unlink("1D_test.txt")
+        os.unlink(filename("1D_test.txt"))
         
-        import NPKData
-        d = NPKData.NPKData(name=self.name2D)
+        d = NPKData(name=name2D)
         r = d.row(133)
         r.units = "ppm"
-        r.save_csv("test2.csv.gz")
-        rr = Import_1D("test2.csv.gz",column=1)
+        r.save_csv(filename("test2.csv.gz"))
+        rr = Import_1D(filename("test2.csv.gz"),column=1)
         self.assertAlmostEqual((r-rr).get_buffer().max(), 0.0)
         self.assertEqual(r.axis1.units, rr.axis1.units)
-        os.unlink("test2.csv.gz")
+        os.unlink(filename("test2.csv.gz"))
 if __name__ == '__main__':
     unittest.main()

@@ -13,11 +13,10 @@ import numpy as np
 import scipy
 import scipy.optimize
 import unittest
-import Display.testplot as testplot
+from spike.util.counter import counting, timeit
+import spike.Display.testplot as testplot
 plt = testplot.plot()
-#import NPKData
-import SL0
-from util.counter import counting, timeit
+
 __version__ = 0.3
 __date__ = "march 2013"
 

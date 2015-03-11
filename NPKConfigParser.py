@@ -95,10 +95,11 @@ class Tests(unittest.TestCase):
         self.assertTrue(   cp.getboolean("section", "b_value", "true"))   # boolean
     def test_read(self):
         "testing configparser - getting values from file"
+        from spike.Tests import filename
         self.announce()
         cp = NPKConfigParser()
-        cp.read("test.mscf")
-        self.assertEqual("../DATA_test/ubiquitine_2D_000002.d", cp.get("import", "apex", "def_apex"))              # string
+        cp.read(filename("test.mscf"))
+        self.assertEqual(filename("ubiquitine_2D_000002.d"), cp.get("import", "apex", "def_apex"))              # string
         self.assertEqual(2500.0, cp.getfloat("import", "highmass", 123.45))   # float
         self.assertEqual(True, cp.getboolean("processing", "do_modulus", False))   # bool
         self.assertEqual(16*1024*1024*1024, cp.getint("processing", "largest_file", 123))   # int

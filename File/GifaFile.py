@@ -574,10 +574,10 @@ class GifaFileTests(unittest.TestCase):
     "  - Testing GifaFile on various 1D and 2D files - "
     # basic files
     import tempfile
-    name1D = "DATA_test/proj.gs1"
-    name2D = "DATA_test/dosy-cluster2.gs2"       # Byteorder = big_endian
-#    name2D = "/DATA/noesy_Agathe/noesy.gs2"
-    name2D_little_endian = "../DATA_test/dosy-cluster2-corr.gs2"   # Byteorder = little_endian
+    from spike.Tests import filename, directory
+    name1D = filename("proj.gs1")
+    name2D = filename("dosy-cluster2.gs2")       # Byteorder = big_endian
+    name2D_little_endian = filename("dosy-cluster2-corr.gs2")   # Byteorder = little_endian
     verbose = 1    # verbose > 0 switches messages on
     def announce(self):
         if self.verbose >0:
@@ -632,7 +632,7 @@ class GifaFileTests(unittest.TestCase):
         import tempfile, os
         self.announce()
         #f = tempfile.NamedTemporaryFile(delete=False)
-        f = open("../DATA_test/test_write.gs1","w")
+        f = open(filename("test_write.gs1"), "w")
         nameout = f.name
         f.close()
         G = GifaFile(nameout,"w")
@@ -665,7 +665,7 @@ class GifaFileTests(unittest.TestCase):
         self.announce()
         # first read
         #G = GifaFile(self.name2D,"r")
-        G = GifaFile("../DATA_test/dosy-cluster2.gs2","r")
+        G = GifaFile(filename("dosy-cluster2.gs2"), "r")
         G.load()        # load dataset
         A = G.get_data()
         A.buffer *= 3   # modify trivially
@@ -675,7 +675,7 @@ class GifaFileTests(unittest.TestCase):
         # then save it
         #f = tempfile.NamedTemporaryFile(delete=False)
         #nameout = f.name
-        nameout = "../DATA_test/test_write2D2.gs2"
+        nameout = filename("test_write2D2.gs2")
         #f.close()
         H = GifaFile(nameout,"w")
         H.set_data(A)

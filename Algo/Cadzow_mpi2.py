@@ -14,18 +14,19 @@ Thresholding to make Cadzow on the main relevant columns.
 note that the cadzow algo is multithreaded if running over the MKL library.
 So if MKL is installed, run only on instance per node, as all cores from the node will be solicited.
 """
-import Cadzow
-from NPKData import NPKData, copyaxes
-from FTICR import FTICRData
 import sys
 import numpy as np
-import rQRd
 import util.mpiutil as mpiutil
 import util.progressbar as pg
-from File.HDF5File import HDF5File
-from NPKConfigParser import NPKConfigParser
 import tables
 import time
+
+import urQRd
+import Cadzow
+from spike.NPKData import NPKData, copyaxes
+from spike.FTICR import FTICRData
+from spike.File.HDF5File import HDF5File
+from spike.NPKConfigParser import NPKConfigParser
 
 #import matplotlib.pylab as plt
 
@@ -139,7 +140,7 @@ def rqr(args):
         print args
     argu = (args[0],args[1],args[3],)
     #print "passed arguments ",argu
-    return rQRd.rQRd(*argu)
+    return urQRd.urQRd(*argu)
     
 def main():
     """does the whole job,
@@ -195,8 +196,6 @@ syntax is :
         meth = cadz
     elif algo == "rQRd":# 
         meth = rqr
-    elif algo == "urQRd": # 
-        raise("not implemented")
     else:
         raise("wrong algo")
 

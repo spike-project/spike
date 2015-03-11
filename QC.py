@@ -187,8 +187,11 @@ def report(stats, modif):
         else:
             text.append( "{}{:6.2f}  {:30s}       {:3d}".format(head, note, k, warn) )
     text.append( "-"*nchar )
+    mnote = mean/len(stats)
+    aggreg = 0.5*mnote + 0.5*(10*ptop + 5*pmed)/(ptop+pmed+plow)
+    text.append( "\nOverall aggreagted note value is : {:5.2f}/10\n".format(aggreg) )
     text.append( "score is {} / {} / {}  (top / med / low)".format(ptop, pmed, plow ))
-    text.append( "Mean note value is : {:5.2f}".format(mean/len(stats)) )
+    text.append( "Mean note value is : {:5.2f}/10".format(mnote) )
     text.append( "Total number of errors : {:d}".format(errtot) )
     text.append( "-"*nchar )
     return "\n".join(text)

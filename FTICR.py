@@ -25,9 +25,9 @@ import math
 import unittest
 import numpy as np
 import File.HDF5File
-import NPKData
-import FTMS
-from NPKError import NPKError
+from spike import NPKData
+from spike import FTMS
+from spike.NPKError import NPKError
 
 FREQ0 = 1E6
 REF_FREQ = 419620.0     # Ad Hoc values for   REF_FREQ / REF_MASS
@@ -179,6 +179,7 @@ class FTICR_Tests(unittest.TestCase):
         """
         Testing how save_msh5 works on 1D spectrum
         """
+        from spike.Tests import filename
         self.announce()
         A = FTICRData(buffer=np.zeros(10000))
         A.specwidth = 1667000
@@ -186,7 +187,7 @@ class FTICR_Tests(unittest.TestCase):
         A.ref_freq = 419620.0
         A.highmass = 1000.0
         print A.report()
-        A.save_msh5("DATA_test/1D_test.msh5")
+        A.save_msh5(filename("1D_test.msh5"))
 #-------------------------------------------------------------------------------
 if __name__ == '__main__':
     unittest.main()

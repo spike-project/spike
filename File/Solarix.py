@@ -17,9 +17,9 @@ import unittest
 import glob
 import os.path as op
 import numpy as np
-import NPKData as npkd
+import spike.NPKData as npkd
 from FTICR import FTICRData
-import File.HDF5File as hf
+import HDF5File as hf
 import tables
 
 def read_param(filename):
@@ -295,18 +295,19 @@ def write_ser(bufferdata,filename = "ser"):
 #----------------------------------------------
 class Solarix_Tests(unittest.TestCase):
     def setUp(self):
+        from spike.Tests import filename, directory
         import ConfigParser
         rootfiles = os.getcwd()
-        self.TestFolder = '../DATA_test'
-        self.DataFolder = '../DATA_test/bilirubin_2D_000001.d'
-        self.serfile = '../DATA_test/bilirubin_2D_000001.d/ser'
-        self.outHDF = '../DATA_test/bilirubin_2D_000001.direct.msh5'
-        self.name_write = os.path.join(self.TestFolder,"file_write")
-        self.name_fticr = os.path.join(self.TestFolder,"file_fticr")
-        self.name_npar = os.path.join(self.TestFolder,"file_npar")
-        self.npar_fticr = os.path.join(self.TestFolder,"npar_fticr")
-        self.name_chunk = os.path.join(self.TestFolder,"Chunk.hf")
-        self.name_get = os.path.join(self.TestFolder,"file_fticr")
+        self.TestFolder = directory()
+        self.DataFolder = filename('bilirubin_2D_000001.d')
+        self.serfile = filename('bilirubin_2D_000001.d/ser')
+        self.outHDF = filename('bilirubin_2D_000001.direct.msh5')
+        self.name_write = filename("file_write")
+        self.name_fticr = filename("file_fticr")
+        self.name_npar = filename("file_npar")
+        self.npar_fticr = filename("npar_fticr")
+        self.name_chunk = filename("Chunk.hf")
+        self.name_get = filename("file_fticr")
         
         self.verbose = 1    # verbose > 0 switches messages on
     def announce(self):
@@ -331,7 +332,7 @@ class Solarix_Tests(unittest.TestCase):
         from time import time
         self.announce()
         t0 = time()
-        d = ("../DATA_test/subP_2D_000001.d")
+        d = filename("subP_2D_000001.d")
         print "import",time()-t0,"secondes"
         """
         sur mon ordi
@@ -344,7 +345,7 @@ class Solarix_Tests(unittest.TestCase):
         self.announce()
         Ser2D_to_FTICRFile(2048, 65536, filename = self.serfile ,outfile = self.outHDF,chunks = (257,8193))
     #-------------------------------------------------
-    def test_2(self):
+    def _test_2(self):
         " Test and time direct processing"
         self.announce()
         from time import time
@@ -390,7 +391,7 @@ class Solarix_Tests(unittest.TestCase):
         "Another strategy close the file after fft on F2 and reopen everything for F1 fft"
         self.announce()
         from time import time
-        d = Import_2D(self.DataFolder,"../DATA_test/essai.ap")
+        d = Import_2D(self.DataFolder, filename("essai.ap"))
         t0 = time()
         t00 = t0
         d.rfft(axis = 2)
@@ -398,7 +399,7 @@ class Solarix_Tests(unittest.TestCase):
         print "rfft2",time()-t0,"secondes"
         t0 = time()
         # je réouvre
-        F = ff("../DATA_test/essai.ap","rw")
+        F = ff(filename("essai.ap"), "rw")
         F.load()
         d2 = F.data      # B is a FTICRdata
         d2.rfft(axis = 1)
@@ -413,7 +414,7 @@ class Solarix_Tests(unittest.TestCase):
 
         d2.display(scale = 5, show = True)
         F.close()
-        H = ff("../DATA_test/essai.ap","r")
+        H = ff(filename("essai.ap"), "r")
         H.load()
         B = H.data      # B is a FTICRdata
         H.close()
@@ -436,5 +437,3 @@ class Solarix_Tests(unittest.TestCase):
     #     d = Import_1D("/Volumes/XeonData/Developement/MS-FTICR/glyco_ms_000002.d","/Users/mac/Desktop/test1D_comp.hdf5")
 if __name__ == '__main__':
     unittest.main()
-    #Import_2D("../DATA_test/subP_2D_000001.d/")
-    #print read_param("../DATA_test/subP_2D_000001.d/4Mword_method.m/apexAcquisition.method")

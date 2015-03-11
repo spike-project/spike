@@ -69,8 +69,8 @@ def hash_make_or_control(rootpath = ".", verbose = False):
 
 class Test_hashcheck(unittest.TestCase):
     def test_hash(self):
-        DATA_dir = os.path.join('..', os.path.join('..', 'DATA_test'))
-        hash_make_or_control(rootpath = DATA_dir)
+        from spike.Tests import directory
+        hash_make_or_control(rootpath = directory() )
         
 if __name__ == '__main__':
     hash_make_or_control()

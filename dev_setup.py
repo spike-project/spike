@@ -10,9 +10,9 @@ Created by Marc-André on 2010-07-20.
 
 ProgramName = "SPIKE"
 VersionName = "Development version - beta"
-VersionInfo = ["0", "6", "0"]   # Major - Minor - Micro
+VersionInfo = ["0", "6", "4"]   # Major - Minor - Micro
 
-# Major.minor.micro (int) + name eg NPK_2_19_5
+# Major.minor.micro (int) + name eg SPIKE_2_19_5
 # N.M.L
 #
 # standard way of doing :
@@ -21,6 +21,11 @@ VersionInfo = ["0", "6", "0"]   # Major - Minor - Micro
 # bug fixes L+1
 
 """
+0.6.4 - march 2015
+    - clean-up of the module, still going on
+    - Tests improved
+0.6.3 - march 2015
+    - first installeable release
 0.6.0 - dec 2014
     - Fork to SPIKE
     - Large improvements of the display program, renamed visu2D
@@ -29,7 +34,6 @@ VersionInfo = ["0", "6", "0"]   # Major - Minor - Micro
 0.5.1 - 26 mar 2014
     - processing2.py renamed to processing.py   with added features
         - urQRd
-        - FISTA
     - source code reorganized by folders
 0.5.0 - 24 mar 2014
     - starting new devl effort
@@ -87,7 +91,7 @@ def generate_version():
 def generate_file(fname):
     """
     write version to the file "name", usually "version.py", used later on
-    then version.py is imported at NPK initialization.
+    then version.py is imported at SPIKE initialization.
         it assumes hg is used on client side ! - no svn version.
     """
     f = open(fname,"w")
@@ -109,7 +113,7 @@ except:
     f.write("rev_date = '%s'\n"%today)
     f.write(r"""
 def report():
-    "prints version name when NPK starts"
+    "prints version name when SPIKE starts"
     print '''
     ========================
           %s
@@ -120,7 +124,7 @@ def report():
     ========================'''%(ProgramName, version, rev_date, revision)
 report()
 """)
-    #print 'NPK version', version, 'date',date "
+    #print 'SPIKE version', version, 'date',date "
     f.close()
 
 def do(arg):
@@ -130,7 +134,7 @@ def do(arg):
 
 def plier():
     "fabrique le zip"
-    name = "NPKV2_beta_" + ( "_".join(VersionInfo) )
+    name = "SPIKE_beta_" + ( "_".join(VersionInfo) )
     dir = "../"+name
     zip = dir+".zip"
     do( ["rm", "-r", dir] )
@@ -157,7 +161,7 @@ Revision Id  :  %s
     test = False
     if test:
         import Tests
-        Tests.CLEAN = True  # tels test suite to remove ALL temporary files - will produce them again
+        Tests.CLEAN = True  # tells test suite to remove ALL temporary files - will produce them again
         import Display.testplot as testplot
         testplot.PLOT = False   # switches off the display for automatic tests
         Tests.do_Test()

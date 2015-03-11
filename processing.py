@@ -13,21 +13,23 @@ import numpy as np
 from numpy import fft as npfft
 import tables
 from scipy.signal import decimate, lfilter, cheby1, medfilt, medfilt2d
-from NPKConfigParser import NPKConfigParser
-from FTICR import *
-from File.Apex import Import_2D as Import_2D_Apex
-from File.Solarix import Import_2D as Import_2D_Solarix
-Import_2D = {'Apex': Import_2D_Apex,'Solarix': Import_2D_Solarix }
-from NPKData import copyaxes
-from File.HDF5File import HDF5File, determine_chunkshape
-import util.progressbar as pg
-import util.mpiutil as mpiutil
-from util.signal_tools import findnoiselevel_offset  as findnoiselevel
-from NPKData import as_cpx
 import itertools
 import multiprocessing as mp
-from util.simple_logger2 import TeeLogger
 import pickle
+
+from spike.NPKConfigParser import NPKConfigParser
+from spike.FTICR import *
+from spike.File.Apex import Import_2D as Import_2D_Apex
+from spike.File.Solarix import Import_2D as Import_2D_Solarix
+Import_2D = {'Apex': Import_2D_Apex,'Solarix': Import_2D_Solarix }
+from spike.NPKData import copyaxes
+from spike.File.HDF5File import HDF5File, determine_chunkshape
+import spike.util.progressbar as pg
+import spike.util.mpiutil as mpiutil
+from spike.util.signal_tools import findnoiselevel_offset  as findnoiselevel
+from spike.NPKData import as_cpx
+from spike.util.simple_logger2 import TeeLogger
+from spike.util.rem_ridge import rem_ridge
 
 
 debug = 1   # 0 means no debugging
@@ -363,7 +365,6 @@ def do_process2D(dinp, datatemp, doutp, parameter):
         print_time(time.time()-t0, "F1 processing time")
     # remove ridge computed on the last 10% rows
     if parameter.do_F1 and parameter.do_rem_ridge:      
-        from util.rem_ridge import rem_ridge
         rem_ridge(doutp)
     if parameter.compress_outfile :  # fastclean is the trick for compression
         doutp.fastclean(nsigma=parameter.compress_level, axis=1)

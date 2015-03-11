@@ -368,7 +368,7 @@ class urQRd_Tests(unittest.TestCase):
         """
         ============== example of use of rQRd on a synthetic data-set ===============
         """
-        import Display.testplot as testplot
+        import spike.Display.testplot as testplot
         plt = testplot.plot()
 
         def mfft(v):

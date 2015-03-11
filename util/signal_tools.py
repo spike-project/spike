@@ -1,11 +1,13 @@
 import numpy as np
+import math
 import scipy.fftpack as fft
 from scipy.signal import firwin2, firwin, convolve, lfilter
 from numpy.fft import rfft as nprfft
 from numpy.fft import irfft as npirfft
 import unittest
 import time
-from NPKData import NPKData
+
+from spike.NPKData import NPKData
 
 '''
 Created by Lionel Chiron  18/10/2013 
@@ -337,7 +339,6 @@ def findnoiselevel2(fid, nbseg=20):
 
     nbseg=10   nb of segment to cut the spectrum
     """
-    import numpy as np
     less = len(fid)%nbseg     # rest of division of length of data by nb of segment
     restpeaks = fid[less:]   # remove the points that avoid to divide correctly the data in segment of same size.
     newlist = np.array(np.hsplit(restpeaks,nbseg))    #Cutting in segments
@@ -401,7 +402,6 @@ def dB(val):
     converts a real value to dB
     20*math.log(val)/math.log(10)
     """
-    import math
     return 20*math.log(val)/math.log(10)
 
 def em_wiener(x,lb):
@@ -430,7 +430,7 @@ class Test_Units(unittest.TestCase):
         '''
         Testing the class for generating noisy signal.
         '''
-        import Display.testplot as testplot
+        import spike.Display.testplot as testplot
         plt = testplot.plot()
         lendata = 10000
         nbpeaks  = 10
@@ -444,7 +444,7 @@ class Test_Units(unittest.TestCase):
         '''
         Testing the class for generating noisy signal.
         '''
-        import Display.testplot as testplot
+        import spike.Display.testplot as testplot
         plt = testplot.plot()
         lendata = 10000
         nbpeaks  = 10
@@ -460,9 +460,10 @@ class Test_Units(unittest.TestCase):
         '''
         Testing noiselevel on experimental data.
         '''
-        import FTICR 
+        from spike.Tests import filename
+        import spike.FTICR 
         import math
-        d = FTICR.FTICRData(name = "../DATA_test/ubiquitine_2D_000002_mr.msh5")
+        d = spike.FTICR.FTICRData(name = filename("ubiquitine_2D_000002_mr.msh5"))
         e = d.col(11033)
         e.display(show = True)
         for n in (2,5,10,20,50,100,200):
@@ -476,7 +477,7 @@ class Test_Units(unittest.TestCase):
         '''
         Multitests on urQRd_trick
         '''
-        from Algo.urQRd_trick import urQRd
+        from spike.Algo.urQRd_trick import urQRd
         mt = MULTITESTS(algo = urQRd, ampl_sig = 50, ampl_noise = 120.0,\
                     nbpeaks = 6, nb_tries = 1, plot_fft = True)
         algo_param = '2*self.nbpeaks'

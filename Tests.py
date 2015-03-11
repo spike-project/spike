@@ -9,25 +9,38 @@ Runs tests on selected modules using the integrated unittests.
 """
 import unittest
 import os
-from util.sendgmail import mail
+import os.path as op
 
 # when CLEAN is set to true, unwanted files in test directory will be removed.
 CLEAN = True
 
 # when MAIL is set to true, a mail with results is sent to e-mail add defined in list_of_mails
-MAIL = True # False 
-list_of_mails =  ["madelsuc@unistra.fr", "lionel.chiron@gmail.com"]  # []
+MAIL = False 
+if MAIL:
+    from util.sendgmail import mail
+    list_of_mails =  ["madelsuc@unistra.fr", "lionel.chiron@gmail.com"]  # []
+
+#DATA_dir defines where the DATA for tests are located
+#DATA_dir = "/Users/mad/NPKV2/DATA_test"
+DATA_dir = "/Volumes/biak_1ToHD/rdc/DATA_test"
 
 # Add your module here
 mod_util = ('util.dynsubplot', 'util.debug_tools') #'util.read_msh5', 
-mod_algo = ('Algo.Cadzow','Algo.Linpredic','Algo.urQRd',
-                'Algo.SL0','Algo.maxent') 
+mod_algo = ('Algo.Cadzow', 'Algo.Linpredic', 'Algo.urQRd', 'Algo.SL0', 'Algo.maxent') 
  
-mod_file = ("File.GifaFile",'File.HDF5File', 'File.Apex', 'File.csv')
+mod_file = ("File.GifaFile", 'File.HDF5File', 'File.Apex', 'File.csv', 'File.Solarix')
 mod_basicproc = ("NPKData", "FTICR", "Orbitrap")
 mod_user = ('processing',)
 
-list_of_modules =  mod_algo + mod_user + mod_basicproc + mod_file  + mod_util
+list_of_modules =   mod_basicproc + mod_file  + mod_util + mod_algo # + mod_user
+
+# utilities to be called by tests using files in DATA_dir
+def directory():
+    "returns the location of the directory containing dataset for tests"
+    return DATA_dir
+def filename(name):
+    "returns the full name of a test dataset located in the test directory"
+    return op.join(DATA_dir, name)
 
 def msg(st, sep = '='):
     '''
@@ -53,16 +66,15 @@ def cleandraft():
                 os.remove(addr)
 
 def cleandir():
-    "checking files in DATA_test directory and removes files created by previous tests"
+    "checking files in DATA_dir directory and removes files created by previous tests"
     import glob
-    DATA_dir = os.path.join('..', 'DATA_test')
     files_to_keep = ('ubiquitin_5_scan_res_30000_1.dat','cytoC_ms_1scan_000001.d', 'cytoC_2D_000001.d',
                 'dosy-cluster2-corr.gs2', 'dosy-cluster2.gs2',
                 'proj.gs1', 'ubiquitine_2D_000002.d','file_fticr',
                 'file_npar','npar_fticr','Lasalocid-Tocsy', 'Sampling_file.list', 
                 'ubiquitine_2D_000002_Sampling_2k.list',
                 'Sampling_file_aposteriori_cytoCpnas.list','angio_ms_000005.d')
-    for i in glob.glob(os.path.join(DATA_dir,"*")):
+    for i in glob.glob(filename("*")):
         print i,
         if os.path.basename(i) in files_to_keep:
             print " Ok"
