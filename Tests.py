@@ -15,7 +15,7 @@ import os.path as op
 CLEAN = True
 
 # when MAIL is set to true, a mail with results is sent to e-mail add defined in list_of_mails
-MAIL = False 
+MAIL = True
 if MAIL:
     from util.sendgmail import mail
     list_of_mails =  ["madelsuc@unistra.fr", "lionel.chiron@gmail.com"]  # []
