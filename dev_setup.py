@@ -22,6 +22,7 @@ VersionInfo = ["0", "6", "4"]   # Major - Minor - Micro
 
 """
 0.6.4 - march 2015
+    - added Bruker NMR import
     - clean-up of the module, still going on
     - Tests improved
 0.6.3 - march 2015
@@ -89,6 +90,37 @@ def generate_version():
     return (version, revision, today)
 
 def generate_file(fname):
+    """
+    write version to the file "name", usually "version.py", used later on
+    then version.py is imported at SPIKE initialization.
+    No revision version is included
+    """
+    f = open(fname,"w")
+    f.write(r"""
+# This file is generated automatically by dev_setup.py 
+# Do not edit
+""")
+    version = ".".join(VersionInfo)
+    today = date.today().strftime("%d-%m-%Y")
+    f.write("ProgramName = '%s'\n"%ProgramName)
+    f.write("VersionName = '%s'\n"%VersionName)
+    f.write("version = '%s'\n"%version)
+    f.write("rev_date = '%s'\n"%today)
+    f.write(r"""
+def report():
+    "prints version name when SPIKE starts"
+    print '''
+    ========================
+          %s
+    ========================
+    Version     : %s
+    Date        : %s
+    ========================'''%(ProgramName, version, rev_date)
+report()
+""")
+    #print 'SPIKE version', version, 'date',date "
+    f.close()
+def generate_file_rev(fname):
     """
     write version to the file "name", usually "version.py", used later on
     then version.py is imported at SPIKE initialization.
