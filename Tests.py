@@ -2,7 +2,7 @@
 """
 Tests.py
 
-Created by Marc-André on 2010-07-20.
+Created by Marc-André  on 2010-07-20.
 Copyright (c) 2010 IGBMC. All rights reserved.
 
 Runs tests on selected modules using the integrated unittests. 
@@ -28,11 +28,11 @@ DATA_dir = "/Volumes/biak_1ToHD/rdc/DATA_test"
 mod_util = ('util.dynsubplot', 'util.debug_tools') #'util.read_msh5', 
 mod_algo = ('Algo.Cadzow', 'Algo.Linpredic', 'Algo.urQRd', 'Algo.SL0', 'Algo.maxent') 
  
-mod_file = ("File.GifaFile", 'File.HDF5File', 'File.Apex', 'File.csv', 'File.Solarix')
+mod_file = ("File.BrukerNMR", "File.GifaFile", 'File.HDF5File', 'File.Apex', 'File.csv', 'File.Solarix')
 mod_basicproc = ("NPKData", "FTICR", "Orbitrap")
 mod_user = ('processing',)
 
-list_of_modules =   mod_basicproc + mod_file  + mod_util + mod_algo # + mod_user
+list_of_modules =  mod_basicproc + mod_file  + mod_util + mod_algo # + mod_user
 
 # utilities to be called by tests using files in DATA_dir
 def directory():
