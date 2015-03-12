@@ -582,7 +582,7 @@ class GifaFileTests(unittest.TestCase):
     def announce(self):
         if self.verbose >0:
             print "\n========",self.shortDescription(),'==============='
-    def _test_read(self):
+    def test_read(self):
         """ - testing read capacities - """
         self.announce()
         # 1D
@@ -627,9 +627,10 @@ class GifaFileTests(unittest.TestCase):
         self.assertAlmostEqual(B.buffer[133,1101], 5164615.5)
         self.assertAlmostEqual(B.buffer.max(), 6831767.0)
 
-    def _test_write1D(self):
+    def test_write1D(self):
         """ - test 1D write capacities -"""
         import tempfile, os
+        from spike.Tests import filename
         self.announce()
         #f = tempfile.NamedTemporaryFile(delete=False)
         f = open(filename("test_write.gs1"), "w")
@@ -659,9 +660,10 @@ class GifaFileTests(unittest.TestCase):
         self.assertAlmostEqual(B2.buffer[20], 18.7938525625, places=5)  # places=5 because GifaFile are single precision !
         self.assertAlmostEqual(B2.buffer[21], -51.1309912819, places=5)
 
-    def _test_write2D(self):
+    def test_write2D(self):
         """ - testing 2D read/write capacities - """
         import tempfile
+        from spike.Tests import filename
         self.announce()
         # first read
         #G = GifaFile(self.name2D,"r")
@@ -693,9 +695,10 @@ class GifaFileTests(unittest.TestCase):
         # self.assertAlmostEqual(B.buffer.max(), 20495300.0)
         # self.assertAlmostEqual(B.buffer.max()/A.buffer.max(), 1.0)
         # self.assertAlmostEqual(B.buffer.min(),A.buffer.min())
-    def _base(self):
+    def base(self):
         "test basic function"
-        nameout = "toto.gs2"
+        from spike.Tests import filename
+        nameout = filename("toto.gs2")
         try:
             os.unlink(nameout)
         except:
@@ -719,14 +722,4 @@ class GifaFileTests(unittest.TestCase):
         os.unlink(nameout)
     
 if __name__ == '__main__':
-    # name1 = "/DATA/NewDosy/proj.gs1"
-    # name2 = "/DATA/NewDosy/Sample204_Dbppste_cc_del08data.gs2" #    sz1 = 31 
-    # name3 = "/DATA/NewDosy/Sample204_Dbppste_ccdata_dosy.gs2"   # vide
-    # name4 = "/DATA/DM-BuildUpHSQC/Buildup_HSQC.gs2" # Byte_order big_endian !!!
-    # name5 = "/DATA/DM-BuildUpHSQC/data-m2.gs2"  # Byteorder = little_endian
-    # name6 = "/DATA/test-30-8000.gs2"    # as it says
-    # t1 = "/DATA/Peptide/H16-44b.gs2"    # Byteorder : big_endian
-    # t2 = "/DATA/Peptide/H16-44b-cdz.gs2"    # vide
-    # v1 = "/DATA/JJ/jj-dmso/11/dosy-cluster2-corr.gs2"   # Byteorder = little_endian
-    # v2 = "/DATA/JJ/jj-dmso/11/dosy-cluster2.gs2"       # Byteorder = big_endian
     unittest.main()
