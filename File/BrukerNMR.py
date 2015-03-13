@@ -178,9 +178,13 @@ def read_1D(size, filename="fid", bytorda=1):
     does not check endianess
     """
 # read binary
+    if bytorda == 0:
+        fmt = "<%di"
+    else:
+        fmt = ">%di"   # > is used to keep the normal endianess
     with open(filename,"rb") as F:
         buf = F.read(4*size)
-        ibuf = struct.unpack("%di"%(size), buf)  # upack the string as integers
+        ibuf = struct.unpack(fmt%(size), buf)  # upack the string as integers
     npkbuf = np.empty(size, dtype=np.float64)
     npkbuf[:] = ibuf[:]
     return npkbuf
@@ -199,7 +203,7 @@ def read_2D(sizeF1, sizeF2, filename="ser", bytorda=1):
     if bytorda == 0:
         fmt = "<64i"
     else:
-        fmt = ">64i"
+        fmt = ">64i"   # > is used to keep the normal endianess
     with open(filename,"rb") as F:
         for i1 in range(sizeF1):
             for i2 in range(0, sizeF2, 64):   # read by 64 steps - MAndatory !
@@ -222,13 +226,17 @@ def read_3D(sizeF1, sizeF2, sizeF3, filename="ser", bytorda=1):
     """
     raise Exception("Not performed yet")
 # read binary
+    if bytorda == 0:
+        fmt = "<64i"
+    else:
+        fmt = ">64i"   # > is used to keep the normal endianess
     f=open(filename,"rb")
     for i1 in range(sizeF1):
         print i1,
         for i2 in range(sizeF2):
             for i3 in range(0,sizeF3,64): # read by 64 steps
                 buf = f.read(256)
-                ibuf = struct.unpack(">64i",buf)   # > is used to keep the normal endianess
+                ibuf = struct.unpack(fmt,buf)
                 bufsz = min(64, sizeF3-i3)
                 for i4 in range(bufsz):
                     setval(i1+1,i2+1,i3+i4+1,ibuf[i4])      # copy to 3D buffer
