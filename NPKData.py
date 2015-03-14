@@ -2022,7 +2022,7 @@ class NPKData(object):
         return self
 
     #-------------------------------------------------------------------------------
-    def urqrd(self, k, orda = None, iterations = 1, axis=0):
+    def urqrd(self, k, orda = None, trick = False, iterations = 1, axis=0):
         """
         Apply urQRd denoising to data
         k is about 2 x number_of_expected_lines
@@ -2036,7 +2036,7 @@ class NPKData(object):
                 buff = as_cpx(_base_ifft(_base_rfft(self.buffer)))       # real case, go to analytical signal
             else:   #complex
                 buff = self.get_buffer()                       # complex case, makes complex
-            urqrd_result = urQRd( buff, k, orda = orda, iterations = iterations) # performs denoising
+            urqrd_result = urQRd( buff, k, orda = orda, trick = trick, iterations = iterations) # performs denoising
             if self.axis1.itype == 0:   # real
                 buff = _base_irfft(_base_fft(as_float(urqrd_result)))      # real case, comes back to real
                 self.set_buffer(buff)
