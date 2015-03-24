@@ -65,7 +65,13 @@ def urQRd(data, k, orda = None, iterations = 1, optk = False, trick = False, ktr
         internally, a Hankel matrix (M,N) is constructed, with M = orda and N = len(data)-orda+1
         if None (default) orda = (len(data)+1)/2
     iterations : the number of time the operation should be repeated
-
+    optk : if set to True will calculate the rank giving the best recovery for an automatic estimated noise level. 
+    trick : permits to enhanced the denoising by using a cleaned signal as the projective space.
+    ktrick : if a value is given, it permits to change the rank on the second pass.
+             The idea is that for the first pass a rank large enough as to be used to compensate for the noise while
+             for the second pass a lower rank can be used. 
+    
+    ########
     values are such that
     orda <= (len(data)+1)/2
     k < orda
