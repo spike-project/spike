@@ -2,10 +2,10 @@
 The Spike Package
 
 """
-from __future__ import absolute_import
+#from __future__ import absolute_import
 import os, sys
-path_mod = os.path.abspath(os.path.dirname(__file__))
-sys.path.append(path_mod)
+#path_mod = os.path.abspath(os.path.dirname(__file__))
+#sys.path.append(path_mod)
 
 # every thing is in version.py
 from version import version as __version__
