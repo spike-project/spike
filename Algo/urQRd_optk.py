@@ -1,4 +1,4 @@
-from util.signal_tools import findnoiselevel, mfft, mrfft
+from spike.util.signal_tools import findnoiselevel, mfft, mrfft
 import numpy as np
 from numpy.fft import fft
 from scipy.linalg import norm

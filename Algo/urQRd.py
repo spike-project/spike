@@ -187,69 +187,96 @@ def Fast_Hankel2dt(Q,QH):
     datadenoised = vec_sum*vec_mean(M, L)                                    # from the sum on the antidiagonal to the mean
     return datadenoised
 
+def test_urQRd_gene(
+                lendata = 10000,
+                rank = 4,
+                orda = 4000,
+                nbpeaks = 2,
+                noise = 50.0,
+                noisetype = "additive", 
+                nb_iterat = 1,
+                trick = False ):
+    """
+    ============== example of use of urQRd on a synthetic data-set ===============
+    """
+    import spike.Display.testplot as testplot
+    plt = testplot.plot()
+    from spike.util.dynsubplot import subpl
+    from spike.util.signal_tools import fid_signoise, fid_signoise_type, SNR_dB, mfft
+    superimpose = False
+    nb_iterat = nb_iterat
+    ###########
+    print "=== Running rQR algo ===",
+    print "lendata:", lendata,
+    print " orda:", orda,
+    print ' rank:', rank
+    data = fid_signoise_type(nbpeaks,lendata, noise, noisetype)                 # noisy signal
+    fdatanoise = mfft(data)
+    noise = 0
+    data0 = fid_signoise_type(nbpeaks,lendata, noise, noisetype)                # clean signal
+    fdata = mfft(data0)
+    iSNR = SNR_dB(data,data0)
+    print "Initial Noisy Data SNR: %.2f dB - noise type : %s"%(iSNR, noisetype)
+    t0 = time.time()
+    dataurqrd = urQRd(data, k = rank, orda = orda, optk = False, iterations = nb_iterat, trick = trick )                  # denoise signal with urQRd
+    turQRd = time.time()-t0
+    fdataurqrd  = mfft(dataurqrd )# FFT of urQRd denoised signal
+    print "=== Result ==="
+    fSNR = SNR_dB(dataurqrd, data0)
+    print "Denoised SNR: %.2f dB  - processing gain : %.2f dB"%( fSNR, fSNR-iSNR )
+    print "processing time for urQRd : %f sec"%turQRd
+    print fSNR-iSNR
+    #####
+    sub = subpl(2, plt)
+    sub.next()
+    #######################
+    sub.plot(data0,'b',label = "clean signal")                                  # original signal
+    sub.title('data series')
+    sub.next()
+    sub.plot(fdata,'b',label = "clean spectrum")                                # original spectrum
+    sub.title('FFT spectrum')
+    ######################
+    sub.next()
+    sub.plot(data,'k', label = "noisy signal")                                  # plot the noisy fid
+    sub.next()
+    if superimpose:
+        sub.plot(fdataurqrd ,'r', label = 'urQRd {} iteration(s)'.format(nb_iterat))
+    sub.plot(fdatanoise,'k', label = "noisy spectrum")                          # plot the noisy spectrum
+    #######################
+    sub.next()
+    sub.plot(dataurqrd ,'r', label = 'urQRd filtered signal')                   # plot the fid denoised with urQRd
+    sub.next()
+    sub.plot(fdataurqrd ,'r', label = 'urQRd filtered spectrum')                # plot the spectrum denoised with urQRd
+    sub.title("Noise type : " + noisetype)
+    ############################
+    sub.show()
 
 class urQRd_Tests(unittest.TestCase):
-    def test_urQRd(  self,
-                    lendata = 10000,
-                    rank = 4,
-                    orda = 4000,
-                    nbpeaks = 2,
-                    noise = 50.0,
-                    noisetype = "additive"):
-        """
-        ============== example of use of urQRd on a synthetic data-set ===============
-        """
-        import spike.Display.testplot as testplot
-        plt = testplot.plot()
-        from spike.util.dynsubplot import subpl
-        from spike.util.signal_tools import fid_signoise, fid_signoise_type, SNR_dB, mfft
-        superimpose = False
-        nb_iterat = 1
-        ###########
-        print "=== Running rQR algo ===",
-        print "lendata:", lendata,
-        print " orda:", orda,
-        print ' rank:', rank
-        data = fid_signoise_type(nbpeaks,lendata, noise, noisetype)                 # noisy signal
-        fdatanoise = mfft(data)
-        noise = 0
-        data0 = fid_signoise_type(nbpeaks,lendata, noise, noisetype)                # clean signal
-        fdata = mfft(data0)
-        iSNR = SNR_dB(data,data0)
-        print "Initial Noisy Data SNR: %.2f dB - noise type : %s"%(iSNR, noisetype)
-        t0 = time.time()
-        dataurqrd = urQRd(data, k = rank, orda = orda, optk = False, iterations = nb_iterat)                  # denoise signal with urQRd
-        turQRd = time.time()-t0
-        fdataurqrd  = mfft(dataurqrd )# FFT of urQRd denoised signal
-        print "=== Result ==="
-        fSNR = SNR_dB(dataurqrd, data0)
-        print "Denoised SNR: %.2f dB  - processing gain : %.2f dB"%( fSNR, fSNR-iSNR )
-        print "processing time for urQRd : %f sec"%turQRd
-        print fSNR-iSNR
-        #####
-        sub = subpl(2, plt)
-        sub.next()
-        #######################
-        sub.plot(data0,'b',label = "clean signal")                                  # original signal
-        sub.title('data series')
-        sub.next()
-        sub.plot(fdata,'b',label = "clean spectrum")                                # original spectrum
-        sub.title('FFT spectrum')
-        ######################
-        sub.next()
-        sub.plot(data,'k', label = "noisy signal")                                  # plot the noisy fid
-        sub.next()
-        if superimpose:
-            sub.plot(fdataurqrd ,'r', label = 'urQRd {} iteration(s)'.format(nb_iterat))
-        sub.plot(fdatanoise,'k', label = "noisy spectrum")                          # plot the noisy spectrum
-        #######################
-        sub.next()
-        sub.plot(dataurqrd ,'r', label = 'urQRd filtered signal')                   # plot the fid denoised with urQRd
-        sub.next()
-        sub.plot(fdataurqrd ,'r', label = 'urQRd filtered spectrum')                # plot the spectrum denoised with urQRd
-        sub.title("Noise type : " + noisetype)
-        ############################
-        sub.show()
-    
+    def test_urQRd(self):
+        '''
+        Makes urQrd without trick and 1 iteration.
+        '''
+        test_urQRd_gene(lendata = 10000,
+                        rank = 4,
+                        orda = 4000,
+                        nbpeaks = 2,
+                        noise = 50.0,
+                        noisetype = "additive", 
+                        nb_iterat = 1 )
+                     
+    def test_urQRd_iter_trick(self):
+        '''
+        Makes urQrd with trick and making varying the number of iterations.
+        '''
+        for it in range(1,4):
+            test_urQRd_gene(lendata = 10000,
+                            rank = 4,
+                            orda = 4000,
+                            nbpeaks = 2,
+                            noise = 50.0,
+                            noisetype = "additive", 
+                            nb_iterat = it, 
+                            trick = True )
+                           
 if __name__ == '__main__':
     unittest.main()
