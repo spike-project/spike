@@ -24,7 +24,7 @@ if MAIL:
 #DATA_dir = "/Users/mad/NPKV2/DATA_test"
 DATA_dir = "/Volumes/biak_1ToHD/rdc/DATA_test"
 
-# Add your module here
+# Add your module hzere
 mod_util = ('util.dynsubplot', 'util.debug_tools') #'util.read_msh5', 
 mod_algo = ('Algo.Cadzow', 'Algo.Linpredic', 'Algo.urQRd', 'Algo.SL0', 'Algo.maxent') 
  
@@ -52,9 +52,9 @@ def msg(st, sep = '='):
 #    print s
     return s
 
-def cleandraft():
+def cleanspike():
     '''
-    Removes the .pyc
+    Removes the .pyc in spike
     '''
     for root, dirs, files in os.walk('.'):
         #print root, dirs, files
@@ -108,7 +108,7 @@ def do_Test():
     msg("First removing leftover files")
     cleandir()
     msg("removing .pyc in draft")
-    cleandraft()
+    cleanspike()
     msg("Running automatic Tests")
     t0 = time.time()
     suite = unittest.defaultTestLoader.loadTestsFromNames( list_of_modules )
