@@ -3083,6 +3083,7 @@ class NPKDataTests(unittest.TestCase):
         arr = np.array([[1, 4],[3, 7],[1, 9],[5, 7]]) # hypercomplex of size 2x2
         modulus = hypercomplex_modulus(arr, 2, 2) 
         np.testing.assert_almost_equal(modulus, np.array([[np.sqrt(75)],[np.sqrt(156)]])) # 
+    
 
 if __name__ == '__main__':
 #     x = np.arange(1024.0)
