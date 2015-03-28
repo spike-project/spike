@@ -21,8 +21,8 @@ if MAIL:
     list_of_mails =  ["madelsuc@unistra.fr", "lionel.chiron@gmail.com"]  # []
 
 #DATA_dir defines where the DATA for tests are located
-DATA_dir = "/Users/mad/NPKV2/DATA_test"
-#DATA_dir = "/Volumes/biak_1ToHD/rdc/DATA_test"
+#DATA_dir = "/Users/mad/NPKV2/DATA_test"
+DATA_dir = "/Volumes/biak_1ToHD/rdc/DATA_test"
 
 # Add your module here
 mod_util = ('util.dynsubplot', 'util.debug_tools') #'util.read_msh5', 
