@@ -14,7 +14,6 @@ import os
 import unittest
 import numpy as np
 import tables
-import FTICR
 import array
 import ConfigParser
 import time
@@ -70,6 +69,7 @@ class HDF5File(object):
     """
     def __init__(self, fname, access = 'r', info = None, nparray = None, fticrd = None, debug = 0):
         # still have to deal with changing the file_version when file is opened reading only
+        import spike.FTICR as FTICR
         self.debug = debug
         self.fname = fname
         self.info = None
@@ -335,6 +335,7 @@ python HDF5File.py update {0}
             b = d.data.buffer[...]     # data are now copied into a new memory buffer b using ellipsis syntax
             d.data.buffer = b           # and b is used as the data buffer.
         """
+        import spike.FTICR as FTICR
         if (self.debug > 0): print group
         hfgroup = getattr(self.hf.root, group)
         try:

@@ -21,10 +21,10 @@ if MAIL:
     list_of_mails =  ["madelsuc@unistra.fr", "lionel.chiron@gmail.com"]  # []
 
 #DATA_dir defines where the DATA for tests are located
-#DATA_dir = "/Users/mad/NPKV2/DATA_test"
-DATA_dir = "/Volumes/biak_1ToHD/rdc/DATA_test"
+DATA_dir = "/Users/mad/NPKV2/DATA_test"
+#DATA_dir = "/Volumes/biak_1ToHD/rdc/DATA_test"
 
-# Add your module hzere
+# Add your module here
 mod_util = ('util.dynsubplot', 'util.debug_tools') #'util.read_msh5', 
 mod_algo = ('Algo.Cadzow', 'Algo.Linpredic', 'Algo.urQRd', 'Algo.SL0', 'Algo.maxent') 
  
@@ -33,6 +33,11 @@ mod_basicproc = ("NPKData", "FTICR", "Orbitrap")
 mod_user = ('processing',)
 
 list_of_modules =  mod_basicproc + mod_file  + mod_util + mod_algo # + mod_user
+
+#############################################################################
+# add spike prefix
+list_of_modules = ["spike."+mod for mod in list_of_modules]
+
 
 # utilities to be called by tests using files in DATA_dir
 def directory():
@@ -49,7 +54,7 @@ def msg(st, sep = '='):
     s = sep*(len(st) + 4)+"\n"
     s = s+ '| '+ st+ ' |'+"\n"
     s = s + sep*(len(st) + 4)+"\n"
-#    print s
+    print s
     return s
 
 def cleanspike():
@@ -107,7 +112,7 @@ def do_Test():
         print mod
     msg("First removing leftover files")
     cleandir()
-    msg("removing .pyc in draft")
+    msg("removing .pyc in spike")
     cleanspike()
     msg("Running automatic Tests")
     t0 = time.time()
