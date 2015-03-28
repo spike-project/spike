@@ -17,10 +17,13 @@ import unittest
 import glob
 import os.path as op
 import numpy as np
-import spike.NPKData as npkd
-from FTICR import FTICRData
-import HDF5File as hf
+import array
 import tables
+from xml.dom import minidom
+
+import spike.NPKData as npkd
+from spike.FTICR import FTICRData
+import spike.File.HDF5File as hf
 
 def read_param(filename):
     """
@@ -31,8 +34,6 @@ def read_param(filename):
        
         read_param returns  values in a dictionnary
     """
-    from xml.dom import minidom
-    
     xmldoc = minidom.parse(filename)
     
     x = xmldoc.documentElement
@@ -59,7 +60,6 @@ def read_scan(filename):
     Function that returns the number of scan that have been recorded
     It is used to see wether the number of recorded points correspond to the L_20 parameter
     """
-    from xml.dom import minidom
 
     xmldoc = minidom.parse(filename)
     
@@ -99,8 +99,6 @@ def Import_1D(folder,outfile = ""):
     It returns a FTICRData
     It writes a HDF5 file if an outfile is mentionned
     """
-    import array
-
     if sys.maxint == 2**31-1:   # the flag used by array depends on architecture - here on 32biy
         flag = 'l'              # Apex files are in int32
     else:                       # here in 64bit
@@ -148,8 +146,6 @@ def Import_2D(folder, outfile = "",F1specwidth = None):
     It returns a FTICRData
     It writes a HDF5 file if an outfile is mentionned
     """
-    import array
-
     if sys.maxint == 2**31-1:   # the flag used by array depends on architecture - here on 32bit
         flag = 'l'              # Apex files are in int32
     else:                       # here in 64bit
@@ -213,8 +209,6 @@ def Ser2D_to_FTICRFile(sizeF1, sizeF2, filename = "ser",outfile = "H5f.h5",chunk
     """
     Charge any ser file directly in H5f file
     """
-    import tables
-    import array
     print filename
     print outfile
     if sys.maxint == 2**31-1:   # the flag used by array depends on architecture - here on 32biy
@@ -242,7 +236,6 @@ def read_2D(sizeF1, sizeF2, filename = "ser"):
     sizeF2 is the number of data-points in the fid
     uses array
     """
-    import array
 #    import platform # platform seems to be buggy on MacOs, see http://stackoverflow.com/questions/1842544
     if sys.maxint == 2**31-1:   # the flag used by array depends on architecture - here on 32bit
         flag = 'l'              # Apex files are in int32
@@ -267,7 +260,6 @@ def read_3D(sizeF1, sizeF2, sizeF3, filename="ser"):
 
     uses array
     """
-    import array
 #    import platform # platform seems to be buggy on MacOs, see http://stackoverflow.com/questions/1842544
     if sys.maxint == 2**31-1:   # the flag used by array depends on architecture - here on 32biy
         flag = 'l'              # Apex files are in int32
@@ -294,6 +286,7 @@ def write_ser(bufferdata,filename = "ser"):
                 f.write(bufferdata[i][j].astype("int32").tostring() )
 #----------------------------------------------
 class Solarix_Tests(unittest.TestCase):
+    from time import time
     def setUp(self):
         from spike.Tests import filename, directory
         import ConfigParser
@@ -316,7 +309,6 @@ class Solarix_Tests(unittest.TestCase):
     #-------------------------------------------------
     def _test_Import_2D(self):
         "Test and time routine that import 2D from the MS-FTICR folder to the file given as second argument "
-        from time import time
         self.announce()
         t0 = time()
         d = Import_2D(self.DataFolder,self.name_get)
@@ -329,7 +321,6 @@ class Solarix_Tests(unittest.TestCase):
     #-------------------------------------------------
     def _test_Import_2D_keep_mem(self):
         "Test and time routine that import 2D from the MS-FTICR folder in memory"
-        from time import time
         self.announce()
         t0 = time()
         d = filename("subP_2D_000001.d")
@@ -348,7 +339,6 @@ class Solarix_Tests(unittest.TestCase):
     def _test_2(self):
         " Test and time direct processing"
         self.announce()
-        from time import time
         d = Import_2D(self.DataFolder)
         t0 = time()
         t00 = t0
@@ -390,7 +380,6 @@ class Solarix_Tests(unittest.TestCase):
     def _test_3(self):
         "Another strategy close the file after fft on F2 and reopen everything for F1 fft"
         self.announce()
-        from time import time
         d = Import_2D(self.DataFolder, filename("essai.ap"))
         t0 = time()
         t00 = t0

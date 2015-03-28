@@ -1,7 +1,7 @@
 """
     Utility to Handle NMR Bruker files
 
-Based from NPK v1 code
+partitly based on NPK v1 code
 """
 
 __author__ = "Marc Andre' Delsuc"
@@ -459,6 +459,153 @@ def Import_3D(filename="ser",outfile=""):
         param['axisf3_zerotimeposition'] = zerotimeposition
         NPK.Generic.dict_dump(param,outfile+'.gtb')
     return (get_si1_3d(),get_si2_3d(),get_si3_3d())
+
+################################################################
+class Exporter(object):
+    '''
+    the following code is for exprt to Bruker file
+    only the binary data files are created (ser, 1rr, 2rr, etc..)
+    they should inserted into full-fledge existing data directory
+    
+    original code from Lionel Chiron
+    '''
+    __author__ = "Marc Andre' Delsuc"
+    __date__ = "march 2015"
+
+    def reorder_bck_subm(self,data):
+        """
+        Reorder flat matrix back to sbmx Bruker data.
+        self.sub_per_dim : [nb of submatrices in t1, nb of submatrices in t2]
+        self.nsubs : total number of submatrices
+        self.param_proc['$SI'] : shape of the 2D data. 
+        self.param_acq['$XDIM'] : size submatrix
+        """
+        print "reorder matrix back"
+        self.prepare_mat()
+        interm = data.reshape(self.dim_mat)
+        mat = []
+        for sub_num, sub_idx in enumerate(np.ndindex(tuple(self.sub_per_dim))):
+            zipshape = zip(sub_idx, self.dim_sub_mat)
+            sub_slices = [slice(i * j, (i + 1) * j) for i, j in zipshape ]
+            mat.append(list(np.ravel(interm[sub_slices])))
+        data = np.array(mat).reshape(self.dim_mat)
+        return data
+
+    def reorder_subm(self, data):
+        """
+        Reorder sbmx binary Bruker data to flat matrix.
+        self.sub_per_dim : [nb of submatrices in t1, nb of submatrices in t2]
+        self.nsubs : total number of submatrices
+        self.param_proc['$SI'] : shape of the 2D data. 
+        self.param_acq['$XDIM'] : size submatrix
+        """
+        print "reorder matrix"
+        self.prepare_mat()
+        #longmat = int(self.param_proc['$SI']), int(self.param_proc2['$XDIM'])*self.sub_per_dim[1]
+        print "data.shape ",data.shape
+        print "longmat ",self.long_mat
+        interm = data.reshape(self.long_mat)      
+        mat = []
+        for sub_num, sub_idx in enumerate(np.ndindex(tuple(self.sub_per_dim))):
+            zipshape = zip(sub_idx, self.dim_sub_mat)
+            sub_slices = [slice(i * j, (i + 1) * j) for i, j in zipshape ]
+            slt2 = slice(sub_num*self.dim_sub_mat[0],(sub_num+1)*self.dim_sub_mat[0]) # dimension t1
+            slt1 = slice(0,self.dim_sub_mat[1])# dimension t2
+            print "self.rdata[sub_slices].shape ",self.rdata[sub_slices].shape
+            print "interm[slt1, slt2].shape ",interm[slt1, slt2].shape
+            print "self.rdata[sub_slices].shape",self.rdata[sub_slices].shape
+            self.rdata[sub_slices] = interm[slt2, slt1]
+        data = self.rdata
+        return data
+        
+
+            
+    def write_file(self, data, filename):
+        '''
+        data written as integers. 
+        '''
+        f = open(filename, 'wb')
+        if self.param_acq['$BYTORDA'] == '0': 
+            f.write(data.astype('<i4').tostring()) # little endian
+        else:
+            f.write(data.astype('>i4').tostring()) # big endian
+        f.close()
+        print "rewrote ", filename
+            
+    def save_denoised_1d(self):
+        """ 
+        Write Bruker binary data to file
+        big or little endianess.
+        """
+        print "save_denoised_1d"
+        list_proc= ['1r','1i']
+        for name_proc in list_proc:
+            if name_proc == '1r':
+                if os.path.exists(self.addr_data_1r):
+                    os.remove(self.addr_data_1r)
+                self.write_file(self.data_1d_denoised.real,self.addr_data_1r)
+            else:
+                if os.path.exists(self.addr_data_1i):
+                    os.remove(self.addr_data_1i)
+                self.write_file(self.data_1d_denoised.imag,self.addr_data_1i)
+
+    def save_denoised_2d(self, big = False):
+        """ 
+        Write Bruker binary data to file
+        big or little endianess.
+        """
+        print "save_denoised_2d"
+        #filename = op.join(self.addrproc, procfile)
+        #print "remove ", filename
+        if self.param_acq2['$FnMODE'] == '0':
+            list_proc= ['2rr','2ri']
+            for name_proc in list_proc:
+                if name_proc == '2rr':
+                    if os.path.exists(self.addr_data_2rr):
+                        os.remove(self.addr_data_2rr)
+                    self.write_file(self.data_2d_denoised_2rr, self.addr_data_2rr)
+                else:
+                    if os.path.exists(self.addr_data_2ri):
+                        os.remove(self.addr_data_2ri)
+                    self.write_file(self.data_2d_denoised_2ri, self.addr_data_2ri)
+                    
+        if self.param_acq2['$FnMODE'] == '3' :
+            list_proc= ['2rr','2ir']
+            for name_proc in list_proc:
+                if name_proc == '2rr':
+                    if os.path.exists(self.addr_data_2rr):
+                        os.remove(self.addr_data_2rr)
+                    self.write_file(self.data_2d_denoised_2rr, self.addr_data_2rr)
+                else:
+                    if os.path.exists(self.addr_data_2ir):
+                        os.remove(self.addr_data_2ir)
+                    self.write_file(self.data_2d_denoised_2ir, self.addr_data_2ir)
+        
+        
+        if self.param_acq2['$FnMODE'] == '1':
+            list_proc= ['2rr','2ii']
+            for name_proc in list_proc:
+                if name_proc == '2rr':
+                    if os.path.exists(self.addr_data_2rr):
+                        os.remove(self.addr_data_2rr)
+                    self.write_file(self.data_2d_denoised_2rr, self.addr_data_2rr)
+                else:
+                    if os.path.exists(self.addr_data_2ii):
+                        os.remove(self.addr_data_2ii)
+                    self.write_file(self.data_2d_denoised_2ii, self.addr_data_2ii)
+
+    def save(self):
+        '''
+        Denoise 1d and 2d
+        If 1d very long, it uses urQRd else rQRd.
+        Denoise all the files in self.data.proc
+        For 1d remove the beginnign of the fid and add it after denoising. 
+        '''
+        print "in denoise"
+        if self.data_DIM == '1d':
+            self.save_denoised_1d()
+        elif self.data_DIM == '2d':
+            self.save_denoised_2d()
 
 
 ################################################################
