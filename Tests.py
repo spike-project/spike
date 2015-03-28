@@ -34,6 +34,7 @@ mod_user = ('processing',)
 
 list_of_modules =  mod_basicproc + mod_file  + mod_util + mod_algo # + mod_user
 
+# end of configuratiion
 #############################################################################
 # add spike prefix
 list_of_modules = ["spike."+mod for mod in list_of_modules]
@@ -107,6 +108,8 @@ def do_Test():
     Gives total time elapsed.
     '''
     import time
+    subject = "SPIKE tests perfomed on {0} {2}  running on host {1}".format(*os.uname())
+    to_mail = [msg(subject)]
     msg("modules to be tested are:")
     for mod in list_of_modules:
         print mod
@@ -119,7 +122,6 @@ def do_Test():
     suite = unittest.defaultTestLoader.loadTestsFromNames( list_of_modules )
     results = unittest.TextTestRunner(verbosity = 2).run(suite)
     elaps = time.time()-t0
-    to_mail = []
     if results.wasSuccessful():
         to_mail.append( msg("CONGRATULATIONS - all the {} SPIKE tests performed succesfully ".format(len(list_of_modules))) )
         to_mail.append( msg("modules tested were:"))
@@ -132,7 +134,7 @@ def do_Test():
     print "\n".join(to_mail)
     if MAIL:
         for address in list_of_mails:
-            mail(address, "msg from python Test.py in SPIKE", "\n".join(to_mail) )
+            mail(address, subject, "\n".join(to_mail) )
 
 def main():
     import Display.testplot as testplot
