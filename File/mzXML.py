@@ -4,7 +4,6 @@ import base64
 import struct
 import unittest
 
-
 class mzXML():
     '''
     Draft for reading mzXML files
