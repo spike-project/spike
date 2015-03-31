@@ -51,16 +51,9 @@ import numpy.linalg as linalg
 from numpy.fft import fft, ifft
 import unittest
 import time
-
-
 from spike.util.signal_tools import findnoiselevel, mfft, mrfft
 from scipy.linalg import norm
 from math import sqrt
-
-
-
-
-from urQRd_optk import OPTK
 
 debug = 1 # put to 1 for debuging message
 
@@ -197,7 +190,6 @@ def Fast_Hankel2dt(Q,QH):
     return datadenoised
 
 
-
 '''
 Module for finding the best rank for urQRd.
 Passed parameters are the Fid "fid", the estimated number of lines "estim_nbpeaks" and the order "orda"
@@ -295,6 +287,7 @@ def test_urQRd_gene(
     from spike.util.signal_tools import fid_signoise, fid_signoise_type, SNR_dB, mfft
     superimpose = False
     nb_iterat = nb_iterat
+
     ###########
     print "=== Running rQR algo ===",
     print "lendata:", lendata,
@@ -356,7 +349,7 @@ class urQRd_Tests(unittest.TestCase):
                      
     def test_urQRd_iter_trick(self):
         '''
-        Makes urQrd with trick and making varying the number of iterations.
+        Makes urQrd with trick and varying the number of iterations.
         '''
         for it in range(1,4):
             test_urQRd_gene(lendata = 10000,
@@ -369,14 +362,17 @@ class urQRd_Tests(unittest.TestCase):
                             trick = True )
                             
     def test_optim(self):
+        '''
+        Test of the rank optimization.
+        '''
         import spike.Display.testplot as testplot
         plt = testplot.plot()
-        from util.signal_tools import fid_signoise
+        from spike.util.signal_tools import fid_signoise
         nbpeaks = 15                                                                       # number of peaks
         sigmas = 2                                                                         # amplitude for the peaks
-        lengthfid = 2000                                				   # length of the Fid.
-        noise = 20                                      				   # white noise amplitude
-        fid = fid_signoise(nbpeaks, ampl , lengthfid = lengthfid, noise = noise) 		           # builds the signal
+        lengthfid = 2000                                                 # length of the Fid.
+        noise = 20                                                       # white noise amplitude
+        fid = fid_signoise(nbpeaks, ampl , lengthfid = lengthfid, noise = noise)                 # builds the signal
         ########
         orda = lengthfid/4
         optrk = OPTK(fid, orda = orda)                        # optimal rank estimation.
