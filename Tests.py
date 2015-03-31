@@ -124,12 +124,14 @@ def do_Test():
     elaps = time.time()-t0
     if results.wasSuccessful():
         to_mail.append( msg("CONGRATULATIONS - all the {} SPIKE tests performed succesfully ".format(len(list_of_modules))) )
+        subject = "SUCCESS :] " + subject
         to_mail.append( msg("modules tested were:"))
         for mod in list_of_modules:
             print mod
             to_mail.append(mod)
         to_mail.append( msg("test performed in %.2f sec"%elaps) )
     else:
+        subject = "Failed :(  " + subject
         to_mail.append( msg("Tests Failed, Please revise error codes", sep = '!') )
     print "\n".join(to_mail)
     if MAIL:
