@@ -282,6 +282,7 @@ def test_urQRd_gene(
     ============== example of use of urQRd on a synthetic data-set ===============
     """
     import spike.Display.testplot as testplot
+#    testplot.PLOT = True
     plt = testplot.plot()
     from spike.util.dynsubplot import subpl
     from spike.util.signal_tools import fid_signoise, fid_signoise_type, SNR_dB, mfft
@@ -333,21 +334,24 @@ def test_urQRd_gene(
     sub.title("Noise type : " + noisetype)
     ############################
     sub.show()
+    return dataurqrd
 
 class urQRd_Tests(unittest.TestCase):
     def test_urQRd(self):
         '''
         Makes urQrd without trick and 1 iteration.
         '''
-        test_urQRd_gene(lendata = 10000,
-                        rank = 4,
+        filtered = test_urQRd_gene(lendata = 10000,
+                        rank = 30,
                         orda = 4000,
                         nbpeaks = 2,
-                        noise = 50.0,
+                        noise = 10.0,
                         noisetype = "additive", 
                         nb_iterat = 1 )
-                     
-    def test_urQRd_iter_trick(self):
+        print filtered[519], filtered[9699]
+        self.assertAlmostEqual( filtered[519].real, 55.2, 0)
+        self.assertAlmostEqual(filtered[9699].imag, -6.68714571659, 0)
+    def _test_urQRd_iter_trick(self):
         '''
         Makes urQrd with trick and varying the number of iterations.
         '''
@@ -361,7 +365,7 @@ class urQRd_Tests(unittest.TestCase):
                             nb_iterat = it, 
                             trick = True )
                             
-    def test_optim(self):
+    def _test_optim(self):
         '''
         Test of the rank optimization.
         '''
@@ -369,10 +373,12 @@ class urQRd_Tests(unittest.TestCase):
         plt = testplot.plot()
         from spike.util.signal_tools import fid_signoise
         nbpeaks = 15                                                                       # number of peaks
-        sigmas = 2                                                                         # amplitude for the peaks
-        lengthfid = 2000                                                 # length of the Fid.
+        ampl = 2                                                                         # amplitude for the peaks
+        lengthfid = 10000                                                 # length of the Fid.
         noise = 20                                                       # white noise amplitude
         fid = fid_signoise(nbpeaks, ampl , lengthfid = lengthfid, noise = noise)                 # builds the signal
+        plt.plot(fid)
+        plt.show()
         ########
         orda = lengthfid/4
         optrk = OPTK(fid, orda = orda)                        # optimal rank estimation.

@@ -128,7 +128,7 @@ def read_param(filename="acqus"):
     #    for v in ls:
         while ls:
             v=ls.pop(0)
-            v = v.lstrip()
+            v = v.strip()
             if debug: print "-",v,"-"
             if (re.search(r"^\$\$",v)):  # print comments
                 dict['comments']=dict['comments']+"\n"+v
@@ -468,10 +468,42 @@ class Exporter(object):
     they should inserted into full-fledge existing data directory
     
     original code from Lionel Chiron
+    
+    NOT DEBUGGED - In development
     '''
-    __author__ = "Marc Andre' Delsuc"
-    __date__ = "march 2015"
+    def __init__(self, direc="."):
+        self.dir = direc
+        self.param_acq = read_param( find_acqu(direc) )
+        self.param_proc = read_param( find_proc(direc) )
+        
+    def write_file(self, data, filename):
+        '''
+        data written as integers. 
+        '''
+        with open(filename, 'wb') as f:
+            if self.param_acq['$BYTORDA'] == '0': 
+                f.write(data.astype('<i4').tostring()) # little endian
+            else:
+                f.write(data.astype('>i4').tostring()) # big endian
 
+    def save_fid_1d(self, data):
+        """
+        save data as a 1d fid in self.dir
+        """
+        fname = op.join(self.dir, 'fid')
+        self.write_file(data, fname)
+
+    def save_spec_1d(self, data, procno=1):
+        """
+        save data as a 1d spectrum in self.dir
+        """
+        fname = op.join(self.dir, 'pdata', proco, '1r')
+        self.write_file(real(data), fname)
+        if isinstance(data[0] , complex):
+            fname = op.join(self.dir, 'pdata', proco, '1i')
+            self.write_file(data, fname.imag)
+
+#### not debugged further down !
     def reorder_bck_subm(self,data):
         """
         Reorder flat matrix back to sbmx Bruker data.
@@ -517,39 +549,9 @@ class Exporter(object):
             self.rdata[sub_slices] = interm[slt2, slt1]
         data = self.rdata
         return data
-        
 
-            
-    def write_file(self, data, filename):
-        '''
-        data written as integers. 
-        '''
-        f = open(filename, 'wb')
-        if self.param_acq['$BYTORDA'] == '0': 
-            f.write(data.astype('<i4').tostring()) # little endian
-        else:
-            f.write(data.astype('>i4').tostring()) # big endian
-        f.close()
-        print "rewrote ", filename
-            
-    def save_denoised_1d(self):
-        """ 
-        Write Bruker binary data to file
-        big or little endianess.
-        """
-        print "save_denoised_1d"
-        list_proc= ['1r','1i']
-        for name_proc in list_proc:
-            if name_proc == '1r':
-                if os.path.exists(self.addr_data_1r):
-                    os.remove(self.addr_data_1r)
-                self.write_file(self.data_1d_denoised.real,self.addr_data_1r)
-            else:
-                if os.path.exists(self.addr_data_1i):
-                    os.remove(self.addr_data_1i)
-                self.write_file(self.data_1d_denoised.imag,self.addr_data_1i)
 
-    def save_denoised_2d(self, big = False):
+    def save_spec_2d(self, big = False):
         """ 
         Write Bruker binary data to file
         big or little endianess.
@@ -593,20 +595,6 @@ class Exporter(object):
                     if os.path.exists(self.addr_data_2ii):
                         os.remove(self.addr_data_2ii)
                     self.write_file(self.data_2d_denoised_2ii, self.addr_data_2ii)
-
-    def save(self):
-        '''
-        Denoise 1d and 2d
-        If 1d very long, it uses urQRd else rQRd.
-        Denoise all the files in self.data.proc
-        For 1d remove the beginnign of the fid and add it after denoising. 
-        '''
-        print "in denoise"
-        if self.data_DIM == '1d':
-            self.save_denoised_1d()
-        elif self.data_DIM == '2d':
-            self.save_denoised_2d()
-
 
 ################################################################
 def calibdosy(file="acqus"):
