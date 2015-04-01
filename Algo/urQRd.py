@@ -349,8 +349,8 @@ class urQRd_Tests(unittest.TestCase):
                         noisetype = "additive", 
                         nb_iterat = 1 )
         print filtered[519], filtered[9699]
-        self.assertAlmostEqual( filtered[519].real, 55.2, 0)
-        self.assertAlmostEqual(filtered[9699].imag, -6.68714571659, 0)
+        self.assertAlmostEqual( filtered[519].real/10, 5.52, 0)
+        self.assertAlmostEqual(filtered[9699].imag/10, -0.668714571659, 0)
     def _test_urQRd_iter_trick(self):
         '''
         Makes urQrd with trick and varying the number of iterations.

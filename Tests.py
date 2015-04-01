@@ -26,7 +26,7 @@ DATA_dir = "/Volumes/biak_1ToHD/rdc/DATA_test"
 
 # Add your module here
 mod_util = ('util.dynsubplot', 'util.debug_tools') #'util.read_msh5', 
-mod_algo = ('Algo.Cadzow', 'Algo.Linpredic', 'Algo.urQRd', 'Algo.SL0', 'Algo.maxent') 
+mod_algo = ('Algo.Cadzow', 'Algo.Linpredic', 'Algo.urQRd', 'Algo.SL0', 'Algo.maxent', 'Algo.BC') 
  
 mod_file = ("File.BrukerNMR", "File.GifaFile", 'File.HDF5File', 'File.Apex', 'File.csv', 'File.Solarix')
 mod_basicproc = ("NPKData", "FTICR", "Orbitrap")
@@ -124,7 +124,7 @@ def do_Test():
     elaps = time.time()-t0
     if results.wasSuccessful():
         to_mail.append( msg("CONGRATULATIONS - all the {} SPIKE tests performed succesfully ".format(len(list_of_modules))) )
-        subject = "SUCCESS :] " + subject
+        subject = "SUCCESS :)  " + subject
         to_mail.append( msg("modules tested were:"))
         for mod in list_of_modules:
             print mod
