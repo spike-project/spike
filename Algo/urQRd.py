@@ -190,13 +190,15 @@ def Fast_Hankel2dt(Q,QH):
     return datadenoised
 
 
-'''
-Module for finding the best rank for urQRd.
-Passed parameters are the Fid "fid", the estimated number of lines "estim_nbpeaks" and the order "orda"
-'''
-class OPTK(object):
 
-    def __init__(self, fid, orda):
+class OPTK(object):
+    '''
+    Class for finding the best rank for classical urQRd.
+    The rank is calculated so as to permit the retrieving of the signal power at high enough level.
+    Passed parameters are the Fid "fid", the estimated number of lines "estim_nbpeaks" and the order "orda"
+    '''
+
+    def __init__(self, fid, orda, prec = 0.9, debug = False):
         self.norm_show = False                  # Show the evolution of the norm
         self.list_xis = []                      # Subspace signal
         self.list_xin = []                      # Subspace noise
@@ -210,58 +212,72 @@ class OPTK(object):
         self.list_urqrd_norm = []               # list of norm values with urQRd.
         self.estim_nbpeaks = None               # estimation of the number of lines.
         self.orda =  orda
-        self.prec = 0.9
+        self.prec = prec
+        self.debug = debug
 
     def subspace_filling_with_rank(self):
         '''
-        Estimates subpsaces filling of signal subspace and noise subspace.
+        Estimation of the signal and noise subspace filling in function of the rank.
         '''
-        self.separate_signal_from_noise()									# 
+        self.separate_signal_from_noise()                                   # 
         M = self.orda - self.estim_nbpeaks
-        self.psig = norm(self.spec_trunc)**2						                    # Calculation of the signal power
-        self.pnoise = norm(self.spec - self.spec_trunc)**2				                # Calculation of the noise power
+        self.psig = norm(self.spec_trunc)**2                                            # Calculation of the signal power
+        self.pnoise = norm(self.spec - self.spec_trunc)**2                              # Calculation of the noise power
         for i in range(self.orda):
-            empty = (self.psig*(1-self.xis)**2 + self.pnoise*(1 - self.xin)**2)		    # power not yet retrieved.
-            self.xis += self.psig*(1-self.xis)**2/empty/self.estim_nbpeaks		        # part of signal dimension retrieved
-            self.xin += self.pnoise*(1-self.xin)**2/empty/M				                # part of noise dimension retrieved
+            empty = (self.psig*(1-self.xis)**2 + self.pnoise*(1 - self.xin)**2)         # power not yet retrieved.
+            self.xis += self.psig*(1-self.xis)**2/empty/self.estim_nbpeaks              # part of signal dimension retrieved
+            self.xin += self.pnoise*(1-self.xin)**2/empty/M                             # part of noise dimension retrieved
             self.list_xis.append(self.xis)
             self.list_xin.append(self.xin)
 
     def separate_signal_from_noise(self):
         '''
-        SIgnal is separated from noise.
-        signal is in kept in self.spec
+        Signal is separated from Noise and kept in self.spec
+        self.noiselev : level of the noise
+        self.estim_nbpeaks : estimation of the number of peaks in the spectrum
         '''
         if self.fid.dtype == 'complex':
             self.spec = mfft(self.fid)
-            print "complex fid"
+            if self.debug:
+                print "complex fid"
         elif self.fid.dtype == 'float':
             self.spec = mrfft(self.fid)
-            print "real fid"
+            if self.debug:
+                print "real fid"
         self.spec_trunc = self.spec.copy()
-        self.noiselev = findnoiselevel(self.spec, nbseg = 10)				            # finds noise level
-        self.spec_trunc[self.spec < self.above_noise*self.noiselev] = 0			        # truncates spectrum
+        self.noiselev = findnoiselevel(self.spec, nbseg = 10)                           # finds noise level
+        ###
+        nbseg = 20
+        less = len(self.spec)%nbseg     # rest of division of length of data by nb of segment
+        restpeaks = self.spec[less:]   # remove the points that avoid to divide correctly the data in segment of same size.
+        mean_level = restpeaks.mean()
+        self.noiselev += mean_level
+        if self.debug:
+            print "noiseleve found is ", self.noiselev 
+        self.spec_trunc[self.spec < self.above_noise*self.noiselev] = 0                 # truncates spectrum under noise level
         peaks = self.peaks1d(self.spec, threshold = self.above_noise*self.noiselev)
         self.estim_nbpeaks = len(peaks)
-        print "self.estim_nbpeaks ", self.estim_nbpeaks
-        print "self.above_noise*self.noiselev ", self.above_noise*self.noiselev
+        if self.debug:
+            print "self.estim_nbpeaks ", self.estim_nbpeaks
+            print "self.above_noise*self.noiselev ", self.above_noise*self.noiselev
 
     def find_best_rank(self):
         '''
         Finds the optimal rank
+        optk : optimal rank
         '''
-        self.subspace_filling_with_rank()                                          	   # Subspaces filling
+        self.subspace_filling_with_rank()                                              # Subspaces filling
         diff = abs(np.array(self.list_xis) - self.prec)                            
-        #print "diff ", diff
-        #print "self.list_xis ", self.list_xis
         minval = (diff).min()
         optk = list(diff).index(minval)
-        print "optimal rank is ", optk
+        if self.debug:
+            print "optimal rank is ", optk
         return optk
 
     def peaks1d(self, fid, threshold = 0.1):
         '''
         Extracts peaks from 1d from FID
+        Returns listpk[0]
         '''
         listpk = np.where(((fid > threshold*np.ones(fid.shape))&            # thresholding
                         (fid > np.roll(fid,  1, 0)) &     
@@ -337,7 +353,7 @@ def test_urQRd_gene(
     return dataurqrd
 
 class urQRd_Tests(unittest.TestCase):
-    def test_urQRd(self):
+    def _test_urQRd(self):
         '''
         Makes urQrd without trick and 1 iteration.
         '''
@@ -365,11 +381,13 @@ class urQRd_Tests(unittest.TestCase):
                             nb_iterat = it, 
                             trick = True )
                             
-    def _test_optim(self):
+    def test_optim(self):
         '''
         Test of the rank optimization.
+        The algorithm finds the minimal rank restituting the signal with complete power. 
         '''
         import spike.Display.testplot as testplot
+        from numpy.fft import fft
         plt = testplot.plot()
         from spike.util.signal_tools import fid_signoise
         nbpeaks = 15                                                                       # number of peaks
@@ -377,13 +395,14 @@ class urQRd_Tests(unittest.TestCase):
         lengthfid = 10000                                                 # length of the Fid.
         noise = 20                                                       # white noise amplitude
         fid = fid_signoise(nbpeaks, ampl , lengthfid = lengthfid, noise = noise)                 # builds the signal
-        plt.plot(fid)
-        plt.show()
+        plt.plot(abs(fft(fid)))
         ########
         orda = lengthfid/4
-        optrk = OPTK(fid, orda = orda)                        # optimal rank estimation.
-        optk = optrk.find_best_rank()                                             
+        optrk = OPTK(fid, orda = orda, debug = True)    # instantiate the class                    
+        optk = optrk.find_best_rank()   # optimal rank estimation.                                          
         print "optk", optk
+        self.assertAlmostEqual(optk, 66, 0)
+        plt.show()
                            
 if __name__ == '__main__':
     unittest.main()
