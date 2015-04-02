@@ -10,8 +10,9 @@ class mzXML():
     '''
     def __init__(self, filename):
         self.doc = xml.dom.minidom.parse(filename)
+        self.debug = 1
         self.get_params()
-    
+        
     def txt2np(self, txt):
         '''
         from mzXML to numpy
@@ -39,6 +40,10 @@ class mzXML():
         return txt
     
     def scattr(self, scan, param, kind=None):
+        '''
+        Scan attributes
+        kind specifies if we want integer, float etc.. 
+        '''
         param_value = scan[0].getAttribute(param)
         if kind:
             return kind(param_value)
@@ -51,8 +56,7 @@ class mzXML():
         '''
         spec = self.doc.getElementsByTagName('peaks')
         scan = self.doc.getElementsByTagName('scan')
-        
-        num = self.txt2np(spec[0].childNodes[0].toxml())
+        num = self.txt2np(spec[0].childNodes[0].toxml()) # numpy data for spectrum with axis
         self.spec = num[0::2]
         self.mzaxis = num[1::2]
         self.scan_size = len(self.txt2np(spec[0].childNodes[0].toxml()))/2 # size of the scan
@@ -60,7 +64,8 @@ class mzXML():
             'filterLine':None, 'retentionTime':None, 'lowMz':float, 'highMz':float,
              'basePeakMz':float, 'basePeakIntensity':float, 'totIonCurrent':int, 'collisionEnergy':int}
         for p in self.dic_param:
-            print "param ", p
+            if self.debug > 2:
+                print "param ", p
             try:
                 setattr(self, p, self.scattr(scan, p, self.dic_param[p])) 
             except:
