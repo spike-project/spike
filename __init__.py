@@ -21,5 +21,5 @@ SPIKE_version = __version__
 
 #### Header to set-up the whole SPIKE environment
 
-import NPKData
+import spike.NPKData
 # print dir()
