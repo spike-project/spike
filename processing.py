@@ -606,7 +606,7 @@ def main(argv = None):
     ### input file either raw to be imported or already imported
     imported = False
     if not os.path.exists(param.infile):
-        print "importing %s into %s"%(dir, param.infile)
+        print "importing %s into %s"%(".", param.infile)  #To be corrected MAD
         d0 = Import_2D[param.format](param.apex, param.infile)
         imported = True
         if opt_param != {}: # if some parameters were overloaded in config file

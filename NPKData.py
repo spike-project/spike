@@ -438,6 +438,28 @@ def copyaxes(inp,out):
         i = ii +1       # 1 2 3
         setattr(out, "axis%1d"%(i), copy.deepcopy(inp.axes(i)) )
 ########################################################################
+def NPKData_plugin(name, method):
+    """
+    This function allows to register a new method inside the NPKData class.
+    
+    for instance - define myfunc() anywhere in your code :
+
+    def myfunc(npkdata, args):
+        "myfunc doc"
+        ...do whatever, assuming npkdata is a NPKData
+        return npkdata     # THIS is important, that is the standard NPKData mechanism
+    
+    then elsewhere do :
+    NPKData_plugin("mymeth", myfunc)
+    
+    then all NPKData created will have the method .mymeth()
+    """
+    if not callable(method):
+        raise Exception("method should be callable")
+    if not isinstance(name, str):
+        raise Exception("method name should be a string")
+    setattr(NPKData, name, method)
+
 class NPKData(object):
     """
     a working data used by the NPK package
@@ -673,7 +695,7 @@ class NPKData(object):
         try:                            # self.buffer might come from HDF5File and doesn't have flags
             if not self.buffer.flags['OWNDATA']:
                 if self.debug >0:
-                    print "WARNING in NPKData.check() : NPKData does not own its buffer"
+                    warning("WARNING in NPKData.check() : NPKData does not own its buffer")
 #            print self.buffer.base.flags['UPDATEIFCOPY']
             # I am not sure this is a concern...
         except:
@@ -682,7 +704,7 @@ class NPKData(object):
         try:                            # self.buffer might come from HDF5File and doesn't have flags
             if not self.buffer.flags['C_CONTIGUOUS']:
                 if self.debug >0:
-                    print "WARNING in NPKData.check() : NPKData does not own its buffer"
+                    warning( "WARNING in NPKData.check() : NPKData does not own its buffer")
 #            print self.buffer.base.flags['UPDATEIFCOPY']
             # I am not sure this is a concern...
         except:
@@ -1175,19 +1197,6 @@ class NPKData(object):
         for index in xrange(start, stop, step):
             yield self.col(index)
         
-    @property
-    def iter_col(self):
-        warning( "iter_col is OBSOLETE, use xcol() instead")
-        self.check2D()
-        for index in xrange(0, self.size2, self.axis2.itype+1):
-            yield self.col(index)
-    #----------------------------------------------
-    @property
-    def iter_all_col(self):
-        warning( "iter_col is OBSOLETE, use xcol() instead ")
-        self.check2D()
-        for index in xrange(self.size2):
-            yield self.col(index)
     #----------------------------------------------
     def row(self, i):
         """returns a 1D extracted from the current 2D at position 0<=i<=size1-1 """
@@ -1196,29 +1205,6 @@ class NPKData(object):
         r = Data(buffer = self.buffer[i,:].copy())
         r.axis1 = copy.copy(self.axis2)
         return r
-    #----------------------------------------------
-    def plane(self, axis, i):
-        """returns a 2D extracted from the current 3D at position 0<=i<=size1-1 """
-        todo = self.test_axis(axis)
-        self.check3D()
-        Data = type(self)   # NPKData get subclassed, so subclass creator is to be used        
-        if todo == 1 :
-            r = Data(buffer = self.buffer[i,:,:].copy())
-            r.axis1 = copy.copy(self.axis2)
-            r.axis2 = copy.copy(self.axis3)
-            return r
-        elif todo == 2:
-            r = Data(buffer = self.buffer[:,i,:].copy())
-            r.axis1 = copy.copy(self.axis1)
-            r.axis2 = copy.copy(self.axis3)
-            return r
-        elif todo == 3:
-            r = Data(buffer = self.buffer[:,:,i].copy())
-            r.axis1 = copy.copy(self.axis1)
-            r.axis2 = copy.copy(self.axis2)
-            return r
-        else:
-            print "problem with plane"
     #----------------------------------------------
     def set_row(self, i, d1D):
         """set into the current 2D the given 1D, as the row at position 0<=i<=size1-1 """
@@ -1250,20 +1236,66 @@ class NPKData(object):
         for index in xrange(start, stop, step):
             yield self.row(index)
     #----------------------------------------------
-    @property
-    def iter_row(self):
-        warning("iter_row is OBSOLETE, use xrow() instead")
-        self.check2D()
-        for index in xrange(0, self.size1, self.axis1.itype+1):
-            yield self.row(index)
+    def plane(self, axis, i):
+        """returns a 2D extracted from the current 3D at position 0<=i<=size1-1 """
+        todo = self.test_axis(axis)
+        self.check3D()
+        Data = type(self)   # NPKData get subclassed, so subclass creator is to be used        
+        if todo == 1 :
+            r = Data(buffer = self.buffer[i,:,:].copy())
+            r.axis1 = copy.copy(self.axis2)
+            r.axis2 = copy.copy(self.axis3)
+            return r
+        elif todo == 2:
+            r = Data(buffer = self.buffer[:,i,:].copy())
+            r.axis1 = copy.copy(self.axis1)
+            r.axis2 = copy.copy(self.axis3)
+            return r
+        elif todo == 3:
+            r = Data(buffer = self.buffer[:,:,i].copy())
+            r.axis1 = copy.copy(self.axis1)
+            r.axis2 = copy.copy(self.axis2)
+            return r
+        else:
+            raise NPKError("problem with plane")
     #----------------------------------------------
-    @property
-    def iter_all_row(self):
-        warning("iter_row is OBSOLETE, use xrow() instead")
-        self.check2D()
-        for index in xrange(self.size1):
-            yield self.row(index)
+    def set_plane(self, axis, i, d2D):
+        """set into the current 3D the given 2D, as a plane at position i """
+        todo = self.test_axis(axis)
+        self.check3D()
+        d2D.check2D()
+        if todo == 1 :
+            self.buffer[i,:,:] = d2D.buffer[:,:]
+        elif todo == 2:
+            self.buffer[:,i,:] = d2D.buffer[:,:]
+        elif todo == 3:
+            self.buffer[:,:,i] = d2D.buffer[:,:]
+        else:
+            raise NPKError("problem with plane axis selection")
+        return self
+    #----------------------------------------------
+    def xplane(self, axis, start=0, stop=None, step=1):
+        """
+        an iterator over planes of a 3D along axis (1, 2 or 3)
+        (see test_axis() for documentation on axis selection)
 
+        so 
+        for p in matrix.xplane("F1"):
+            do something with p...
+        will scan through all  F1 planes
+
+        you can limit the range by giving start, stop and step arguments - using the same syntax as xrange()
+
+        on hypercomplex axis
+        matrix.xplane("F2, step=matrix.axis2.itype+1 )
+        will step only on planes associated to the real point 
+        """
+        todo = self.test_axis(axis)
+        self.check3D()        
+        if not stop:
+            stop = self.axes(todo).size
+        for index in xrange(start, stop, step):
+            yield self.plane(todo, index)
     #----------------------------------------------
     def check_zoom(self, zoom):
         """
@@ -1298,7 +1330,7 @@ class NPKData(object):
         mode3D  use malb 3D display instead of matplotlib contour for 2D display
         zoom    is a tuple defining the zoom window (left,right) or   ((F1_limits),(F2_limits))
         figure  if not None, will be used directly to display instead of using its own
-        
+ 
         can actually be called without harm, even if no graphic is available, it will just do nothing.
         
         """
@@ -1330,12 +1362,14 @@ class NPKData(object):
                 z2 = self.size1
             if axis is None:
                 if self.axis1.units == "Hz":
-                    ax = self.axis1.itoh(np.arange(z1,z2,step))
+                    ax = self.axis1.freq_axis()
+                elif self.axis1.units == "ppm":
+                    ax = self.axis1.ppm_axis()
                 else:
-                    ax = np.arange(z1,z2,step)
+                    ax = self.axis1.points_axis()
             else:
-                ax = axis[z1:z2:step]
-            fig.plot(ax, self.buffer[z1:z2:step].clip(mmin,mmax), label=label)
+                ax = axis
+            fig.plot(ax[z1:z2:step], self.buffer[z1:z2:step].clip(mmin,mmax), label=label)
             if xlabel == "_def_":
                 xlabel = self.axis1.units
             if ylabel == "_def_":
@@ -1432,7 +1466,7 @@ class NPKData(object):
         "save 1D data in texte, single column, no unit - with attributes as pseudo comments "
         from spike.File import csv
         if self.dim>1:
-            raise NPKError("text only possible on 1D", data=self)
+            raise NPKError("text file format only possible on 1D", data=self)
         csv.save(self, name)
         return self
     #----------------------------------------------
@@ -1445,7 +1479,7 @@ class NPKData(object):
             if k in self.axis1.attributes:
                 setattr(self.axis1, k, v)
             else:
-                print "Warning - wrong attributes : ",k,v
+                warning(" - wrong attributes : %s %s"%(k,v))
         self.adapt_size()
         return self
     #----------------------------------------------
@@ -1488,6 +1522,7 @@ class NPKData(object):
         return self.report(*args,**kw)
     #---------------------------------------------------------------------------
     def fill(self, value):
+        "fills the dataset with a single numerical value"
         self.buffer.fill(value)
         self.absmax = value
         return self
@@ -1600,8 +1635,14 @@ class NPKData(object):
         """
         add a constant to the data
         """
-        self.buffer += constant
-        self.absmax += constant
+        import numbers
+        if isinstance(constant,complex):
+            raise NotImplementedError
+        elif isinstance(constant, numbers.Number):
+            self.buffer += constant
+            self.absmax += constant
+        else:       # then it fails
+            raise NotImplementedError
         return self
     #--------------------------------------------------------------------------
     def addnoise(self, noise, seed=None):
@@ -1609,7 +1650,6 @@ class NPKData(object):
         add to the current data-set (1D, 2D, 3D) a white-gaussian, 
         characterized by its level noise, and the random generator seed.
         """
-        print "A VERIFIER!!!"
         if seed is not None:
             np.random.seed(seed)
         self.absmax = 0.0
@@ -1618,10 +1658,9 @@ class NPKData(object):
     #--------------------------------------------------------------------------
     def addfreq(self, freq, amp=1.0):
         """
-        add to the current data-set (1D, 2D, 3D) a single frequency sinusoid
+        add to the current data-set (1D) a single frequency sinusoid
         characterized by its frequency (from axis.specwidth) and amplitude
         """
-        print "A VERIFIER!!!"
         if self.dim == 1:
             if self.axis1.itype == 0:
                 t = np.arange(self.size1)*freq/self.axis1.specwidth
@@ -1630,42 +1669,61 @@ class NPKData(object):
                 t = np.arange(self.size1/2)*freq/self.axis1.specwidth
                 self.buffer += as_float( amp*np.exp(1j*np.pi*t) )
         else:
-            raise "to be done"
-        self.absmax = 0.0
+            raise NotImplementedError
+        self.absmax += amp
         return self
     #-----------------
-    def mean(self, zone):  # ((F1_limits),(F2_limits))
+    def mean(self, zone=None):  # ((F1_limits),(F2_limits))
         """
         computes mean value  in the designed spectral zone
         Consider array as real even if itype is 1
         """
         if self.dim == 1:
-            ll = zone[0]
-            ur = zone[1]
+            if zone is None:
+                ll = 0
+                ur = self.size1
+            else:
+                ll = zone[0]
+                ur = zone[1]
             shift = self.buffer[ll:ur].mean()
         elif self.dim == 2:
-            ll = zone[0][0]
-            lr = zone[0][1]
-            ul = zone[1][0]
-            ur = zone[1][1]
-            shift = self.buffer[ll:lr,ul:ur].mean()
+            if zone is None:
+                ll = 0
+                lr = self.size2
+                ul = 1
+                ur = self.size1
+            else:
+                ll = zone[0][0]
+                lr = zone[0][1]
+                ul = zone[1][0]
+                ur = zone[1][1]
+            shift = self.buffer[ul:ur,ll:lr].mean()
         return shift
     #-----------------
-    def std(self, zone):  # ((F1_limits),(F2_limits))
+    def std(self, zone=None):  # ((F1_limits),(F2_limits))
         """
         computes standard deviation in the designed spectral zone
-        Computes value on the real part only ** CHANGED ON July 2012 **
-        
+        Computes value on the real part only
         """
         if self.dim == 1:
-            ll = zone[0]
-            ur = zone[1]
+            if zone is None:
+                ll = 0
+                ur = self.size1
+            else:
+                ll = zone[0]
+                ur = zone[1]
             noise = self.buffer[ll:ur:self.axis1.itype+1].std()
         elif self.dim == 2:
-            ll = zone[0][0]
-            lr = zone[0][1]
-            ul = zone[1][0]
-            ur = zone[1][1]
+            if zone is None:
+                ll = 0
+                lr = self.size2
+                ul = 1
+                ur = self.size1
+            else:
+                ll = zone[0][0]
+                lr = zone[0][1]
+                ul = zone[1][0]
+                ur = zone[1][1]
             noise = self.buffer[ll:lr:self.axis1.itype+1,ul:ur:self.axis2.itype+1].std()
         return noise
     #-----------------
@@ -1998,12 +2056,11 @@ class NPKData(object):
     
     #-------------------------------------------------------------------------------
     def bruker_corr(self):
-        if self.dim == 1:
-            delay = self.axis1.zerotime
-        elif self.dim == 2:
-            delay = self.axis2.zerotime
-        elif self.dim == 3:
-            delay = self.axis3.zerotime
+        """
+        applies a correction on the spectrum for the time offset in the FID.
+        time offset is stored in the axis property zerotime
+        """
+        delay = self.axes(self.dim).zerotime
         self.phase(0, -360.0*delay, axis=0) # apply phase correction
         return self
     #-------------------------------------------------------------------------------
@@ -2865,7 +2922,7 @@ class NPKData(object):
         todo = self.test_axis(axis)
         m = sgm.sgolay_coef(window_size, order, deriv=0)
         if self.dim == 1:
-            self.buffer = sgm.sgolay_comp(self.buffer, m, window_size)
+            self.set_buffer( sgm.sgolay_comp(self.get_buffer(), m, window_size) )
         elif self.dim == 2:
             if todo == 2:
                 for i in xrange(self.size1):
@@ -2876,6 +2933,18 @@ class NPKData(object):
         else:
             raise NPKError("a faire")
         return self
+########################################################################
+    def baseline(self, degree=4, smooth=True):
+        """applies a polynomial baseline correction"""
+        import spike.Algo.savitzky_golay as sgm
+        import spike.Algo.BC as BC
+        self.check1D()
+        bl = BC.baseline(self.get_buffer(), degree=degree)
+        if smooth:
+            bl = sgm.savitzky_golay( bl, 205, 7)
+        self.set_buffer( self.get_buffer() - bl)
+        return self
+        
 ########################################################################
     def sg2D(self, window_size, order, deriv=None):
         """applies a 2D saviski-golay of order filter to data
@@ -2890,7 +2959,7 @@ class NPKData(object):
         """
         import spike.Algo.savitzky_golay as sgm
         self.check2D()
-        self.buffer[:] = sgm.savitzky_golay2D(self.buffer[:], window_size, order, derivative=None)
+        self.set_buffer( sgm.savitzky_golay2D(self.get_buffer(), window_size, order, derivative=deriv) )
         return self
 ########################################################################
     #-------------------------------------------------------------------------------
@@ -2899,56 +2968,38 @@ class NPKData(object):
         if self.dim == 1:
             return self.axis1.itop(value)
         elif self.dim == 2:
-            if todo == 1:
-                return self.axis1.itop(value)
-            elif todo == 2:
-                return self.axis2.itop(value)
+            return self.axes(todo).itop(value)
     def htop(self,axis,value):
         todo = self.test_axis(axis)
         if self.dim == 1:
             return self.axis1.htop(value)
         elif self.dim == 2:
-            if todo == 1:
-                return self.axis1.htop(value)
-            elif todo == 2:
-                return self.axis2.htop(value)
+            return self.axes(todo).htop(value)
     def htoi(self,axis,value):
         todo = self.test_axis(axis)
         if self.dim == 1:
             return self.axis1.htoi(value)
         elif self.dim == 2:
-            if todo == 1:
-                return self.axis1.htoi(value)
-            elif todo == 2:
-                return self.axis2.htoi(value)
+            return self.axes(todo).htoi(value)
     def ptoh(self,axis,value):
         todo = self.test_axis(axis)
         if self.dim == 1:
             return self.axis1.ptoh(value)
         elif self.dim == 2:
-            if todo == 1:
-                return self.axis1.ptoh(value)
-            elif todo == 2:
-                return self.axis2.ptoh(value)
+            return self.axes(todo).ptoh(value)
     def ptoi(self,axis,value):
         todo = self.test_axis(axis)
         if self.dim == 1:
             return self.axis1.ptoi(value)
         elif self.dim == 2:
-            if todo == 1:
-                return self.axis1.ptoi(value)
-            elif todo == 2:
-                return self.axis2.ptoi(value)
+            return self.axes(todo).ptoi(value)
     def itoh(self,axis,value):
         todo = self.test_axis(axis)
         if self.dim == 1:
             print "going for F1 , on ", value
             return self.axis1.itoh(value)
         elif self.dim == 2:
-            if todo == 1:
-                return self.axis1.itoh(value)
-            elif todo == 2:
-                return self.axis2.itoh(value)
+            return self.axes(todo).itoh(value)
 
 class NPKDataTests(unittest.TestCase):
     """ - Testing NPKData basic behaviour - """
@@ -3083,7 +3134,16 @@ class NPKDataTests(unittest.TestCase):
         arr = np.array([[1, 4],[3, 7],[1, 9],[5, 7]]) # hypercomplex of size 2x2
         modulus = hypercomplex_modulus(arr, 2, 2) 
         np.testing.assert_almost_equal(modulus, np.array([[np.sqrt(75)],[np.sqrt(156)]])) # 
-    
+    def test_plugin(self):
+        '''Test of plugin mechanism'''
+        def toto(dd, title):
+            "fake method"
+            dd.test_title = title
+            return dd
+        NPKData_plugin("test_pi", toto)
+        d1 = NPKData(buffer = np.arange(6.0))
+        d1.test_pi("this is a title").rfft()
+        self.assertTrue(d1.test_title == "this is a title")
 
 if __name__ == '__main__':
 #     x = np.arange(1024.0)
