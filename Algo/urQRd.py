@@ -98,10 +98,13 @@ def urQRd(data, k, orda = None, iterations = 1, optk = False, trick = False, ktr
         return data
     if not orda:
         orda = (data.size)/2                                            # defining orda if not given.
+    print "################## "
+    print "k, orda ", k, orda
     if (2*orda > data.size):                                            # checks if orda not too large.
         raise(Exception('order is too large'))
     if (k >= orda):                                                     # checks if rank not too large
-        raise(Exception('rank is too large'))
+        print 'type(k) ', type(k)
+        raise(Exception('rank is too large, or k has a wrong type'))
     N = len(data)-orda + 1
     dd = data.copy()
     for i in range(iterations+1):
