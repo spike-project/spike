@@ -15,9 +15,10 @@ apex = ../DATA_test/ubiquitine_2D_000002.d
 # they will overwrite the values found in the Apex file descriptor if present
 # F1_specwidth & F2_specwidth are the sampling frequencies along F1 (vertical) and F2 (horizontal) axes
 F1_specwidth = 500000
-# F2_specwidth = 1666666
+## F2_specwidth = 1666666
 # highmas is the cutoff frequency of the excitation pulse
-# highmass = 2600
+highmass = 2600
+
 format = Apex
 
 [processing]
