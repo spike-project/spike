@@ -103,8 +103,19 @@ class ProgressBarWidgetHFill(object):
 
 class ETA(ProgressBarWidget):
     "Widget for the Estimated Time of Arrival"
-    def format_time(self, seconds):
-        return time.strftime('%H:%M:%S', time.gmtime(seconds))
+    #def format_time(self, seconds):
+        #return time.strftime('%H:%M:%S', time.gmtime(seconds))
+    def format_time(self, seconds):    # CR modified for giving the duration starting in days...  %D does not exit in strftime. So handmade    
+        #print('seconds', seconds)        
+        secs = int(seconds)        
+        days = secs // 86400
+        secs -= 86400*days
+        hrs = secs // 3600
+        secs -= 3600*hrs
+        mins = secs // 60
+        secs -= 60*mins
+        #print('duration', days, hrs, mins, secs)
+        return "d%d:h%d:m%d:s%d" % (days, hrs, mins, secs)
     def update(self, pbar):
         if pbar.currval == 0:
             return 'ETA:  --:--:--'
