@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 """
 ConfigForm.py
 
@@ -7,15 +7,8 @@ Handles ConfigParser files via a html interface
 
 Creates a HTML form from the cfg file and store a modified file
 
-uses :
-
-Flask
-wtforms
-jinja2
-
 
 Entry in the config files should of the form :
-
 
 # comment on section1
 # comment on section1
@@ -34,8 +27,7 @@ key2 = value
 Remark 
 valid %tag% are    and %validators% (optionnal except for %options% )
 
-'%boolean%':            -
-'%text%':           %min% %max% %extension% 
+'%text%':           %min% %max% %extension%     default tag is tag is absent
 '%float%':          %min% %max% 
 '%integer%':        %min% %max% 
 '%radio%':          %options%
@@ -43,6 +35,7 @@ valid %tag% are    and %validators% (optionnal except for %options% )
 '%file%':           %extension%
 '%infile%':         %extension%
 '%outfile%':        %extension%
+'%boolean%':            -
 '%hidden%':
 
 valid %validators% are
@@ -52,19 +45,25 @@ valid %validators% are
 
 Created by DELSUC Marc-Andre on 2015-04-15.
 """
-# Still to be done
-# BUGS
-# - doc of first section
-# - booleans
-# - debug %extension    and make it multiple
-# - two options with same name in 2 diff sections collide !
-# - reload() does not recompute template ??
-# improvments
-# - move ConfigForm.opt_templ to cfField
-# - construct an OrderedDict of cfField's in ConfigForm and use it everywhere
-# - better layout / css
-# - find a way to stop the app
-# - use flash message for validation
+"""
+Requires :
+
+Flask
+wtforms
+jinja2
+
+
+Still to be done
+BUGS
+- doc of first section
+- booleans
+- debug %extension    and make it multiple
+- two options with same name in 2 diff sections collide !
+improvments
+- better layout / css
+- find a way to stop the app
+- use flash message for validation
+"""
 
 import sys
 import os
@@ -83,8 +82,9 @@ from flask import Flask, Response, render_template, request, url_for, redirect
 ###########
 HOST = "localhost"      # the name of the web service, if localhost, the service is only local
 PORT = 5000             # the port of the service - choose a free one
-Debug = False
-StartWeb = True         # If true, opens a browser when launched
+DEBUG = False
+STARTWEB = False         # If true, opens a browser when launched
+METHOD = 'POST'          # 'POST' or 'GET'
 __version__ = "0.2"     # 0.1 first trial 0.2 performs ok but still rough
 ###########
 #mini templates
@@ -105,7 +105,7 @@ foot = """
 
 # known Field types syntax {%key%: (Field,type)}
 cfFieldDef = {
-    '%boolean%': (wtforms.BooleanField, bool),
+    '%boolean%': (wtforms.StringField, lambda x: x.lower() in ('1', 'true', 'yes', 'on')),
     '%text%': (wtforms.StringField, str),
     '%float%':   (wtforms.FloatField, float),
     '%integer%':   (wtforms.IntegerField, int),
@@ -117,7 +117,7 @@ cfFieldDef = {
     '%hidden%':  (wtforms.HiddenField, str)
 }
 cfFieldKeys = cfFieldDef.keys()
-if Debug: print cfFieldKeys
+if DEBUG: print cfFieldKeys
 
 # known validators syntax {%key: Validator}  # Validator field not used so-far
 cfvalDef = {
@@ -127,7 +127,7 @@ cfvalDef = {
     "%max": validators.NumberRange
 }
 cfvalDefKeys = cfvalDef.keys()
-if Debug: print cfvalDefKeys
+if DEBUG: print cfvalDefKeys
 
 ############
 
@@ -161,7 +161,7 @@ def dTemplate(dico, method, action, class_):
     """
     return Template(dynatemplate(dico, method, action, class_))
 
-
+############################
 class cfField(object):
     """
     This class holds all the parameters of an option in the config file
@@ -171,6 +171,7 @@ class cfField(object):
     def __init__(self, name, value):
         self.name = name
         self.value = value
+        self.class_ = "CF"
         self.type_ =  "%text%"
         self.doc = ""
         self.section = ""
@@ -184,7 +185,8 @@ class cfField(object):
         if word not in cfFieldKeys:  # we do not have a meta comment
             self.doc.append(line)
             return
-        self.type_ = word       # now we do !
+        # now we do !
+        self.type_ = word
         self.meta = line
         for word in words:      # then process meta
             val = word[:-1].split(":")  # extract sub options, removing the final %
@@ -207,6 +209,21 @@ class cfField(object):
                     lopt = val[1:]
                     self.lopt = lopt
                     self.validators.append( validators.AnyOf(values=lopt ) )
+    def opt_templ(self):
+        "build the template for an option stored in cfField"
+        if self.type_ != "%hidden%":
+            doc = "<br/>\n".join(self.doc)
+            if self.type_ in ("%text%", "%outfile%"):    # if string, add SIZE
+                templ = '<div class="{2}"><p>{3}<br/><b>{{{{ form.{0}_{1}.label}}}}</b>: \
+                    {{{{form.{0}_{1}(class="{2}",SIZE="60")}}}}</p></div>'.format( \
+                                self.section, self.name, self.class_, doc)
+            else:
+                templ = '<div class="{2}"><p>{3}<br/><b>{{{{ form.{0}_{1}.label}}}}</b>: \
+                    {{{{form.{0}_{1}(class="{2}")}}}}</p></div>'.format( \
+                                self.section, self.name, self.class_, doc)
+        else:   # special if hidden 
+            templ = '{{{{form.{0}_{1}}}}}'.format(self.section, self.name)
+        return templ
     def __repr__(self):
         return "%s_%s %s %s %s\n%s"%(self.section, self.name, self.value, self.type_, self.validators, self.doc)
     def __str__(self):
@@ -228,7 +245,7 @@ class ConfigForm(object):
         self.options = OrderedDict()   # contains all cfFormField()
         self.read_comments()
         self.parse_comments()
-        self.method = 'POST'
+        self.method = METHOD
         self.callback = '/callback'
         self.class_ = "CF"      # this will be used in html templates
         self.port = PORT 
@@ -238,7 +255,10 @@ class ConfigForm(object):
     def reload(self):
         "reload the content from the file"
         self.configfile = open(self.cffilename).readlines()
+        self.cp = ConfigParser.ConfigParser()
         self.cp.read(self.cffilename)
+        self.read_comments()
+        self.parse_comments()
         self.template = None        # clear cache
         self.form = None            # clear cache
     def read_comments(self):
@@ -280,33 +300,18 @@ class ConfigForm(object):
                 cff = cfField(opt, self.cp.get(sec, opt))
                 cff.doc = []
                 cff.section = sec
+                cff.opt = opt
                 for l in self.doc_opt[opt]:
                     cff.subparse_comment(l)
-                if Debug:
+                if DEBUG:
                     print cff
                     print
                 self.options[cle] = cff
 
-    def opt_templ(self, cff):
-        "build the template for an option stored in cff"
-        if cff.type_ != "%hidden%":
-            doc = "<br/>\n".join(cff.doc)
-            if cff.type_ in ("%text%", "%outfile%"):    # if string, add SIZE
-                templ = '<div class="{2}"><p>{3}<br/><b>{{{{ form.{0}_{1}.label}}}}</b>: \
-                    {{{{form.{0}_{1}(class="{2}",SIZE="60")}}}}</p></div>'.format( \
-                                cff.section, cff.name, self.class_, doc)
-            else:
-                templ = '<div class="{2}"><p>{3}<br/><b>{{{{ form.{0}_{1}.label}}}}</b>: \
-                    {{{{form.{0}_{1}(class="{2}")}}}}</p></div>'.format( \
-                                cff.section, cff.name, self.class_, doc)
-        else:   # special if hidden 
-            templ = '{{{{form.{0}_{1}}}}}'.format(cff.section, cff.name)
-        return templ
-
     def sect_templ(self, sec):
         "build the template for a section 'sec' "
         doc = "<br/>\n".join(self.doc_sec[sec])
-        options_list = [self.opt_templ(self.options["%s_%s"%(sec,opt)])   for opt in self.cp.options(sec)] 
+        options_list = [cff.opt_templ()   for cff in self.options.values()  if cff.section == sec] 
         options_templ = "  \n".join(options_list )
         sec_templ = """
 <div class={0}.section>
@@ -379,7 +384,7 @@ def BuildApp(cffile):
     app.config['SECRET_KEY'] = 'kqjsdhf'
     cf = ConfigForm(cffile)
     cf.callback = '/callback'
-    if Debug: print cf.doc_sec.keys()
+    if DEBUG: print cf.doc_sec.keys()
 
     @app.route('/')
     def index():
@@ -387,7 +392,7 @@ def BuildApp(cffile):
         First page when launching the interface.
         '''
         return cf.render()
-    @app.route('/callback',  methods = ['POST'])
+    @app.route('/callback',  methods = [cf.method])
     def callback():
         '''
         route called by the form - validate entries
@@ -403,7 +408,7 @@ def BuildApp(cffile):
                     cf.form[cle].data = type_((request.form[cle]))
                 except:
                     cf.form[cle].data = request.form[cle]
-                if Debug:
+                if DEBUG:
                     text.append("%s : %s<br/>"%(cle, request.form[cle]))
             if not cf.form.validate():  # error in validation
                 text.append("<h1>Error in config file</h1><p>The following error are detected :</p>")
@@ -433,6 +438,7 @@ def BuildApp(cffile):
     def bye():
         'quitting'
         return "<H1>Bye !</H1>"
+        sys.exit(0)
     return app
 
 ##########################
@@ -459,30 +465,49 @@ class ConfigFormTests(unittest.TestCase):
         self.assertTrue(html.startswith('<form method="POST" action="/param">') )
     def test_render(self):
         "test render"
-        filename = "/Users/mad/NPKV2/pasteur_interface/QM/test.cfg"
+        filename = "test.cfg"
         cf = ConfigForm(filename)
-        print cf.doc_sec.keys()
-        print cf.render()
 
 ##########################
-def main(argv=None):
+def main():
     "called at start-up"
-    if argv is None:
-        argv = sys.argv
-    try:
-        filename = argv[1]
-    except:
-        print >> sys.stderr, "wrong input"
-        print >> sys.stderr, "Usage: python ConfigForm.py configfile.cfg"
-        return 2
+    global HOST, PORT, DEBUG, STARTWEB
+    
+    import argparse
+        # print >> sys.stderr, "wrong input"
+        # print >> sys.stderr, "Usage: python ConfigForm.py configfile.cfg"
+        # return 2
+
+    # Parse and interpret options.
+    parser = argparse.ArgumentParser()
+    parser.add_argument('configfile', nargs='?', default='config.cfg', help='the configuration file to analyse, default is config.cfg')
+    parser.add_argument('--doc', action='store_true', help="print a description of the program")
+    parser.add_argument('-w', '--webserver', default=HOST, help="the hostname of the server, default is %s"%HOST)
+    parser.add_argument('-p', '--port', type=int, default=PORT, help="the port on which the servers run, default is %d"%PORT)
+    parser.add_argument('-s', '--start', help="start the browser on http://WEBSERVER:PORT", action='store_true')
+    parser.add_argument('-d', '--debug', default=DEBUG, help="enter debug mode", action='store_true')
+    args = parser.parse_args()
+
+    if args.doc:
+        print __doc__
+        sys.exit(0)
+
+    PORT = args.port
+    DEBUG = args.debug
+    STARTWEB = args.start
+    HOST = args.webserver
+    filename = args.configfile
+
     print "Processing ",filename
-    input_file = open(filename).readlines() # read the file - a bad quick hack for checking the file is ok.
+    input_file = open(filename).readlines() # read the file
+                                            # a bad quick hack for checking the file is ok.
     url = "http://{0}:{1}".format(HOST, PORT)
+    print url
     app = BuildApp(filename)
-    if StartWeb:
+    if STARTWEB:
         threading.Timer(1.5, lambda: webbrowser.open(url)).start() # open a page in the browser.
     try:
-        app.run(port = PORT, debug = Debug)
+        app.run(host=HOST, port = PORT, debug = DEBUG)
     except socket.error:
         print >> sys.stderr, "wrong port number"
         print >> sys.stderr, "try using another port number (defined in the application header)"
