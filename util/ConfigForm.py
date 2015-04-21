@@ -98,10 +98,10 @@ head = """
 """
 
 foot = """
-<p><small><i>author : M.A. Delsuc</i></small></p>
+<p><small><i>ConfigForm, version %s  - author : M.A. Delsuc</i></small></p>
 </body>
 </html>
-"""
+"""%(__version__)
 
 # known Field types syntax {%key%: (Field,type)}
 cfFieldDef = {
