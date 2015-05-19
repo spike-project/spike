@@ -50,7 +50,13 @@ class OrbiAxis(FTMS.FTMSAxis):
         """
         super(OrbiAxis, self).__init__(size=size, specwidth=specwidth, itype=itype, units=units, ref_mass=ref_mass, ref_freq=ref_freq, highmass=highmass, left_point = left_point)
         self.OrbiAxis = "OrbiAxis"
+        self.calibA = 0.0
+        self.calibB = ref_mass*(ref_freq**2)
+        self.calibC = 0.0
         self.attributes.insert(0,"OrbiAxis") # updates storable attributes
+        self.attributes.insert(0,"calibA") # updates storable attributes
+        self.attributes.insert(0,"calibB") # updates storable attributes
+        self.attributes.insert(0,"calibC") # updates storable attributes
 
     #-------------------------------------------------------------------------------
     def report(self):
@@ -68,13 +74,18 @@ class OrbiAxis(FTMS.FTMSAxis):
         """
         return m/z (mz) from Hertz value (h)
         """
-        return self.ref_mass / (value/self.ref_freq)**2
+        #        return self.ref_mass / (value/self.ref_freq)**2
+        print "toto"
+        return self.calibA + self.calibB/(value**2) + self.calibC/(value**4)
  
     def mztoh(self, value):
         """
         return Hz value (h) from  m/z (mz) 
         """
-        return np.sqrt(self.ref_mass/value)*self.ref_freq
+        Delta = self.calibB**2 - 4*self.calibC*(self.calibA - value)
+        f2 = (-self.calibB - np.sqrt(Delta)) / (2*(self.calibA - value))
+#        return np.sqrt(self.ref_mass/value)*self.ref_freq
+        return np.sqrt(f2)
 
 #-------------------------------------------------------------------------------
 class OrbiData(FTMS.FTMSData):

@@ -30,10 +30,14 @@ def read_thermo(filename):
             raise Exception( "Unknown Storage type : " + param['Storage Type'] )
         # adapted spectralwidth
         data = read_data(F,typ)
-        swold = data.axis1.specwidth
+        # swold = data.axis1.specwidth
         swnew = float(param['Bandwidth'])
+        # m/z = A + B/f^2 + C/f^4
+        data.axis1.calibA = float(param["Source Coeff1"])
+        data.axis1.calibB = float(param["Source Coeff2"])*1E6     # Thermo works internally in kHz, we use Hz
+        data.axis1.calibC = float(param["Source Coeff3"])*1E12
         data.axis1.specwidth = swnew
-        data.axis1.ref_freq *= swnew/swold
+        # data.axis1.ref_freq *= swnew/swold
     return (param, data)
 def read_param(F):
     """
@@ -91,3 +95,4 @@ class Thermo_Tests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+    
