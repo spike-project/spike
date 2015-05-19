@@ -74,8 +74,7 @@ class OrbiAxis(FTMS.FTMSAxis):
         """
         return m/z (mz) from Hertz value (h)
         """
-        #        return self.ref_mass / (value/self.ref_freq)**2
-        print "toto"
+        # m/z = A + B/f^2 + C/f^4
         return self.calibA + self.calibB/(value**2) + self.calibC/(value**4)
  
     def mztoh(self, value):
@@ -84,7 +83,6 @@ class OrbiAxis(FTMS.FTMSAxis):
         """
         Delta = self.calibB**2 - 4*self.calibC*(self.calibA - value)
         f2 = (-self.calibB - np.sqrt(Delta)) / (2*(self.calibA - value))
-#        return np.sqrt(self.ref_mass/value)*self.ref_freq
         return np.sqrt(f2)
 
 #-------------------------------------------------------------------------------
