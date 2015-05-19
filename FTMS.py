@@ -193,7 +193,7 @@ class FTMSData(NPKData.NPKData):
     #------------------------------------------------
     def _grfreq(self):
         "copy ref_freq to all the axes"
-        return [self.axes(i+1).ref_mass for i in range(self.dim)]
+        return [self.axes(i+1).ref_freq for i in range(self.dim)]
     def _srfreq(self,ref_freq):
         for i in range(self.dim):
             ax = self.axes(i+1)
