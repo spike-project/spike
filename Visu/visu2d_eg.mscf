@@ -5,7 +5,8 @@
 [visu2d]
 # Here directory where the browser will look first.
 # the multiresolution file. 
-multresfile = ../DATA_test/ubiquitine_2D_000002_mr.msh5
+#multresfile = DATA_test/ubiquitine_2D_000002_mr.msh5
+multresfile = DATA_test/cytoC_2D_000001_direct.msh5
 
 [Tests] # Infos for HDF5File and Apex testings, in TestFolder you will get a bunch of files and DataFolder must be a folder for data (like if you want to import stuff)
 TestFolder = 

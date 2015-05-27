@@ -1,9 +1,9 @@
-from util.debug_tools import*  
 import sys, os, re, time
-from Visu.init.fticrvisuUi import Ui_MainWindow as Ui
-from Visu.init.fticrvisupopUi import Ui_Form as Pop 
-from Pyside_PyQt4 import*
-from canvas_event import CANVAS_EVENT
+from spike.util.debug_tools import*  
+from spike.Visu.init.fticrvisuUi import Ui_MainWindow as Ui
+from spike.Visu.init.fticrvisupopUi import Ui_Form as Pop 
+from spike.Visu.Pyside_PyQt4 import*
+from spike.Visu.canvas_event import CANVAS_EVENT
 from functools import partial
 
 @dec_class_pr

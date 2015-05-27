@@ -95,7 +95,7 @@ def main(argv = None):
         elif ext == '.msh5': 
             msh5file = argv[1]
     except IndexError:          # then assume standard name
-        configfile = "Visu/visu2D.mscf"
+        configfile = "spike/Visu/visu2D.mscf"
     if msh5file:
         data = LOAD(msh5file = msh5file)  
     else:

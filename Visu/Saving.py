@@ -1,6 +1,5 @@
-from util.debug_tools import* 
-import time
-import os  
+from spike.util.debug_tools import* 
+import os, time
 
 @dec_class_pr
 @decclassdebugging

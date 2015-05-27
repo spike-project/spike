@@ -1,12 +1,12 @@
-from util.debug_tools import*  
+from spike.util.debug_tools import* 
+import numpy as np 
 import matplotlib.pyplot as plt
 from matplotlib.path import Path
 from matplotlib.patches import PathPatch, Ellipse, Rectangle
 import matplotlib.lines as mlines
-import numpy as np
 from mpl_toolkits.mplot3d import axes3d
-from Pyside_PyQt4 import*
-from zoom_plot import ZOOM_PLOT 
+from spike.Visu.Pyside_PyQt4 import*
+from spike.Visu.zoom_plot import ZOOM_PLOT 
 
 @dec_class_pr
 @decclassdebugging
