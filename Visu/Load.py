@@ -1,6 +1,6 @@
-import  NPKConfigParser as npkcfg 
-from File.HDF5File import HDF5File
-from util.debug_tools import*
+import spike.NPKConfigParser as npkcfg 
+from spike.File.HDF5File import HDF5File
+from spike.util.debug_tools import*
 import os
 
 @dec_class_pr

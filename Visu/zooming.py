@@ -1,13 +1,12 @@
-from util.debug_tools import*
-from Matplotlib_generictools import*
+from spike.util.debug_tools import*
+import json, io
 import numpy as np
 import scipy.interpolate as spinterp
 from mpl_toolkits.mplot3d import axes3d
-from Pyside_PyQt4 import*
-from zoom_plot import ZOOM_PLOT 
-from canvas_event import CANVAS_EVENT
-import json
-import io
+from spike.Visu.Matplotlib_generictools import*
+from spike.Visu.Pyside_PyQt4 import*
+from spike.Visu.zoom_plot import ZOOM_PLOT 
+from spike.Visu.canvas_event import CANVAS_EVENT
 
 @dec_class_pr
 @decclassdebugging
@@ -315,7 +314,7 @@ class ZOOM3D(object):
         yflat = np.array([np.ones(dimx)*i for i in range(dimy)]).flatten()
         zflat = Z.flatten()
         sizemat = xflat.size
-        with io.open('Visu/3d.json', 'w', encoding ='utf-8') as f:
+        with io.open('spike/Visu/3d.json', 'w', encoding ='utf-8') as f:
               for i in range(sizemat):
                   print xflat[i]
                   data.append({'x':int(xflat[i]),'y':int(yflat[i]),'z': zflat[i]*1e-5 })

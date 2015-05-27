@@ -5,14 +5,15 @@ a colorbar for the contours, and labelled contours.
 
 See also contour_image.py.
 """
-from util.debug_tools import*  
-import numpy as np
 import time
-from scipy.linalg import norm
+import numpy as np
+import matplotlib
 from math import sqrt
 from itertools import cycle
-from Matplotlib_generictools import*
-import matplotlib
+from scipy.linalg import norm
+from spike.util.debug_tools import*  
+from spike.Visu.Matplotlib_generictools import*
+
 matplotlib.rcParams['xtick.direction'] = 'out'
 matplotlib.rcParams['ytick.direction'] = 'out'
 colors = cycle(['bx', 'mx', 'kx', 'rx', 'gx']) # cycling iterator
