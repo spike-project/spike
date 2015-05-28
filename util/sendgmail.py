@@ -30,7 +30,7 @@ def mail(to, subject, text= "", attach= None):
    # print "attach ", attach
    msg = MIMEMultipart()
    msg['From'] = gmail_user
-   if type(to) != 'list': # 
+   if type(to) != list: # 
        msg['To'] = to
    else:                   # list of mails
        msg['To'] = ", ".join(to)
@@ -41,7 +41,7 @@ def mail(to, subject, text= "", attach= None):
 
    if attach is not None :
        #get all the attachments
-       if type(attach) == 'list': # file exists, it is probably a list of files
+       if type(attach) == list: # file exists, it is probably a list of files
            for f in attach:
                msg = add_to_msg(msg, f)
        else:
