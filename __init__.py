@@ -4,8 +4,6 @@ The Spike Package
 """
 #from __future__ import absolute_import
 import os, sys
-#path_mod = os.path.abspath(os.path.dirname(__file__))
-#sys.path.append(path_mod)
 
 # every thing is in version.py
 from version import version as __version__
@@ -20,6 +18,10 @@ SPIKE_version = __version__
 
 
 #### Header to set-up the whole SPIKE environment
-
 import spike.NPKData
-# print dir()
+
+### plugins to the spike.NPKData class.
+# simply put a xxx.py in the plugins folder - and define the interface as described in the doc
+from spike.plugins import load
+
+load()
