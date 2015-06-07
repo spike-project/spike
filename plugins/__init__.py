@@ -1,7 +1,14 @@
 """
 Plug-ins for the Spike package
 
-Each plugin should define the needed functions :
+All the plugin files located in spike/plugins folder the loaded automatically 
+when import importing spike the first time.
+
+the variable spike.plugins.plugins contains the lsit of the loaded plugin modules.
+
+It is allways possible to load a plugin afterward by import a plugin definition at a later time during run-time.
+
+Each plugin file should define the needed functions :
 
 def myfunc(npkdata, args):
     "myfunc doc"
@@ -12,16 +19,21 @@ and register them into NPKData as follows :
 NPKData_plugin("myname", myfunc)
 
 then, any NPKData will inherit the myname() method
+
+For the moment, only NPKData plugins are handled.
+
 """
 import imp
 import traceback
 import unittest
 
+plugins = []  # contains plugin modules loaded so far
+
 def load():
     "the load() function is called at initialization, and loads all files found in the plugins folder"
     import glob, os
     from spike.NPKData import NPKData_plugin
-
+    global plugins
 # import all python code found here ( __path__[0] ) except me !
     for pgfile in glob.glob( os.path.join(__path__[0],"*.py") ):
         b = os.path.basename(pgfile)    # code.py
@@ -30,6 +42,7 @@ def load():
             print "Importing plugin << %s >>"%pgmod
             try:
                 m = imp.load_source(pgmod, pgfile)
+                plugins.append(pgmod)
             except:
                 print "*** Failed ***"
                 print traceback.print_exc()

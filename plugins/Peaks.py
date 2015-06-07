@@ -40,35 +40,7 @@ def peaks2d(npkd, threshold = 0.1, zoom = None, value = False):
         return listpk[0], listpk[1], npkd.buffer[listpk[0], listpk[1]]
     else:
         return listpk[0], listpk[1] # list f1, f2
-#-------------------------------------------------------
-# def peak(npkd, threshold=0.1, zoom=None):
-#     '''
-#     Extract peaks from 1d Array dataset
-#     '''
-#     print threshold
-#     if zoom:        # should ((F1_limits),(F2_limits))
-#         left = zoom[0]
-#         right = zoom[1]
-#        
-#     else:
-#         left = 0
-#         right = npkd.size1-1
-# 
-# 
-#     buff = npkd.buffer[left:right]# take the zoom window
-#     print "flags", buff.flags
-#     print "OWNDATA", buff.flags['OWNDATA']
-#     print "type(buff)",type(buff)
-# 
-# 
-#     listpk=np.where(((buff > threshold*np.ones(buff.shape))&# thresholding
-#                     (buff > np.roll(buff,  1, 0)) &     # laplacian - kind of
-#                     (buff > np.roll(buff, -1, 0))))
-#     print "from peak",len(listpk[0])
-#     listpk=int(left)+listpk[0]# absolute coordinates
-#     listamp = buff[listpk]
-#     return listpk,listamp
-     
+
 def peak(npkd, pos_neg = 1, threshold = 0.1, offset = None):
     """
     first trial for peakpicker
