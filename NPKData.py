@@ -44,10 +44,6 @@ def hypercomplex_modulus(arr, size1, size2):
     bii = arr[1::2, 1::2]
     b = np.sqrt(brr**2 + bri**2 + bir**2 + bii**2 )
     return b
-def _t(x):
-    return _base_irfft(as_float(x))
-def _tt(x):
-    return as_cpx(_base_rfft(x))
 def as_cpx(arr):
     """
     interpret arr as a complex array
@@ -256,7 +252,7 @@ class Axis(object):
         test = test and zoom[1] >= 0 and zoom[1] <= (self.size)
         test = test and zoom[0] <= zoom[1]
         if self.itype == 1:
-            test = test and zoom[0]%2 == 0
+            test = test and zoom[0]%2 == 0 and zoom[1]%2 == 1
         return test
     def load_sampling(self, filename):
         """
@@ -981,12 +977,12 @@ class NPKData(object):
 
         """
         if self.itype != 0 : 
-            print "You must have real data"
+            NPKError("Data should be real")
         else:
             if self.dim == 1:
-                print "Can not extract diagonal from a 1D buffer"
+                NPKError( "Can not extract diagonal from a 1D buffer")
             elif self.dim == 2:
-                c =self.diag2D()
+                c = self.diag2D()
             elif self.dim == 3:
                 c = self.diag3D(direc)
             return c
@@ -1011,155 +1007,12 @@ class NPKData(object):
         return c
     #--------------------------------------------------------------------------
     def diag3D(self,direc):
-        print "RESTE A FAIRE"
+        NPKError("Not implemented yet")
         # self.check3D()
         # print int(direc[1])-1
         # print int(direc[2])-1
 #        self._plane2d.buffer = self._image.buffer.diagonal(axis1 = int(direc[1])-1,axis2 = int(direc[2])-1)
-    #---------------------------------------------------------------------------
-    def zoom(self,dim,*args):
-        """
-        The basic command for defining region of interest window
-
-
-        * if n=0, zoom mode is off.
-        * if n=1, zoom mode is on,
-        """  
-        print " ZOOM EST A REVOIR en PROFONDEUR"
-        if dim == 1:
-            self.zoom1d(*args)
-        else:
-            if dim == 2 :
-                self.zoom2d(*args)
-            elif dim == 3 :
-                self.zoom3d(*args)
-            else:
-                print "This should never happen"
-        return self
-    #---------------------------------------------------------------------------
-    def zoom1d(self,*args):     # parameter order : n, f1_low, f1_max
-        if args[0] == 0:
-            print "Zoom Off"
-            self.zo_1_1l = 1
-            self.zo_1_1m = self.size1
-        elif args[0] == 1:
-            if self.itype == 1:
-                if args[1]%2 == 0:
-                    if self.debug>0: print "We change left value"
-                    args[1] = args[1]+1
-                if args[2]%2 == 1:
-                    if self.debug>0: print "We change right value"
-                    args[2] = args[2]+1
-            self.zo_1_1l = min(args[1],self.size1)
-            self.zo_1_1m = min(args[2],self.size1)
-        return self
-    #---------------------------------------------------------------------------
-    def zoom2d(self,*args): # parameter order : n, f1_low, f2_low, f1_max, f2_max
-
-        if args[0] == 0:
-            print "Zoom Off"
-            self.zo_2_2l = 1
-            self.zo_2_1l = 1
-            self.zo_2_2m = self.size2
-            self.zo_2_1m = self.size1
-        elif args[0] == 1:
-            if self.itype == 1:
-                if args[2]%2 == 0:
-                    args[2] = args[2]+1
-                if args[4]%2 == 1:
-                    args[2] = args[2]+1
-            elif self.itype == 2:
-                if args[1]%2 == 0:
-                    args[1] = args[1]+1
-                if args[3]%2 == 1:
-                    args[1] = args[1]+1
-            elif self.itype == 3:
-                if args[1]%2 == 0:
-                    args[1] = args[1]+1
-                if args[2]%2 == 0:
-                    args[2] = args[2]+1
-                if args[3]%2 == 1:
-                    args[3] = args[3]+1
-                if args[4]%2 == 1:
-                    args[4] = args[4]+1
-            self.zo_2_2l = min(args[2],self.size2)
-            self.zo_2_1l = min(args[1],self.size1)
-            self.zo_2_2m = min(args[4],self.size2)
-            self.zo_2_1m = min(args[3],self.size1)
-        return self
-    #---------------------------------------------------------------------------
-    def zoom3d(self,*args): # parameter order : n, f1_low, f2_low, f3_low, f1_max, f2_max, f3_max
-        if args[0] == 0:
-            print "Zoom Off"
-            self.zo_3_1l = 1
-            self.zo_3_2l = 1
-            self.zo_3_3l = 1
-            self.zo_3_1m = self.size1
-            self.zo_3_2m = self.size2
-            self.zo_3_3m = self.size3    # MAD
-        elif args[0] == 1:
-            if self.itype == 1:
-                if args[3]%2 == 0:
-                    args[3] = args[3]+1
-                if args[6]%2 == 1:
-                    args[6] = args[6]+1
-            elif self.itype == 2:
-                if args[2]%2 == 0:
-                    args[2] = args[2]+1
-                if args[5]%2 == 1:
-                    args[5] = args[5]+1
-            elif self.itype == 3:
-                if args[2]%2 == 0:
-                    args[2] = args[2]+1
-                if args[3]%2 == 0:
-                    args[3] = args[3]+1
-                if args[5]%2 == 1:
-                    args[5] = args[5]+1
-                if args[6]%2 == 1:
-                    args[6] = args[6]+1
-            elif self.itype == 4:
-                if args[1]%2 == 0:
-                    args[1] = args[1]+1
-                if args[4]%2 == 1:
-                    args[4] = args[4]+1 
-            elif self.itype == 5:
-                if args[3]%2 == 0:
-                    args[3] = args[3]+1
-                if args[6]%2 == 1:
-                    args[6] = args[6]+1
-                if args[1]%2 == 0:
-                    args[1] = args[1]+1
-                if args[4]%2 == 1:
-                    args[4] = args[4]+1
-            elif self.itype == 6:
-                if args[2]%2 == 0:
-                    args[2] = args[2]+1
-                if args[5]%2 == 1:
-                    args[5] = args[5]+1
-                if args[1]%2 == 0:
-                    args[1] = args[1]+1
-                if args[4]%2 == 1:
-                    args[4] = args[4]+1
-            elif self.itype == 7:
-                if args[3]%2 == 0:
-                    args[3] = args[3]+1
-                if args[6]%2 == 1:
-                    args[6] = args[6]+1
-                if args[2]%2 == 0:
-                    args[2] = args[2]+1
-                if args[5]%2 == 1:
-                    args[5] = args[5]+1
-                if args[1]%2 == 0:
-                    args[1] = args[1]+1
-                if args[4]%2 == 1:
-                    args[4] = args[4]+1
-            self.zo_3_1l = min(args[1],self.size1)
-            self.zo_3_2l = min(args[2],self.size2)
-            self.zo_3_3l = min(args[3],self.size3)
-            self.zo_3_1m = min(args[4],self.size1)
-            self.zo_3_2m = min(args[5],self.size2)
-            self.zo_3_3m = min(args[6],self.size3)
-        
+       
     #----------------------------------------------
     def col(self, i):
         """returns a 1D extracted from the current 2D at position 0<=i<=size2-1 """
@@ -2698,34 +2551,7 @@ class NPKDataTests(unittest.TestCase):
     def test_flatten(self):
         " test the flatten utility "
         self.assertEqual( [1,2,3,4,5,6,7], flatten( ( (1,2), 3, (4, (5,), (6,7) ) ) ))
-    
-    def test_peaks2d(self):
-        "test 2D peak picker"
-        print self.test_peaks2d.__doc__
-        M=np.zeros((30, 30))
-        M[5,7] = 20
-        M[10,12] = 20
-        d = NPKData(buffer = M)
-        thresh = 10
-        x,y = d.peaks2d(threshold = thresh)
-        print "hou 2D",list(x),list(y)
-        self.assertEqual(list(x) , [ 5, 10])
-        self.assertEqual(list(y) , [ 7, 12])
-        
-    def test_peaks1d(self):
-        "test 1D peak picker"
-        print self.test_peaks1d.__doc__
-        M = np.zeros((30))
-        M[5] = 20
-        M[7] = 8
-        M[15] = 11
-        M[10] = 20
-        d = NPKData(buffer = M)
-        thresh = 10
-        x = d.peak(threshold = thresh)
-        self.assertEqual(list(x) , [ 5, 10, 15])
-        #self.assertEqual(list(y) , [ 20, 20, 11])
-        
+
     def test_dampingunit(self):
         "test itod and dtoi"
         print self.test_dampingunit.__doc__
