@@ -7,6 +7,7 @@ Handles ConfigParser files via a html interface
 
 Creates a HTML form from the cfg file and store a modified file
 
+usage : python ConfigForm.py configfile.cfg
 
 Entry in the config files should of the form :
 
@@ -21,7 +22,7 @@ key1 = value
 
 # comment on key2
 # comment on key2
-# %tag% %validators%
+# %tag% %validators% %formaters%
 key2 = value
 
 Remark 
@@ -42,6 +43,9 @@ valid %validators% are
 %min:val%    %max:val%   : limit on the value or on the length of the string
 %options:list:of:valid:values%  : list of options
 %extension:.txt% : constraint the entry to finish by a given string
+
+valid %formaters% are
+%length:n% : contraint the length of the HTML field to be n char long
 
 Created by DELSUC Marc-Andre on 2015-04-15.
 """
@@ -86,21 +90,50 @@ DEBUG = False
 STARTWEB = False         # If true, opens a browser when launched
 METHOD = 'POST'          # 'POST' or 'GET'
 __version__ = "0.2"     # 0.1 first trial 0.2 performs ok but still rough
+########## Graphical variables
+COLOR_TOOLTIP = "PapayaWhip"
 ###########
 #mini templates
+"""
+
+"""
 head = """
+<!DOCTYPE html>
 <html>
 <head>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<script>
+
+$(document).ready(function(){$('[data-toggle="tooltip"]').tooltip();});
+
+</script>
+
+<!-- Css -->
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"><!-- Scripts -->
+
+<style>
+.CF-tooltip + .tooltip > .tooltip-inner { background-color: PapayaWhip; text-align : left}
+.CF-tooltip + .tooltip > .tooltip-arrow { border-bottom-color: PapayaWhip; }
+</style>
+
 <title>{{title}}</title>
 </head>
-<body>
-<h1>Configuration for file {{filename}}</h1>
-"""
+
+""" #.format(COLOR_TOOLTIP)
+
+#print "head ", head
+
+# head += '''
+# <title>{{title}}</title>
+# </head>
+# '''
+
+
 
 foot = """
 <p><small><i>ConfigForm, version %s  - author : M.A. Delsuc</i></small></p>
-</body>
-</html>
 """%(__version__)
 
 # known Field types syntax {%key%: (Field,type)}
@@ -124,7 +157,9 @@ cfvalDef = {
     "%options": validators.AnyOf,
     "%extension":  validators.Regexp,
     "%min": validators.NumberRange,
-    "%max": validators.NumberRange
+    "%max": validators.NumberRange,
+    "%length": None,   # length is not a WTForm validator, but a HTML format
+    "%tooltip": None   # tooltip is not a WTForm validator, but a HTML format
 }
 cfvalDefKeys = cfvalDef.keys()
 if DEBUG: print cfvalDefKeys
@@ -136,7 +171,7 @@ def dForm(dico):
     This function creates a wtforms object from the description given in the (Ordered) dict dico 
     dico = {"name_of_field" : Field(), ...}
 
-    This is the key, wtforms requires a class describing the form, we have to build it dynamicaly.
+    This is the key, wtforms requires a class describing the form, we have to build it dynamically.
     """
     class C(Form):
         pass
@@ -173,14 +208,23 @@ class cfField(object):
         self.value = value
         self.class_ = "CF"
         self.type_ =  "%text%"
+        self.length = 60
+        self.tooltip = []
+        self.tooltip_color = COLOR_TOOLTIP
         self.doc = ""
         self.section = ""
         self.lopt = None
         self.meta = None      # meta will be used by produce()
         self.validators = [validators.DataRequired()]   # all field are required, initiailize the list
+        
     def subparse_comment(self, line):
         """parse the comment, and search for meta comments"""
-        words = line.split()
+        import re
+#        words = line.split()
+        words = re.findall("%.+?%", line)
+        if not words:
+            words = [line]
+        print words
         word = words.pop(0)     # get first one
         if word not in cfFieldKeys:  # we do not have a meta comment
             self.doc.append(line)
@@ -194,33 +238,84 @@ class cfField(object):
                 if val[0] == "%min":
                     if cfFieldDef[self.type_][1] == str:     # min and max are both numbers and string
                         self.validators.append( validators.Length(min=int(val[1])) )
+                        self.tooltip.append("minimum length : %d"%int(val[1]))
                     else:
                         self.validators.append( validators.NumberRange(min=float(val[1])) )
+                        self.tooltip.append("minimum value : %d"%float(val[1]))
                 elif val[0] == "%max":
                     if cfFieldDef[self.type_][1] == str:     # min and max are both numbers and string
                         self.validators.append( validators.Length(max=int(val[1])) )
+                        self.length = int(val[1])
+                        self.tooltip.append("maximum length : %d"%int(val[1]))
                     else:
                         self.validators.append( validators.NumberRange(max=float(val[1])) )
+                        self.tooltip.append("maximum value : %d"%float(val[1]))
                 elif val[0] == "%extension":
                     print "%Etension:xxx% is currently not implemented"
                     print "XX EXT", val[0], '%s$'%(val[1],)
+                    self.tooltip.append("file extension : %s"%(val[1],) )
 #                    self.validators.append( validators.Regexp(r'%s$'%val[1], message="should end with %s"%val[1]) )
                 elif  val[0] == "%options":
                     lopt = val[1:]
                     self.lopt = lopt
                     self.validators.append( validators.AnyOf(values=lopt ) )
+                    self.tooltip.append("choose one entry")
+                elif val[0] == "%tooltip":
+                    self.tooltip.append(val[1])
+                elif val[0] == "%length":
+                    try:
+                        lgt = int(val[1])
+                    except:
+                        lgt = 60
+                        print "WARNING, wrong value in line ",line
+                    self.length = lgt
     def opt_templ(self):
         "build the template for an option stored in cfField"
         if self.type_ != "%hidden%":
             doc = "<br/>\n".join(self.doc)
-            if self.type_ in ("%text%", "%outfile%"):    # if string, add SIZE
-                templ = '<div class="{2}"><p>{3}<br/><b>{{{{ form.{0}_{1}.label}}}}</b>: \
-                    {{{{form.{0}_{1}(class="{2}",SIZE="60")}}}}</p></div>'.format( \
-                                self.section, self.name, self.class_, doc)
+            
+            style_tooltip = "'background-color:{0} ; color:Black' ".format(self.tooltip_color)
+            html_tooltip = '<p style=' + style_tooltip + '>' +  '<br/>'.join(self.tooltip) + '</p>'
+            
+            if self.tooltip:
+                ttip = 'data-toggle="tooltip" data-html="true" data-placement="top"  title="{}" class = "CF-tooltip" '.format(html_tooltip)
+                print "ttip ",ttip
             else:
-                templ = '<div class="{2}"><p>{3}<br/><b>{{{{ form.{0}_{1}.label}}}}</b>: \
+                ttip = ""
+            # then produce
+            if self.type_ in ("%text%", "%outfile%"):    # if string, add SIZE
+                print "self.section, self.name ", self.section, self.name
+                templ = '<div class="{2}"><p>{3}<br/><a style="color:black" href="#" {4}>{{{{ form.{0}_{1}.label}}}}</a>: \
+                    {{{{form.{0}_{1}(class="{2}",SIZE="{5}")}}}}</p></div>'.format( \
+                                self.section, self.name, self.class_, doc, ttip, self.length)
+                                
+            elif self.type_ in ("%boolean%"):    
+                print "self.section, self.name ", self.section, self.name
+                
+                templ = '<div class="{2}"><p>{3}<br/><a style="color:black" href="#" {4}>{{{{ form.{0}_{1}.label}}}}</a>:\
+                {{% if "yes" == "yes" %}}\
+                {{% set checkval = "checked" %}} \
+                {{% endif %}}\
+                  <input type="checkbox" name="{1}" checked> </p>  </div>  \n'.format(self.section, self.name, self.class_, doc, ttip)
+                
+                # templ = return '<div class="{2}"><p>{3}<br/><b>{{{{ form.{0}_{1}.label}}}}</b>:\
+                #  # {{{{% if form.{0}_{1} in ["yes", "True"]: set checkval= "checked" % }}}}\
+                #  # else : set checkval= "" % }}}}\
+                #   <input type="checkbox" name="{1}" {{checkval}}>  </div>  \n'.format(self.section, self.name, self.class_, doc)
+                
+                # {{% if {{{{ form.{0}_{1}.data }}}} == "yes" %}}\
+                # {{% set checkval = "checked" %}} \
+                # {{% else %}}\
+                # {{% set checkval = "" %}}\
+                # {{% endif %}}\
+                
+                                
+            else:
+                print "self.section, self.name ", self.section, self.name
+                templ = '<div class="{2}"><p>{3}<br/><a style="color:black" href="#" {4}>{{{{ form.{0}_{1}.label}}}}</a>: \
                     {{{{form.{0}_{1}(class="{2}")}}}}</p></div>'.format( \
-                                self.section, self.name, self.class_, doc)
+                                self.section, self.name, self.class_, doc, ttip)
+                                
         else:   # special if hidden 
             templ = '{{{{form.{0}_{1}}}}}'.format(self.section, self.name)
         return templ
@@ -311,14 +406,19 @@ class ConfigForm(object):
     def sect_templ(self, sec):
         "build the template for a section 'sec' "
         doc = "<br/>\n".join(self.doc_sec[sec])
+        print "doc ", doc
         options_list = [cff.opt_templ()   for cff in self.options.values()  if cff.section == sec] 
+        
         options_templ = "  \n".join(options_list )
+        print "options_templ ", options_templ
         sec_templ = """
 <div class={0}.section>
 <hr>
-<h2>{1}</h2>
+<h2 style="background-color:Bisque" class="text-center">{1}</h2>
+<div class="container">
 <b>{2}</b>
 {3}
+</div>
 </div>
         """.format(self.class_, sec, doc, options_templ)
         return sec_templ
@@ -326,18 +426,31 @@ class ConfigForm(object):
     def buildtemplate(self):
         "builds the jinja2 template string, from the config file"
         templ = [head]
+        templ += ['<body>']
+        templ += ['<div class="container">']
+        templ += ['''
+            <h1>Configuration for file {{filename}}</h1>
+        ''']
         templ += ['<form method="{0}" action="{1}">'.format(self.method, self.callback)]
         for sec in self.cp.sections():
+            # print "#################   self.sect_templ(sec) ", self.sect_templ(sec)
             templ.append( self.sect_templ(sec) )
-        templ.append('<hr>\n    <input type="submit" name="submitform" value="Reload Values from file"/>')
-        templ.append('    <input type="submit" name="submitform" value="Validate Values" />\n</form>')
+        templ.append('<hr>\n    <input type="submit" name="submitform" value="Reload Values from file" class="btn btn-default" />')
+        templ.append('    <input type="submit" name="submitform" value="Validate Values" class="btn btn-default"/>\n</form>')
+        
         templ.append(foot)
+        templ += ["</div>"] # Ending container
+        templ += ['''
+</body>
+</html>
+        ''']
         return "\n".join(templ)
     def buildforms(self):
         "build the wtform on the fly from the config file"
         dico = OrderedDict()
         values = {}
         for cle,content in self.options.items():        # construct the dict for dForm
+            # print "cle, content", cle, content
             Field_type = cfFieldDef[content.type_][0]
             if content.type_ == "%select%":
                 dico[cle] = Field_type(content.name, choices=zip(content.lopt,content.lopt), validators=content.validators)
@@ -345,7 +458,7 @@ class ConfigForm(object):
                 dico[cle] = Field_type(content.name, validators=content.validators)
             values[cle] = content.value
         df = dForm(dico)                    # create the form builder
-        form = df(**values)                 # creat the form and load the values at once
+        form = df(**values)                 # create the form and load the values at once
         return form
 
     def render(self):
@@ -354,6 +467,7 @@ class ConfigForm(object):
             self.form = self.buildforms()
         if self.template is None:               # simple caching method
             self.template = Template( self.buildtemplate() )
+        
         html = self.template.render(form=self.form, title="ConfigForm", filename=self.cffilename)
         return html
     
@@ -372,6 +486,7 @@ class ConfigForm(object):
                     text.append('# %s'%(self.options[cle].meta) )
                 text.append('%s = %s'%(opt,self.form[cle].data))
                 text.append('')
+        # print "######## text produced is ", text
         return text
     def writeback(self, filename):
         """writes back the config file with the current values"""
@@ -434,6 +549,9 @@ def BuildApp(cffile):
         os.rename(cf.cffilename, cf.cffilename+"~") # move away initial file
         os.rename(tmpf, cf.cffilename)
         return redirect(url_for('bye'))
+    @app.route('/show')
+    def show():
+        return "<pre>" + "\n".join( cf.produce() ) + "</pre>"
     @app.route('/bye')
     def bye():
         'quitting'
