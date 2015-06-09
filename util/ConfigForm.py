@@ -512,7 +512,10 @@ def BuildApp(cffile):
         '''
         route called by the form - validate entries
         '''
-        text = []
+        text = [head]
+        text += ['<body>']
+        text += ['<div class="container">']
+
         if request.form["submitform"] == "Reload Values from file":
             cf.reload()
             return redirect(url_for('index'))
@@ -535,10 +538,19 @@ def BuildApp(cffile):
                         text.append('<li>in section <b>{}</b> entry <b>{}</b> : {}</li>\n'.format(sec,opt,msg))
                 text.append("</ul>")
             else:
-                text.append("<h1>Every thing is fine</h1>\n<p>All entries validated</p>")
+                text.append("<h1>Everything is fine</h1>\n<p>All entries validated</p>")
                 text.append('<p> <a href="{}">write file {}</a>'.format(url_for('write'), cf.cffilename) )
-            text.append('<p> <a href="%s">back to form</a>'%(url_for('index'),) )
-            return "\n".join(text)
+                
+            text.append('<p class="btn btn-default"> <a href="%s">back to form</a> </p> '%(url_for('index'),) )
+            
+            text.append(foot)
+            text += ["</div>"] # Ending container
+            text += ['''
+            </body>
+            </html>
+                    ''']
+            valid = "\n".join(text)
+            return valid
     @app.route('/write')
     def write():
         tmpf = "_tempfile.cfg"
