@@ -72,19 +72,19 @@ class NavigToolbar(NavigationToolbar):
         Button for saving as CSV. 
         Makes double columns CSV files using NPKv2 csv code.
         '''
-        self.Button_template("Visu/iconsUi/CSV.png", 'savecsv')
+        self.Button_template("spike/Visu/iconsUi/CSV.png", 'savecsv')
     
     def custom_button_pdf(self):
         '''
         Button for saving PDFs.
         '''
-        self.Button_template("Visu/iconsUi/pdf_profile.png", 'savepdf')
+        self.Button_template("spike/Visu/iconsUi/pdf_profile.png", 'savepdf')
     
     def custom_button_fullscale(self):
         '''
         Button for rescalling at fullscale.
         '''
-        self.Button_template("Visu/iconsUi/fullscale.png", 'fullscale')
+        self.Button_template("spike/Visu/iconsUi/fullscale.png", 'fullscale')
 
 @dec_class_pr
 @decclassdebugging
