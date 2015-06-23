@@ -59,7 +59,7 @@ class MOVE_WINDOW():                                                            
             print 'in move_refreshC_line '
         zc = self.paramz.zoom_coord
         self.display.qmc.setCursor(QtGui.QCursor(QtGui.QPixmap(\
-                'Visu/iconsUi/pencil-iconsm.jpg')))
+                'spike/Visu/iconsUi/pencil-iconsm.jpg')))
         if len(zc) == 2 :                                                                           # draw intermediate line
             try :
                 self.linec.remove()                                                                 # erase the line in canvas C

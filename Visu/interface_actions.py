@@ -54,14 +54,14 @@ class INTERACT(object):
         General definition for the buttons
         nb : number for the button
         action : method associated to the action.
-        name_icon : name of the icon in the directory Visu/iconsUi/, must be in png format.
+        name_icon : name of the icon in the directory spike/Visu/iconsUi/, must be in png format.
         icon_size : size of the icon for fitting to the button size.
         '''
         name = self._name_number('pushButton', nb)
         button = getattr(self.interface.ui, name)
         Qobj.connect(button, SIGNAL("clicked()"), action)                   # attach an acton to the button.
         if name_icon:           
-            icon = QtGui.QIcon("Visu/iconsUi/" + name_icon + ".png")      # use an icon picture for the button.                                
+            icon = QtGui.QIcon("spike/Visu/iconsUi/" + name_icon + ".png")      # use an icon picture for the button.                                
             button.setIcon(icon) 
         if icon_size:                                                       
             button.setIconSize(QtCore.QSize(icon_size[0], icon_size[1]))   # set the size of the icon
@@ -168,7 +168,7 @@ class INTERACT(object):
             self.paramz.mouse_motion = self.display.connect(\
                     'motion_notify_event', self.canv_event.on_motion)  
             self.display.qmc.setCursor(QtGui.QCursor(QtGui.QPixmap(\
-                    'Visu/iconsUi/pencil-iconsm.png'))) 
+                    'spike/Visu/iconsUi/pencil-iconsm.png'))) 
         else:
             self.display.disconnect(self.paramz.mouse_motion)                            # frees the mouse from C window
             self.display.setcursor('cross')   # make the cursor in cross mode 
