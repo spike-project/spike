@@ -82,6 +82,7 @@ import wtforms
 from wtforms import Form, validators, ValidationError
 from jinja2 import Template
 from flask import Flask, Response, render_template, request, url_for, redirect
+from PyQt4 import QtGui
 
 ###########
 HOST = "localhost"      # the name of the web service, if localhost, the service is only local
@@ -104,6 +105,7 @@ head = """
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.2/js/bootstrap-select.min.js"></script>
 <script>
 
 $(document).ready(function(){$('[data-toggle="tooltip"]').tooltip();});
@@ -112,10 +114,17 @@ $(document).ready(function(){$('[data-toggle="tooltip"]').tooltip();});
 
 <!-- Css -->
 <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"><!-- Scripts -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.2/css/bootstrap-select.css">
 
 <style>
 .CF-tooltip + .tooltip > .tooltip-inner { background-color: PapayaWhip; text-align : left}
 .CF-tooltip + .tooltip > .tooltip-arrow { border-bottom-color: PapayaWhip; }
+#namefile, #namefile_button
+{
+    display:inline;
+}
+
+
 </style>
 
 <title>{{title}}</title>
@@ -131,14 +140,16 @@ $(document).ready(function(){$('[data-toggle="tooltip"]').tooltip();});
 # '''
 
 
-
 foot = """
 <p><small><i>ConfigForm, version %s  - author : M.A. Delsuc</i></small></p>
 """%(__version__)
 
 # known Field types syntax {%key%: (Field,type)}
+
+# lambda x: x.lower() in ('1', 'true', 'yes', 'on')
+
 cfFieldDef = {
-    '%boolean%': (wtforms.StringField, lambda x: x.lower() in ('1', 'true', 'yes', 'on')),
+    '%boolean%': (wtforms.StringField, bool),
     '%text%': (wtforms.StringField, str),
     '%float%':   (wtforms.FloatField, float),
     '%integer%':   (wtforms.IntegerField, int),
@@ -195,6 +206,33 @@ def dTemplate(dico, method, action, class_):
     used for tests
     """
     return Template(dynatemplate(dico, method, action, class_))
+    
+class FIND_FOLDER(QtGui.QWidget):
+    '''
+    PyQt interface for chosing the folder for the processing.
+    '''
+    def __init__(self, parent = None):
+        QtGui.QWidget.__init__(self, parent)
+        self.curDir = os.getcwd()
+
+    def browse(self, folder_name):
+        '''
+        Finds the folder to be processed.
+        '''
+        print "saving config"
+        selected_folder = QtGui.QFileDialog.getExistingDirectory(self, "Select Folder",  self.curDir)
+        if selected_folder and folder_name == 'origin':
+            print selected_folder
+
+def search_folder(folder_name):
+    '''
+    Opens the PyQt interface for searching the folder
+    When the folder is chosen the program stops the Qt interface. 
+    '''
+    app = QtGui.QApplication(sys.argv)
+    ff = FIND_FOLDER()
+    ff.browse(folder_name) 
+    app.exit()
 
 ############################
 class cfField(object):
@@ -288,34 +326,47 @@ class cfField(object):
                 templ = '<div class="{2}"><p>{3}<br/><a style="color:black" href="#" {4}>{{{{ form.{0}_{1}.label}}}}</a>: \
                     {{{{form.{0}_{1}(class="{2}",SIZE="{5}")}}}}</p></div>'.format( \
                                 self.section, self.name, self.class_, doc, ttip, self.length)
-                                
-            elif self.type_ in ("%boolean%"):    
+            
+            elif self.type_ in ("%select%"):
                 print "self.section, self.name ", self.section, self.name
-                
-                templ = '<div class="{2}"><p>{3}<br/><a style="color:black" href="#" {4}>{{{{ form.{0}_{1}.label}}}}</a>:\
-                {{% if "yes" == "yes" %}}\
-                {{% set checkval = "checked" %}} \
-                {{% endif %}}\
-                  <input type="checkbox" name="{1}" checked> </p>  </div>  \n'.format(self.section, self.name, self.class_, doc, ttip)
-                
-                # templ = return '<div class="{2}"><p>{3}<br/><b>{{{{ form.{0}_{1}.label}}}}</b>:\
-                #  # {{{{% if form.{0}_{1} in ["yes", "True"]: set checkval= "checked" % }}}}\
-                #  # else : set checkval= "" % }}}}\
-                #   <input type="checkbox" name="{1}" {{checkval}}>  </div>  \n'.format(self.section, self.name, self.class_, doc)
-                
-                # {{% if {{{{ form.{0}_{1}.data }}}} == "yes" %}}\
-                # {{% set checkval = "checked" %}} \
-                # {{% else %}}\
-                # {{% set checkval = "" %}}\
-                # {{% endif %}}\
-                
+                templ = '<div class="{2}" ><p>{3}<br/><a style="color:black" href="#" {4}>{{{{ form.{0}_{1}.label}}}}</a>: \
+                         {{{{form.{0}_{1}(class="selectpicker")}}}} </p></div>'.format( \
+                                self.section, self.name, self.class_, doc, ttip)     
                                 
+            elif self.type_ in ("%infile%"):
+                print "######### self.section, self.name  ", self.section, self.name
+                templ = ''' 
+                <div class="alert alert-info">
+                <input type="file" name="{0}_{1}"  id="chosefile_{0}_{1}" style="visibility:hidden;" />
+                    <a id="namefile_button" class="btn btn-default" onclick="$('#chosefile_{0}_{1}').click();">Choose a File</a> 
+                    <p id="namefile_{0}_{1}" class="filename"> </p> 
+                    <h1></h1>
+                </div>
+                '''.format(self.section, self.name)
+                
+                templ += '''
+                <script>
+                $("#chosefile_{0}_{1}").change(function () {{       
+                    var file = $('#chosefile_{0}_{1}').val();
+                    $("#namefile_{0}_{1}").html(file);
+                   }});
+                </script>
+                '''.format(self.section, self.name)
+            
+            elif self.type_ in ("%boolean%"):    
+                 print "self.section, self.name ", self.section, self.name
+                 
+                 templ = '<div class="{2}"><p>{3}<br/><a style="color:black" href="#" {4}>{{{{ form.{0}_{1}.label}}}}</a>:\
+                 {{% if "yes" == "yes" %}}\
+                 {{% set checkval = "checked" %}} \
+                 {{% endif %}}\
+                   <input type="checkbox" name="{0}_{1}" checked> </p>  </div>  \n'.format(self.section, self.name, self.class_, doc, ttip)
+          
             else:
                 print "self.section, self.name ", self.section, self.name
                 templ = '<div class="{2}"><p>{3}<br/><a style="color:black" href="#" {4}>{{{{ form.{0}_{1}.label}}}}</a>: \
                     {{{{form.{0}_{1}(class="{2}")}}}}</p></div>'.format( \
-                                self.section, self.name, self.class_, doc, ttip)
-                                
+                                self.section, self.name, self.class_, doc, ttip)                
         else:   # special if hidden 
             templ = '{{{{form.{0}_{1}}}}}'.format(self.section, self.name)
         return templ
@@ -414,12 +465,15 @@ class ConfigForm(object):
         sec_templ = """
 <div class={0}.section>
 <hr>
-<h2 style="background-color:Bisque" class="text-center">{1}</h2>
+    <div class="jumbotron" style="background-color:Bisque;">
+    <h2  class="text-center">{1}</h2>
+    </div> 
 <div class="container">
 <b>{2}</b>
 {3}
 </div>
 </div>
+
         """.format(self.class_, sec, doc, options_templ)
         return sec_templ
 
@@ -429,15 +483,16 @@ class ConfigForm(object):
         templ += ['<body>']
         templ += ['<div class="container">']
         templ += ['''
-            <h1>Configuration for file {{filename}}</h1>
+            <h1 style="text-align: center;">Configuration for file :  </h1>
+            <h1 style="text-align: center;">{{filename}}</h1>
         ''']
         templ += ['<form method="{0}" action="{1}">'.format(self.method, self.callback)]
         for sec in self.cp.sections():
             # print "#################   self.sect_templ(sec) ", self.sect_templ(sec)
             templ.append( self.sect_templ(sec) )
         templ.append('<hr>\n    <input type="submit" name="submitform" value="Reload Values from file" class="btn btn-default" />')
-        templ.append('    <input type="submit" name="submitform" value="Validate Values" class="btn btn-default"/>\n</form>')
-        
+        templ.append('    <input type="submit" name="submitform" value="Validate Values" class="btn btn-default"/>\n')
+        templ.append('</form>')
         templ.append(foot)
         templ += ["</div>"] # Ending container
         templ += ['''
@@ -499,6 +554,7 @@ def BuildApp(cffile):
     app.config['SECRET_KEY'] = 'kqjsdhf'
     cf = ConfigForm(cffile)
     cf.callback = '/callback'
+    # cf.ask_folder = '/ask_folder'
     if DEBUG: print cf.doc_sec.keys()
 
     @app.route('/')
@@ -507,11 +563,16 @@ def BuildApp(cffile):
         First page when launching the interface.
         '''
         return cf.render()
+
     @app.route('/callback',  methods = [cf.method])
     def callback():
         '''
         route called by the form - validate entries
         '''
+        principal_types = [str, float, int] # All non boolean types used. 
+        bool_cles = [] # List for registering boolean keys. 
+        not_bool_errors = 0 # counters for non boolean errors after validation.
+        ###
         text = [head]
         text += ['<body>']
         text += ['<div class="container">']
@@ -519,30 +580,51 @@ def BuildApp(cffile):
         if request.form["submitform"] == "Reload Values from file":
             cf.reload()
             return redirect(url_for('index'))
-        else:   # Validate
-            for cle,content in cf.options.items():
+            
+        elif request.form["submitform"] == "chose_file":
+            return redirect(url_for('ask_folder'))
+            
+        else :   # Validate request.form["submitform"] == "Validate Values"
+            for cle, content in cf.options.items():
+                print "############## cle", cle
+                print "############## content", content
                 type_ = cfFieldDef[content.type_][1]
-                try:
-                    cf.form[cle].data = type_((request.form[cle]))
-                except:
-                    cf.form[cle].data = request.form[cle]
+                if  type_ in principal_types : # 
+                    try:
+                        cf.form[cle].data = type_((request.form[cle]))
+                    except:
+                        cf.form[cle].data = request.form[cle]
+                else : # checkbox
+                    if request.form.getlist(cle) == []:
+                        cf.form[cle].data = False
+                    else:
+                        cf.form[cle].data = True
+                    bool_cles.append(cle) # Append the boolean keys for avoiding validation error on booleans. 
                 if DEBUG:
+                    print "DEBUG"
                     text.append("%s : %s<br/>"%(cle, request.form[cle]))
-            if not cf.form.validate():  # error in validation
-                text.append("<h1>Error in config file</h1><p>The following error are detected :</p>")
-                for name,msges in cf.form.errors.items():
+            text_fine = ["<h1>Everything is fine</h1>\n<p>All entries validated</p>"]
+            text_fine.append('<p> <a href="{}">write file {}</a>'.format(url_for('write'), cf.cffilename) )
+            if not cf.form.validate() and len(bool_cles) > 0:  # error in validation
+                text_error = []
+                for name, msges in cf.form.errors.items():
                     nmspl = name.split('_')
                     sec = nmspl[0]
                     opt = "_".join(nmspl[1:])
-                    for msg in msges:
-                        text.append('<li>in section <b>{}</b> entry <b>{}</b> : {}</li>\n'.format(sec,opt,msg))
-                text.append("</ul>")
+                    name_cle = sec + '_' + opt
+                    if not name_cle in bool_cles:
+                        not_bool_errors += 1 # increment the not boolean errors
+                        for msg in msges:
+                            text_error.append('<li>in section <b>{}</b> entry <b>{}</b> : {}</li>\n'.format(sec,opt,msg))
+                if not_bool_errors > 0:       
+                    text.append("<h1>Error in config file</h1><p>The following error are detected :</p>")
+                    text += text_error        
+                    text.append("</ul>")
+                else:
+                    text += text_fine # Case only boolean errors.
             else:
-                text.append("<h1>Everything is fine</h1>\n<p>All entries validated</p>")
-                text.append('<p> <a href="{}">write file {}</a>'.format(url_for('write'), cf.cffilename) )
-                
+                text += text_fine # No error at all 
             text.append('<p class="btn btn-default"> <a href="%s">back to form</a> </p> '%(url_for('index'),) )
-            
             text.append(foot)
             text += ["</div>"] # Ending container
             text += ['''
@@ -561,6 +643,12 @@ def BuildApp(cffile):
         os.rename(cf.cffilename, cf.cffilename+"~") # move away initial file
         os.rename(tmpf, cf.cffilename)
         return redirect(url_for('bye'))
+        
+    @app.route('/ask_folder')
+    def ask_folder():
+        search_folder('/Users/chiron') # opens PyQt interface for searching the folder.
+        return redirect(url_for('index'))
+        
     @app.route('/show')
     def show():
         return "<pre>" + "\n".join( cf.produce() ) + "</pre>"
