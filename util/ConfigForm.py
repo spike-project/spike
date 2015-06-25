@@ -130,23 +130,13 @@ $(document).ready(function(){$('[data-toggle="tooltip"]').tooltip();});
 <title>{{title}}</title>
 </head>
 
-""" #.format(COLOR_TOOLTIP)
-
-#print "head ", head
-
-# head += '''
-# <title>{{title}}</title>
-# </head>
-# '''
-
+""" 
 
 foot = """
 <p><small><i>ConfigForm, version %s  - author : M.A. Delsuc</i></small></p>
 """%(__version__)
 
 # known Field types syntax {%key%: (Field,type)}
-
-# lambda x: x.lower() in ('1', 'true', 'yes', 'on')
 
 cfFieldDef = {
     '%boolean%': (wtforms.StringField, bool),
@@ -207,7 +197,7 @@ def dTemplate(dico, method, action, class_):
     """
     return Template(dynatemplate(dico, method, action, class_))
     
-class FIND_FOLDER(QtGui.QWidget):
+class FIND_FOLDER_FILE(QtGui.QWidget):
     '''
     PyQt interface for chosing the folder for the processing.
     '''
@@ -215,24 +205,27 @@ class FIND_FOLDER(QtGui.QWidget):
         QtGui.QWidget.__init__(self, parent)
         self.curDir = os.getcwd()
 
-    def browse(self, folder_name):
+    def browse(self, kind):
         '''
-        Finds the folder to be processed.
+        Search for a folder or a file
         '''
         print "saving config"
-        selected_folder = QtGui.QFileDialog.getExistingDirectory(self, "Select Folder",  self.curDir)
-        if selected_folder and folder_name == 'origin':
-            print selected_folder
+        if kind == "folder":
+            self.selected = QtGui.QFileDialog.getExistingDirectory(self, "Select Folder",  self.curDir)
+        elif kind == "file":
+            self.selected = QtGui.QFileDialog.getOpenFileName(self,'Open file', self.curDir)
+        print "#################### self.selected ", self.selected
 
-def search_folder(folder_name):
+def search_folder_file(kind):
     '''
     Opens the PyQt interface for searching the folder
     When the folder is chosen the program stops the Qt interface. 
     '''
     app = QtGui.QApplication(sys.argv)
-    ff = FIND_FOLDER()
-    ff.browse(folder_name) 
-    app.exit()
+    ff = FIND_FOLDER_FILE()
+    ff.browse(kind) 
+    return ff.selected
+   
 
 ############################
 class cfField(object):
@@ -317,7 +310,7 @@ class cfField(object):
             
             if self.tooltip:
                 ttip = 'data-toggle="tooltip" data-html="true" data-placement="top"  title="{}" class = "CF-tooltip" '.format(html_tooltip)
-                print "ttip ",ttip
+                print "ttip ", ttip
             else:
                 ttip = ""
             # then produce
@@ -327,41 +320,26 @@ class cfField(object):
                     {{{{form.{0}_{1}(class="{2}",SIZE="{5}")}}}}</p></div>'.format( \
                                 self.section, self.name, self.class_, doc, ttip, self.length)
             
-            elif self.type_ in ("%select%"):
+            elif self.type_ in ("%select%"): # Select boxes with Bootstrap class selectpicker
                 print "self.section, self.name ", self.section, self.name
                 templ = '<div class="{2}" ><p>{3}<br/><a style="color:black" href="#" {4}>{{{{ form.{0}_{1}.label}}}}</a>: \
                          {{{{form.{0}_{1}(class="selectpicker")}}}} </p></div>'.format( \
                                 self.section, self.name, self.class_, doc, ttip)     
                                 
             elif self.type_ in ("%infile%"):
-                print "######### self.section, self.name  ", self.section, self.name
                 templ = ''' 
-                <div class="alert alert-info">
-                <input type="file" name="{0}_{1}"  id="chosefile_{0}_{1}" style="visibility:hidden;" />
-                    <a id="namefile_button" class="btn btn-default" onclick="$('#chosefile_{0}_{1}').click();">Choose a File</a> 
-                    <p id="namefile_{0}_{1}" class="filename"> </p> 
-                    <h1></h1>
-                </div>
+                    </br>
+                    <button  type="submit" name="submitform" value="chose_file-{0}_{1}"  class="btn btn-default"> Chose File </button>
+                      {{% if form.{0}_{1}.infilename %}}
+                        <p style="color:blue;"> {{{{form.{0}_{1}.infilename}}}} </p>
+                      {{% endif %}}
                 '''.format(self.section, self.name)
-                
-                templ += '''
-                <script>
-                $("#chosefile_{0}_{1}").change(function () {{       
-                    var file = $('#chosefile_{0}_{1}').val();
-                    $("#namefile_{0}_{1}").html(file);
-                   }});
-                </script>
-                '''.format(self.section, self.name)
-            
-            elif self.type_ in ("%boolean%"):    
+
+            elif self.type_ in ("%boolean%"):    # Boolean checkboxes
                  print "self.section, self.name ", self.section, self.name
                  
                  templ = '<div class="{2}"><p>{3}<br/><a style="color:black" href="#" {4}>{{{{ form.{0}_{1}.label}}}}</a>:\
-                 {{% if "yes" == "yes" %}}\
-                 {{% set checkval = "checked" %}} \
-                 {{% endif %}}\
                    <input type="checkbox" name="{0}_{1}" checked> </p>  </div>  \n'.format(self.section, self.name, self.class_, doc, ttip)
-          
             else:
                 print "self.section, self.name ", self.section, self.name
                 templ = '<div class="{2}"><p>{3}<br/><a style="color:black" href="#" {4}>{{{{ form.{0}_{1}.label}}}}</a>: \
@@ -581,7 +559,9 @@ def BuildApp(cffile):
             cf.reload()
             return redirect(url_for('index'))
             
-        elif request.form["submitform"] == "chose_file":
+        elif request.form["submitform"].find("chose_file") != -1: # Searching for a folder
+            print " section and name for chose file is : ", request.form["submitform"].split("-")[1]
+            cf.infilename = request.form["submitform"].split("-")[1]
             return redirect(url_for('ask_folder'))
             
         else :   # Validate request.form["submitform"] == "Validate Values"
@@ -593,7 +573,14 @@ def BuildApp(cffile):
                     try:
                         cf.form[cle].data = type_((request.form[cle]))
                     except:
-                        cf.form[cle].data = request.form[cle]
+                        try:
+                            cf.form[cle].data = request.form[cle]
+                        except:
+                            try:
+                                cf.form[cle].data = cf.form[cle].infilename # Case infile, handled with PyQt. 
+                            except:
+                                print "no file chosen"
+                                cf.form[cle].data = None # None needed for test with cf.form.validate()
                 else : # checkbox
                     if request.form.getlist(cle) == []:
                         cf.form[cle].data = False
@@ -615,7 +602,7 @@ def BuildApp(cffile):
                     if not name_cle in bool_cles:
                         not_bool_errors += 1 # increment the not boolean errors
                         for msg in msges:
-                            text_error.append('<li>in section <b>{}</b> entry <b>{}</b> : {}</li>\n'.format(sec,opt,msg))
+                            text_error.append('<li>in section <b>{}</b> entry <b>{}</b> : {}</li>\n'.format(sec, opt, msg))
                 if not_bool_errors > 0:       
                     text.append("<h1>Error in config file</h1><p>The following error are detected :</p>")
                     text += text_error        
@@ -646,7 +633,7 @@ def BuildApp(cffile):
         
     @app.route('/ask_folder')
     def ask_folder():
-        search_folder('/Users/chiron') # opens PyQt interface for searching the folder.
+        cf.form[cf.infilename].infilename = search_folder_file('file') # opens PyQt interface for searching the folder.
         return redirect(url_for('index'))
         
     @app.route('/show')
