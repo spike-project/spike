@@ -1,5 +1,6 @@
 # plugin for urqrd
-from spike.NPKData import NPKData_plugin
+from spike.NPKData import NPKData_plugin,  as_cpx, as_float, _base_fft,\
+            _base_ifft, _base_rfft, _base_irfft
 from spike.Algo.urQRd import urQRd
 from spike.util.signal_tools import filtering
 
