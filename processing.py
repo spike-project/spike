@@ -2,7 +2,7 @@
 """
 Processing.py
 
-This program realises the processing of an FTICR data
+This program makes the processing of an FTICR dataset
 
 Created by Marc-Andre on 2011-09-23.
 Copyright (c) 2011 IGBMC. All rights reserved.
@@ -31,7 +31,6 @@ from spike.NPKData import as_cpx
 from spike.util.simple_logger2 import TeeLogger
 from spike.util.rem_ridge import rem_ridge
 
-
 debug = 1   # 0 means no debugging
 interfproc = False
 
@@ -48,7 +47,6 @@ LARGESTDATA = 8*1024*1024*1024  # 8 Giga points  (that's 64Gb !)
 # the smallest axis size allowed
 SIZEMIN = 1024
 #HIGHMASS = 100000   # kludge to use mztoi !
-
 
 
 def intelliround(x):
