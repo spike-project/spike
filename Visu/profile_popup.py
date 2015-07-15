@@ -95,13 +95,14 @@ class PROFILE(QMainWindow):
     -Possible to save in PDF, CSV
     -Function for having full scale.
     '''
-    def __init__(self, data_profile, save, name_profile, namefile,  ptlx = None):
+    def __init__(self, data_profile, save, name_profile, namefile,  ptlx = None,  ptly = None):
 
         QMainWindow.__init__(self)
         self.data_profile = data_profile
         self.name_profile = name_profile
         self.namefile = namefile
         self.ptlx = ptlx                       # used in case of diagonal profile.
+        self.ptly = ptly
         self.save = save                                                         # saving utilities
         self.kind_line = '-'
         self.name_window = 'Profile ' + self.name_profile                                           # name for the popup
@@ -147,8 +148,12 @@ class PROFILE(QMainWindow):
         '''
         if debug(self):
             print "self.data_profile.units ", self.data_profile.units
-        if self.data_profile.along == 'diag':
-            axis_profile = self.data_profile.axes(2).itomz(self.ptlx)                                       # m/z diago                                           
+        print "self.data_profile.along  ", self.data_profile.along
+        if 'diag' in self.data_profile.along :
+            if self.data_profile.along[-1] == 'x':
+                axis_profile = self.data_profile.axes(2).itomz(self.ptlx)                                       # m/z diago  
+            elif  self.data_profile.along[-1] == 'y': 
+                axis_profile = self.data_profile.axes(1).itomz(self.ptly)                                         
         elif self.data_profile.along == 'x':
             axis_profile = self.axes_mz(self.data_profile.axes(1))                                          # m/z axis x values
         elif self.data_profile.along == 'y':

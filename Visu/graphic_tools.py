@@ -196,10 +196,12 @@ class GRAPHTOOLS():
         '''
         pts = self.display.RESMAX.buffer[self.ptly, self.ptlx]
         data_profile = self.makeFTICRData(pts, typeprof)
-        ax = None
-        if typeprof == 'diag':
-            ax = np.array(self.ptlx)
-        self.profile_list.append(PROFILE(data_profile, self.save, name_profile, self.namefile, ax))
+        # ax = None
+        if 'diag'in typeprof:
+            if typeprof[-1] == 'x':
+                self.profile_list.append(PROFILE(data_profile, self.save, name_profile, self.namefile, ptlx = np.array(self.ptlx)))
+            elif typeprof[-1] == 'y':
+                self.profile_list.append(PROFILE(data_profile, self.save, name_profile, self.namefile, ptly = np.array(self.ptly)))
         self.profile_list[-1].show()
         
     def plotprofile(self, profile_type, name_profile = None):
@@ -207,10 +209,11 @@ class GRAPHTOOLS():
         Plot profile in m/z mode
         Called in canv_event.release_refrechC
         '''
+        print "########## profile_type  ", profile_type
         if debug(self):
             print "############## in plotprofile "
-        if profile_type == 'diag':
-            self.plotproftype(name_profile, typeprof = 'diag')
+        if 'diag' in profile_type:
+            self.plotproftype(name_profile, typeprof = profile_type)
         if profile_type == 'x':
             self.plotproftype(name_profile, typeprof = 'x')
         if profile_type == 'y':
