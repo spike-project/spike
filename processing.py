@@ -439,7 +439,7 @@ class Proc_Parameters(object):
         self.compress_level = cp.getfloat( "processing", "compress_level", self.compress_level)
         self.tempdir = cp.get( "processing", "tempdir", ".")                            # dir for temporary file
         self.samplingfile = cp.get( "processing", "samplingfile")
-        self.samplingfile_fake = cp.getboolean( "processing", "samplingfile_fake",str(self.samplingfile_fake))
+        self.samplingfile_fake = cp.getboolean( "processing", "samplingfile_fake", str(self.samplingfile_fake))
         self.largest = cp.getint( "processing", "largest_file", 8*LARGESTDATA)            # largest allowed file
         self.largest = self.largest/8                                                   # in byte in the configfile, internally in word
         self.do_modulus = cp.getboolean( "processing", "do_modulus", str(self.do_modulus))   # do_modulus
@@ -588,6 +588,7 @@ def main(argv = None):
         print "using %s as configuration file" %configfile
     #### get parameters from configuration file - store them in a parameter object
     cp = NPKConfigParser()
+    print 'address configfile is ', configfile
     cp.readfp(open(configfile))
     print "reading config file"
     param = Proc_Parameters(cp) # parameters from config file.. 

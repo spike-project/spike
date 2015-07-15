@@ -379,17 +379,22 @@ class INTERACT(object):
         if debug(self):
             print "values is ", values
         print "type(values) ", type(values)
-        try:
+        if values[-1] in ['x', 'y']:
+            axeprofile = values[-1]
+            values = values[:-1]
+            print "####### axeprofile ", axeprofile
+        try:                            # Diagonal profile
+
             if self.data.mode_point:
                 llx, lly, urx, ury = map(float, values.split(','))                                  # from string to float
             else:
                 urx, ury, llx, lly = map(float, values.split(','))                                  # from string to float
-            self.zoom.profile_type = 'diag'
+            self.zoom.profile_type = 'diag' + axeprofile
             if debug(self):
                 print "in take_lineEdit profile coordinates are ", llx, lly, urx, ury
             #self.name_profile = 'diagonal'
             self.name_profile = 'diag_'+ values.replace(',','-')
-        except:
+        except:   # x/y profile
           try:
             print "values = ", values
             print "x/y profile"
