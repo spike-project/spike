@@ -196,12 +196,13 @@ class GRAPHTOOLS():
         '''
         pts = self.display.RESMAX.buffer[self.ptly, self.ptlx]
         data_profile = self.makeFTICRData(pts, typeprof)
-        # ax = None
+        ax = None
         if 'diag'in typeprof:
             if typeprof[-1] == 'x':
-                self.profile_list.append(PROFILE(data_profile, self.save, name_profile, self.namefile, ptlx = np.array(self.ptlx)))
+            	ax = np.array(self.ptlx)
             elif typeprof[-1] == 'y':
-                self.profile_list.append(PROFILE(data_profile, self.save, name_profile, self.namefile, ptly = np.array(self.ptly)))
+            	ax = np.array(self.ptly)
+        self.profile_list.append(PROFILE(data_profile, self.save, name_profile, self.namefile, ptly = ax))
         self.profile_list[-1].show()
         
     def plotprofile(self, profile_type, name_profile = None):
