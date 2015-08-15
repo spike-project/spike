@@ -69,7 +69,7 @@ class HDF5File(object):
     """
     def __init__(self, fname, access = 'r', info = None, nparray = None, fticrd = None, debug = 0):
         # still have to deal with changing the file_version when file is opened reading only
-        import spike.FTICR as FTICR
+        from  .. import FTICR
         self.debug = debug
         self.fname = fname
         self.info = None
@@ -335,7 +335,7 @@ python HDF5File.py update {0}
             b = d.data.buffer[...]     # data are now copied into a new memory buffer b using ellipsis syntax
             d.data.buffer = b           # and b is used as the data buffer.
         """
-        import spike.FTICR as FTICR
+        from  .. import FTICR
         if (self.debug > 0): print group
         hfgroup = getattr(self.hf.root, group)
         try:
@@ -620,7 +620,7 @@ def up0p7_to_0p8(fname, debug = 1):
 #----------------------------------------------
 class HDF5_Tests(unittest.TestCase):
     def setUp(self):
-        from spike.Tests import filename, directory
+        from ..Tests import filename, directory
         rootfiles = os.getcwd()
         # make ini file from example
         self.TestFolder = directory()

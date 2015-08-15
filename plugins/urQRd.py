@@ -1,4 +1,6 @@
 # plugin for urqrd
+import unittest
+
 from spike.NPKData import NPKData_plugin,  as_cpx, as_float, _base_fft,\
             _base_ifft, _base_rfft, _base_irfft
 from spike.Algo.urQRd import urQRd
@@ -35,5 +37,8 @@ def urqrd(npkd, k, orda = None, trick = False, iterations = 1, axis=0):
     elif npkd.dim == 3:
          raise Exception("not implemented yet")
     return npkd
+
+class urQRdTests(unittest.TestCase):
+    pass
 
 NPKData_plugin("urqrd", urqrd)

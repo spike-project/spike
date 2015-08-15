@@ -234,7 +234,7 @@ class CadzowTest(unittest.TestCase):
         ============= a  demo / test of cadzow noise cleaning technique ==============
         applied on an additive noise
         """
-        import spike.Display.testplot as testplot
+        from ..Display import testplot
         plt = testplot.plot()
         print self.test1D.__doc__
         # simulate fid
@@ -276,7 +276,7 @@ class CadzowTest(unittest.TestCase):
         ==============test for multiprocessing in cazow2d()===============
         This test might fail because svd is multithreaded on MKL, so mp version may actually be slower !!!!
         """
-        import spike.NPKData
+        from .. import NPKData
         import multiprocessing as mproc
         print self.test2D.__doc__
         d1 = NPKData.NPKData(buffer=np.random.rand(500,200))  # create fake data

@@ -21,9 +21,9 @@ import array
 import tables
 from xml.dom import minidom
 
-import spike.NPKData as npkd
-from spike.FTICR import FTICRData
-import spike.File.HDF5File as hf
+from .. import NPKData as npkd
+from ..FTICR import FTICRData
+from ..File import HDF5File as hf
 
 def read_param(filename):
     """
@@ -288,7 +288,7 @@ def write_ser(bufferdata,filename = "ser"):
 class Solarix_Tests(unittest.TestCase):
     from time import time
     def setUp(self):
-        from spike.Tests import filename, directory
+        from ..Tests import filename, directory
         import ConfigParser
         rootfiles = os.getcwd()
         self.TestFolder = directory()

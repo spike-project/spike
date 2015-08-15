@@ -45,9 +45,10 @@ valid %validators% are
 %extension:.txt% : constraint the entry to finish by a given string
 
 valid %formaters% are
-%length:n% : contraint the length of the HTML field to be n char long
+%length:n% : contraint the length of the HTML text field to be n char long
+%tooltip:text% : add text to the field tooltip - some html formating can be used
 
-Created by DELSUC Marc-Andre on 2015-04-15.
+Created by DELSUC Marc-Andre on 2015-04-15
 """
 """
 Requires :

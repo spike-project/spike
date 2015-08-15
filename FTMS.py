@@ -15,7 +15,7 @@ import math
 import unittest
 import numpy as np
 from spike import NPKData
-from spike.NPKError import NPKError
+from .NPKError import NPKError
 
 
 HighestMass = 100000.0  # the highest m/z of interest ever
@@ -150,7 +150,7 @@ class FTMSData(NPKData.NPKData):
         
         Use as a template, this method should be overwriten by subclasser
         """
-        from spike.File.HDF5File import HDF5File, determine_chunkshape
+        from .File.HDF5File import HDF5File, determine_chunkshape
         self.axis1 = FTMSAxis()    # this creates an FTMSAxis so that pylint does not complain - will be overwritten
         if dim == 2:
             self.axis2 = FTMSAxis()
@@ -314,7 +314,7 @@ class FTMSData(NPKData.NPKData):
         experimental !
         """
         import tables
-        from spike.File.HDF5File import HDF5File, determine_chunkshape
+        from .File.HDF5File import HDF5File, determine_chunkshape
         hf_file = HDF5File(name,"w")
         if self.dim == 2:
             chunks = determine_chunkshape(self.size1, self.size2)

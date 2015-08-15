@@ -11,7 +11,7 @@ __date__ = "april 2014"
 import os
 import unittest
 import numpy as np
-from spike.Orbitrap import OrbiData
+from ..Orbitrap import OrbiData
 import re
 
 def read_thermo(filename):
@@ -84,7 +84,7 @@ def Import_1D(filename):
 class Thermo_Tests(unittest.TestCase):
     """ A FAIRE """
     def setUp(self):
-        from spike.Tests import filename, directory
+        from ..Tests import filename, directory
         import ConfigParser
         rootfiles = os.getcwd()        
         self.verbose = 1    # verbose > 0 switches messages on

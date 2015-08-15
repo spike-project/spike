@@ -95,7 +95,7 @@ class Tests(unittest.TestCase):
         self.assertTrue(   cp.getboolean("section", "b_value", "true"))   # boolean
     def test_read(self):
         "testing configparser - getting values from file"
-        from spike.Tests import filename
+        from .Tests import filename
         self.announce()
         cp = NPKConfigParser()
         cp.read(filename("test.mscf"))

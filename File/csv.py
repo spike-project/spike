@@ -83,9 +83,9 @@ def Import_1D(filename, column=0, delimiter=','):
     then one value per line
     column and delimiter  as in load()
     """
-    from spike.NPKData import NPKData
-    from spike.FTICR import FTICRData
-    from spike.Orbitrap import OrbiData
+    from ..NPKData import NPKData
+    from ..FTICR import FTICRData
+    from ..Orbitrap import OrbiData
     buf, att = load(filename, column=column, delimiter=delimiter)
     if "NMR" in att.keys():
         d = NPKData(buffer=buf)
@@ -105,9 +105,9 @@ def Import_1D(filename, column=0, delimiter=','):
 class csvTests(unittest.TestCase):
     """ - Testing NPKData basic behaviour - """
     def test_csv(self):
-        from spike.Tests import filename, directory
-        from spike.FTICR import FTICRData
-        from spike.NPKData import NPKData
+        from ..Tests import filename, directory
+        from ..FTICR import FTICRData
+        from ..NPKData import NPKData
         name2D = filename("dosy-cluster2.gs2")
         A = FTICRData(buffer=np.zeros(10000))
         A.specwidth = 1667000

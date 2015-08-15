@@ -16,7 +16,7 @@ import time
 import unittest
 import numpy as np
 
-from spike.NPKData import NPKData
+from ..NPKData import NPKData
 
 ################################################################
 def find_acqu_gene(dir=".",acqulist=('acqus','acqu','ACQUS','ACQU')):
@@ -662,7 +662,7 @@ class Bruker_Tests(unittest.TestCase):
         if self.verbose >0:
             print "\n========",self.shortDescription(),'==============='
     def test_import(self):
-        from spike.Tests import filename
+        from ..Tests import filename
         name = filename("Lasalocid-Tocsy/dataset/ser")
         d = Import_2D(name)
         self.assertEqual(d.axis1.itype, 1)

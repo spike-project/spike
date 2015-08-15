@@ -13,8 +13,8 @@ import glob
 import os.path as op
 import numpy as np
 import tables
-import spike.NPKData as npkd
-from spike.FTICR import FTICRData
+from .. import NPKData as npkd
+from ..FTICR import FTICRData
 import HDF5File as hf
 # tables.parameters.NODE_CACHE_SLOTS = 0
 #tables.parameters.CHUNK_CACHE_SIZE = 0*1024*1024
@@ -292,7 +292,7 @@ def write_ser(bufferdata,filename="ser"):
 #----------------------------------------------
 class Apex_Tests(unittest.TestCase):
     def setUp(self):
-        from spike.Tests import filename, directory
+        from ..Tests import filename, directory
         
         rootfiles = os.getcwd()
         self.TestFolder = directory()

@@ -300,7 +300,7 @@ class SL0_Tests(unittest.TestCase):
         from http://nuit-blanche.blogspot.com/2011/11/how-to-wow-your-friends-in-high-places.html
         code from Igor Carron
         """
-        import spike.Display.testplot as testplot
+        from ..Display import testplot
         plt = testplot.plot()
         M = 20
         N = 500

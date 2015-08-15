@@ -13,8 +13,8 @@ import numpy as np
 import scipy
 import scipy.optimize
 import unittest
-from spike.util.counter import counting, timeit
-import spike.Display.testplot as testplot
+from ..util.counter import counting, timeit
+from ..Display import testplot
 plt = testplot.plot()
 
 __version__ = 0.3

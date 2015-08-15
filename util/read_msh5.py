@@ -11,7 +11,7 @@ Copyright (c) 2012 __NMRTEC__. All rights reserved.
 import sys
 import os
 import unittest
-import spike.File.HDF5File as HDF5File
+from ..File import HDF5File
 #import FTICR
 
 class read_msh5:
@@ -38,7 +38,7 @@ class read_msh5:
 
 class read_msh5Tests(unittest.TestCase):
     def test_msh5read(self):
-        from spike.Tests import filename
+        from ..Tests import filename
         RM = read_msh5(filename('1D_test.msh5') )
         d = RM.resmin()
         

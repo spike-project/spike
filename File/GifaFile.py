@@ -13,8 +13,8 @@ This module provides a simple access to NMR files in the Gifa format.
 
 import re
 import numpy as np
-import spike.NPKData as npkd
-from spike.NPKError import NPKError
+from .. import NPKData as npkd
+from ..NPKError import NPKError
 import unittest
 import os
 
@@ -574,7 +574,7 @@ class GifaFileTests(unittest.TestCase):
     "  - Testing GifaFile on various 1D and 2D files - "
     # basic files
     import tempfile
-    from spike.Tests import filename, directory
+    from ..Tests import filename, directory
     name1D = filename("proj.gs1")
     name2D = filename("dosy-cluster2.gs2")       # Byteorder = big_endian
     name2D_little_endian = filename("dosy-cluster2-corr.gs2")   # Byteorder = little_endian
@@ -630,7 +630,7 @@ class GifaFileTests(unittest.TestCase):
     def test_write1D(self):
         """ - test 1D write capacities -"""
         import tempfile, os
-        from spike.Tests import filename
+        from ..Tests import filename
         self.announce()
         #f = tempfile.NamedTemporaryFile(delete=False)
         f = open(filename("test_write.gs1"), "w")
@@ -663,7 +663,7 @@ class GifaFileTests(unittest.TestCase):
     def test_write2D(self):
         """ - testing 2D read/write capacities - """
         import tempfile
-        from spike.Tests import filename
+        from ..Tests import filename
         self.announce()
         # first read
         #G = GifaFile(self.name2D,"r")
@@ -697,7 +697,7 @@ class GifaFileTests(unittest.TestCase):
         # self.assertAlmostEqual(B.buffer.min(),A.buffer.min())
     def base(self):
         "test basic function"
-        from spike.Tests import filename
+        from ..Tests import filename
         nameout = filename("toto.gs2")
         try:
             os.unlink(nameout)
