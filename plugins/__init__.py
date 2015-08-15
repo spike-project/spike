@@ -4,7 +4,7 @@ Plug-ins for the Spike package
 All the plugin files located in spike/plugins folder the loaded automatically 
 when import importing spike the first time.
 
-the variable spike.plugins.plugins contains the lsit of the loaded plugin modules.
+the variable spike.plugins.plugins contains the list of the loaded plugin modules.
 
 It is allways possible to load a plugin afterward by import a plugin definition at a later time during run-time.
 
@@ -32,7 +32,7 @@ plugins = []  # contains plugin modules loaded so far
 def load():
     "the load() function is called at initialization, and loads all files found in the plugins folder"
     import glob, os
-    from spike.NPKData import NPKData_plugin
+    from ..NPKData import NPKData_plugin
     global plugins
 # import all python code found here ( __path__[0] ) except me !
     for pgfile in glob.glob( os.path.join(__path__[0],"*.py") ):
@@ -45,13 +45,13 @@ def load():
                 plugins.append(pgmod)
             except:
                 print "*** Failed ***"
-                print traceback.print_exc()
+                traceback.print_exc()
                 print "*** Continuing ***"
 
 class PluginTests(unittest.TestCase):
     def test_plugin(self):
         '''Test of plugin mechanism'''
-        from spike.NPKData import NPKData
+        from ..NPKData import NPKData
         d1 = NPKData()
         d1.fake("this is a fake title").rfft()
         self.assertTrue( d1.test_title == "this is a fake title")

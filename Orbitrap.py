@@ -20,10 +20,10 @@ Copyright (c) 2014 IGBMC. All rights reserved.
 import math
 import unittest
 import numpy as np
-from spike.File.HDF5File import HDF5File
+from .File.HDF5File import HDF5File
 from spike import NPKData
 from spike import FTMS
-from spike.NPKError import NPKError
+from .NPKError import NPKError
 
 
 FREQ0 = 1E7

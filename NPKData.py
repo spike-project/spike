@@ -18,10 +18,7 @@ import re
 import time
 
 import version
-from spike.NPKError import NPKError
-
-__version__ = "0.3.3"   # this is NPKData version
-__date__ = "11/Jul/2011"
+from NPKError import NPKError
 
 ########################################################################
 # series of utilities
@@ -262,7 +259,7 @@ class Axis(object):
         
         sampling is loaded into self.sampling  and self.sampling_info is a dictionnary with information
         """
-        import spike.Algo.CS_transformations as cstr
+        from ..Algo import CS_transformations as cstr
         S = cstr.sampling_load(filename)
         self.sampling = S[0]
         #print 'self.sampling ', self.sampling
@@ -404,7 +401,7 @@ class LaplaceAxis(Axis):
         """
         print "itod might have to be checked"
         cst = (math.log(self.dmax)-math.log(self.dmin)) / (float(self.size)-1)
-        d = (self.dmin )* math.exp(cst*(value -1.0))
+        d = (self.dmin )* np.exp(cst*(value -1.0))
         return d
     def dtoi(self, value):
         """
@@ -413,8 +410,11 @@ class LaplaceAxis(Axis):
         print "dtoi might have to be checked"
         cst = (math.log(self.dmax)-math.log(self.dmin)) / (float(self.size)-1)
 
-        i = 1.0 + (math.log(value) - math.log(self.dmin)) / cst
+        i = 1.0 + (np.log(value) - np.log(self.dmin)) / cst
         return i
+    def D_axis(self):
+        """return axis containing Diffusion values, can be used for display"""
+        return self.itod(self.points_axis())
     def _report(self):
         "low level report"
         return "Dmin %f   Dmax %f  Dfactor %f"%(self.dmin,self.dmax,self.dfactor)
@@ -450,7 +450,7 @@ def NPKData_plugin(name, method):
     
     then all NPKData created will have the method .mymeth()
     
-    look at spike.plugins for details
+    look at ..plugins for details
     """
     if not callable(method):
         raise Exception("method should be callable")
@@ -500,7 +500,7 @@ class NPKData(object):
         
         the first found takes over the others which are not used
         """
-        from spike.File.GifaFile import GifaFile
+        from .File.GifaFile import GifaFile
         self.debug = debug
         self.frequency = 400.0
         self.absmax = 0.0
@@ -1192,7 +1192,7 @@ class NPKData(object):
         if not self.check_zoom(zoom):
             raise NPKError("wrong zoom window : %s "%(str(zoom)), data=self)
         if not figure:
-            import spike.Display.testplot as testplot
+            from ..Display import testplot
             plot = testplot.plot()
             if new_fig:
                 plot.figure()
@@ -1293,7 +1293,7 @@ class NPKData(object):
     #----------------------------------------------
     def load(self, name):
         """load data from a file"""
-        from spike.File.GifaFile import GifaFile
+        from .File.GifaFile import GifaFile
         Go = GifaFile(name,"r")
         Go.load()
         Go.close()
@@ -1307,7 +1307,7 @@ class NPKData(object):
     #----------------------------------------------
     def save(self, name):
         """save data to a file"""
-        from spike.File.GifaFile import GifaFile
+        from .File.GifaFile import GifaFile
         Go = GifaFile(name,"w")
         Go.set_data(self)
         Go.save()
@@ -1319,7 +1319,7 @@ class NPKData(object):
     #----------------------------------------------
     def save_txt(self, name):
         "save 1D data in texte, single column, no unit - with attributes as pseudo comments "
-        from spike.File import csv
+        from .File import csv
         if self.dim>1:
             raise NPKError("text file format only possible on 1D", data=self)
         csv.save(self, name)
@@ -1327,7 +1327,7 @@ class NPKData(object):
     #----------------------------------------------
     def load_txt(self, name):
         "load 1D data in texte, single column, no unit - with attributes as pseudo comments "
-        from spike.File import csv
+        from .File import csv
         buf, att = csv.load(name)
         self.buffer = buf
         for k,v in att.items():
@@ -1346,7 +1346,7 @@ class NPKData(object):
         
         data can be read back with File.csv.Import_1D()
         """
-        from spike.File import csv
+        from .File import csv
         if self.dim>1:
             raise NPKError("csv only possible on 1D", data=self)
         csv.save_unit(self, name)
@@ -2495,7 +2495,7 @@ class NPKData(object):
 
 class NPKDataTests(unittest.TestCase):
     """ - Testing NPKData basic behaviour - """
-    from spike.Tests import filename
+    from .Tests import filename
     name1D = filename("proj.gs1")
     name2D = filename("dosy-cluster2.gs2")       # Byteorder = big_endian
     def test_fft(self):

@@ -18,8 +18,8 @@ class v1Tests(unittest.TestCase):
             print self.shortDescription()
     def test_BrukerImport(self):
         "tests Bruker 2D Import"
-        from spike.v1 import Bruker
-        from spike.Tests import filename
+        from ..v1 import Bruker
+        from ..Tests import filename
         name2D = filename("Lasalocid-Tocsy/dataset/ser")
         self.announce()
         rep = Bruker.Import_2D(name2D)

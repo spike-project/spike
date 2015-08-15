@@ -7,10 +7,12 @@ Created by Marc-André on 2011-08-15.
 Copyright (c) 2011 IGBMC. All rights reserved.
 """
 
+from spike import NPKError
+from spike.NPKData import NPKData_plugin
+
 def rem_ridge(data):
     """
-    cette fonction soustrait un ridge en F1 en l'évaluant sur les derniers 10% d'une 2D
-    prévue pour être injectée dans NPKData.NPKData au run-time
+    This function removes a F1 ridge by evaluating a mean avalue over the last 10% data of each column of a 2D
     """
     data.check2D()
     deb = int(0.9*data.size1)   # debut et fin de l'évaluation
@@ -23,11 +25,9 @@ def rem_ridge(data):
         data.set_row(i, data.row(i).add(r) )
     return data     # et garde la syntaxe standard NPKData
     
-if __name__ == '__main__':
-    # do injection
-    import spike.NPKData
-    spike.NPKData.NPKData.rem_ridge = rem_ridge
-    print u"""
+NPKData_plugin("rem_ridge", rem_ridge)
+
+"""
 rem_ridge() injection 
 now on (in this running version)
 

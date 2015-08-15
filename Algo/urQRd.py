@@ -51,11 +51,11 @@ import numpy.linalg as linalg
 from numpy.fft import fft, ifft
 import unittest
 import time
-from spike.util.signal_tools import findnoiselevel, mfft, mrfft
 from scipy.linalg import norm
 from math import sqrt
+from ..util.signal_tools import findnoiselevel, mfft, mrfft
 
-debug = 1 # put to 1 for debuging message
+debug = 0 # put to 1 for debuging message
 
 def urQRd(data, k, orda = None, iterations = 1, optk = False, trick = False, ktrick = False):
     """ 
@@ -300,11 +300,11 @@ def test_urQRd_gene(
     """
     ============== example of use of urQRd on a synthetic data-set ===============
     """
-    import spike.Display.testplot as testplot
+    from ..Display import testplot
 #    testplot.PLOT = True
     plt = testplot.plot()
-    from spike.util.dynsubplot import subpl
-    from spike.util.signal_tools import fid_signoise, fid_signoise_type, SNR_dB, mfft
+    from ..util.dynsubplot import subpl
+    from ..util.signal_tools import fid_signoise, fid_signoise_type, SNR_dB, mfft
     superimpose = False
     nb_iterat = nb_iterat
 
@@ -389,10 +389,10 @@ class urQRd_Tests(unittest.TestCase):
         Test of the rank optimization.
         The algorithm finds the minimal rank restituting the signal with complete power. 
         '''
-        import spike.Display.testplot as testplot
+        from ..Display import testplot
         from numpy.fft import fft
         plt = testplot.plot()
-        from spike.util.signal_tools import fid_signoise
+        from ..util.signal_tools import fid_signoise
         nbpeaks = 15                                                                       # number of peaks
         ampl = 2                                                                         # amplitude for the peaks
         lengthfid = 10000                                                 # length of the Fid.
@@ -408,4 +408,5 @@ class urQRd_Tests(unittest.TestCase):
         plt.show()
                            
 if __name__ == '__main__':
-    unittest.main()
+    test_urQRd_gene()
+    #unittest.main()

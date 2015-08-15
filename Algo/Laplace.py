@@ -10,7 +10,7 @@ Copyright (c) 2012 IGBMC. All rights reserved.
 import numpy as np
 import math
 import maxent as me
-import spike.Display.testplot as testplot
+from ..Display import testplot
 plt = testplot.plot()
 ################################################################################
 class TfILT(me.TransferFunction):

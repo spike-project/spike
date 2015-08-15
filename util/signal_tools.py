@@ -7,7 +7,7 @@ from numpy.fft import irfft as npirfft
 import unittest
 import time
 
-from spike.NPKData import NPKData
+from ..NPKData import NPKData
 
 '''
 Created by Lionel Chiron  18/10/2013 
@@ -430,7 +430,7 @@ class Test_Units(unittest.TestCase):
         '''
         Testing the class for generating noisy signal.
         '''
-        import spike.Display.testplot as testplot
+        from ..Display import testplot
         plt = testplot.plot()
         lendata = 10000
         nbpeaks  = 10
@@ -444,7 +444,7 @@ class Test_Units(unittest.TestCase):
         '''
         Testing the class for generating noisy signal.
         '''
-        import spike.Display.testplot as testplot
+        from ..Display import testplot
         plt = testplot.plot()
         lendata = 10000
         nbpeaks  = 10
@@ -460,10 +460,10 @@ class Test_Units(unittest.TestCase):
         '''
         Testing noiselevel on experimental data.
         '''
-        from spike.Tests import filename
-        import spike.FTICR 
+        from ..Tests import filename
+        from .. import FTICR 
         import math
-        d = spike.FTICR.FTICRData(name = filename("ubiquitine_2D_000002_mr.msh5"))
+        d = FTICR.FTICRData(name = filename("ubiquitine_2D_000002_mr.msh5"))
         e = d.col(11033)
         e.display(show = True)
         for n in (2,5,10,20,50,100,200):
@@ -477,7 +477,7 @@ class Test_Units(unittest.TestCase):
         '''
         Multitests on urQRd_trick
         '''
-        from spike.Algo.urQRd_trick import urQRd
+        from ..Algo.urQRd_trick import urQRd
         mt = MULTITESTS(algo = urQRd, ampl_sig = 50, ampl_noise = 120.0,\
                     nbpeaks = 6, nb_tries = 1, plot_fft = True)
         algo_param = '2*self.nbpeaks'

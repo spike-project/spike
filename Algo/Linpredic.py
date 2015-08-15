@@ -91,7 +91,7 @@ class LinpredTests(unittest.TestCase):
 
     def test_burg(self):
         """ - testing burg algo - """
-        import spike.Display.testplot as testplot
+        from ..Display import testplot
         plt = testplot.plot()
         self.announce()        
         mlength=12      # ideal is 2*number of signal - here should 8, 12 gives "a little room"" to noise, and seems better
