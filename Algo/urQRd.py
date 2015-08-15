@@ -353,23 +353,22 @@ def test_urQRd_gene(
     sub.title("Noise type : " + noisetype)
     ############################
     sub.show()
-    return dataurqrd
+    return (iSNR, fSNR) #dataurqrd
 
 class urQRd_Tests(unittest.TestCase):
-    def _test_urQRd(self):
+    def test_urQRd(self):
         '''
         Makes urQrd without trick and 1 iteration.
         '''
-        filtered = test_urQRd_gene(lendata = 10000,
+        iSNR, fSNR = test_urQRd_gene(lendata = 10000,
                         rank = 30,
                         orda = 4000,
                         nbpeaks = 2,
                         noise = 10.0,
                         noisetype = "additive", 
                         nb_iterat = 1 )
-        print filtered[519], filtered[9699]
-        self.assertAlmostEqual( filtered[519].real/10, 5.52, 0)
-        self.assertAlmostEqual(filtered[9699].imag/10, -0.668714571659, 0)
+        self.assertAlmostEqual(iSNR, 6, 0)
+        self.assertTrue(fSNR > 30)
     def _test_urQRd_iter_trick(self):
         '''
         Makes urQrd with trick and varying the number of iterations.
@@ -407,6 +406,3 @@ class urQRd_Tests(unittest.TestCase):
         self.assertAlmostEqual(optk, 66, 0)
         plt.show()
                            
-if __name__ == '__main__':
-    test_urQRd_gene()
-    #unittest.main()
