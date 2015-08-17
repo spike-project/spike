@@ -202,7 +202,7 @@ class GRAPHTOOLS():
             	ax = np.array(self.ptlx)
             elif typeprof[-1] == 'y':
             	ax = np.array(self.ptly)
-        self.profile_list.append(PROFILE(data_profile, self.save, name_profile, self.namefile, ptly = ax))
+        self.profile_list.append(PROFILE(data_profile, self.save, name_profile, self.namefile, ptlx = ax, ptly = ax))# 
         self.profile_list[-1].show()
         
     def plotprofile(self, profile_type, name_profile = None):
