@@ -70,6 +70,10 @@ class HDF5File(object):
         # still have to deal with changing the file_version when file is opened reading only
         from  .. import FTICR
         import getpass
+        try:
+            owner = getpass.getuser()
+        except:
+            owner = None
         self.debug = debug
         self.fname = fname
         self.info = None
@@ -92,7 +96,7 @@ class HDF5File(object):
                 print "Open HDF5 File with writing rights"
             self.access = access
             self.hf = tables.openFile(self.fname, self.access)
-            self.create_generic(owner=getpass.getuser())
+            self.create_generic(owner=owner)
             if (info is not None):
                 if (self.debug > 0):
                     print "Create HDF5 File from info"
@@ -221,7 +225,7 @@ python HDF5File.py update {0}
         table.flush()
         table.close()
     #----------------------------------------------
-    def create_generic(self, owner = "unknown"):
+    def create_generic(self, owner=None):
         """
         A table is created with all generic informations about the file : owner, method, HDF5 Release,CreationDate, Last modification
         """
@@ -238,7 +242,10 @@ python HDF5File.py update {0}
         
         generic = self.createTable("/", "generic_table", self.generic_table)
         rows = generic.row
-        rows["Owner"] = owner
+        if owner is None:
+            rows["Owner"] = "Unknown"
+        else:
+            rows["Owner"] = owner
         rows["Method"] = "FTICR-MS"
         rows["HDF5_Version"] = tables.hdf5Version
         rows["Version"] = __version__
