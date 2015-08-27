@@ -23,17 +23,17 @@ We believe that even in this partial development stage, this program might prove
     * **Orbitrap** - 1D only (!)
     * _other spectroscopies are being considered_
     * Files can be imported from
-        * NMR : Bruker topspin / NPK (NMRNoteBook) program
+        * NMR : Bruker Topspin / NPK (NMRNoteBook) program
         * FT-ICR : Bruker Apex
         * Orbitrap : Thermofisher raw data
-        * any data in memory in a `numpy` buffer.
+        * any data in memory in a `Numpy` buffer.
 
 
-SPIKE allows to process datasets interactively from an ipython prompt, and is perfectly working in `IPython Notebook` .
+SPIKE allows to process datasets interactively from an iPython prompt, and is perfectly working in `IPython Notebook` .
 
 * Look at the examples files ( `eg_*.py` ) for examples and some documentation.
-* display is performed using the `matplotlib` library.
-* large 2D-FT-ICR are handles in batch using the `processing.py` batch program, controlled by parameter files called `*.mscf`
+* display is performed using the `Matplotlib` library.
+* large 2D-FT-ICR are handles in batch using the `processing.py` batch program, controlled by parameter file called `*.mscf`
 * The batch mode supports multiprocessing, both with MPI and natively on multi-core machines (still in-progress)
 * large 2D-FT-ICR are stored in a hierarchical format, easyly displayed with an interactive program.
 * data-sets are handled in the HDF5 standard file-format, which allows virtually unlimited file size ( _tested up to 200 Gb_ ).
@@ -43,27 +43,27 @@ A more complete documentation is available [here](https://spikydoc.bitbucket.org
 
 
 ## How do I get SPIKE ? ##
-SPIKE is written in pure python 2.7, and relies on several external libraries.
+SPIKE is written in pure Python 2.7, and relies on several external libraries.
 
-It requires the following non-standard python libraries :
+It requires the following non-standard Python libraries :
 
-* [numpy](http://docs.scipy.org/doc/numpy/reference/)
-* [scipy](http://docs.scipy.org/doc/scipy/reference/)
-* [matplotlib](http://matplotlib.org/contents.html)
+* [Numpy](http://docs.scipy.org/doc/numpy/reference/)
+* [Scipy](http://docs.scipy.org/doc/scipy/reference/)
+* [Matplotlib](http://Matplotlib.org/contents.html)
 * Qt / [PySide](http://qt-project.org/wiki/PySide)
 * HDF5 / [Pytables](http://www.pytables.org/moin) 
 * MPI / [mpi4py](http://www.mpi4py.scipy.org/)
 
-It has been successfully tested in the [**Enthought**](https://enthought.com/) and [**anaconda**](http://continuum.io/) distributions.
+It has been successfully tested in the [**Enthought**](https://enthought.com/) and [**Anaconda**](http://continuum.io/) distributions.
 
 ## History ##
 
 **SPIKE** is originated from the ** _Gifa_ ** program, developed by M-A Delsuc and others in `FORTRAN 77` since the late eighties.
 _Gifa_ has known several mutations, and finally ended as a partial rewrite called **NPK**.
-[NPK](http://abcis.cbs.cnrs.fr/NPK/) program is based on some of the original `FORTRAN` code, wrapped in Java and python, which allows to control all the program possibilities from the python level.
+[NPK](http://abcis.cbs.cnrs.fr/NPK/) program is based on some of the original `FORTRAN` code, wrapped in Java and Python, which allows to control all the program possibilities from the Python level.
 NPK is a pure computing kernel, with no graphical possibilities, and has been used as a kernel embedded in the commercial program NMRNoteBook, commercialized by NMRTEC.
 
-However, NPK was showing many weaknesses, mostly due to the 32bits organization, and a poor file format. So, when a strong scientific environment became available in python, a rewrite in pure python was undertaken. To this initial project, called NPK-V2, many new functionalities were added, and mostly the capability to work in other spectroscopies than NMR.
+However, NPK was showing many weaknesses, mostly due to the 32bits organization, and a poor file format. So, when a strong scientific environment became available in Python, a rewrite in pure Python was undertaken. To this initial project, called NPK-V2, many new functionalities were added, and mostly the capability to work in other spectroscopies than NMR.
 
 At some point, we chose to fork NPK-V2 to SPIKE, and make it public.
 
@@ -77,18 +77,18 @@ SPIKE is not published yet, if you happen to use it successfully and wish to cit
 
 The main program is `NPKData.py`, which defines NPKData object on which everything is built.
 
-Spectroscopies are defined in the `FTICR.py` and `Orbitrap.py` code, which sub class NPKData
+Spectroscopies are defined in the `FTICR.py` and `Orbitrap.py` code, which sub class NPKData.
 It is prototyped as an NMR data-set. This set-up is temporary.
 
 Many programs contain routines tests (in an object unittest) that also serve as an example of use.
-The code goes through extensive tests daily, using the `unittest` python library. However, many tests rely on a set of tests data-sets which is more than 1Go large, and not distributed here.
+The code goes through extensive tests daily, using the `unittest` Python library. However, many tests rely on a set of tests data-sets which is more than 1Go large, and not distributed here.
 
 
 ### Main programs :
 a small description of the files:
 - NPKData.py
    the main library, allows all processing for NMR experiments (1D, 2D and 3D)
-   to be used as a library, in a stand-alone program or in ipython interactive session
+   to be used as a library, in a stand-alone program or in IPython interactive session
 - FTICR.py
    an extension of NPKData for processing FT-ICR datasets (1D and 2D)
 - Orbitrap.py
@@ -98,17 +98,17 @@ a small description of the files:
    a stand alone program, written on the top of FTICR.py, allowing the efficient processing
    of FT-ICR 2D datasets, with no limit on the size of the final file
    Produces multi-resolution files
-   syntax :  python processing.py param_file.mscf 
+   syntax :  Python processing.py param_file.mscf 
 - visu2D.py
    an interactive tool for visualizing 2D FT-ICR multi-resolution files
-   python visu2D.py param_file.mscf
+   Python visu2D.py param_file.mscf
 
 ### Directories
 - Algo
    contains algorithms to process data-sets
    (MaxEnt, Laplace, etc...) not everything active !
 - Display
-   a small utility to choose either for regular matplotlib display of fake no-effect display (for tests)
+   a small utility to choose either for regular Matplotlib display of fake no-effect display (for tests)
 - File
    Importers for various file format for spectrometry, as well as the HDF5 SPIKE native format.
 - Miscellaneous
@@ -120,7 +120,7 @@ a small description of the files:
 - v1
    a library implementing a partial compatibility with the NPKV_V1 program
 - SPIKE_usage_eg
-   example python programs using the various library available
+   example Python programs using the various library available
 - example of configuration files
     - process_eg.mscf
     - test.mscf
