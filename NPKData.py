@@ -1192,7 +1192,7 @@ class NPKData(object):
         if not self.check_zoom(zoom):
             raise NPKError("wrong zoom window : %s "%(str(zoom)), data=self)
         if not figure:
-            from ..Display import testplot
+            from .Display import testplot
             plot = testplot.plot()
             if new_fig:
                 plot.figure()

@@ -76,10 +76,7 @@ def enum_imap(function, iterator):
     applies function() to each element of iterator
     creates an iterator imap(function, iterator) that returns (i, function(iterator_i))
     elements will be returned in an synchronous manner with no garanty on the order.
-    
-    if chain is False (default), slaves will be shutdown,
-             is True slaves will be reset for a new enum_imap (not debuged !)
-    
+        
     similar to enumerate( pool.imap_async(function, iterator) )
     except for the order
     """
@@ -206,7 +203,7 @@ def test_compute_simple(N, M):
     import time
     import itertools as it
     # create dummy data
-    data = numpy.arange(N,dtype=numpy.float64)
+    data = numpy.arange(N, dtype=numpy.float64)
     print """
 The program should print the value %f %d times
 then the value %f %d times
@@ -215,7 +212,7 @@ with a process speed-up proportionnal to the number of (processes-1).
     # prepare an iterator over which enum_imap will be applied
     xarg = it.repeat(data, M)
     t0 = time.time()
-    res = enum_imap(funct_array_simple1, xarg)    # apply it - chain means another comput will come.
+    res = enum_imap(funct_array_simple1, xarg)    # apply it - 
     for i,r in res:       # and get results
         print i,r.sum()
     xarg2 = it.repeat(data, 2*M)
@@ -235,9 +232,9 @@ def test_server_worker():
         M = 20 # number of operation to apply
         cpu = test_compute_simple(N, M)
         elaps = time.time()-t0
-        print 'elapsed %.2f sec  MPI starting overhead is %.2f sec'%(elaps,elaps-cpu)
+        print 'elapsed %.2f sec  MPI starting overhead is %.2f sec'%(elaps, elaps-cpu)
         spd = (1.5*M + M)/cpu    # funct_array_simple1 is ~ 1.5sec x M  and funct_array_simple2 ~0.5sec x 2M
-        print "speed up is x %.2f  for a theoretical maximum speedup of x %d"%(spd,MPI_size-1)
+        print "speed up is x %.2f  for a theoretical maximum speedup of x %d"%(spd, MPI_size-1)
         shutdown()
     else:
         slave()

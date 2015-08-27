@@ -4,7 +4,6 @@
 HDF5File.py
 
 Created by Marc-André Delsuc, Marie-Aude Coutouly on 2011-07-13.
-Copyright (c) 2011 __NMRTEC__. All rights reserved.
 
 API dealing with HDF5File. For now it is non surclassing tables, you have to use *.hf. to access all tables functionalities
 """
@@ -70,6 +69,7 @@ class HDF5File(object):
     def __init__(self, fname, access = 'r', info = None, nparray = None, fticrd = None, debug = 0):
         # still have to deal with changing the file_version when file is opened reading only
         from  .. import FTICR
+        import getpass
         self.debug = debug
         self.fname = fname
         self.info = None
@@ -92,7 +92,7 @@ class HDF5File(object):
                 print "Open HDF5 File with writing rights"
             self.access = access
             self.hf = tables.openFile(self.fname, self.access)
-            self.create_generic()
+            self.create_generic(owner=getpass.getuser())
             if (info is not None):
                 if (self.debug > 0):
                     print "Create HDF5 File from info"
@@ -221,7 +221,7 @@ python HDF5File.py update {0}
         table.flush()
         table.close()
     #----------------------------------------------
-    def create_generic(self, owner = "NMRTEC"):
+    def create_generic(self, owner = "unknown"):
         """
         A table is created with all generic informations about the file : owner, method, HDF5 Release,CreationDate, Last modification
         """
