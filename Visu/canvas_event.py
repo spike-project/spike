@@ -1,9 +1,9 @@
 import numpy as np
 import re
-from spike.util.debug_tools import*  
-from spike.Visu.Matplotlib_generictools import*
-from spike.Visu.zoom_plot import ZOOM_PLOT 
-from spike.Visu.Pyside_PyQt4 import*
+from .. util.debug_tools import*  
+from .. Visu.Matplotlib_generictools import*
+from .. Visu.zoom_plot import ZOOM_PLOT 
+from .. Visu.Pyside_PyQt4 import*
 
 @dec_class_pr
 @decclassdebugging

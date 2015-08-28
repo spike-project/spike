@@ -1,12 +1,12 @@
-from spike.util.debug_tools import*
+from .. util.debug_tools import*
 import json, io
 import numpy as np
 import scipy.interpolate as spinterp
 from mpl_toolkits.mplot3d import axes3d
-from spike.Visu.Matplotlib_generictools import*
-from spike.Visu.Pyside_PyQt4 import*
-from spike.Visu.zoom_plot import ZOOM_PLOT 
-from spike.Visu.canvas_event import CANVAS_EVENT
+from .. Visu.Matplotlib_generictools import*
+from .. Visu.Pyside_PyQt4 import*
+from .. Visu.zoom_plot import ZOOM_PLOT 
+from .. Visu.canvas_event import CANVAS_EVENT
 
 @dec_class_pr
 @decclassdebugging

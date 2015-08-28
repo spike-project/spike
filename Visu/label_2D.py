@@ -11,8 +11,8 @@ import matplotlib
 from math import sqrt
 from itertools import cycle
 from scipy.linalg import norm
-from spike.util.debug_tools import*  
-from spike.Visu.Matplotlib_generictools import*
+from .. util.debug_tools import*  
+from .. Visu.Matplotlib_generictools import*
 
 matplotlib.rcParams['xtick.direction'] = 'out'
 matplotlib.rcParams['ytick.direction'] = 'out'

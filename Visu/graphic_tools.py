@@ -4,11 +4,11 @@ Copyright (c) 2013 __NMRTEC__. All rights reserved.
 '''
 import os, sys
 import numpy as np
-from spike.Visu.Matplotlib_generictools import*
-from spike.util.debug_tools import*
-from spike.FTICR import FTICRData
-from spike.Visu.profile_popup import PROFILE 
-from spike.Visu.label_2D import PEAKPICK
+from .. Visu.Matplotlib_generictools import*
+from .. util.debug_tools import*
+from .. FTICR import FTICRData
+from .. Visu.profile_popup import PROFILE 
+from .. Visu.label_2D import PEAKPICK
 
 '''
 Graphic tools

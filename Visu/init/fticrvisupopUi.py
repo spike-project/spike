@@ -9,7 +9,7 @@
 
 
 import sys
-from spike.Visu.Pyside_PyQt4 import*
+from ..Pyside_PyQt4 import QtCore
 
 
 try:

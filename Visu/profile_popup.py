@@ -2,9 +2,9 @@ import sys, os, math
 import numpy as np
 from numpy import linspace
 from functools import partial
-from spike.util.debug_tools import*  
-from spike.Visu.Pyside_PyQt4 import*
-from spike.Visu.Matplotlib_QtCanvas import*
+from .. util.debug_tools import*  
+from .. Visu.Pyside_PyQt4 import*
+from .. Visu.Matplotlib_QtCanvas import*
 
 '''
 Popup window for managing profiles. 

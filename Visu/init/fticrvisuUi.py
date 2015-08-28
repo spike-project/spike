@@ -7,7 +7,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from spike.Visu.Pyside_PyQt4 import*
+from ..Pyside_PyQt4 import*
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
