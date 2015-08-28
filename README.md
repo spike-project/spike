@@ -33,7 +33,7 @@ SPIKE allows to process datasets interactively from an IPython prompt, and is pe
 
 * Look at the examples files ( `eg_*.py` ) for examples and some documentation.
 * display is performed using the `Matplotlib` library.
-* large 2D-FT-ICR are handles in batch using the `processing.py` batch program, controlled by parameter file called `*.mscf`
+* large 2D-FT-ICR are handled in batch using the `processing.py` batch program, controlled by parameter file called `*.mscf`
 * The batch mode supports multiprocessing, both with MPI and natively on multi-core machines (still in-progress)
 * large 2D-FT-ICR are stored in a hierarchical format, easyly displayed with an interactive program.
 * data-sets are handled in the HDF5 standard file-format, which allows virtually unlimited file size ( _tested up to 200 Gb_ ).
@@ -109,42 +109,49 @@ a small description of the files:
   ```
 
 ### Directories
-- *Algo*
+- *Algo*   
    contains algorithms to process data-sets
    (MaxEnt, Laplace, etc...) not everything active !
-- *Display*
+- *Display*    
    a small utility to choose either for regular Matplotlib display of fake no-effect display (for tests)
-- *File*
+- *File*   
    Importers for various file format for spectrometry, as well as the HDF5 SPIKE native format.
-- *plugins*
+- *plugins*   
    Tools automatically plugged in NPK kernel : display utilities, urQRd algorithm and various other tools. 
-- *Miscellaneous*
+- *Miscellaneous*    
    "en vrac"
-- *Visu*
+- *Visu*   
    utilities for the Visu2D program
-- *util*
+- *util*   
    set of low-level tools used all over in the code
-- *v1*
+- *v1*    
    a library implementing a partial compatibility with the NPKV_V1 program
-- *SPIKE_usage_eg*
+- *SPIKE_usage_eg*    
    example of Python programs using the various libraries available
-- *example of configuration files*
+- *example of configuration files*    
     - process_eg.mscf
     - test.mscf
 
 - and *various utilities*
 
-    - *NPKConfigParser.py*	reads .mscf files
-    - *NPKError.py*			generates error msg
-    - *QC.py*				Quality Check
-    - *Tests.py*				runs all tests
-    - *dev_setup.py*			rolls a new version
-    - *version.py*			defines version number
-    - *__init__.py*			defines library
-    - *rcpylint*				
-    - *To_Do_list.txt*
-    - *QC.txt*
-    - *Release.txt*
+    - NPKConfigParser.py    
+    	reads .mscf files
+    - NPKError.py  
+    	generates error msg
+    - QC.py  
+    	Quality Check
+    - Tests.py  
+    	runs all tests
+    - dev_setup.py   
+  		rolls a new version
+    - version.py   
+    	defines version number
+    - __init__.py   
+    	defines library
+    - rcpylint				
+    - To_Do_list.txt 
+    - QC.txt  
+    - Release.txt  
 
 ### Authors and Licence ###
 Active authors for SPIKE are :
