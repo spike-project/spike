@@ -7,20 +7,20 @@ Program for visualizing FTICR2D data.
 """
 import sys, os
 
-from spike.Visu.Load import LOAD #
-from spike.Visu.Saving import SAVE
-from spike.Visu.graphic_tools import GRAPHTOOLS       # class contiaining the graphic tools for doing profiles etc.. 
-from spike.Visu.display import DISPLAY            # class to handle diplay of the dataset.
-from spike.Visu.interface_actions import INTERACT     # class for to handle interaction with the interface.
-from spike.Visu.canvas import Qt4MplCanvas as QtMplCv     # class for using matplotlib in Qt canvas.
-from spike.Visu.paramzoom import PARAM_ZOOM               # class object for the zoom parameters
-from spike.Visu.zooming import ZOOMING            # class for taking care of the zooms
-from spike.Visu.move_window import MOVE_WINDOW    # class to handle the zoom windows positions
-from spike.Visu.zooming import ZOOM3D             # class for viewing peaks in 3D
-from spike.Visu.interface import INTERFACE    # class for completing the interface. 
-from spike.Visu.convert import CONVERT            # Class for conversion operations between mz and point
-from spike.Visu.single.select_tools import SELECT_TOOLS # class to handle the selected tool used in the interface.
-#from spike.util.log_all import Logger # Logger for saving stdoud and sterr in a log file. 
+from .Visu.Load import LOAD #
+from .Visu.Saving import SAVE
+from .Visu.graphic_tools import GRAPHTOOLS       # class contiaining the graphic tools for doing profiles etc
+from .Visu.display import DISPLAY            # class to handle diplay of the dataset.
+from .Visu.interface_actions import INTERACT     # class for to handle interaction with the interface.
+from .Visu.canvas import Qt4MplCanvas as QtMplCv     # class for using matplotlib in Qt canvas.
+from .Visu.paramzoom import PARAM_ZOOM               # class object for the zoom parameters
+from .Visu.zooming import ZOOMING            # class for taking care of the zooms
+from .Visu.move_window import MOVE_WINDOW    # class to handle the zoom windows positions
+from .Visu.zooming import ZOOM3D             # class for viewing peaks in 3D
+from .Visu.interface import INTERFACE    # class for completing the interface. 
+from .Visu.convert import CONVERT            # Class for conversion operations between mz and point
+from .Visu.single.select_tools import SELECT_TOOLS # class to handle the selected tool used in the interface.
+#from util.log_all import Logger # Logger for saving stdoud and sterr in a log file. 
 
 def debugs_activate(*args):
     '''
@@ -105,11 +105,11 @@ def main(argv = None):
     save = SAVE(data)                                                                               # saves 2D, 3D, profiles.
     paramz = PARAM_ZOOM(data)                                                                       # takes the parameters for zoom. 
     interf = INTERFACE()                                                                            # instantiate the interface 
-    display = DISPLAY(QtMplCv, data, interf, paramz)                                                # control the display, zoom/resolution. etc.. 
+    display = DISPLAY(QtMplCv, data, interf, paramz)                                                # control the display, zoom/resolution. etc
     convert = CONVERT(display, data, paramz)                                                                # conversion mz/point
     gtools = GRAPHTOOLS(paramz, display, data, save, convert)                                                # graphic tools
     stools = SELECT_TOOLS(display, paramz, interf)                                                          # orthogonally select tools 
-    mwind = MOVE_WINDOW(display, interf, data, paramz, gtools, convert, stools)   # moving zoom window, drag etc.. 
+    mwind = MOVE_WINDOW(display, interf, data, paramz, gtools, convert, stools)   # moving zoom window, drag etc
     zoom = ZOOMING(display, interf, data, paramz, gtools, convert, stools, mwind)                          # zooming tools.
     
     zoom3d = ZOOM3D()                                                                       # zoom 3D on localalized area.

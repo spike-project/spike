@@ -1,6 +1,6 @@
-from spike.util.debug_tools import*
-from spike.Visu.Matplotlib_QtCanvas import*
-from spike.Visu.Pyside_PyQt4 import*
+from .. util.debug_tools import*
+from .. Visu.Matplotlib_QtCanvas import*
+from .. Visu.Pyside_PyQt4 import*
 
 @dec_class_pr
 @decclassdebugging

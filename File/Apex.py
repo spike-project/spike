@@ -13,8 +13,7 @@ import glob
 import os.path as op
 import numpy as np
 import tables
-from .. import NPKData as npkd
-from ..FTICR import FTICRData
+from .. FTICR import FTICRData
 import HDF5File as hf
 # tables.parameters.NODE_CACHE_SLOTS = 0
 #tables.parameters.CHUNK_CACHE_SIZE = 0*1024*1024

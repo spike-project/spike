@@ -6,13 +6,13 @@ try:
     import PySide.QtGui 
     pyside = True
     print "using PySide for visu2D"
-except:
+except ImportError:
     try:
         import PyQt4.QtGui 
         pyside = False
         print "using PyQt4 for visu2D"
-    except:
-        print "neither PySide nor PyQt4 works."
+    except ImportError:
+        print "neither PySide nor PyQt4 work."
     
 try:
     if pyside:

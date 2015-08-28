@@ -1,6 +1,6 @@
-import spike.NPKConfigParser as npkcfg 
-from spike.File.HDF5File import HDF5File
-from spike.util.debug_tools import*
+from .. NPKConfigParser import NPKConfigParser 
+from .. File.HDF5File import HDF5File
+from .. util.debug_tools import*
 import os
 
 @dec_class_pr
@@ -53,7 +53,7 @@ class LOAD(object):
         self.active = True
         #### with configfile
         if configfile:
-            cp = npkcfg.NPKConfigParser()  # Instantiate Config Parser.
+            cp = NPKConfigParser()  # Instantiate Config Parser.
             cp.readfp(open(configfile)) 
             self.param = Visu_Parameters(cp) # parameters from config file.. 
             self.param.report()             # check configfile
