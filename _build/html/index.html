@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 
 
@@ -10,13 +9,13 @@
     
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/bootstrap-3.0.0/css/bootstrap.min.css" type="text/css" />
-    <link rel="stylesheet" href="_static/bootstrap-3.0.0/css/bootstrap-theme.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-3.2.0/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-3.2.0/css/bootstrap-theme.min.css" type="text/css" />
     <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
+        URL_ROOT:    './',
         VERSION:     '1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -26,9 +25,9 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-1.11.0.min.js"></script>
     <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
-    <script type="text/javascript" src="_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-3.2.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
     <link rel="top" title="spike 1.0 documentation" href="#" />
     <link rel="next" title="Introduction" href="rst/introduction.html" />
@@ -60,11 +59,14 @@
             
             
               <li class="dropdown globaltoc-container">
-  <a href="#"
-     class="dropdown-toggle"
-     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Site <b class="caret"></b></a>
   <ul class="dropdown-menu globaltoc"
-    ><ul>
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
 <li class="toctree-l1"><a class="reference internal" href="rst/introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="rst/tutorial.html">Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="rst/code.html">Code</a></li>
@@ -74,11 +76,15 @@
 </li>
               
                 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
-  <ul class="dropdown-menu localtoc"><ul>
-<li><a class="reference internal" href="#">Welcome to SPIKE documentation!</a><ul>
-</ul>
-</li>
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Welcome to SPIKE documentation!</a></li>
 <li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 </ul>
@@ -130,7 +136,9 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="rst/introduction.html">Introduction</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="rst/introduction.html#what-is-spike">What is SPIKE ?</a></li>
-<li class="toctree-l2"><a class="reference internal" href="rst/introduction.html#how-do-i-get-set-up">How do I get set up?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rst/introduction.html#how-do-i-get-spike">How do I get SPIKE ?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rst/introduction.html#history">History</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rst/introduction.html#citing-spike">Citing SPIKE</a></li>
 <li class="toctree-l2"><a class="reference internal" href="rst/introduction.html#organisation-of-the-code">Organisation of the Code</a></li>
 <li class="toctree-l2"><a class="reference internal" href="rst/introduction.html#main-programs">Main programs :</a></li>
 <li class="toctree-l2"><a class="reference internal" href="rst/introduction.html#directories">Directories</a></li>
@@ -160,24 +168,24 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="rst/code.html">Code</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="rst/code.html#module-NPKData">NPKData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rst/code.html#npkdata">NPKData</a></li>
 <li class="toctree-l2"><a class="reference internal" href="rst/code.html#file-formats">File formats</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="rst/code.html#module-File.Apex">Apex</a></li>
-<li class="toctree-l3"><a class="reference internal" href="rst/code.html#module-File.GifaFile">GifaFile</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rst/code.html#apex">Apex</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rst/code.html#gifafile">GifaFile</a></li>
 <li class="toctree-l3"><a class="reference internal" href="rst/code.html#module-File.HDF5File">HDF5File</a></li>
-<li class="toctree-l3"><a class="reference internal" href="rst/code.html#module-File.Solarix">Solarix</a></li>
-<li class="toctree-l3"><a class="reference internal" href="rst/code.html#module-File.Thermo">Thermo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rst/code.html#solarix">Solarix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rst/code.html#thermo">Thermo</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="rst/code.html#module-FTICR">FTICR</a></li>
-<li class="toctree-l2"><a class="reference internal" href="rst/code.html#module-Orbitrap">Orbitrap</a></li>
-<li class="toctree-l2"><a class="reference internal" href="rst/code.html#module-visu2D">visu2D</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="rst/code.html#fticr">FTICR</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rst/code.html#orbitrap">Orbitrap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rst/code.html#visu2d">visu2D</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="rst/visu2d.html">inside Visu2D</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="rst/code.html#module-processing">Processing 2D</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rst/code.html#processing-2d">Processing 2D</a></li>
 <li class="toctree-l2"><a class="reference internal" href="rst/code.html#algorithms">Algorithms</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="rst/code.html#module-Algo.urQRd">urQRd</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rst/code.html#urqrd">urQRd</a></li>
 <li class="toctree-l3"><a class="reference internal" href="rst/code.html#module-Algo.Linpredic">Linpredic</a></li>
 </ul>
 </li>
@@ -218,7 +226,7 @@
     </p>
     <p>
         &copy; Copyright 2014, a.<br/>
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.3.<br/>
     </p>
   </div>
 </footer>
