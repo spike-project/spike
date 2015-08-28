@@ -10,11 +10,11 @@ This is the beta version of the **SPIKE** program. A collaborative development f
 
 It allows the processing of **1D** and **2D** FT spectroscopies, implementing Real, Complex and HyperComplex n-dimensionnal Fourier Transform, as well as many other functionalities.
 
-To our knowledge, it is the first program freely available allowing the processing, display and analysis of 2D-FT-ICR.
+To our knowledge, it is the first program freely available allowing the processing, display and analysis of 2D-FT-ICR (Fourier Transform Ion Cyclotron Resonance).
 
-It is still in very active development, and distributed here as an alpha version.
+It is still in very active development.
 Many features are missing, and many other while present, are not fully fixed.
-However, considering the amount of effort already present in this code, we decided to make it available.
+However, considering the amount of efforts already present in this code, we decided to make it available.
 We believe that even in this partial development stage, this program might prove useful for certain usages.
 
 * For the moment, SPIKE handles the following Spectroscopies
@@ -86,6 +86,7 @@ The code goes through extensive tests daily, using the `unittest` Python library
 
 ### Main programs :
 a small description of the files:
+
 - NPKData.py
    the main library, allows all processing for NMR experiments (1D, 2D and 3D)
    to be used as a library, in a stand-alone program or in IPython interactive session
@@ -98,10 +99,16 @@ a small description of the files:
    a stand alone program, written on the top of FTICR.py, allowing the efficient processing
    of FT-ICR 2D datasets, with no limit on the size of the final file
    Produces multi-resolution files
-   syntax : ```python processing.py param_file.mscf`` 
+   syntax : 
+   ```python 
+      python processing.py param_file.mscf
+   ```
+   
 - visu2D.py
    an interactive tool for visualizing 2D FT-ICR multi-resolution files
-   ```python visu2D.py param_file.mscf```
+   ```python 
+      python visu2D.py param_file.mscf
+  ```
 
 ### Directories
 - Algo
