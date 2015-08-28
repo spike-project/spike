@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 
 
@@ -10,8 +9,8 @@
     
     <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/bootstrap-3.0.0/css/bootstrap.min.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/bootstrap-3.0.0/css/bootstrap-theme.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-3.2.0/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-3.2.0/css/bootstrap-theme.min.css" type="text/css" />
     <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
     
     <script type="text/javascript">
@@ -26,9 +25,9 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
     <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
-    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.2.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
     <link rel="top" title="spike 1.0 documentation" href="../index.html" />
     <link rel="next" title="Tutorial" href="tutorial.html" />
@@ -61,11 +60,14 @@
             
             
               <li class="dropdown globaltoc-container">
-  <a href="../index.html"
-     class="dropdown-toggle"
-     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
   <ul class="dropdown-menu globaltoc"
-    ><ul class="current">
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="code.html">Code</a></li>
@@ -75,11 +77,19 @@
 </li>
               
                 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
-  <ul class="dropdown-menu localtoc"><ul>
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
 <li><a class="reference internal" href="#">Introduction</a><ul>
 <li><a class="reference internal" href="#what-is-spike">What is SPIKE ?</a></li>
-<li><a class="reference internal" href="#how-do-i-get-set-up">How do I get set up?</a></li>
+<li><a class="reference internal" href="#how-do-i-get-spike">How do I get SPIKE ?</a></li>
+<li><a class="reference internal" href="#history">History</a></li>
+<li><a class="reference internal" href="#citing-spike">Citing SPIKE</a></li>
 <li><a class="reference internal" href="#organisation-of-the-code">Organisation of the Code</a></li>
 <li><a class="reference internal" href="#main-programs">Main programs :</a></li>
 <li><a class="reference internal" href="#directories">Directories</a></li>
@@ -135,102 +145,264 @@
       
   <div class="section" id="introduction">
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
-<p>This is the beta version of the SPIKE program.</p>
+<p>This is the beta version of the <strong>SPIKE</strong> program. A collaborative development for a FT-spectroscopy processing program.</p>
 <div class="section" id="what-is-spike">
 <h2>What is SPIKE ?<a class="headerlink" href="#what-is-spike" title="Permalink to this headline">¶</a></h2>
-<p>SPIKE is a program coming from a first-development oriented one named NPK-V2 that allows the processing, the display and the analysis of data-sets obtained from various Fourier-Transform spectroscopies. It stands for Spectrometry Processing Innovative KErnel.</p>
-<p>For the moment, il handles the following data-sets</p>
-<ul class="simple">
-<li>NMR - 1D and 2D are fully supported</li>
-<li>FT-ICR - 1D and 2D are fully supported</li>
-<li>Orbitrap - 1D only</li>
-<li>other spectroscopies are being considered</li>
-</ul>
-<p>Files can be imported from</p>
-<ul class="simple">
-<li>NMR : Bruker topspin</li>
+<p><strong>SPIKE</strong> is a program that allows the processing, the display and the analysis of data-sets obtained from various Fourier-Transform spectroscopies. The name stands for <strong>S</strong>pectrometry <strong>P</strong>rocessing <strong>I</strong>nnovative <strong>KE</strong>rnel.</p>
+<p>It allows the processing of <strong>1D</strong> and <strong>2D</strong> FT spectroscopies, implementing Real, Complex and HyperComplex n-dimensionnal Fourier Transform, as well as many other functionalities.</p>
+<p>To our knowledge, it is the first program freely available allowing the processing, display and analysis of 2D-FT-ICR (Fourier Transform Ion Cyclotron Resonance).</p>
+<p>It is still in very active development.
+Many features are missing, and many other while present, are not fully fixed.
+However, considering the amount of efforts already present in this code, we decided to make it available.
+We believe that even in this partial development stage, this program might prove useful for certain usages.</p>
+<p>For the moment, SPIKE handles the following Spectroscopies</p>
+<ul>
+<li><p class="first"><strong>NMR</strong> - 1D and 2D are fully supported</p>
+</li>
+<li><p class="first"><strong>FT-ICR</strong> - 1D and 2D are fully supported</p>
+</li>
+<li><p class="first"><strong>Orbitrap</strong> - 1D only (!)</p>
+</li>
+<li><p class="first">other spectroscopies are being considered</p>
+</li>
+<li><dl class="first docutils">
+<dt>Files can be imported from</dt>
+<dd><ul class="first last simple">
+<li>NMR : Bruker Topspin / NPK (NMRNoteBook) program</li>
 <li>FT-ICR : Bruker Apex</li>
 <li>Orbitrap : Thermofisher raw data</li>
+<li>any data in memory in a <cite>Numpy</cite> buffer.</li>
 </ul>
-<p>It allows to process datasets interactively from an ipython prompt or interactively using the processing.py batch program (aimed towad FT-ICR for the moment)
-The batch mode supports multiprocessing, both with MPI and natively on multi-core machines (still in-progress).Data-sets are handled in the HDF5 standard file-format, which allows virtually unlimited file size.</p>
-<p>Version : this is 0.5 beta version</p>
-</div>
-<div class="section" id="how-do-i-get-set-up">
-<h2>How do I get set up?<a class="headerlink" href="#how-do-i-get-set-up" title="Permalink to this headline">¶</a></h2>
-<p>The program is in python 2.7.
-Look at the examples files (<a href="#id1"><span class="problematic" id="id2">eg_</span></a>.py) and at configuration files (.mscf) they contain valuable examples and some documentation.
-SPIKE requires the following libraries :</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>SPIKE allows to process datasets interactively from an IPython prompt, and is perfectly working in <cite>IPython Notebook</cite> .</p>
 <ul class="simple">
-<li>numpy</li>
-<li>scipy</li>
-<li>matplotlib</li>
-<li>Qt / PySide</li>
-<li>Pytables</li>
-<li>mpi4py * ...</li>
+<li>Look at the examples files ( <cite>eg_*.py</cite> ) for examples and some documentation.</li>
+<li>display is performed using the <cite>Matplotlib</cite> library.</li>
+<li>large 2D-FT-ICR are handled in batch using the <cite>processing.py</cite> batch program, controlled by parameter file called <cite>*.mscf</cite></li>
+<li>The batch mode supports multiprocessing, both with MPI and natively on multi-core machines (still in-progress)</li>
+<li>large 2D-FT-ICR are stored in a hierarchical format, easyly displayed with an interactive program.</li>
+<li>data-sets are handled in the HDF5 standard file-format, which allows virtually unlimited file size ( tested up to 200 Gb ).</li>
+<li>Version : this is 0.6 beta version</li>
 </ul>
-<p>It has been successfully tested in the Enthought and anaconda link distributions.</p>
+<p>A more complete documentation is available [here](<a class="reference external" href="https://spikydoc.bitbucket.org">https://spikydoc.bitbucket.org</a>).</p>
+</div>
+<div class="section" id="how-do-i-get-spike">
+<h2>How do I get SPIKE ?<a class="headerlink" href="#how-do-i-get-spike" title="Permalink to this headline">¶</a></h2>
+<p>SPIKE is written in pure Python 2.7, and relies on several external libraries.</p>
+<p>It requires the following non-standard Python libraries :</p>
+<ul class="simple">
+<li>[Numpy](<a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/">http://docs.scipy.org/doc/numpy/reference/</a>)</li>
+<li>[Scipy](<a class="reference external" href="http://docs.scipy.org/doc/scipy/reference/">http://docs.scipy.org/doc/scipy/reference/</a>)</li>
+<li>[Matplotlib](<a class="reference external" href="http://Matplotlib.org/contents.html">http://Matplotlib.org/contents.html</a>)</li>
+<li>Qt / [PySide](<a class="reference external" href="http://qt-project.org/wiki/PySide">http://qt-project.org/wiki/PySide</a>)</li>
+<li>HDF5 / [Pytables](<a class="reference external" href="http://www.pytables.org/moin">http://www.pytables.org/moin</a>)</li>
+<li>MPI / [mpi4py](<a class="reference external" href="http://www.mpi4py.scipy.org/">http://www.mpi4py.scipy.org/</a>)</li>
+</ul>
+<p>It has been successfully tested in the [<strong>Enthought</strong>](<a class="reference external" href="https://enthought.com/">https://enthought.com/</a>) and [<strong>Anaconda</strong>](<a class="reference external" href="http://continuum.io/">http://continuum.io/</a>) distributions.</p>
+</div>
+<div class="section" id="history">
+<h2>History<a class="headerlink" href="#history" title="Permalink to this headline">¶</a></h2>
+<p><strong>SPIKE</strong> is originated from the <strong>Gifa</strong> program, developed by M-A Delsuc and others in <cite>FORTRAN 77</cite> since the late eighties.
+_Gifa_ has known several mutations, and finally ended as a partial rewrite called <strong>NPK</strong>.
+[NPK](<a class="reference external" href="http://abcis.cbs.cnrs.fr/NPK/">http://abcis.cbs.cnrs.fr/NPK/</a>) program is based on some of the original <cite>FORTRAN</cite> code, wrapped in Java and Python, which allows to control all the program possibilities from the Python level.
+NPK is a pure computing kernel, with no graphical possibilities, and has been used as a kernel embedded in the commercial program NMRNoteBook, commercialized by NMRTEC.</p>
+<p>However, NPK was showing many weaknesses, mostly due to the 32bits organization, and a poor file format. So, when a strong scientific environment became available in Python, a rewrite in pure Python was undertaken. To this initial project, called NPK-V2, many new functionalities were added, and mostly the capability to work in other spectroscopies than NMR.</p>
+<p>At some point, we chose to fork NPK-V2 to SPIKE, and make it public.</p>
+</div>
+<div class="section" id="citing-spike">
+<h2>Citing SPIKE<a class="headerlink" href="#citing-spike" title="Permalink to this headline">¶</a></h2>
+<p>SPIKE is not published yet, if you happen to use it successfully and wish to cite it, please refer to this site, as well as the following references :</p>
+<ol class="arabic simple">
+<li>Tramesel, D., Catherinot, V. &amp; Delsuc, M.-A. Modeling of NMR processing, toward efficient unattended processing of NMR experiments. _J Magn <a href="#id1"><span class="problematic" id="id2">Reson_</span></a> <strong>188</strong>, 56–67 (2007).</li>
+<li>van Agthoven, M. A., Chiron, L., Coutouly, M.-A., Delsuc, M.-A. &amp; Rolando, C. Two-Dimensional ECD FT-ICR Mass Spectrometry of Peptides and Glycopeptides. _Anal <a href="#id3"><span class="problematic" id="id4">Chem_</span></a> <strong>84</strong>, 5589–5595 (2012).</li>
+</ol>
 </div>
 <div class="section" id="organisation-of-the-code">
 <h2>Organisation of the Code<a class="headerlink" href="#organisation-of-the-code" title="Permalink to this headline">¶</a></h2>
-<p>The main program is NPKData.py, which defines NPKData object on which everything is built.
-Spectroscopies are defined in the FTICR.py and Orbitrap.py code, which sub class NPKData It is prototyped as an NMR data-set, but this will change.
-Many programs contain routines tests (in an object unittest) that also serve as an example of use.</p>
+<p>The main program is <cite>NPKData.py</cite>, which defines NPKData object on which everything is built.</p>
+<p>Spectroscopies are defined in the <cite>FTICR.py</cite> and <cite>Orbitrap.py</cite> code, which sub class NPKData.
+It is prototyped as an NMR data-set. This set-up is temporary.</p>
+<p>Many programs contain routines tests (in an object unittest) that also serve as an example of use.
+The code goes through extensive tests daily, using the <cite>unittest</cite> Python library. However, many tests rely on a set of tests data-sets which is more than 1Go large, and not distributed here.</p>
 </div>
 <div class="section" id="main-programs">
 <h2>Main programs :<a class="headerlink" href="#main-programs" title="Permalink to this headline">¶</a></h2>
-<p>A small description of the files: - NPKData.py the main library, allows all processing for NMR experiments (1D, 2D and 3D) to be used as a library, in a stand-alone program or in ipython interactive session - FTICR.py an extension of NPKData for processing FT-ICR datasets (1D and 2D) - Orbitrap.py an extension of NPKData for processing Orbitrap datasets (1D)</p>
-<blockquote>
-<div>processing.py a stand alone program, written on the top of FTICR.py, allowing the efficient processing of FT-ICR 2D datasets, with no limit on the size of the final file Produces multi-resolution files syntax : python processing.py param_file.mscf
-visu2D.py an interactive tool for visualizing 2D FT-ICR multi-resolution files python visu2D.py param_file.mscf</div></blockquote>
+<p>a small description of the files:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>NPKData.py</dt>
+<dd><p class="first last">the main library, allows all processing for NMR experiments (1D, 2D and 3D)
+to be used as a library, in a stand-alone program or in IPython interactive session</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>FTICR.py</dt>
+<dd><p class="first last">an extension of NPKData for processing FT-ICR datasets (1D and 2D)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Orbitrap.py</dt>
+<dd><p class="first last">an extension of NPKData for processing Orbitrap datasets (1D)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>processing.py</dt>
+<dd><p class="first">a stand alone program, written on the top of FTICR.py, allowing the efficient processing
+of FT-ICR 2D datasets, with no limit on the size of the final file
+Produces multi-resolution files syntax :</p>
+<p class="last"><tt class="docutils literal"><span class="pre">`python</span> <span class="pre">-m</span> <span class="pre">processing.py</span> <span class="pre">param_file.mscf</span>
+<span class="pre">`</span></tt></p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>visu2D.py</dt>
+<dd><p class="first last">an interactive tool for visualizing 2D FT-ICR multi-resolution files</p>
+</dd>
+</dl>
+<p><tt class="docutils literal"><span class="pre">`python</span> <span class="pre">-m</span> <span class="pre">visu2D.py</span> <span class="pre">param_file.mscf</span>
+<span class="pre">`</span></tt></p>
+</li>
+</ul>
 </div>
 <div class="section" id="directories">
 <h2>Directories<a class="headerlink" href="#directories" title="Permalink to this headline">¶</a></h2>
-<p>Three main directories</p>
-<ul class="simple">
-<li>Algo contains algorithms to process data-sets (MaxEnt, Laplace, etc...) not everything active !</li>
-<li>File Importers for various file format for spectrometry, as well as the HDF5 SPIKE native format.</li>
-<li>Visu utilities for the Visu2D program</li>
-</ul>
-<p>Some usage examples</p>
-<ul class="simple">
-<li>SPIKE_usage_eg example python programs using the various library available</li>
-</ul>
-<p>Various codes</p>
-<ul class="simple">
-<li>Miscellaneous &#8220;en vrac&#8221;</li>
-<li>Display a small utility to choose either for regular matplotlib display of fake no-effect display (for tests)</li>
-<li>util set of low-level tools used all over in the code</li>
-<li>v1 a library implementing a compatibility with the NPKV_V1 program</li>
-</ul>
-<p>example of configuration files</p>
-<ul class="simple">
+<ul>
+<li><dl class="first docutils">
+<dt><em>Algo</em></dt>
+<dd><p class="first last">contains algorithms to process data-sets
+(MaxEnt, Laplace, etc...) not everything active !</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><em>Display</em></dt>
+<dd><p class="first last">a small utility to choose either for regular Matplotlib display of fake no-effect display (for tests)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><em>File</em></dt>
+<dd><p class="first last">Importers for various file format for spectrometry, as well as the HDF5 SPIKE native format.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><em>plugins</em></dt>
+<dd><p class="first last">Tools automatically plugged in NPK kernel : display utilities, urQRd algorithm and various other tools.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><em>Miscellaneous</em></dt>
+<dd><p class="first last">&#8220;en vrac&#8221;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><em>Visu</em></dt>
+<dd><p class="first last">utilities for the Visu2D program</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><em>util</em></dt>
+<dd><p class="first last">set of low-level tools used all over in the code</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><em>v1</em></dt>
+<dd><p class="first last">a library implementing a partial compatibility with the NPKV_V1 program</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><em>SPIKE_usage_eg</em></dt>
+<dd><p class="first last">example of Python programs using the various libraries available</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><em>example of configuration files</em></dt>
+<dd><ul class="first last simple">
 <li>process_eg.mscf</li>
 <li>test.mscf</li>
 </ul>
-<p>and various utilities</p>
-<ul class="simple">
-<li>NPKConfigParser.py reads .mscf files</li>
-<li>NPKError.py generates error msg</li>
-<li>QC.py Quality Check</li>
-<li>Tests.py runs all tests</li>
-<li>dev_setup.py rolls a new version</li>
-<li>version.py defines version number</li>
-<li>init.py defines library</li>
-<li>rcpylint</li>
-<li>To_Do_list.txt</li>
-<li>QC.txt</li>
-<li>Release.txt</li>
+</dd>
+</dl>
+</li>
+</ul>
+<p>and <em>various utilities</em></p>
+<ul>
+<li><dl class="first docutils">
+<dt>NPKConfigParser.py</dt>
+<dd><p class="first last">reads .mscf files</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>NPKError.py</dt>
+<dd><p class="first last">generates error msg</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>QC.py</dt>
+<dd><p class="first last">Quality Check</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Tests.py</dt>
+<dd><p class="first last">runs all tests</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>dev_setup.py</dt>
+<dd><p class="first last">rolls a new version</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>version.py</dt>
+<dd><p class="first last">defines version number</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>__init__.py</dt>
+<dd><p class="first last">defines library</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">rcpylint</p>
+</li>
+<li><p class="first">To_Do_list.txt</p>
+</li>
+<li><p class="first">QC.txt</p>
+</li>
+<li><p class="first">Release.txt</p>
+</li>
 </ul>
 </div>
 <div class="section" id="authors-and-licence">
 <h2>Authors and Licence<a class="headerlink" href="#authors-and-licence" title="Permalink to this headline">¶</a></h2>
-<p>Authors for this code are :</p>
-<p>Marc-André Delsuc - CNRS</p>
-<p>Lionel Chiron - CNRS then NMRTEC then Casc4de</p>
-<p>Marie-Aude Coutouly - NMRTEC</p>
+<p>Active authors for SPIKE are :</p>
+<ul class="simple">
+<li>Marc-André Delsuc  .  <cite>madelsuc -at- unistra.fr</cite></li>
+<li>Lionel Chiron      .  <cite>Lionel.Chiron -at- casc4de.eu</cite></li>
+<li>Marie-Aude Coutouly . <cite>Marie-Aude.Coutouly -at- nmrtec.com</cite></li>
+</ul>
 <p>Covered code is provided under this license on an &#8220;as is&#8221; basis, without warranty of any kind, either expressed or implied, including, without limitation, warranties that the covered code is free of defects. The entire risk as to the quality and performance of the covered code is with you. Should any covered code prove defective in any respect, you (not the initial developer or any other contributor) assume the cost of any necessary servicing, repair or correction.</p>
-<p>Downloading code and datasets from this page signifies acceptance of the hereunder License Agreement. The code distributed here is covered under the CeCILL licence.</p>
+<p>Downloading code and datasets from this page signifies acceptance of the hereunder License Agreement. The code distributed here is covered under the CeCILL license : <a class="reference external" href="http://www.cecill.info/index.en.html">http://www.cecill.info/index.en.html</a></p>
 </div>
 </div>
 
@@ -247,7 +419,7 @@ visu2D.py an interactive tool for visualizing 2D FT-ICR multi-resolution files p
     </p>
     <p>
         &copy; Copyright 2014, a.<br/>
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.3.<br/>
     </p>
   </div>
 </footer>

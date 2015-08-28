@@ -4,9 +4,7 @@ This is the beta version of the **SPIKE** program. A collaborative development f
 
 ## What is SPIKE ? ##
 
-**SPIKE** is a program that allows the processing, the display and the analysis of data-sets obtained from various Fourier-Transform spectroscopies.
-
-**SPIKE** stands for **S**pectrometry **P**rocessing **I**nnovative **KE**rnel.
+**SPIKE** is a program that allows the processing, the display and the analysis of data-sets obtained from various Fourier-Transform spectroscopies. The name stands for **S**pectrometry **P**rocessing **I**nnovative **KE**rnel.
 
 It allows the processing of **1D** and **2D** FT spectroscopies, implementing Real, Complex and HyperComplex n-dimensionnal Fourier Transform, as well as many other functionalities.
 
@@ -99,13 +97,15 @@ a small description of the files:
    a stand alone program, written on the top of FTICR.py, allowing the efficient processing
    of FT-ICR 2D datasets, with no limit on the size of the final file
    Produces multi-resolution files
-   syntax : 
-   ```python processing.py param_file.mscf
+   syntax :   
+   
+   ```python -m processing.py param_file.mscf
    ```
    
 - visu2D.py
-   an interactive tool for visualizing 2D FT-ICR multi-resolution files
-  ```python visu2D.py param_file.mscf
+   an interactive tool for visualizing 2D FT-ICR multi-resolution files  
+   
+  ```python -m visu2D.py param_file.mscf
   ```
 
 ### Directories
@@ -146,7 +146,7 @@ a small description of the files:
   		rolls a new version
     - version.py   
     	defines version number
-    - __init__.py   
+    - \__init\__.py   
     	defines library
     - rcpylint				
     - To_Do_list.txt 
