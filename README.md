@@ -29,7 +29,7 @@ We believe that even in this partial development stage, this program might prove
         * any data in memory in a `Numpy` buffer.
 
 
-SPIKE allows to process datasets interactively from an iPython prompt, and is perfectly working in `IPython Notebook` .
+SPIKE allows to process datasets interactively from an IPython prompt, and is perfectly working in `IPython Notebook` .
 
 * Look at the examples files ( `eg_*.py` ) for examples and some documentation.
 * display is performed using the `Matplotlib` library.
@@ -98,10 +98,10 @@ a small description of the files:
    a stand alone program, written on the top of FTICR.py, allowing the efficient processing
    of FT-ICR 2D datasets, with no limit on the size of the final file
    Produces multi-resolution files
-   syntax :  Python processing.py param_file.mscf 
+   syntax : ```python processing.py param_file.mscf`` 
 - visu2D.py
    an interactive tool for visualizing 2D FT-ICR multi-resolution files
-   Python visu2D.py param_file.mscf
+   ```python visu2D.py param_file.mscf```
 
 ### Directories
 - Algo
@@ -111,6 +111,8 @@ a small description of the files:
    a small utility to choose either for regular Matplotlib display of fake no-effect display (for tests)
 - File
    Importers for various file format for spectrometry, as well as the HDF5 SPIKE native format.
+- plugins
+   Tools automatically plugged in NPK kernel : display utilities, urQRd algorithm and various other tools. 
 - Miscellaneous
    "en vrac"
 - Visu
@@ -120,7 +122,7 @@ a small description of the files:
 - v1
    a library implementing a partial compatibility with the NPKV_V1 program
 - SPIKE_usage_eg
-   example Python programs using the various library available
+   example of Python programs using the various libraries available
 - example of configuration files
     - process_eg.mscf
     - test.mscf
