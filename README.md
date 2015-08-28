@@ -100,53 +100,51 @@ a small description of the files:
    of FT-ICR 2D datasets, with no limit on the size of the final file
    Produces multi-resolution files
    syntax : 
-   ```python 
-      python processing.py param_file.mscf
+   ```python processing.py param_file.mscf
    ```
    
 - visu2D.py
    an interactive tool for visualizing 2D FT-ICR multi-resolution files
-   ```python 
-      python visu2D.py param_file.mscf
+  ```python visu2D.py param_file.mscf
   ```
 
 ### Directories
-- Algo
+- *Algo*
    contains algorithms to process data-sets
    (MaxEnt, Laplace, etc...) not everything active !
-- Display
+- *Display*
    a small utility to choose either for regular Matplotlib display of fake no-effect display (for tests)
-- File
+- *File*
    Importers for various file format for spectrometry, as well as the HDF5 SPIKE native format.
-- plugins
+- *plugins*
    Tools automatically plugged in NPK kernel : display utilities, urQRd algorithm and various other tools. 
-- Miscellaneous
+- *Miscellaneous*
    "en vrac"
-- Visu
+- *Visu*
    utilities for the Visu2D program
-- util
+- *util*
    set of low-level tools used all over in the code
-- v1
+- *v1*
    a library implementing a partial compatibility with the NPKV_V1 program
-- SPIKE_usage_eg
+- *SPIKE_usage_eg*
    example of Python programs using the various libraries available
-- example of configuration files
+- *example of configuration files*
     - process_eg.mscf
     - test.mscf
 
-- and various utilities
+- and *various utilities*
 
-    - NPKConfigParser.py	reads .mscf files
-    - NPKError.py			generates error msg
-    - QC.py				Quality Check
-    - Tests.py				runs all tests
-    - dev_setup.py			rolls a new version
-    - version.py			defines version number
-    - __init__.py			defines library
-    - rcpylint				
-    - To_Do_list.txt
-    - QC.txt
-    - Release.txt
+    - *NPKConfigParser.py*	reads .mscf files
+    - *NPKError.py*			generates error msg
+    - *QC.py*				Quality Check
+    - *Tests.py*				runs all tests
+    - *dev_setup.py*			rolls a new version
+    - *version.py*			defines version number
+    - *__init__.py*			defines library
+    - *rcpylint*				
+    - *To_Do_list.txt*
+    - *QC.txt*
+    - *Release.txt*
 
 ### Authors and Licence ###
 Active authors for SPIKE are :
