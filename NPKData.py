@@ -2495,7 +2495,7 @@ class NPKData(object):
 
 class NPKDataTests(unittest.TestCase):
     """ - Testing NPKData basic behaviour - """
-    from .Tests import filename
+    from Tests import filename
     name1D = filename("proj.gs1")
     name2D = filename("dosy-cluster2.gs2")       # Byteorder = big_endian
     def test_fft(self):
