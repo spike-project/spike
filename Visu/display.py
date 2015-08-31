@@ -122,7 +122,7 @@ class DISPLAY():# class regrouping tools to change resolution with zoom
         f1limits = (int(round(coord[1])), int(round(coord[3])))
         f2limits = (int(round(coord[0])), int(round(coord[2])))
         zoomtup = (f1limits, f2limits)
-        d.display(figure = canvas.axes, zoom = zoomtup, scale = self.paramz.scale) # 
+        d.display(figure = canvas.axes, zoom = zoomtup, scale = self.paramz.scale, absmax = d.absmax) # 
 
     def affi(self, canvas, d):# print data in window D
         '''
