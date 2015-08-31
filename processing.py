@@ -1,8 +1,9 @@
+#!/usr/bin/env python
 # encoding: utf-8
 """
 Processing.py
 
-This program makes the processing of an FTICR dataset
+This program makes the processing of an 2D-FTICR dataset
 
 Created by Marc-Andre on 2011-09-23.
 Copyright (c) 2011 IGBMC. All rights reserved.
@@ -29,7 +30,7 @@ import spike.util.mpiutil as mpiutil
 from spike.util.signal_tools import findnoiselevel_offset  as findnoiselevel
 from spike.NPKData import as_cpx
 from spike.util.simple_logger2 import TeeLogger
-from spike.util.rem_ridge import rem_ridge
+#from spike.util.rem_ridge import rem_ridge
 
 debug = 1   # 0 means no debugging
 interfproc = False

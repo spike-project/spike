@@ -8,28 +8,28 @@ Initialize and handle
 interface
 ++++++++++++++++++++++++++++++
 
-.. automodule:: Visu.interface
+.. automodule:: spike.Visu.interface
     :members:
     
 
 interface_actions
 ++++++++++++++++++++++++++++++
 
-.. automodule:: Visu.interface_actions
+.. automodule:: spike.Visu.interface_actions
     :members:
     
 
 Pyside_PyQt4
 ++++++++++++++++++++++++++++++
 
-.. automodule:: Visu.Pyside_PyQt4
+.. automodule:: spike.Visu.Pyside_PyQt4
     :members:
 
 
 Load
 ++++++++++++++++++++++++++++++
 
-.. automodule:: Visu.Load
+.. automodule:: spike.Visu.Load
     :members:
 
 
@@ -39,40 +39,40 @@ Visualization
 paramzoom
 ++++++++++++++++++++++++++++++
 
-.. automodule:: Visu.paramzoom
+.. automodule:: spike.Visu.paramzoom
     :members:
 
 
 display
 ++++++++++++++++++++++++++++++
 
-.. automodule:: Visu.display
+.. automodule:: spike.Visu.display
     :members:
 
 canvas_event
 ++++++++++++++++++++++++++++++
 
-.. automodule:: Visu.canvas_event
+.. automodule:: spike.Visu.canvas_event
     :members:
     
 canvas
 ++++++++++++++++++++++++++++++
 
-.. automodule:: Visu.canvas
+.. automodule:: spike.Visu.canvas
     :members:
 
 
 convert
 ++++++++++++++++++++++++++++++
 
-.. automodule:: Visu.convert
+.. automodule:: spike.Visu.convert
     :members:
     
 
 Matplotlib_generictools
 ++++++++++++++++++++++++++++++
 
-.. automodule:: Visu.Matplotlib_generictools
+.. automodule:: spike.Visu.Matplotlib_generictools
     :members:
 
 
@@ -80,34 +80,34 @@ Matplotlib_generictools
 profile_popup
 ++++++++++++++++++++++++++++++
 
-.. automodule:: Visu.profile_popup
+.. automodule:: spike.Visu.profile_popup
     :members:
 
 
 zooming
 ++++++++++++++++++++++++++++++
 
-.. automodule:: Visu.zooming
+.. automodule:: spike.Visu.zooming
     :members:
     
 
 zoom_plot
 ++++++++++++++++++++++++++++++
 
-.. automodule:: Visu.zoom_plot
+.. automodule:: spike.Visu.zoom_plot
     :members:
     
     
 zoom_tools
 ++++++++++++++++++++++++++++++
 
-.. automodule:: Visu.zoom_tools
+.. automodule:: spike.Visu.zoom_tools
     :members:
     
 label_2D
 ++++++++++++++++++++++++++++++
 
-.. automodule:: Visu.label_2D
+.. automodule:: spike.Visu.label_2D
     :members:
 
 
@@ -117,7 +117,7 @@ Miscellaneous
 Saving
 ++++++++++++++++++++++++++++++
 
-.. automodule:: Visu.Saving
+.. automodule:: spike.Visu.Saving
     :members:
 
 
