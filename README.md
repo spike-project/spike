@@ -37,7 +37,7 @@ SPIKE allows to process datasets interactively from an IPython prompt, and is pe
 * data-sets are handled in the HDF5 standard file-format, which allows virtually unlimited file size ( _tested up to 200 Gb_ ).
 * Version : this is 0.6 beta version
 
-A more complete documentation is available [here](https://spikydoc.bitbucket.org).  
+A more complete documentation is available [here](https://spikedoc.bitbucket.org).  
 
 
 ## How do I get SPIKE ? ##
@@ -99,13 +99,13 @@ a small description of the files:
    Produces multi-resolution files
    syntax :   
    
-   ```python -m processing.py param_file.mscf
+   ```python -m spike.processing.py param_file.mscf
    ```
    
 - visu2D.py
    an interactive tool for visualizing 2D FT-ICR multi-resolution files  
    
-  ```python -m visu2D.py param_file.mscf
+  ```python -m spike.visu2D.py param_file.mscf
   ```
 
 ### Directories
