@@ -71,10 +71,10 @@ Some usage examples
 
 Various codes
 
-* Miscellaneous "en vrac"
+* Miscellaneous "en vrac"  
 * Display a small utility to choose either for regular matplotlib display of fake no-effect display (for tests)
-* util set of low-level tools used all over in the code
-* v1 a library implementing a compatibility with the NPKV_V1 program
+* util set of low-level tools used all over in the code  
+* v1 a library implementing a compatibility with the NPKV_V1 program  
 
 example of configuration files
 

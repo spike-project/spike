@@ -23,3 +23,8 @@ Miscellaneous/processing2-urqrd_debug\.py
 Miscellaneous/processing2-urqrd\.py
 Miscellaneous/processing2\.py
 Miscellaneous/SetConfig\.py
+_build
+_static
+_templates
+rst
+Tests_specific.py
