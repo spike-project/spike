@@ -13,7 +13,7 @@ This module provides a simple access to NMR files in the Gifa format.
 
 import re
 import numpy as np
-from ..NPKData import NPKData, NMRAxis, LaplaceAxis
+from .. import NPKData as npkd
 from ..NPKError import NPKError
 import unittest
 import os
@@ -109,7 +109,7 @@ class GifaFile(object):
         itype is not handled (not coded per axis in header)
         used internally
         """
-        axis = NMRAxis()
+        axis = npkd.NMRAxis()
         axis.size = int(self.header["Dim%d"%n_axis])
         axis.specwidth = float(self.header["Specw%d"%n_axis])
         axis.offset = float(self.header["Offset%d"%n_axis])
@@ -121,7 +121,7 @@ class GifaFile(object):
         get values from axis "n" from header, and creates and returns a new (LaplaceAxis) axis with this values
         used internally
         """
-        axis = LaplaceAxis()
+        axis = npkd.LaplaceAxis()
         axis.size = int(self.header["Dim1"])
         if (self.header["Dmin"] != "NaN"):
             axis.dmin = float(self.header["Dmin"])
@@ -141,7 +141,7 @@ class GifaFile(object):
         if not self.data_valid:
 #            ndata = NPKdata(dim =self.dim)
 #            ndata.data = self.readc().data               # modified buffer to data
-            ndata = NPKData(buffer=self.readc(), dim =self.dim)
+            ndata = npkd.NPKData(buffer=self.readc(), dim =self.dim)
             #ndata.display(scale = 10.0,show=True)
             # setup axes
             ndata.axis1 = self.copyaxesfromheader(1)
@@ -645,8 +645,8 @@ class GifaFileTests(unittest.TestCase):
             fid = fid + i*20*np.exp(2*i*432.1j*x)*np.exp(-LB*x)   # that's 5 lines altogether
         # put it into a NPKBuffer
         print "***", fid[10]
-        B = NPKData(buffer=fid)
-        B.axis1 = NMRAxis(size=1024, specwidth=1000, offset=0.0, frequency=400.0, itype=1)
+        B = npkd.NPKData(buffer=fid)
+        B.axis1 = npkd.NMRAxis(size=1024, specwidth=1000, offset=0.0, frequency=400.0, itype=1)
         # and save it
         G.set_data(B)
         G.save()
@@ -706,7 +706,7 @@ class GifaFileTests(unittest.TestCase):
         dd = 2*np.ones((508,2*1000)) # + np.arange(2*1000)
         print dd.shape
         H = GifaFile(nameout,"w")
-        A = NPKData(buffer=dd)
+        A = npkd.NPKData(buffer=dd)
         H.set_data(A)
         H.save()        # save dataset
         H.close()
