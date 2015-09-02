@@ -120,8 +120,10 @@ def do_Test():
     msg("Running automatic Tests")
     t0 = time.time()
     suite = unittest.defaultTestLoader.loadTestsFromNames( list_of_modules )
+    nbtests = suite.countTestCases()
     results = unittest.TextTestRunner(verbosity = 2).run(suite)
     elaps = time.time()-t0
+    to_mail.append("Ran %d tests in %.3fs"%(nbtests, elaps))
     if results.wasSuccessful():
         to_mail.append( msg("CONGRATULATIONS - all the {} SPIKE tests performed succesfully ".format(len(list_of_modules))) )
         subject = "SUCCESS :)  " + subject
@@ -133,6 +135,10 @@ def do_Test():
     else:
         subject = "Failed :(  " + subject
         to_mail.append( msg("Tests Failed, Please revise error codes", sep = '!') )
+        to_mail.append( "%d test(s) failed :"%len(results.errors) )
+        for err in results.errors:
+            to_mail.append( msg("%s"%(err[0]) ) )
+            to_mail.append( err[1] )
     print "\n".join(to_mail)
     if MAIL:
         for address in list_of_mails:

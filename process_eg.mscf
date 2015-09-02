@@ -19,7 +19,7 @@ F1_specwidth = 500000
 # highmas is the cutoff frequency of the excitation pulse
 highmass = 2600
 
-format = Apex
+format = Solarix
 
 [processing]
 # the hdf5 file which will be processed - usually coming from apex above
