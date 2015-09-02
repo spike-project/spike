@@ -13,7 +13,7 @@ This module provides a simple access to NMR files in the Gifa format.
 
 import re
 import numpy as np
-from ..NPKData import NPKData, NMRAxis
+from ..NPKData import NPKData, NMRAxis, LaplaceAxis
 from ..NPKError import NPKError
 import unittest
 import os
