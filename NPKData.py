@@ -2523,7 +2523,7 @@ class NPKDataTests(unittest.TestCase):
         from .Tests import filename
         print(self.test_load.__doc__)
         name1D = filename("proj.gs1")
-        E = NPKData(name=self.name1D)
+        E = NPKData(name=name1D)
         self.assertAlmostEqual(E[0], 1869.4309082)
         self.assertAlmostEqual(E.get_buffer().max(), 603306.75)
 
