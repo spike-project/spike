@@ -1,33 +1,45 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-
-
 """
 Tests.py
 
 Created by Marc-André  on 2010-07-20.
-Copyright (c) 2010 IGBMC. All rights reserved.
 
-Runs tests on selected modules using the integrated unittests. 
+Runs tests on selected modules using the integrated unittests in the different SPIKE modules.
+
+most default values can be overloaded with run time arguments
 """
 
-from __future__ import print_function
+#added arguments on 2015-09-03
+
+from __future__ import  print_function, division
 import unittest
 import os
 import os.path as op
+import sys
+from .Display import testplot
+# Beware  !! Awful Hack !!
+# testplot is used to switch display off 
+# BUT ALSO to monkey patch at Tests run time to store in testplot.config values used by the tests (DATA_dir)
+
+
+__version__ = "2.0"
+
+#############################################################################
+# configuration - overwriten by arguments at run time
 
 # when CLEAN is set to true, unwanted files in test directory will be removed.
 CLEAN = True
 
 # when MAIL is set to true, a mail with results is sent to e-mail add defined in list_of_mails
-MAIL = True
-if MAIL:
-    from util.sendgmail import mail
-    list_of_mails =  ["madelsuc@unistra.fr", "lionel.chiron@gmail.com"]  # []
+# defined with
+MAIL = False
+list_of_mails = []
 
 #DATA_dir defines where the DATA for tests are located
-#DATA_dir = "/Users/mad/NPKV2/DATA_test"
-DATA_dir = "/Volumes/biak_1ToHD/rdc/DATA_test"
+DATA_dir = "/Volume/DATA_test"
+
+RUN = True
 
 # Add your module here
 mod_util = ("plugins", "plugins.Peaks", 'util.dynsubplot', 'util.debug_tools') #'util.read_msh5', 
@@ -41,17 +53,15 @@ list_of_modules = mod_basicproc + mod_file  + mod_util + mod_algo # + mod_user
 
 # end of configuration
 #############################################################################
-# add spike prefix
-list_of_modules = ["spike."+mod for mod in list_of_modules]
 
 
 # utilities to be called by tests using files in DATA_dir
 def directory():
     "returns the location of the directory containing dataset for tests"
-    return DATA_dir
+    return testplot.config["DATA_dir"]
 def filename(name):
     "returns the full name of a test dataset located in the test directory"
-    return op.join(DATA_dir, name)
+    return op.join(testplot.config["DATA_dir"], name)
 
 def msg(st, sep = '='):
     '''
@@ -113,11 +123,24 @@ def do_Test():
     Gives total time elapsed.
     '''
     import time
+    global list_of_modules
     subject = "SPIKE tests perfomed on {0} {2}  running on host {1}".format(*os.uname())
-    to_mail = [msg(subject)]
+    to_mail = [msg(subject), "Test program version %s"%__version__]
+
+    # add spike prefix
+    list_of_modules = ["spike."+mod for mod in list_of_modules]
     msg("modules to be tested are:")
     for mod in list_of_modules:
         print(mod)
+
+    stdata = "\nDatasets for tests are located in : %s"%DATA_dir
+    to_mail.append(stdata)
+    print(stdata)
+
+    if not RUN:
+        print ("\nDry run - stopping now, without executing the tests")
+        sys.exit(0)
+
     msg("First removing leftover files")
     cleandir()
     msg("removing .pyc in spike")
@@ -146,12 +169,48 @@ def do_Test():
             to_mail.append( err[1] )
     print("\n".join(to_mail))
     if MAIL:
+        from util.sendgmail import mail
         for address in list_of_mails:
             mail(address, subject, "\n".join(to_mail) )
+    # finally clean dir
+    cleandir()
 
 def main():
-    import Display.testplot as testplot
+#    import Display.testplot as testplot
+    import argparse
+    global MAIL, list_of_mails, RUN, list_of_modules, DATA_dir, CLEAN
+    global config
+    
+    # Parse and interpret options.
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-m', '--mail', action='append', help="a mail address to which the result is sent - multiple entries possible -")
+    parser.add_argument('-D', '--Data', help="the location of the data_test folder")
+    parser.add_argument('-t', '--test_modules', action='append', help="overwrite the list of modules to test - multiple entries possible -")
+    parser.add_argument('-n', '--dry',  action='store_true', help="list parameters and do not run the tests")
+    parser.add_argument('-d', '--dirty', action='store_true', help="do not remove temporary files")
+    
+    args = parser.parse_args()
+
+    print( "mail", args.mail)
+    print( "data", args.Data)
+    print( "module", args.test_modules)
+    print("dry", args.dry)
+    print('dirty', args.dirty)
+    if args.dry:
+        RUN = False
+    if args.mail is not None:
+        MAIL = True
+        list_of_mails =  args.mail  # is a list because of action='append'
+    if args.test_modules is not None:
+        list_of_modules = args.test_modules
+    if args.Data is not None:
+        DATA_dir = args.Data
+    if args.dirty:
+        CLEAN = False
     testplot.PLOT = False   # switches off the display for automatic tests
+    testplot.config = {}
+    testplot.config["DATA_dir"] = DATA_dir
+#    print(sys.modules)
     do_Test()
     
 if __name__ == '__main__':
