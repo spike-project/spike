@@ -26,6 +26,9 @@ Copyright (c) 2012 IGBMC. All rights reserved.
 
 ################################################################################
 # UTILITIES
+
+from __future__ import print_function
+
 class Counter(object):
     """
     defines an incremental counter

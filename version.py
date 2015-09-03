@@ -1,6 +1,9 @@
 
 # This file is generated automatically by dev_setup.py 
 # Do not edit
+
+from __future__ import print_function
+
 ProgramName = 'SPIKE'
 VersionName = 'Development version - beta'
 version = '0.6.4'

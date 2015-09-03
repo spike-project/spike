@@ -22,6 +22,7 @@ __author__ = "Marc A. Delsuc <delsuc@igbmc.fr>"
 #__date__ = "Oct 2009"  # MAD added  table4 
 __date__ = "Jul 2010"   # MAD minor corrections using pylint
 
+from __future__ import print_function
 
 # table[isotope-name]= (spin,  naturalAbondance, magneticMoment, magnetogyricRatio, freq,  quadrupoleMoment)
 table = {}

@@ -6,7 +6,7 @@ This file implements all the tools for handling FT-ICR data-sets
 It allows to work with 1D and 2D 
 
 To use it :
-from __future__ import print_function
+
 import FTICR
 d = FTICR.FTICRData(...)    # There are several possible initialisation : empty, from file
 play with d
@@ -21,7 +21,7 @@ d = Import_1D("filename)")
 Created by Marc-André on 2014-08
 Copyright (c) 2014 IGBMC. All rights reserved.
 """
-
+from __future__ import print_function
 import math
 import unittest
 import numpy as np
