@@ -1,10 +1,11 @@
+from __future__ import print_function
 """
 set of function for Peak detections and display
 
 Very Sloppy - Not finsihed !
 """
 
-from __future__ import print_function
+
 import numpy as np
 import unittest
 

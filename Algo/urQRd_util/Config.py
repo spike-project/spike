@@ -1,9 +1,10 @@
+from __future__ import print_function
 '''
 Created by Lionel Chiron  03/12/2013
 Copyright (c) 2013 __NMRTEC__. All rights reserved.
 '''
 from NPKConfigParser import NPKConfigParser
-from __future__ import print_function
+
 import re, os, sys
 
 class Proc_Parameters(object):

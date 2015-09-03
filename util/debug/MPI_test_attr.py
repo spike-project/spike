@@ -1,8 +1,9 @@
+from __future__ import print_function
 # encoding: utf-8
 """
 Testing MPI
 """
-from __future__ import print_function
+
 import sys
 sys.path.append('../')
 sys.path.append('../util/') # path to mail

@@ -1,3 +1,4 @@
+from __future__ import print_function
 #!/usr/bin/env python
 # encoding: utf-8
 
@@ -12,7 +13,7 @@ Few examples of how to use NPK v2.
 
 """
 from File.Apex import Import_1D
-from __future__ import print_function
+
 import numpy as np                  # pour faire des calculs
 import matplotlib.pyplot as plt     # pour afficher les données brutes
 from FTICR import FTICRData

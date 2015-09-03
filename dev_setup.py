@@ -1,3 +1,4 @@
+from __future__ import print_function
 # encoding: utf-8
 """
 dev_setup.py
@@ -69,7 +70,7 @@ if UsingSVN and UsingHG:
 
 ####################### End of configuration ###################
 from subprocess import Popen, PIPE
-from __future__ import print_function
+
 import re
 from datetime import date
 

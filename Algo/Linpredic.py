@@ -1,3 +1,4 @@
+from __future__ import print_function
 """
 Adaptation of code from :
 
@@ -13,7 +14,7 @@ Created by Lionel on 2011-09-18.
 Removed the "for loops" so as to speed up using numpy capabilities.
 Copyright (c) 2010 IGBMC. All rights reserved.
 """
-from __future__ import print_function
+
 import numpy as np
 import random
 import time

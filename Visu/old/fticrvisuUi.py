@@ -1,3 +1,4 @@
+from __future__ import print_function
 # -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file '/home/lio/Documents/bitbucket/draft/Visu/util/fticrResol.ui'
@@ -7,7 +8,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from __future__ import print_function
+
 
 from PySide import QtCore, QtGui
 try:

@@ -1,3 +1,4 @@
+from __future__ import print_function
 #!/usr/bin/env python
 # encoding: utf-8
 """
@@ -7,7 +8,7 @@ Created by Marc-André on 2012-10-09.
 Copyright (c) 2012 IGBMC. All rights reserved.
 """
 
-from __future__ import print_function
+
 import unittest
 from v1.Kore import *
 

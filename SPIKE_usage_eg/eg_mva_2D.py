@@ -1,3 +1,4 @@
+from __future__ import print_function
 
 # encoding: utf-8
 
@@ -5,7 +6,7 @@
 quelques examples de traitements, en utilisant la base du nouveau NPK v2
 
 """
-from __future__ import print_function
+
 import NPKData as npkd
 from FTICR import FTICRData
 import numpy as np                  # pour faire des calculs supplémentaires  - pas utilisé ici

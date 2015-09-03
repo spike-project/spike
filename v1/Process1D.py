@@ -1,3 +1,4 @@
+from __future__ import print_function
 """
     This module contains all the routines needed to process 1D NMR spectra
     
@@ -31,7 +32,7 @@
 """
 __author__ = "Marc A. Delsuc <delsuc@igbmc.fr>"
 __date__ = "Oct 2009"
-from __future__ import print_function
+
 import math
 from Generic import *
 

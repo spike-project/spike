@@ -1,9 +1,10 @@
+from __future__ import print_function
 """
 This a test suite for NPK.
   
 Note that all functionalities  are not tested yet !
 """
-from __future__ import print_function
+
 import unittest
 import tempfile
 import math

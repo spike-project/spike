@@ -1,3 +1,4 @@
+from __future__ import print_function
 # -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file '/Users/chiron/bitbuck/draft/Visu/util/fticrResol.ui'

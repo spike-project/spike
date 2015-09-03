@@ -1,3 +1,4 @@
+from __future__ import print_function
 '''
 Created by Lionel Chiron  18/10/2013 
 Copyright (c) 2013 __NMRTEC__. All rights reserved.
@@ -9,7 +10,7 @@ Typical syntax is:
     f = open("fff.jpg")
 If the picture "fff.jpg" doesn't exist, an arror message is sent by mail. 
 '''
-from __future__ import print_function
+
 import sys, os
 from time import sleep, localtime, strftime
 import os.path as op

@@ -1,3 +1,4 @@
+from __future__ import print_function
 #!/usr/bin/python
 '''
 Sending informations about result etc with Gmail
@@ -5,7 +6,7 @@ Using mail gmalert67@gmail.com
 with password igbmcalert
 recipient (to) and attached document (attach) can be a list
 '''
-from __future__ import print_function
+
 import smtplib
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEBase import MIMEBase

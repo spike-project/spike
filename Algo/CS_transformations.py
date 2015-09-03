@@ -1,3 +1,4 @@
+from __future__ import print_function
 #!/usr/bin/env python
 # encoding: utf-8
 """
@@ -8,7 +9,7 @@ adapted by Lionel on 2013-3-6.
 Copyright (c) 2011 IGBMC. All rights reserved.
 """
 
-from __future__ import print_function
+
 import numpy as np
 #import scipy.fftpack as fft
 import numpy.fft as fft # numpy scipy seem equivalent for ifft and fft.. 
