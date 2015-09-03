@@ -9,6 +9,7 @@ Typical syntax is:
     f = open("fff.jpg")
 If the picture "fff.jpg" doesn't exist, an arror message is sent by mail. 
 '''
+from __future__ import print_function
 import sys, os
 from time import sleep, localtime, strftime
 import os.path as op
@@ -40,7 +41,7 @@ class Writer(object):
         a.start()
     
     def mail_if_error(self):
-        print "sending mail"
+        print("sending mail")
         sleep(1)
         gm = GMAIL()
         gm.send(to = self.mail_address, subject = 'logger report',
@@ -101,7 +102,7 @@ class Logger(object):
 
 class Test(unittest.TestCase):
     Logger(erase = True)#log_name = 'blabla', mail = 'gmalert67@gmail.com'
-    print "hello toto"
+    print("hello toto")
     f = open("fff.jpg") # opening an inexisting file
         
 if __name__ == '__main__':

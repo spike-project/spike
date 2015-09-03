@@ -201,22 +201,22 @@ def report(H_freq=600.0):
     l.sort()
     l.reverse()
 #    print l
-    print "===   NPK Spin table  at Bo = %6.2f Tesla  ======================================"%(Bo)
-    print "name   :  spin      Freq (\Xi) MHz    Q in fm2     Abundance  in %       receptivity"
-    print "===================================================================================="
+    print("===   NPK Spin table  at Bo = %6.2f Tesla  ======================================"%(Bo))
+    print("name   :  spin      Freq (\Xi) MHz    Q in fm2     Abundance  in %       receptivity")
+    print("====================================================================================")
     for f in l:
         s = t[f]
         (spin,  naturalAbondance, magneticMoment, magnetogyricRatio, ff,  quadrupoleMoment) = table[s]
         f2 = freqB(s, Bo)
         if (spin%2 == 0):   # spin is integer
-            print "%5s  :  spin %1i     Freq %8.4f    Q : %6.3f   Abundance : %7.3f%%  recept : %5.2e "% \
-                (s,spin/2, freq(s,H_freq),quadrupoleMoment,naturalAbondance,receptivity(s))
+            print("%5s  :  spin %1i     Freq %8.4f    Q : %6.3f   Abundance : %7.3f%%  recept : %5.2e "% \
+                (s,spin/2, freq(s,H_freq),quadrupoleMoment,naturalAbondance,receptivity(s)))
         else:
             if spin == 1:
-                print "%5s  :  spin %1i/2   Freq %8.4f                 Abundance : %7.3f%%  recept : %5.2e"% \
-                    (s,spin, freq(s,H_freq),naturalAbondance,receptivity(s))
+                print("%5s  :  spin %1i/2   Freq %8.4f                 Abundance : %7.3f%%  recept : %5.2e"% \
+                    (s,spin, freq(s,H_freq),naturalAbondance,receptivity(s)))
             else:
-                print "%5s  :  spin %1i/2   Freq %8.4f    Q : %6.2f   Abundance : %7.3f%%  recept : %5.2e"% \
-                    (s,spin, freq(s,H_freq),quadrupoleMoment,naturalAbondance,receptivity(s))
+                print("%5s  :  spin %1i/2   Freq %8.4f    Q : %6.2f   Abundance : %7.3f%%  recept : %5.2e"% \
+                    (s,spin, freq(s,H_freq),quadrupoleMoment,naturalAbondance,receptivity(s)))
 #        if (abs(1- (f2/freq(s,H_freq))) > 0.01):
 #            print f2, freq(s,H_freq), 100*abs(1- (f2/freq(s,H_freq)))

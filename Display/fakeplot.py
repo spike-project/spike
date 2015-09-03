@@ -11,6 +11,7 @@ Copyright (c) 2010 IGBMC. All rights reserved.
 
 __version__ = "0.2.1"
 
+from __future__ import print_function
 import sys
 import os
 
@@ -22,14 +23,14 @@ class fake(object):
     def __init__(self):
         global current
         current += 1
-        print "******* figure %d *****"%current
+        print("******* figure %d *****"%current)
     def figure(self, *args, **key):
         return fake()
     def plot(self, *args, **key):
         x = args[0]
         label = key.get("label","")
         plotname = key.get("plot_name","plot")
-        print "-- %s : %d points  %s"%(plotname, len(x), label)
+        print("-- %s : %d points  %s"%(plotname, len(x), label))
     def hist(self, *args, **key):
         key['plot_name'] = 'histogram'
         plot(*args, **key)
@@ -57,38 +58,38 @@ class fake(object):
             (n,m) = ( len(args[0]), len(args[1]))
             if (n,m) != args[2].shape:
                 raise "size missmatch in contour"
-        print "-- contour-plot : %d x %d"%(n,m)
+        print("-- contour-plot : %d x %d"%(n,m))
     contourf = contour
     def yscale(self, *args, **key):
-        print "-- yscale",args
+        print("-- yscale",args)
     def xscale(self, *args, **key):
-        print "-- xscale",args
+        print("-- xscale",args)
     def text(self, *args, **key):
-        print "-- text :",args
+        print("-- text :",args)
     def legend(self, *args, **key):
         pass
     def show(self, *args, **key):
-        print "******** show"
+        print("******** show")
     def xlabel(self, *args, **key):
-        print "-- xlabel :",args[0]
+        print("-- xlabel :",args[0])
     set_xlabel = xlabel
     def ylabel(self, *args, **key):
-        print "-- ylabel :",args[0]
+        print("-- ylabel :",args[0])
     set_ylabel = ylabel
     def title(self, *args, **key):
-        print "-- title :",args[0]
+        print("-- title :",args[0])
     def suptitle(self, *args, **key):
-        print "-- suptitle :",args[0]
+        print("-- suptitle :",args[0])
     def grid(self, *args, **key):
         if args[0]: 
-            print 'grid on'
+            print('grid on')
     def add_subplot(self, *args, **key):
-        print "*** subplot :",args[0]
+        print("*** subplot :",args[0])
         return self
     def set_xticklabels(self, *args, **key):
-        print "-- xtick :",args[0]
+        print("-- xtick :",args[0])
     def set_yticklabels(self, *args, **key):
-        print "-- ytick :",args[0]
+        print("-- ytick :",args[0])
 def figure(*args, **key):
     return gca().figure(*args, **key)
 def subplot(*args, **key):
@@ -129,8 +130,8 @@ def suptitle(*args, **key):
 def grid(*args, **key):
     return gca().grid(*args, **key)
 
-print "-- matplotlib not available, using fake plot instead"
-print "-- no graphic will be available"
+print("-- matplotlib not available, using fake plot instead")
+print("-- no graphic will be available")
 
 def gca():
     global gca0
@@ -141,8 +142,8 @@ gca0 = None
 
 
 if __name__ == '__main__':
-    print "This library creates fake entry methods allowing to fake minimum use of matplotlib.pyplot\neg:"
-    print """
+    print("This library creates fake entry methods allowing to fake minimum use of matplotlib.pyplot\neg:")
+    print("""
     x=range(10)
     plot(x)
     f = figure()
@@ -152,7 +153,7 @@ if __name__ == '__main__':
     show()
 
     produces :
-    """
+    """)
     x=range(10)
     plot(x)
     f = figure()

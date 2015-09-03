@@ -10,6 +10,7 @@ As NPK does not directly implement regular complex FT, a fake hypercomplex FT is
 """
 
 
+from __future__ import print_function
 import time
 import math
 from v1 import *
@@ -30,7 +31,7 @@ def doit():
         K.dim(2)
         K.chsize(2*N,2*M) # fake complex
         K.itype(3)
-        print K.get_itype_2d()
+        print(K.get_itype_2d())
         K.addnoise(123,234)
 
         K.ft("F2")
@@ -50,11 +51,11 @@ def doit():
             mean += mflop
         except:
             mean = mflop
-        print ("2D FT : %d x %d :\t%d Mflops"%(N,M,mflop))
+        print(("2D FT : %d x %d :\t%d Mflops"%(N,M,mflop)))
         if (tt>stat_time and stat>2):     # reduce stat loop if it took more than stat_time sec
             stat=stat/2
     #        print stat
-    print "Mean MFlops value : %d"%(mean/len(liste))
+    print("Mean MFlops value : %d"%(mean/len(liste)))
 
 prof_file = "profile2.dump"
 #doit()
@@ -62,7 +63,7 @@ if False:    # profile
     import profile
     pr = profile.Profile()
     for i in range(5):
-        print pr.calibrate(10000)
+        print(pr.calibrate(10000))
     profile.run("doit()",prof_file)
 if True:    # report
     import pstats

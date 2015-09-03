@@ -37,6 +37,7 @@
 __author__ = "Marc A. Delsuc <delsuc@igbmc.fr>"
 __date__ = "Oct 2009"
 
+from __future__ import print_function
 import math
 import os
 import time
@@ -368,7 +369,7 @@ it implements data massaging before ILT:
                        "DFACTOR value", dfactor)
         p_in["dfactor"]=dfactor                       
         f_out["dfactor"]=dfactor
-        print "dfactor: %f"%(dfactor)
+        print("dfactor: %f"%(dfactor))
     # F1 noise evaluation
     # %action% f1_noise
     #   evaluate noise, estimated by finding an empty zone on a given 1D spectrum
@@ -619,7 +620,7 @@ it implements the spectral analysis step :
     f_out["col_selection_right"] = end
     audittrail( audit, "text", "column selection",
                     "number of selected columns", len(l))
-    print "Number of selected colums: %i"%(len(l))
+    print("Number of selected colums: %i"%(len(l)))
 
     # %action% me_preset
     #   presets the MaxEnt parameters to default values

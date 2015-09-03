@@ -12,6 +12,7 @@ Created by Marc-André on 2010-10-16.
 Copyright (c) 2010 IGBMC. All rights reserved.
 """
 
+from __future__ import print_function
 import numpy as np
 import math
 import matplotlib.pyplot as plt
@@ -27,7 +28,7 @@ def dofilter(spec,threshold=2.921):
         return buf - (t**2)/buf
     # compute r2
     if spec.axis1.itype == 0:
-        print "reel !"
+        print("reel !")
         r2 = spec.buffer
     else:
         d = npkd.as_cpx(spec.buffer)
@@ -111,7 +112,7 @@ def mask_matrix(corrmat, filtered, thresh=0.2):
                 if len(pkm)>3:
                     break
             pkm.append(pk)
-        print "**", i, pkm
+        print("**", i, pkm)
         for p in pkm:
             mat[i,:] +=  ( rcorr[i,p]*np.exp(1j*anglecorr[i,p])/med[p] ) * filtered[p,:]    # eq 5
         mat[i,:] *= ( med[i]/medabs(mat[i,:]) )                                  # eq 6
@@ -123,11 +124,11 @@ def testcorr():
     c = corr(c1, c2)
     r =  math.sqrt(c.real**2 + c.imag**2)
     teta = math.atan2(c.real, c.imag)
-    print r, teta
+    print(r, teta)
     c = corr( c1, c2*np.exp(-1j*teta) ) # ( math.cos(-teta)+1j*math.sin(-teta) ) )
     r =  math.sqrt(c.real**2 + c.imag**2)
     teta = math.atan2(c.real, c.imag)
-    print r, teta
+    print(r, teta)
 #----------------------------------
 def test():
     #load
@@ -147,7 +148,7 @@ def test():
     proj.addbase(-med)
     proj.peak(threshold=0.05)
     proj.addbase(med)
-    print "%d peaks"%len(proj.peaks)
+    print("%d peaks"%len(proj.peaks))
     proj.display_peaks()
     # compute filtered spectra
     filtered = filter_matrix(d1,2*proj.peaks)

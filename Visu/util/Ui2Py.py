@@ -1,4 +1,5 @@
 from os.path import *
+from __future__ import print_function
 import os
 import shutil
 import Tkinter
@@ -35,13 +36,13 @@ class py2ui(object):
       name_py = os.path.basename(self.path_py)
       #self.add_py = self.path_py[:-3] + self.extf # Python address for the python resulting interface module, name of python routine to be interface+"Ui"
       self.add_py = join(dir_py,"Visu", "init", name_py[:-3] + self.extf)
-      print "self.add_py ",self.add_py
+      print("self.add_py ",self.add_py)
       os.system('python ' + addpyuic + ' ' + self.path_ui+ '> ' + self.add_py)# create .py file for the interface next to the routine to be interfaced.
    
    def name_path_py(self):
       currentpath = sys.path[0] # address for the program to interface
       self.path_py = Selector.askopenfilename(title = 'enter name of the main .py file', initialdir = currentpath)
-      print "pathfile ", self.path_py
+      print("pathfile ", self.path_py)
    
    def name_path_ui(self):
       self.path_ui = Selector.askopenfilename(title = 'enter name of the .ui file', initialdir = self.addressUi)
@@ -71,7 +72,7 @@ class py2ui(object):
       list_err_line = ['from PyQt4 import QtCore, QtGui']
       for elem in list_err_line:
          if elem in line:
-            print "elem found is ", elem
+            print("elem found is ", elem)
             #self.g.write('from PySide import QtCore, QtGui')
             self.g.write('from ..Pyside_PyQt4 import*')
             return True
@@ -92,7 +93,7 @@ class py2ui(object):
                   #'self.pushButton_9.setText(QtGui.QApplication.translate("MainWindow", "PushButton", None, QtGui.QApplication.UnicodeUTF8))']
       for elem in list_rem:
          if elem in line:
-            print "elem found is ", elem
+            print("elem found is ", elem)
             self.g.write('')
             return True
       return False

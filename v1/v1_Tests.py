@@ -7,6 +7,7 @@ Created by Marc-André on 2012-10-09.
 Copyright (c) 2012 IGBMC. All rights reserved.
 """
 
+from __future__ import print_function
 import unittest
 from v1.Kore import *
 
@@ -15,7 +16,7 @@ class v1Tests(unittest.TestCase):
         self.verbose = 1    # verbose >0 switches on messages
     def announce(self):
         if self.verbose >0:
-            print self.shortDescription()
+            print(self.shortDescription())
     def test_BrukerImport(self):
         "tests Bruker 2D Import"
         from ..v1 import Bruker

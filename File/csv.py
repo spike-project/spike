@@ -9,6 +9,7 @@
 __author__ = "Marc André Delsuc"
 __date__ = "april 2014"
 
+from __future__ import print_function
 import numpy as np
 import unittest
 import os
@@ -53,7 +54,7 @@ def load(filename, column=0, delimiter=','):
                     except ValueError:
                         pass
                     att[k] = v
-                    print k, v
+                    print(k, v)
             else:
                 buf.append( float( fields[column] ) )
     return np.array(buf), att
@@ -97,7 +98,7 @@ def Import_1D(filename, column=0, delimiter=','):
         if k in d.axis1.attributes:
             setattr(d.axis1, k, v)
         else:
-            print "Warning - wrong attributes : ",k,v
+            print("Warning - wrong attributes : ",k,v)
     d.adapt_size()
     return d
 

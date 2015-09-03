@@ -10,6 +10,7 @@ __version__ = "0.1.3"
 
 "0.1.3 : added full_matrices=False in truncated mode"
 
+from __future__ import print_function
 import numpy as np
 import scipy.linalg as lin
 import math
@@ -41,21 +42,21 @@ def cadzow(data_arg, n_of_line=5, n_of_iter=5, orda=10):
         return data
     orda = min(orda, (data.size+1)/2, 4000)
     if debug:
-        print "orda :", orda
-        print "processing", data.dtype
+        print("orda :", orda)
+        print("processing", data.dtype)
     fid1 = data
     for i in xrange(n_of_iter):
-        if debug: print "fid1", fid1.dtype, fid1.shape
+        if debug: print("fid1", fid1.dtype, fid1.shape)
         try:
             (U, S, Vh) = dt2svd(fid1, orda=orda)
         except np.linalg.LinAlgError: # this may happend sometime ???
-            print "SVD error, exiting iteration loop"
+            print("SVD error, exiting iteration loop")
             break   # usually not at first iteration, so just break
-        if debug: print "U S V", U.dtype, S.dtype, Vh.dtype
+        if debug: print("U S V", U.dtype, S.dtype, Vh.dtype)
         S1 = svdclean(S, keep=n_of_line, remove=1)
-        if debug: print "S1", S1.dtype
+        if debug: print("S1", S1.dtype)
         fid1 = svd2dt(U, S1, Vh)
-        if debug: print "fid1", fid1.dtype, fid1.shape
+        if debug: print("fid1", fid1.dtype, fid1.shape)
     
     if data.dtype == "float":
         fid1 = np.real(fid1)
@@ -109,7 +110,7 @@ def cadzow2d(d2D, n_of_line=5, n_of_iter=5, orda=100, mp=True, N_proc=None, verb
     else:
         result = it.imap( cadfun, iterlist)
     for i in xrange(d2D.size2):     # do and copy the results
-        if verbose>0: print "processing column %d / %d"%(i+1, d2D.size2)
+        if verbose>0: print("processing column %d / %d"%(i+1, d2D.size2))
         d1D.buffer = as_float(result.next())
         d1D.check()
         d2D.set_col(i, d1D)
@@ -143,7 +144,7 @@ def dt2svd(data, orda=5):
         raise Exception("orda is too large for this data, orda max : %d"%n/2)
     # build matrix
     X = np.empty((n1, orda),'complex_')   # matrix is complex
-    if debug: print "Hankel matrix (%d,%d)"%X.shape
+    if debug: print("Hankel matrix (%d,%d)"%X.shape)
     for i in xrange(n1):
         X[i,:] = data[i:(i+orda)].copy() # build hankel matrix
     # solve it
@@ -165,19 +166,19 @@ def svd2dt(U, S, V):
     see also : dt2svd svdclean svd2ar
     """
     # determines sizes
-    if debug: print "########in svd2dt"
+    if debug: print("########in svd2dt")
     M = U.shape[0]  # 14
     N = V.shape[0]  # 6
     size = M+N-1
     data = np.empty((size,), dtype="complex_")
-    if debug: print "M, N, size",M, N, size
+    if debug: print("M, N, size",M, N, size)
     # recompute matrix
     if truncated:       # take min, because matrices are truncated - due to the full_matrices=False in svd step
         MN = min(M,N)
         Sig = np.mat(lin.diagsvd(S, MN, MN))
     else:
         Sig = np.mat(lin.diagsvd(S, M, N))
-    if debug: print "U S V : (%d x %d)  (%d x %d) (%d x %d)"%(U.shape+Sig.shape+V.shape)
+    if debug: print("U S V : (%d x %d)  (%d x %d) (%d x %d)"%(U.shape+Sig.shape+V.shape))
     X = U*Sig*V
     Xt = X[::-1,:]
     for k in xrange(size):  # 0..19     # rebuild data from Hankel matrix,  a bit painful...
@@ -189,7 +190,7 @@ def svd2dt(U, S, V):
 #         for i in xrange(l, s):
 #             temp = temp + X[k-i, i]
 #         data[k] = temp/(s-l)
-    if debug : print "len(data) at the end of svd2dt ",len(data)
+    if debug : print("len(data) at the end of svd2dt ",len(data))
     return data
 #-----------------------------------------------
 def svdclean(svd, keep=0, threshold=0, remove=1):
@@ -210,7 +211,7 @@ def svdclean(svd, keep=0, threshold=0, remove=1):
     if remove == 1:
         power =  np.sum( (svd-svdn)**2)               # total power removed
         n = len(svd) - len(np.nonzero(svdn)[0])     # number of entry removed
-        if debug: print "reduced power : %f"%math.sqrt(power/n)
+        if debug: print("reduced power : %f"%math.sqrt(power/n))
         if n > 0 :
             svdn = np.sqrt( (svdn**2 - power/n).clip(0.0, svd[0]**2) ) # do not forget 
     return svdn
@@ -236,7 +237,7 @@ class CadzowTest(unittest.TestCase):
         """
         from ..Display import testplot
         plt = testplot.plot()
-        print self.test1D.__doc__
+        print(self.test1D.__doc__)
         # simulate fid
         LB = 3      # linewidth
         N = 2000    # length of FID
@@ -278,29 +279,29 @@ class CadzowTest(unittest.TestCase):
         """
         from .. import NPKData
         import multiprocessing as mproc
-        print self.test2D.__doc__
+        print(self.test2D.__doc__)
         d1 = NPKData.NPKData(buffer=np.random.rand(500,200))  # create fake data
         d1.axis1.itype=1
         d2 = d1.copy()
-        print "one processor"
+        print("one processor")
         t0 = time.time()
         cadzow2d(d2, n_of_line=5, n_of_iter=3, orda=20, mp=False, verbose=0)
         tmono = time.time()-t0
-        print "Time : ",tmono
+        print("Time : ",tmono)
         d2 = d1.copy()
         N = mproc.cpu_count()
         if N>1:
-            print N,"processors"
+            print(N,"processors")
             if N>8:
-                print "Limiting to 8 proc"
+                print("Limiting to 8 proc")
                 N = 8
             t0 = time.time()
             cadzow2d(d2, n_of_line=5, n_of_iter=3, orda=20, mp=True, verbose=0, N_proc=N)
             tduo = time.time()-t0
-            print "Time : ",tduo
+            print("Time : ",tduo)
             self.assertTrue(tduo<tmono)
         else:
-            print "test not valid as you have only one processor !"
+            print("test not valid as you have only one processor !")
             
 
    

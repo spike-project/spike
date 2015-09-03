@@ -53,7 +53,7 @@ try:
     MPI_rank = MPI_comm.Get_rank()
     MPI_size = MPI_comm.size
 except ImportError:
-    print "no MPI available"
+    print("no MPI available")
     MPI_rank = 0
     MPI_size = 1
 
@@ -66,7 +66,7 @@ DEBUG = False
 
 def mprint(st):
     "print with prefixing with the process rank"
-    print "MPI process %d : %s"%(MPI_rank,st)
+    print("MPI process %d : %s"%(MPI_rank,st))
 def mprint_debug(st):
     "as mprint() but only if DEBUG is True"
     if DEBUG:
@@ -204,23 +204,23 @@ def test_compute_simple(N, M):
     import itertools as it
     # create dummy data
     data = numpy.arange(N, dtype=numpy.float64)
-    print """
+    print("""
 The program should print the value %f %d times
 then the value %f %d times
 with a process speed-up proportionnal to the number of (processes-1).
-"""%(funct_array_simple1(data).sum(), M, funct_array_simple2(data).sum(), 2*M)
+"""%(funct_array_simple1(data).sum(), M, funct_array_simple2(data).sum(), 2*M))
     # prepare an iterator over which enum_imap will be applied
     xarg = it.repeat(data, M)
     t0 = time.time()
     res = enum_imap(funct_array_simple1, xarg)    # apply it - 
     for i,r in res:       # and get results
-        print i,r.sum()
+        print(i,r.sum())
     xarg2 = it.repeat(data, 2*M)
     res = enum_imap(funct_array_simple2, xarg2)    # apply it
     for i,r in res:       # and get results
-        print i,r.sum()
+        print(i,r.sum())
     cpu = time.time()-t0
-    print "process time : %.2f sec"%(cpu)
+    print("process time : %.2f sec"%(cpu))
     return cpu
 
 def test_server_worker():
@@ -232,9 +232,9 @@ def test_server_worker():
         M = 20 # number of operation to apply
         cpu = test_compute_simple(N, M)
         elaps = time.time()-t0
-        print 'elapsed %.2f sec  MPI starting overhead is %.2f sec'%(elaps, elaps-cpu)
+        print('elapsed %.2f sec  MPI starting overhead is %.2f sec'%(elaps, elaps-cpu))
         spd = (1.5*M + M)/cpu    # funct_array_simple1 is ~ 1.5sec x M  and funct_array_simple2 ~0.5sec x 2M
-        print "speed up is x %.2f  for a theoretical maximum speedup of x %d"%(spd, MPI_size-1)
+        print("speed up is x %.2f  for a theoretical maximum speedup of x %d"%(spd, MPI_size-1))
         shutdown()
     else:
         slave()
@@ -244,6 +244,6 @@ if __name__ == '__main__':
     # as the tested actions are mostly empty and just sleep, it can safely be tested with a large number of processes
     # even on a small machine.
     if MPI_size == 1:       # means no MPI
-        print __doc__
+        print(__doc__)
     else:
         test_server_worker()

@@ -159,6 +159,7 @@ __author__ = "Marc A. Delsuc <delsuc@igbmc.fr>"
 __date__ = "Oct 2009"
 
 
+from __future__ import print_function
 import sys
 import time
 import re
@@ -218,7 +219,7 @@ Spectral widthes : %f x %f x %f
 %i peak(s) in database
 
 """%(d3,get_si1_3d(),get_si2_3d(), get_si3_3d(),get_itype_3d(),geta_max(2),geta_max(1),get_specw_1_3d(),get_specw_2_3d(),get_specw_3_3d(),get_npk3d())
-    print "\n"+report
+    print("\n"+report)
     dim(d)
 
 
@@ -235,7 +236,7 @@ def ImportBruker(audit,inputfilename,outputfilename):
         Bruker.Import(audit,inputfilename,outputfilename)
     elif (op.isdir(inputfilename)):
         if (outputfilename != "-"):
-            print "WARNING output file name is ignored when importing series"
+            print("WARNING output file name is ignored when importing series")
         audittrail( audit, "phase", "Importation Bruker files from directory")
         audittrail( audit, "text", "source directory"," ",inputfilename)
         Bruker.Import(audit,inputfilename,"-")
@@ -254,7 +255,7 @@ def ImportVarian(audit,inputfilename,outputfilename):
         Varian.Import(audit,inputfilename,outputfilename)
     elif (op.isdir(inputfilename)):
         if (outputfilename != "-"):
-            print "WARNING output file name is ignored when importing series"
+            print("WARNING output file name is ignored when importing series")
         audittrail( audit, "phase", "Importation Varian files from directory")
         audittrail( audit, "text", "source directory"," ",inputfilename)
         Varian.Import(audit,inputfilename,"-")
@@ -292,7 +293,7 @@ def actionparser(action, audit,p_in,f_in,f_out,inputfilename,outputfilename):
             elif (action == "FT2D"):
                 FT2D(audit,p_in,f_in,f_out,inputfilename,outputfilename)
             elif (action == "MaxEnt1D"):
-                print "Sorry, MaxEnt1D Not Fully implemented yet"
+                print("Sorry, MaxEnt1D Not Fully implemented yet")
             elif (action == "MaxEnt2D"):
                 MaxEnt2D(audit,p_in,f_in,f_out,inputfilename,outputfilename)
             elif (action == "PreDOSY2D"):
@@ -310,13 +311,13 @@ def actionparser(action, audit,p_in,f_in,f_out,inputfilename,outputfilename):
             elif (action == "FT3D"):
                 FT3D(audit,p_in,f_in,f_out,inputfilename,outputfilename)
             elif (action == "CHECK" or action == "check" ):
-                print "CHECK command"
-                print ("action: %s  input: %s  output: %s  param: %s"%(action,inputfilename,outputfilename,paramfilename))
+                print("CHECK command")
+                print(("action: %s  input: %s  output: %s  param: %s"%(action,inputfilename,outputfilename,paramfilename)))
                 sys.exit()
                 
             else:
-                print "Action -" + action + "- unknown\n"
-                print "Possible actions : help CHECK FT1D FT2D FT3D PreDOSY2D DOSY2D PDOSY2D MaxEnt1D MaxEnt2D ImportBruker ImportVarian\n"
+                print("Action -" + action + "- unknown\n")
+                print("Possible actions : help CHECK FT1D FT2D FT3D PreDOSY2D DOSY2D PDOSY2D MaxEnt1D MaxEnt2D ImportBruker ImportVarian\n")
 
 def auditname(filename,action):
         """ Creates standard name for audit trail
@@ -347,10 +348,10 @@ if __name__ =="__main__":
     if ( L_narg == 0 ):
         sys.ps1="NPK>"
         sys.ps2="NPK..."
-        print """
+        print("""
         NPK interactive shell
         Type ^D (unix) or ^Z (windows) to exit
-        """
+        """)
     else:
 
     # get 1st arg
@@ -364,7 +365,7 @@ if __name__ =="__main__":
                 sys.argv.pop(0)     # remove two entries from sys.argv, to keep same arg offset wether called from NPK or from python
                 sys.argv.pop(0)
             except:
-                print "script name missing"
+                print("script name missing")
                 sys.exit(1)
             L_auditfile = auditname(L_script,"script")
             L_audit = auditinitial(L_auditfile,"NPK processing script : "+L_script)
@@ -374,20 +375,20 @@ if __name__ =="__main__":
 # script is run here in the same global name scope, so it access the variable defined here, to reduce risks, we preset then with L_
             except:
                 sys.excepthook(sys.exc_info()[0],sys.exc_info()[1],sys.exc_info()[2])
-                print "\nscript "+L_script+"  failed.  exiting.."
+                print("\nscript "+L_script+"  failed.  exiting..")
                 sys.exit(1)
             L_time = time.clock()-L_time
             audittrail( L_audit, "text", "total elapsed time", "time",str(L_time)+" sec")
             audittrail( L_audit, "close")
             L_audit.close()
 
-            print "total elapsed time", "time:" ,str(L_time)+" sec"
+            print("total elapsed time", "time:" ,str(L_time)+" sec")
             sys.exit(0)
 
 
     # if HELP, show doc
         if ( L_arg1 == "help" or L_arg1 == "HELP" or L_arg1 == "--help" ):
-            print __doc__
+            print(__doc__)
             sys.exit(0)
 
     # else, parse action line
@@ -399,19 +400,19 @@ if __name__ =="__main__":
                 L_paramfilename = L_argv.pop(0)
             except:
                 L_paramfilename="-"
-                print "no parameter file"
+                print("no parameter file")
         except:
-            print "\nwrong number of arguments"
-            print "\nArguments :"
+            print("\nwrong number of arguments")
+            print("\nArguments :")
             try:
-                    print ("action: "+str(L_action))
-                    print ("inputfilename: "+str(L_inputfilename))
-                    print ("outputfilename: "+str(L_outputfilename))
-                    print ("paramfilename: "+str(L_paramfilename))
+                    print(("action: "+str(L_action)))
+                    print(("inputfilename: "+str(L_inputfilename)))
+                    print(("outputfilename: "+str(L_outputfilename)))
+                    print(("paramfilename: "+str(L_paramfilename)))
             except:
                     pass
-            print "\ntry >NPK help\n"
-            print "wrong number of arguments\n"
+            print("\ntry >NPK help\n")
+            print("wrong number of arguments\n")
             sys.exit(1)
 
         #start timer
@@ -425,7 +426,7 @@ if __name__ =="__main__":
                     L_l = re.split(r'(?<!\\)=', L_argv[i],1)   #matches = but not \=
                     L_auditfile = re.sub(r'\\=', '=',L_l[1])      # replaces \= by =
 
-        print "Audit file is : ", L_auditfile
+        print("Audit file is : ", L_auditfile)
         L_audit = auditinitial(L_auditfile,"NPK processing of "+str(L_action))
         L_f_out={}
 
@@ -448,14 +449,14 @@ if __name__ =="__main__":
                     (L_dkey,L_fval) = Param.parse(L_k)
                 except:
                     raise L_k+': error in parameter syntax, should be key=value'
-                print "Additional property :", L_dkey, "=", L_fval
+                print("Additional property :", L_dkey, "=", L_fval)
                 try:            # check key existence
                     L_val=L_p_in[L_dkey]
                 except:
                     pass
                 else:
-                    print "WARNING, key -",L_dkey,"- defined twice"
-                    print "         previous value :",L_val
+                    print("WARNING, key -",L_dkey,"- defined twice")
+                    print("         previous value :",L_val)
                 L_p_in[L_dkey]=L_fval
                 audittrail( L_audit, "text", "additional parameter", L_dkey,L_fval)
 
@@ -464,7 +465,7 @@ if __name__ =="__main__":
             try:
                 L_f_in.load(L_inputfilename+".gtb")
             except:
-                print "Warning, Input data file property empty"
+                print("Warning, Input data file property empty")
             
             actionparser(L_action, L_audit, L_p_in, L_f_in, L_f_out, L_inputfilename, L_outputfilename)  # launch the job !
 
@@ -481,6 +482,6 @@ if __name__ =="__main__":
             audittrail( L_audit, "close")
             L_audit.close()
 
-            print "total elapsed time", "time:" ,str(L_time)+" sec"
+            print("total elapsed time", "time:" ,str(L_time)+" sec")
             sys.exit()
 

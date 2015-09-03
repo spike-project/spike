@@ -8,6 +8,7 @@ Created by mac on 2012-03-29.
 Copyright (c) 2012 __NMRTEC__. All rights reserved.
 """
 
+from __future__ import print_function
 import sys
 import os
 import unittest
@@ -26,7 +27,7 @@ class read_msh5:
     def resmin(self): # minimal resolution
         for gp in self.filename.hf.walkGroups("/"):  
             resolname = gp._v_name #
-        print "d is the FTICRDATA for the minimal resolution"
+        print("d is the FTICRDATA for the minimal resolution")
         return self.filename.get_data(resolname) # smallest resolution
         
     def resi(self,i): # resolutiono nb i

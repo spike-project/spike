@@ -6,6 +6,7 @@ This file implements all the tools for handling FT-ICR data-sets
 It allows to work with 1D and 2D 
 
 To use it :
+from __future__ import print_function
 import FTICR
 d = FTICR.FTICRData(...)    # There are several possible initialisation : empty, from file
 play with d
@@ -108,7 +109,7 @@ class FTICRData(FTMS.FTMSData):
             self.axis2 = FTICRAxis()
         if name:
             if name.endswith(".msh5"):  # try loading .msh5 file
-                if debug>0: print "reading msh5"
+                if debug>0: print("reading msh5")
                 H = File.HDF5File.HDF5File(name,"r")
                 H.load(mode=mode)      # load into memory by default !
                 super(FTICRData, self).__init__(buffer=H.data.buffer, debug=debug)
@@ -118,12 +119,12 @@ class FTICRData(FTMS.FTMSData):
             else:
                 raise Exception("Filename should have a .msh5 extension")
         else:
-            if debug>0: print "calling super"
+            if debug>0: print("calling super")
             super(FTICRData, self).__init__(dim=dim, shape=shape, buffer=buffer, name=name, debug=debug)
             for i in range(self.dim):
                 axis = self.axes(i+1)
                 setattr(self, "axis%d"%(i+1), FTICRAxis(size=axis.size, specwidth=axis.specwidth, itype=axis.itype) )
-        if debug>1: print self.report()
+        if debug>1: print(self.report())
 
 
 #-------------------------------------------------------------------------------
@@ -132,7 +133,7 @@ class FTICR_Tests(unittest.TestCase):
         self.verbose = 1    # verbose > 0 switches messages on
     def announce(self):
         if self.verbose >0:
-            print "\n========",self.shortDescription(),'==============='
+            print("\n========",self.shortDescription(),'===============')
     def test_atob(self):
         "testing unit conversion functions"
         self.announce()
@@ -143,10 +144,10 @@ class FTICR_Tests(unittest.TestCase):
         self.assertAlmostEqual(123*F.itomz(123), 321*F.itomz(321))    # verify that f*m/z is constant !
         self.assertAlmostEqual(123*F.mztoi(123), 321*F.mztoi(321))    # verify that f*m/z is constant !
         for i in (1,2):
-            print F.report()
-            print F._report()   # low level report
+            print(F.report())
+            print(F._report())   # low level report
             for x in (1.0, 301.0, F.size-20.0, F.size-1.0):    # last point is size-1 !!!
-                print "point at index %d is at freq %f, m/z %f"%(x, F.itoh(x), F.itomz(x))
+                print("point at index %d is at freq %f, m/z %f"%(x, F.itoh(x), F.itomz(x)))
                 self.assertAlmostEqual(F.mztoi(F.itomz(x)), x)
                 self.assertAlmostEqual(F.itoh(F.htoi(x)), x)
             F.extract([300,-20])
@@ -154,9 +155,9 @@ class FTICR_Tests(unittest.TestCase):
         "testing FTICRAxis object"
         self.announce()
         A = FTICRAxis(specwidth=1667000)
-        print fticr_mass_axis(A.size, A.specwidth, A.ref_mass, A.ref_freq)
-        print A.itomz(np.arange(1,A.size))
-        print A.mass_axis()
+        print(fticr_mass_axis(A.size, A.specwidth, A.ref_mass, A.ref_freq))
+        print(A.itomz(np.arange(1,A.size)))
+        print(A.mass_axis())
     def test_trim(self):
         """
         Test trimz 
@@ -166,7 +167,7 @@ class FTICR_Tests(unittest.TestCase):
         A.ref_mass = 344.0974
         A.ref_freq = 419620.0
         A.highmass = 1000.0
-        print A.report()
+        print(A.report())
         l1 = int(A.axis1.mztoi(A.axis1.highmass))
         l2 = int(A.axis2.mztoi(A.axis2.highmass))
         A.trimz()
@@ -174,7 +175,7 @@ class FTICR_Tests(unittest.TestCase):
         self.assertEqual(l2, A.axis2.left_point)
         self.assertEqual(A.size1, 500-l1)
         self.assertEqual(A.size2, 10000-l2)
-        print "2D trimz gain is : %d %%" % (100*(1-(A.size1*A.size2/(500.*10000))))
+        print("2D trimz gain is : %d %%" % (100*(1-(A.size1*A.size2/(500.*10000)))))
     def test_saving_1D(self):
         """
         Testing how save_msh5 works on 1D spectrum
@@ -186,7 +187,7 @@ class FTICR_Tests(unittest.TestCase):
         A.ref_mass = 344.0974
         A.ref_freq = 419620.0
         A.highmass = 1000.0
-        print A.report()
+        print(A.report())
         A.save_msh5(filename("1D_test.msh5"))
 #-------------------------------------------------------------------------------
 if __name__ == '__main__':

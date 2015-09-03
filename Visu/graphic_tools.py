@@ -2,6 +2,7 @@
 Created by Lionel Chiron  02/10/2013 
 Copyright (c) 2013 __NMRTEC__. All rights reserved.
 '''
+from __future__ import print_function
 import os, sys
 import numpy as np
 from .. Visu.Matplotlib_generictools import*
@@ -23,7 +24,7 @@ class GRAPHTOOLS():
     Additionnal tools to the basic zoom one.
     '''
     def __init__(self, paramz, display, data, save, convert):
-        print "in GRAPHTOOLS"
+        print("in GRAPHTOOLS")
         self.paramz = paramz    # zoom parameters
         self.display = display
         self.data = data
@@ -77,7 +78,7 @@ class GRAPHTOOLS():
         Passes by the point domain.
         '''
         if debug(self):
-            print "in m/z mode "
+            print("in m/z mode ")
         ###############
         mztoi2 = self.display.RESMAX.axes(2).mztoi
         mztoi1 = self.display.RESMAX.axes(1).mztoi
@@ -89,31 +90,31 @@ class GRAPHTOOLS():
         llimy = np.int64(mztoi1(ury))                                                 # high bound in "point" format
         
         if debug(self):
-            print "hlimx, llimx, hlimy, llimy", hlimx, llimx, hlimy, llimy
+            print("hlimx, llimx, hlimy, llimy", hlimx, llimx, hlimy, llimy)
         if (hlimx - llimx) > (hlimy - llimy):
             if debug(self):
-                print "case (hlimx - llimx) > (hlimy - llimy)"
-                print "wider than higher"
+                print("case (hlimx - llimx) > (hlimy - llimy)")
+                print("wider than higher")
             for i in range(llimx, hlimx):                                                           # moving in "point" space with self.canvolution taken on x
                 self.ptlx.append(i)  # makes the x coordinates
                 yval = int(self.display.RESMAX.axes(1).mztoi(a*self.display.RESMAX.axes(2).itomz(i) + b))
                 self.ptly.append(yval)
         else :
             if debug(self):
-                print "case  (hlimx - llimx) < (hlimy - llimy)" 
-                print "higher than wider"
+                print("case  (hlimx - llimx) < (hlimy - llimy)") 
+                print("higher than wider")
             for i in range(llimy, hlimy):                                               # moving in "point" space with resolution taken on y
                 self.ptly.append(i) # makes the y coordinates
                 xval = int(self.display.RESMAX.axes(2).mztoi((self.display.RESMAX.axes(1).itomz(i) - b)/a))
                 self.ptlx.append(xval)
         if debug(self):
-            print "self.ptlx, self.ptly ", self.ptlx, self.ptly
+            print("self.ptlx, self.ptly ", self.ptlx, self.ptly)
 
     def make_ptl_pt(self, llx, lly, urx, ury, a, b):
         '''
         Makes the ptlx and ptly for point mode
         '''
-        print "in point mode "
+        print("in point mode ")
         if (urx-llx) > (ury - lly): 
             for i in range(int(llx), int(urx)):                                                                 # moving in "point" space with resolution taken on x
                 self.ptlx.append(i)
@@ -128,7 +129,7 @@ class GRAPHTOOLS():
         Put llx, lly, urx, ury in the right order.
         '''
         if debug(self):
-            print "in right_order_coord llx, lly, urx, ury  = ", llx, lly, urx, ury
+            print("in right_order_coord llx, lly, urx, ury  = ", llx, lly, urx, ury)
         llx, lly, urx, ury = min(llx, urx), min(lly, ury), max(llx, urx), max(lly, ury)                         # sort for making ptlx and ptly
         return llx, lly, urx, ury
         
@@ -210,9 +211,9 @@ class GRAPHTOOLS():
         Plot profile in m/z mode
         Called in canv_event.release_refrechC
         '''
-        print "########## profile_type  ", profile_type
+        print("########## profile_type  ", profile_type)
         if debug(self):
-            print "############## in plotprofile "
+            print("############## in plotprofile ")
         if 'diag' in profile_type:
             self.plotproftype(name_profile, typeprof = profile_type)
         if profile_type == 'x':
@@ -232,7 +233,7 @@ class GRAPHTOOLS():
         Draw line with absolute coordinates llx, lly, urx, ury
         Called in interface_action.manual_profile
         '''
-        print "in drawline llx, lly, urx, ury ", llx, lly, urx, ury
+        print("in drawline llx, lly, urx, ury ", llx, lly, urx, ury)
         vertices = []
         codes = []
         margx = 0; margy = 0
@@ -244,7 +245,7 @@ class GRAPHTOOLS():
         path = Path(vertices, codes)
         pathlineC = PathPatch(path, facecolor = 'None', edgecolor = 'black')
         if layout1:                                                                                 # if layout 1 is asked to be changed
-            print "add patch"
-            print 'pathlineC ', pathlineC
+            print("add patch")
+            print('pathlineC ', pathlineC)
             self.linec = self.display.qmc.axes.add_patch(pathlineC)                                 # adds line with patch.. 
             self.display.qmc.fig.canvas.draw()

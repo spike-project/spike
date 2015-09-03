@@ -6,6 +6,7 @@ downsample2D.py
 Created by MAD on 2011-04-14.
 """
 
+from __future__ import print_function
 import sys
 import os
 import numpy as np
@@ -22,7 +23,7 @@ def downsample2D_med(data, n1=2, n2=2):
     ** Not tested on non powers of 2 **
     
     """
-    print "coucou1"
+    print("coucou1")
     cls = type(data)
     outp = cls(dim=2)     # create data set of same type as input dataset
     if n1 > 1:
@@ -44,7 +45,7 @@ def downsample2D(data, n1=2, n2=2):
     ** Not tested on non powers of 2 **
     
     """
-    print "coucou2"
+    print("coucou2")
     b1, a1 = cheby1(4, 0.05, 0.8/n1)    # construct chebychev 4th order polynomials
     b2, a2 = cheby1(4, 0.05, 0.8/n2)
     cls = type(data)

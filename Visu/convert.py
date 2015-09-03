@@ -32,8 +32,8 @@ class CONVERT():
         transforming from "point" coordinates to "mz" coordinates.
         '''
         if debug(self):
-            print "d.axes(2).itomz(llx) ", d.axes(2).itomz(llx)
-            print "d.axes(2).highmass ", d.axes(2).highmass
+            print("d.axes(2).itomz(llx) ", d.axes(2).itomz(llx))
+            print("d.axes(2).highmass ", d.axes(2).highmass)
         llx, lly = min(d.axes(2).itomz(llx), d.axes(2).highmass), min(d.axes(1).itomz(lly), d.axes(1).highmass)
         urx, ury = max(d.axes(2).itomz(urx), d.axes(2).lowmass),  max(d.axes(1).itomz(ury), d.axes(1).lowmass)
         return llx, lly, urx, ury
@@ -43,13 +43,13 @@ class CONVERT():
         transforming from point coordinate to m/z coordinates with mode point or m/z conditon
         '''
         if debug(self):
-            print "in convert.pass_to_pt "
-            print "llx, lly, urx, ury ", llx, lly, urx, ury
-            print " self.data.mode_point ", self.data.mode_point
+            print("in convert.pass_to_pt ")
+            print("llx, lly, urx, ury ", llx, lly, urx, ury)
+            print(" self.data.mode_point ", self.data.mode_point)
         dd = self.display.res2dd()                                                             # retrieves fticrdata
         if not self.data.mode_point :                                                       # if m/z
             llx, lly, urx, ury = self.mztoi_all(dd, llx, lly, urx, ury)
-            print "after self.mztoi_all llx, lly, urx, ury are ", llx, lly, urx, ury
+            print("after self.mztoi_all llx, lly, urx, ury are ", llx, lly, urx, ury)
         return llx, lly, urx, ury
     
         
@@ -58,9 +58,9 @@ class CONVERT():
         If in mz/mode pass coordinates in "m/z mode", if in point mode pass the coordinates in "point mode".
         '''
         if debug(self):
-            print "self.data.mode_point ", self.data.mode_point
-            print "in graphic_tools.convert.pass_to_curr_mode"
-            print "coordinates llx, lly, urx, ury = ", llx, lly, urx, ury
+            print("self.data.mode_point ", self.data.mode_point)
+            print("in graphic_tools.convert.pass_to_curr_mode")
+            print("coordinates llx, lly, urx, ury = ", llx, lly, urx, ury)
         if not self.data.mode_point :                                                       # if m/z
             dd = self.display.res2dd()                                                      # retrieves fticrdata
             llx, lly, urx, ury = self.itomz_all(dd, llx, lly, urx, ury)                    # calculating new zoom window for m/z view
@@ -100,4 +100,4 @@ class CONVERT():
         self.paramz.zoom_coord = [x0, y0, x1, y1]
         
 if __name__ == '__main__':
-    print "hello"
+    print("hello")

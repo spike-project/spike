@@ -7,6 +7,7 @@ Created by Marc-André on 2012-07-27.
 Copyright (c) 2012 IGBMC. All rights reserved.
 """
 
+from __future__ import print_function
 import numpy as np
 import math
 import maxent as me
@@ -50,7 +51,7 @@ class TfILT(me.TransferFunction):
         nimage = image_sampling.size
         self.norm = math.sqrt(  self.laplace(np.ones(ndata)/ndata,data_sampling,image_sampling).sum() *
                                 self.laplace(np.ones(nimage)/nimage,image_sampling,data_sampling).sum()   )
-        print "Norm of transform :",self.norm
+        print("Norm of transform :",self.norm)
     #-------------------------------
     def laplace(self, datain, samp_from, samp_to):
         """
@@ -97,9 +98,9 @@ def test_ILT():
     # set-up samplings
     experimental_samp = T.exp_sampling(1,1000,30)
 #    experimental_samp = np.linspace(10.0,1000,30)       # experimental sampling is not constrained
-    print "experimental_samp  (msec)\n",experimental_samp
+    print("experimental_samp  (msec)\n",experimental_samp)
     image_samp = T.exp_sampling(0.001,1.0,100)     # image sampling MUST be a exp sampling
-    print "image_samp  (msec-1)\n",image_samp
+    print("image_samp  (msec-1)\n",image_samp)
     # initialize TransferFunction with samplings
     T.init_transform(experimental_samp,image_samp)
     # create starting image and data

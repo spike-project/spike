@@ -16,6 +16,7 @@ __author__ = "Marc A. Delsuc <delsuc@igbmc.fr>"
 __date__ = "Oct 2009"
 
 # UserDict is used for 2.1 compatibility required by jython
+from __future__ import print_function
 import UserDict
 import os
 
@@ -133,7 +134,7 @@ class NPKParam(UserDict.UserDict):
         try:
             fout = open(fname, 'w')
         except:
-            print "Error while opening file :", sys.exc_info()[0]
+            print("Error while opening file :", sys.exc_info()[0])
             raise
 
         fout.write("#Property list file, dumped :"+time.strftime("%a, %d %b %Y %H:%M:%S %Z", time.localtime())+"\n")
@@ -158,7 +159,7 @@ class NPKParam(UserDict.UserDict):
         try:
             fout = open(fname, 'w')
         except:
-            print "Error while opening file :", sys.exc_info()[0]
+            print("Error while opening file :", sys.exc_info()[0])
             raise
 
         fout.write("#Property list file, output :"+time.strftime("%a, %d %b %Y %H:%M:%S %Z", time.localtime())+"\n")
@@ -200,8 +201,8 @@ class NPKParam(UserDict.UserDict):
                     self.data[dkey]=fval
             fin.close
         except:
-            print "File "+fname+" not found."
-            print "Creating empty parameter list\n"
+            print("File "+fname+" not found.")
+            print("Creating empty parameter list\n")
 
     #---------------------------------------------------------------------------
     def build_default(self,default_list):
@@ -237,7 +238,7 @@ class NPKParam(UserDict.UserDict):
         """
         import re
         verbose = 0
-        if verbose: print "change_key\n", patternIn,patternOut, self
+        if verbose: print("change_key\n", patternIn,patternOut, self)
         p = NPKParam()
         if (len(self)>0):
             for i in self.keys():
@@ -247,7 +248,7 @@ class NPKParam(UserDict.UserDict):
                 except:
                     p[j]=self[i]
         if verbose:
-            print p
+            print(p)
             raise "stop due to verbose mode"
         return p
 
@@ -262,4 +263,4 @@ if (__name__ == "__main__"):
   p["c"]="math.pi"
   p["d"]="2*3*4"
   for i in p.keys():
-      print i,":",p[i],type(p[i])
+      print(i,":",p[i],type(p[i]))

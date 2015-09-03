@@ -4,6 +4,7 @@ set of function for Peak detections and display
 Very Sloppy - Not finsihed !
 """
 
+from __future__ import print_function
 import numpy as np
 import unittest
 
@@ -134,20 +135,20 @@ def display_peaks(npkd, axis = None, peak_label = False, zoom = None, show = Fal
 class PeakTests(unittest.TestCase):
     def test_peaks2d(self):
         "test 2D peak picker"
-        print self.test_peaks2d.__doc__
+        print(self.test_peaks2d.__doc__)
         M=np.zeros((30, 30))
         M[5,7] = 20
         M[10,12] = 20
         d = NPKData(buffer = M)
         thresh = 10
         x,y = d.peaks2d(threshold = thresh)
-        print "hou 2D",list(x),list(y)
+        print("hou 2D",list(x),list(y))
         self.assertEqual(list(x) , [ 5, 10])
         self.assertEqual(list(y) , [ 7, 12])
         
     def test_peaks1d(self):
         "test 1D peak picker"
-        print self.test_peaks1d.__doc__
+        print(self.test_peaks1d.__doc__)
         M = np.zeros((30))
         M[5] = 20
         M[7] = 8

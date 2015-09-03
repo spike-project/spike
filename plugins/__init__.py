@@ -39,14 +39,14 @@ def load():
         b = os.path.basename(pgfile)    # code.py
         pgmod = os.path.splitext(b)[0]  # code
         if not pgfile.endswith('__init__.py'):
-            print "Importing plugin << %s >>"%pgmod
+            print("Importing plugin << %s >>"%pgmod)
             try:
                 m = imp.load_source(pgmod, pgfile)
                 plugins.append(pgmod)
             except:
-                print "*** Failed ***"
+                print("*** Failed ***")
                 traceback.print_exc()
-                print "*** Continuing ***"
+                print("*** Continuing ***")
 
 class PluginTests(unittest.TestCase):
     def test_plugin(self):

@@ -14,6 +14,7 @@ Thresholding to make Cadzow on the main relevant columns.
 note that the cadzow algo is multithreaded if running over the MKL library.
 So if MKL is installed, run only on instance per node, as all cores from the node will be solicited.
 """
+from __future__ import print_function
 import sys
 import numpy as np
 import util.mpiutil as mpiutil
@@ -51,7 +52,7 @@ def selectcol(data, limitpts, nbrows=200):
     
     return index list
     """
-    if debug: print "averaging on ",nbrows," rows "
+    if debug: print("averaging on ",nbrows," rows ")
     roughft2 = data.row(0)
     if roughft2.axis1.itype == 1:
         roughft2.modulus()
@@ -88,25 +89,25 @@ def find_thres(b, limitpts):
     inter=b.buffer.copy()
     while abs(nbpts-limitpts)/float(limitpts)> 0.1 :# threshold sweep
         #searchingt the threshold by dichotomy
-        if debug: print "thresh : ",thresh
+        if debug: print("thresh : ",thresh)
         nbpts=(inter>thresh).sum()# give nb of points above threshold
         inter[inter<thresh]=0# put the point under threshold to 0
-        if debug: print "nbpts", nbpts,"count ",count
+        if debug: print("nbpts", nbpts,"count ",count)
         count+=1
         if nbpts < limitpts :# if under the maximum number of columns allowed we keep the threshold, the positions and values..
             c=inter
             threshold=thresh
-            if debug: print "threshold ",threshold
+            if debug: print("threshold ",threshold)
             thresh/=2.0# trying lower threshold
             ind = np.where(c>0)[0]       # np.where returns a tuple have to select first element!
   
         else : 
-            if debug: print "treshold min = ", thresh 
+            if debug: print("treshold min = ", thresh) 
             thresh=(threshold+thresh)/2.0  
-            if debug: print "nouveau threshold ", thresh
+            if debug: print("nouveau threshold ", thresh)
         inter = np.copy(b.buffer)
-        if debug: print "au dessus thresh ", (inter>thresh).sum()
-        if debug: print "=0 ", (inter==0).sum()
+        if debug: print("au dessus thresh ", (inter>thresh).sum())
+        if debug: print("=0 ", (inter==0).sum())
     
     return ind
 
@@ -114,7 +115,7 @@ def find_thres(b, limitpts):
 
 def load_input(name):
     """load input file and returns it, in read-only mode"""
-    if debug>0: print "reading", name
+    if debug>0: print("reading", name)
     hf = HDF5File(name, "r")    # reading the data 
     d0 = hf.load()
     return d0
@@ -124,20 +125,20 @@ def iterarg(xindex, dinp, n_of_line, n_of_iter, orda ):
     for i in xindex:
         c0 = dinp.col(i)
         if debug:
-            print c0.buffer, n_of_line, n_of_iter, orda
+            print(c0.buffer, n_of_line, n_of_iter, orda)
         yield (c0.buffer, n_of_line, n_of_iter, orda)
 
 def cadz(args):
     "utility function"
     if debug:
-        print args
+        print(args)
     return Cadzow.cadzow(*args)
 def rqr(args):
     "utility function"   
     #print "type(args) ", type(args)
     #print "args ", args
     if debug:
-        print args
+        print(args)
     argu = (args[0],args[1],args[3],)
     #print "passed arguments ",argu
     return urQRd.urQRd(*argu)
@@ -149,10 +150,10 @@ def main():
     """
     argv = sys.argv
     if len(argv) != 2:
-        print """
+        print("""
 syntax is :
 (mpirun -np N) python  program   configfile.mscf
-"""
+""")
         sys.exit(1)
 
     # get parameters
@@ -160,20 +161,20 @@ syntax is :
     cp = NPKConfigParser()
     cp.readfp(open(configfile))
     infile = cp.getword( "Cadzow", "namein")
-    print "infile", infile
+    print("infile", infile)
     outfile = cp.getword( "Cadzow", "nameout")
-    print "outfile", outfile
+    print("outfile", outfile)
     
     algo = cp.getword("Cadzow", "algorithm" )
-    print "algorithm", algo
+    print("algorithm", algo)
     n_of_line = cp.getint("Cadzow", "n_of_lines", 70)
-    print "n_of_line", n_of_line
+    print("n_of_line", n_of_line)
     n_of_iter = cp.getint("Cadzow", "n_of_iters", 1)
-    print "n_of_iter", n_of_iter
+    print("n_of_iter", n_of_iter)
     orda = cp.getint("Cadzow", "order", 500)
-    print "order",orda
+    print("order",orda)
     n_of_column = cp.getint("Cadzow", "n_of_column", 100)
-    print "n_of_column", n_of_column
+    print("n_of_column", n_of_column)
     progress = cp.getboolean("Cadzow", "progress", True)
     
     d0 = load_input(infile)
@@ -221,16 +222,16 @@ syntax is :
             d1D.buffer = p
             d1.set_col(indexes[i], d1D)
             if progress: pbar.update(i+1)
-    print "Processing time : ", time.time()-t0
+    print("Processing time : ", time.time()-t0)
 
 # et on lance
 if __name__ == '__main__':
     #unittest.main()
     if mpiutil.MPI_size < 2:            # this is single processor
-        print "Running in single processor mode"
+        print("Running in single processor mode")
         main()
     else:                       # this is a MPI run
-        print "Running in MPI mode"
+        print("Running in MPI mode")
         if mpiutil.MPI_rank == 0:   # master proc
             main()
         else:               # slave proc

@@ -5,6 +5,7 @@ Copyright (c) 2011 IGBMC. All rights reserved.
 ###
 Program for visualizing FTICR2D data. 
 """
+from __future__ import print_function
 import sys, os
 
 from .Visu.Load import LOAD #
@@ -100,7 +101,7 @@ def main(argv = None):
         data = LOAD(msh5file = msh5file)  
     else:
         if configfile:
-            print "using %s as configuration file" %configfile
+            print("using %s as configuration file" %configfile)
         data = LOAD(configfile = configfile)                                                                  # loads msh5 file
     save = SAVE(data)                                                                               # saves 2D, 3D, profiles.
     paramz = PARAM_ZOOM(data)                                                                       # takes the parameters for zoom. 
@@ -120,5 +121,5 @@ def main(argv = None):
     interf.run()
 
 if __name__ == '__main__':
-    print "python version ", sys.version
+    print("python version ", sys.version)
     main()

@@ -8,6 +8,7 @@ adapted by Lionel on 2013-3-6.
 Copyright (c) 2011 IGBMC. All rights reserved.
 """
 
+from __future__ import print_function
 import numpy as np
 #import scipy.fftpack as fft
 import numpy.fft as fft # numpy scipy seem equivalent for ifft and fft.. 
@@ -42,15 +43,15 @@ class transformations(object):
         "dumps content"
         for i in dir(self):
             if not i.startswith('_') :
-                print i, getattr(self,i)
+                print(i, getattr(self,i))
     def Id(self, x):
         return x
     def check(self):
         if self.debug:
-            print """
+            print("""
 size_image: %d - size_mesure: %d
 sampling %s
-"""%(self.size_image, self.size_mesure, str(self.sampling))
+"""%(self.size_image, self.size_mesure, str(self.sampling)))
         if self.sampling is not None:
             assert(len(self.sampling) == self.size_mesure)
             assert(max(self.sampling) <= self.size_image)
@@ -90,21 +91,21 @@ sampling %s
         ft()     : s->x - fft.ifft by default - should not change size
         post_ft() : x->x - typically : broadening, sampling, truncating, etc...
         """
-        if self.debug: print 'entering trans', s.shape, s.dtype
+        if self.debug: print('entering trans', s.shape, s.dtype)
         if self.pre_ft != self.Id:
             s = self.pre_ft(s)
-            if self.debug: print 'trans pre_ft', s.shape, s.dtype
+            if self.debug: print('trans pre_ft', s.shape, s.dtype)
         x = self.ft(s)
         if self.post_ft != self.Id:
             x = self.post_ft(x)
-            if self.debug: print 'trans post_ft', x.shape, x.dtype
+            if self.debug: print('trans post_ft', x.shape, x.dtype)
         if self.sampling is not None:
             x = self.sample(x)
-            if self.debug: print 'trans sample', x.shape, x.dtype
+            if self.debug: print('trans sample', x.shape, x.dtype)
         if self.size_mesure != len(x):      # eventually truncate
             x = x[0:self.size_mesure]
-            if self.debug: print 'trans trunc', x.shape, x.dtype
-        if self.debug: print 'exiting trans', x.shape, x.dtype
+            if self.debug: print('trans trunc', x.shape, x.dtype)
+        if self.debug: print('exiting trans', x.shape, x.dtype)
         return x
         
     def ttransform(self, x):
@@ -112,22 +113,22 @@ sampling %s
         the transpose of transform
         Passing from x to s (data to image)
         """
-        if self.debug: print 'entering ttrans', x.shape, x.dtype
+        if self.debug: print('entering ttrans', x.shape, x.dtype)
         if self.sampling is not None:
-            if self.debug: print 'ttrans sample'
+            if self.debug: print('ttrans sample')
             x = self.tsample(x)
         elif self.size_image != len(x):      # eventually zerofill
-            if self.debug: print 'ttrans zerofill',len(x),self.size_image
+            if self.debug: print('ttrans zerofill',len(x),self.size_image)
             x = self.zerofilling(x)
  
         if self.tpost_ft != self.Id:
-            if self.debug: print 'ttrans tpost_ft'
+            if self.debug: print('ttrans tpost_ft')
             x = self.tpost_ft(x)
         s = self.tft(x)
         if self.tpre_ft != self.Id:
-            if self.debug: print 'ttrans tpre_ft'
+            if self.debug: print('ttrans tpre_ft')
             s = self.tpre_ft(s)
-        if self.debug: print 'exiting ttrans', s.shape, s.dtype
+        if self.debug: print('exiting ttrans', s.shape, s.dtype)
         return s
     
 def sampling_load(addr_sampling_file):

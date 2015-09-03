@@ -70,6 +70,7 @@ improvments
 - use flash message for validation
 """
 
+from __future__ import print_function
 import sys
 import os
 import unittest
@@ -152,7 +153,7 @@ cfFieldDef = {
     '%hidden%':  (wtforms.HiddenField, str)
 }
 cfFieldKeys = cfFieldDef.keys()
-if DEBUG: print cfFieldKeys
+if DEBUG: print(cfFieldKeys)
 
 # known validators syntax {%key: Validator}  # Validator field not used so-far
 cfvalDef = {
@@ -164,7 +165,7 @@ cfvalDef = {
     "%tooltip": None   # tooltip is not a WTForm validator, but a HTML format
 }
 cfvalDefKeys = cfvalDef.keys()
-if DEBUG: print cfvalDefKeys
+if DEBUG: print(cfvalDefKeys)
 
 ############
 
@@ -210,12 +211,12 @@ class FIND_FOLDER_FILE(QtGui.QWidget):
         '''
         Search for a folder or a file
         '''
-        print "saving config"
+        print("saving config")
         if kind == "folder":
             self.selected = QtGui.QFileDialog.getExistingDirectory(self, "Select Folder",  self.curDir)
         elif kind == "file":
             self.selected = QtGui.QFileDialog.getOpenFileName(self,'Open file', self.curDir)
-        print "#################### self.selected ", self.selected
+        print("#################### self.selected ", self.selected)
 
 def search_folder_file(kind):
     '''
@@ -256,7 +257,7 @@ class cfField(object):
         words = re.findall("%.+?%", line)
         if not words:
             words = [line]
-        print words
+        print(words)
         word = words.pop(0)     # get first one
         if word not in cfFieldKeys:  # we do not have a meta comment
             self.doc.append(line)
@@ -283,8 +284,8 @@ class cfField(object):
                         self.validators.append( validators.NumberRange(max=float(val[1])) )
                         self.tooltip.append("maximum value : %d"%float(val[1]))
                 elif val[0] == "%extension":
-                    print "%Etension:xxx% is currently not implemented"
-                    print "XX EXT", val[0], '%s$'%(val[1],)
+                    print("%Etension:xxx% is currently not implemented")
+                    print("XX EXT", val[0], '%s$'%(val[1],))
                     self.tooltip.append("file extension : %s"%(val[1],) )
 #                    self.validators.append( validators.Regexp(r'%s$'%val[1], message="should end with %s"%val[1]) )
                 elif  val[0] == "%options":
@@ -299,7 +300,7 @@ class cfField(object):
                         lgt = int(val[1])
                     except:
                         lgt = 60
-                        print "WARNING, wrong value in line ",line
+                        print("WARNING, wrong value in line ",line)
                     self.length = lgt
     def opt_templ(self):
         "build the template for an option stored in cfField"
@@ -311,18 +312,18 @@ class cfField(object):
             
             if self.tooltip:
                 ttip = 'data-toggle="tooltip" data-html="true" data-placement="top"  title="{}" class = "CF-tooltip" '.format(html_tooltip)
-                print "ttip ", ttip
+                print("ttip ", ttip)
             else:
                 ttip = ""
             # then produce
             if self.type_ in ("%text%", "%outfile%"):    # if string, add SIZE
-                print "self.section, self.name ", self.section, self.name
+                print("self.section, self.name ", self.section, self.name)
                 templ = '<div class="{2}"><p>{3}<br/><a style="color:black" href="#" {4}>{{{{ form.{0}_{1}.label}}}}</a>: \
                     {{{{form.{0}_{1}(class="{2}",SIZE="{5}")}}}}</p></div>'.format( \
                                 self.section, self.name, self.class_, doc, ttip, self.length)
             
             elif self.type_ in ("%select%"): # Select boxes with Bootstrap class selectpicker
-                print "self.section, self.name ", self.section, self.name
+                print("self.section, self.name ", self.section, self.name)
                 templ = '<div class="{2}" ><p>{3}<br/><a style="color:black" href="#" {4}>{{{{ form.{0}_{1}.label}}}}</a>: \
                          {{{{form.{0}_{1}(class="selectpicker")}}}} </p></div>'.format( \
                                 self.section, self.name, self.class_, doc, ttip)     
@@ -337,12 +338,12 @@ class cfField(object):
                 '''.format(self.section, self.name)
 
             elif self.type_ in ("%boolean%"):    # Boolean checkboxes
-                 print "self.section, self.name ", self.section, self.name
+                 print("self.section, self.name ", self.section, self.name)
                  
                  templ = '<div class="{2}"><p>{3}<br/><a style="color:black" href="#" {4}>{{{{ form.{0}_{1}.label}}}}</a>:\
                    <input type="checkbox" name="{0}_{1}" checked> </p>  </div>  \n'.format(self.section, self.name, self.class_, doc, ttip)
             else:
-                print "self.section, self.name ", self.section, self.name
+                print("self.section, self.name ", self.section, self.name)
                 templ = '<div class="{2}"><p>{3}<br/><a style="color:black" href="#" {4}>{{{{ form.{0}_{1}.label}}}}</a>: \
                     {{{{form.{0}_{1}(class="{2}")}}}}</p></div>'.format( \
                                 self.section, self.name, self.class_, doc, ttip)                
@@ -429,18 +430,18 @@ class ConfigForm(object):
                 for l in self.doc_opt[opt]:
                     cff.subparse_comment(l)
                 if DEBUG:
-                    print cff
-                    print
+                    print(cff)
+                    print()
                 self.options[cle] = cff
 
     def sect_templ(self, sec):
         "build the template for a section 'sec' "
         doc = "<br/>\n".join(self.doc_sec[sec])
-        print "doc ", doc
+        print("doc ", doc)
         options_list = [cff.opt_templ()   for cff in self.options.values()  if cff.section == sec] 
         
         options_templ = "  \n".join(options_list )
-        print "options_templ ", options_templ
+        print("options_templ ", options_templ)
         sec_templ = """
 <div class={0}.section>
 <hr>
@@ -534,7 +535,7 @@ def BuildApp(cffile):
     cf = ConfigForm(cffile)
     cf.callback = '/callback'
     # cf.ask_folder = '/ask_folder'
-    if DEBUG: print cf.doc_sec.keys()
+    if DEBUG: print(cf.doc_sec.keys())
 
     @app.route('/')
     def index():
@@ -561,14 +562,14 @@ def BuildApp(cffile):
             return redirect(url_for('index'))
             
         elif request.form["submitform"].find("chose_file") != -1: # Searching for a folder
-            print " section and name for chose file is : ", request.form["submitform"].split("-")[1]
+            print(" section and name for chose file is : ", request.form["submitform"].split("-")[1])
             cf.infilename = request.form["submitform"].split("-")[1]
             return redirect(url_for('ask_folder'))
             
         else :   # Validate request.form["submitform"] == "Validate Values"
             for cle, content in cf.options.items():
-                print "############## cle", cle
-                print "############## content", content
+                print("############## cle", cle)
+                print("############## content", content)
                 type_ = cfFieldDef[content.type_][1]
                 if  type_ in principal_types : # 
                     try:
@@ -580,7 +581,7 @@ def BuildApp(cffile):
                             try:
                                 cf.form[cle].data = cf.form[cle].infilename # Case infile, handled with PyQt. 
                             except:
-                                print "no file chosen"
+                                print("no file chosen")
                                 cf.form[cle].data = None # None needed for test with cf.form.validate()
                 else : # checkbox
                     if request.form.getlist(cle) == []:
@@ -589,7 +590,7 @@ def BuildApp(cffile):
                         cf.form[cle].data = True
                     bool_cles.append(cle) # Append the boolean keys for avoiding validation error on booleans. 
                 if DEBUG:
-                    print "DEBUG"
+                    print("DEBUG")
                     text.append("%s : %s<br/>"%(cle, request.form[cle]))
             text_fine = ["<h1>Everything is fine</h1>\n<p>All entries validated</p>"]
             text_fine.append('<p> <a href="{}">write file {}</a>'.format(url_for('write'), cf.cffilename) )
@@ -626,7 +627,7 @@ def BuildApp(cffile):
         tmpf = "_tempfile.cfg"
         while os.path.exists(tmpf):
             tmpf = "_tempfile_%d.cfg"%(int(1E6*random.random()))
-        print tmpf
+        print(tmpf)
         cf.writeback(tmpf)      # write to tempfile
         os.rename(cf.cffilename, cf.cffilename+"~") # move away initial file
         os.rename(tmpf, cf.cffilename)
@@ -654,8 +655,8 @@ class ConfigFormTests(unittest.TestCase):
         self.verbose = 1    # verbose >0 switches on messages
     def announce(self):
         if self.verbose >0:
-            print self.shortDescription()
-            print "----------"
+            print(self.shortDescription())
+            print("----------")
     def _test_dForm(self):
         """testing dForm"""
         self.announce()
@@ -667,7 +668,7 @@ class ConfigFormTests(unittest.TestCase):
         form2 = df(urank=123)
         temp = dTemplate(otest, "POST", "/param", "classX")
         html = temp.render(form=form2)
-        print html
+        print(html)
         self.assertTrue(html.startswith('<form method="POST" action="/param">') )
     def test_render(self):
         "test render"
@@ -695,7 +696,7 @@ def main():
     args = parser.parse_args()
 
     if args.doc:
-        print __doc__
+        print(__doc__)
         sys.exit(0)
 
     PORT = args.port
@@ -704,19 +705,19 @@ def main():
     HOST = args.webserver
     filename = args.configfile
 
-    print "Processing ",filename
+    print("Processing ",filename)
     input_file = open(filename).readlines() # read the file
                                             # a bad quick hack for checking the file is ok.
     url = "http://{0}:{1}".format(HOST, PORT)
-    print url
+    print(url)
     app = BuildApp(filename)
     if STARTWEB:
         threading.Timer(1.5, lambda: webbrowser.open(url)).start() # open a page in the browser.
     try:
         app.run(host=HOST, port = PORT, debug = DEBUG)
     except socket.error:
-        print >> sys.stderr, "wrong port number"
-        print >> sys.stderr, "try using another port number (defined in the application header)"
+        print("wrong port number", file=sys.stderr)
+        print("try using another port number (defined in the application header)", file=sys.stderr)
         return 3
     return 0
 

@@ -53,7 +53,7 @@ def ValErr(v,e=0.0):
     """
     import math
     deb = 0 # set it to one for debugging info
-    if deb: print (v,e)
+    if deb: print((v,e))
     if isinstance(v,tuple): # if v is tuple, unpack value and error
         (val,err) = v
     else:   # assume v is value
@@ -67,15 +67,15 @@ def ValErr(v,e=0.0):
     # 0 : always 1      1 : always 2
     tweek=1     # auto tests are for tweek=1
     idig = round(dig-tweek+0.5)
-    if deb: print dig,idig
+    if deb: print(dig,idig)
     err = float(round(err*10**(2-idig))) / 10**(2-idig)
-    if deb : print err
+    if deb : print(err)
     # choose depending on the size of err
     if (idig > 1):
         format = "%.0f +/- %.0f"
     elif (idig<=1):
         format = "%%.%df +/- %%.%df"%((-idig+1),(-idig+1))
-    if deb : print format
+    if deb : print(format)
     if (idig>0):
         val = float(round(val*10**(1-idig))) / 10**(1-idig)
     return format%(val,err)

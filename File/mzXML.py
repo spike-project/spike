@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 import xml.dom.minidom
 import base64
@@ -65,11 +66,11 @@ class mzXML():
              'basePeakMz':float, 'basePeakIntensity':float, 'totIonCurrent':int, 'collisionEnergy':int}
         for p in self.dic_param:
             if self.debug > 2:
-                print "param ", p
+                print("param ", p)
             try:
                 setattr(self, p, self.scattr(scan, p, self.dic_param[p])) 
             except:
-                print "parameter {} not found".format(p)
+                print("parameter {} not found".format(p))
         
     def save_mzXML(self, x, y, namefile_final):
         '''
@@ -79,7 +80,7 @@ class mzXML():
         txt = self.np2txt(np.array(zip(x,y)).ravel())
         spec[0].childNodes[0].replaceWholeText(txt) # Replacing in the mzXML
         self.doc.writexml(open(namefile_final,'w')) # Saving the mzXML
-        print 'mzXML saved'
+        print('mzXML saved')
 
 class mzXML_Tests(unittest.TestCase):  
     def test_simple(self):

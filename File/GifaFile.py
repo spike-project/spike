@@ -11,6 +11,7 @@ This module provides a simple access to NMR files in the Gifa format.
 
 """
 
+from __future__ import print_function
 import re
 import numpy as np
 from .. import NPKData as npkd
@@ -83,10 +84,10 @@ class GifaFile(object):
     #----------------------------------------------
     def report(self):
         "prints a little debugging report"
-        print "Dim", self.dim
-        print "header_valid", self.header_valid
-        print "data_valid", self.data_valid
-        print "header", self.header
+        print("Dim", self.dim)
+        print("header_valid", self.header_valid)
+        print("data_valid", self.data_valid)
+        print("header", self.header)
         
     #----------------------------------------------
     def get_data(self):
@@ -199,7 +200,7 @@ class GifaFile(object):
         """
         l = ("%-12s = %s\n")%(key, self.header[key])
         self.fileB.write(l) # CR write in binary mode to presserve the UNIX EOL character
-        if self.debug > 0 : print l,
+        if self.debug > 0 : print(l, end=' ')
         return len(l)
     #----------------------------------------------
     def setup_header(self):
@@ -237,9 +238,9 @@ class GifaFile(object):
                 it = it + axis.itype*(2**(self.data.dim-ax-1))
                 """
                 it = it + axis.itype*(2**(self.data.dim-ax-1))
-                if self.debug>0: print "ICI",ax,axis.itype*(2**(self.data.dim-ax-1)),it
+                if self.debug>0: print("ICI",ax,axis.itype*(2**(self.data.dim-ax-1)),it)
             except:
-                print "we don't have data axis"
+                print("we don't have data axis")
                 axis = None
             if axis:
                 for (key, param, def_val) in (  ("Dim","size",64),
@@ -298,7 +299,7 @@ class GifaFile(object):
                 n1 = n1/2
                 n2 = n2*2
             if self.debug > 0:
-                print "si1 x si2 : %d %d   n1 x n2 : %d %d"%(self.data.axis1.size,self.data.axis2.size,n1,n2)
+                print("si1 x si2 : %d %d   n1 x n2 : %d %d"%(self.data.axis1.size,self.data.axis2.size,n1,n2))
             h["Szblk1"] = "%d"%n1
             h["Szblk2"] = "%d"%n2
             h["Nbblock1"] = "%d"%(1+(self.data.axis1.size-1)/n1)
@@ -317,7 +318,7 @@ class GifaFile(object):
                 n2 = n2/2
                 n3 = n3*2
             if self.debug > 0:
-                print   "si1 x si2 x si3: %d %d %d   n1 x n2 x n3 : %d %d %d"%(self.data.axis1.size, self.data.axis2.size, self.data.axis3.size, n1, n2, n3)
+                print("si1 x si2 x si3: %d %d %d   n1 x n2 x n3 : %d %d %d"%(self.data.axis1.size, self.data.axis2.size, self.data.axis3.size, n1, n2, n3))
             h["Szblk1"] = "%d"%n1
             h["Szblk2"] = "%d"%n2
             h["Szblk3"] = "%d"%n3
@@ -437,7 +438,7 @@ class GifaFile(object):
         self.load_header()
         self.fileB.seek(self.headersize) #CR binary handler for data
         if self.dim == 1:
-            print "loading 1D"
+            print("loading 1D")
             sz = self.size1
             fbuf = self.fileB.read(4*sz)   # Gifa data are in 4 byte floats CR binary handler for data
             abuf = array.array('f', fbuf)    # simple precision 4 bytes
@@ -448,17 +449,17 @@ class GifaFile(object):
             # for i in xrange(sz):      # this is 3-10 times slower
             #     fbuf[i] = abuf[i]
         elif self.dim == 2:
-            print "loading 2D"
+            print("loading 2D")
             sz1 = self.size1
             sz2 = self.size2
-            if self.debug > 0: print "2D", sz1, sz2
+            if self.debug > 0: print("2D", sz1, sz2)
             fbuf = np.empty( (sz1, sz2))
 #            fbuf = -1000.0*np.ones( (sz1, sz2))
             i1 = 0
             i2 = 0
             if self.debug > 0: 
-                print "sz", self.szblock1, self.szblock2
-                print "nb", self.nblock1, self.nblock2
+                print("sz", self.szblock1, self.szblock2)
+                print("nb", self.nblock1, self.nblock2)
             for b1 in xrange(self.nblock1):
                 for b2 in xrange(self.nblock2):
                     #print b1,b2,i1,i2
@@ -477,19 +478,19 @@ class GifaFile(object):
                 i2 = 0
                 i1 = i1+self.szblock1
         elif self.dim == 3:
-            print "reading 3D"
-            print " A VERIFIER"
+            print("reading 3D")
+            print(" A VERIFIER")
             sz1 = self.size1
             sz2 = self.size2
             sz3 = self.size3
             fbuf = np.empty( (sz1, sz2, sz3))
 #            fbuf = -1000.0*np.ones( (sz1, sz2))
-            print "3D:", sz1, sz2, sz3
+            print("3D:", sz1, sz2, sz3)
             i1 = 0
             i2 = 0
             i3 = 0
             if self.debug > 0:
-                print "3D:", sz1, sz2, sz3
+                print("3D:", sz1, sz2, sz3)
             for b1 in xrange(self.nblock1):
                 for b2 in xrange(self.nblock2):
                     for b3 in xrange(self.nblock3):
@@ -519,11 +520,11 @@ class GifaFile(object):
         if self.dim == 1:
             self.fileB.write( self.data.buffer.astype("float32").tostring() ) #CR binary handler for data
         elif self.dim == 2:
-            print "writing 2D"
+            print("writing 2D")
             sz1 = self.size1
             sz2 = self.size2
             if self.debug > 0:
-                print "2D:", sz1, sz2
+                print("2D:", sz1, sz2)
             i1 = 0
             i2 = 0
             fbuf = np.zeros((BLOCKIO/4,), dtype='float32')
@@ -542,18 +543,18 @@ class GifaFile(object):
                 i2 = 0
                 i1 = i1+self.szblock1
         elif self.dim == 3:
-            print "writing 3D"
-            print " A VERIFIER"
+            print("writing 3D")
+            print(" A VERIFIER")
             sz1 = self.size1
             sz2 = self.size2
             sz3 = self.size3
             if self.debug > 0:
-                print "3D:", sz1, sz2, sz3
+                print("3D:", sz1, sz2, sz3)
             i1 = 0
             i2 = 0
             i3 = 0
             fbuf = np.zeros((BLOCKIO/4,), dtype='float32')
-            print self.nblock1, self.nblock2, self.nblock3
+            print(self.nblock1, self.nblock2, self.nblock3)
             for b1 in xrange(self.nblock1):
                 for b2 in xrange(self.nblock2):
                     for b3 in xrange(self.nblock3):
@@ -581,7 +582,7 @@ class GifaFileTests(unittest.TestCase):
     verbose = 1    # verbose > 0 switches messages on
     def announce(self):
         if self.verbose >0:
-            print "\n========",self.shortDescription(),'==============='
+            print("\n========",self.shortDescription(),'===============')
     def test_read(self):
         """ - testing read capacities - """
         self.announce()
@@ -644,7 +645,7 @@ class GifaFileTests(unittest.TestCase):
         for i in range(1, 6):
             fid = fid + i*20*np.exp(2*i*432.1j*x)*np.exp(-LB*x)   # that's 5 lines altogether
         # put it into a NPKBuffer
-        print "***", fid[10]
+        print("***", fid[10])
         B = npkd.NPKData(buffer=fid)
         B.axis1 = npkd.NMRAxis(size=1024, specwidth=1000, offset=0.0, frequency=400.0, itype=1)
         # and save it
@@ -655,7 +656,7 @@ class GifaFileTests(unittest.TestCase):
         B2 = G2.get_data()
         G2.close()
 #        os.unlink(nameout)
-        print "===============\n",B2.report()
+        print("===============\n",B2.report())
         self.assertEqual(B2.axis1.itype, 1)
         self.assertAlmostEqual(B2.buffer[20], 18.7938525625, places=5)  # places=5 because GifaFile are single precision !
         self.assertAlmostEqual(B2.buffer[21], -51.1309912819, places=5)
@@ -671,7 +672,7 @@ class GifaFileTests(unittest.TestCase):
         G.load()        # load dataset
         A = G.get_data()
         A.buffer *= 3   # modify trivially
-        print type(A)
+        print(type(A))
         G.close()
         del(G)
         # then save it
@@ -704,7 +705,7 @@ class GifaFileTests(unittest.TestCase):
         except:
             pass
         dd = 2*np.ones((508,2*1000)) # + np.arange(2*1000)
-        print dd.shape
+        print(dd.shape)
         H = GifaFile(nameout,"w")
         A = npkd.NPKData(buffer=dd)
         H.set_data(A)
@@ -716,9 +717,9 @@ class GifaFileTests(unittest.TestCase):
         GG.load()        # load dataset
         GG.close()
         B = GG.get_data()
-        print A.buffer.min(), B.buffer.min(), B.buffer.argmin()
-        print A.buffer.max(), B.buffer.max()
-        print A.buffer.shape, B.buffer.shape
+        print(A.buffer.min(), B.buffer.min(), B.buffer.argmin())
+        print(A.buffer.max(), B.buffer.max())
+        print(A.buffer.shape, B.buffer.shape)
         os.unlink(nameout)
     
 if __name__ == '__main__':

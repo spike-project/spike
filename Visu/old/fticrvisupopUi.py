@@ -8,6 +8,7 @@
 # WARNING! All changes made in this file will be lost!
 
 
+from __future__ import print_function
 import sys
 
 

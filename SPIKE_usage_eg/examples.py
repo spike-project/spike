@@ -6,6 +6,7 @@ quelques examples de traitements, en utilisant la base du nouveau NPK v2
 
 il manque encore le module Kore qui fait le lien avec NPK v1
 """
+from __future__ import print_function
 import File.GifaFile as gf
 import NPKData as npkd
 import numpy as np                  # pour faire des calculs
@@ -16,7 +17,7 @@ eg = 3
 if eg == 1:
     # crée le et charge les données
     R = npkd.NPKData(name = "mad2-zoom.gf2")
-    print R.report()
+    print(R.report())
     R.axis1.itype = 1
 
     # affiche les premières lignes en module
@@ -63,7 +64,7 @@ elif eg == 3:
     r.axis1.itype = 0
     r.axis2.itype = 0
     r.chsize(2*r.size1,2*r.size2).revf(2).rfft(2).revf(1).rfft(1).modulus().display()
-    print r.report()
+    print(r.report())
 
 # l'option show affiche tout les display() créés
 plt.show()

@@ -16,6 +16,7 @@ adapted to numpy by Marc-André on 2011-11-18.
 Copyright (c) 2011 IGBMC. All rights reserved.
 """
 
+from __future__ import print_function
 import numpy as np
 from ..Display import testplot
 plt = testplot.plot()
@@ -85,9 +86,9 @@ def test_igor1():
     plt.plot(x2,'*')
     plt.title(' using lstsq')
 
-    print np.dot(A, A.T.conj()).shape
+    print(np.dot(A, A.T.conj()).shape)
     A3 = np.dot(A.T.conj(), np.linalg.inv(np.dot(A, A.T.conj())))
-    print A3.shape
+    print(A3.shape)
 #    A3 = linalg.pinv(A)
     x3 = np.dot(A3, y1)
     plt.subplot(2,2,3)
@@ -118,7 +119,7 @@ def test_igor2():
     for i in range(n):
         C[:,i]=np.sin(i*xx)
     b = np.dot(C,x0)
-    print b
+    print(b)
     # b is the result of evaluating f at all sample points xx
     # f(1), f(4), f(6).....f(340) f(356) f(400)
     # C is the measurement matrix
@@ -144,7 +145,7 @@ def build_sampling(N, M, trunc=False):
         pm = np.random.permutation(N)
     sample = pm[:M]
     sample.sort()
-    print sample
+    print(sample)
     A = np.zeros((M,N))
     for i,s in enumerate(sample):
         A[i,s] = 1.0
@@ -155,7 +156,7 @@ def generatesp(N, N_line=10, noise=0):
         spectrum0[np.random.randint(10,N)] = 1+i
         s = N_line + 0.5*N_line*(N_line+1)
     if noise>0:
-        print 'SNR data:',10*np.log10(s/noise)
+        print('SNR data:',10*np.log10(s/noise))
     return spectrum0, noise*np.random.randn(N) + spectrum0
 def generatefid(N, N_line=10, noise=0):
     spectrum0, spectrum = generatesp(N, N_line, noise)
@@ -167,7 +168,7 @@ def generatefid2(N, N_line=10, noise=0, LB=3):
         k = i+1
         fid0 +=  k*20*np.exp(2*k*432.1j*x)*np.exp(-LB*x)   # that's 5 lines altogether
     if noise>0:
-        print 'SNR data:',10*np.log10(np.max(np.abs(fid0))/noise)
+        print('SNR data:',10*np.log10(np.max(np.abs(fid0))/noise))
     return fid0, fid0 + noise*(np.random.randn(x.size)  + 1j*np.random.randn(x.size))
 def em(x, linebroad=1.0, sw=1000.0,limit=100.0):
     if linebroad == 0.0:
@@ -181,7 +182,7 @@ def em(x, linebroad=1.0, sw=1000.0,limit=100.0):
         elif linebroad>0.0:
             a = np.exp(-linebroad*np.arange(size)/sw)
         n = norm(a)/np.sqrt(size)
-        print "em:",n
+        print("em:",n)
         return x*a/n
 def test_FT(N_line=10):
     M = 300
@@ -233,7 +234,7 @@ def test_FT(N_line=10):
         sol = SL0.SL0FT(A, y1, sigma_min, sdf, L) #, A_pinv=(1./N)*A.T)
     else:
         sol = SL0.SL0FT(A, y1, sigma_min, sdf, L, A_pinv=A.T, true_s=fft.fft(x0))
-    print time.time()-t0,'sec'
+    print(time.time()-t0,'sec')
     plt.plot(sol)
     plt.title('SL0 inversion, noise %.1f %% of smallest peak; sampled at %.1f %%'%(100*noise, 100.0*M/N))
     plt.show()
@@ -255,7 +256,7 @@ def test_FTgene(N_line=10):
         ttrans = tr.ttransform
         tr.check()
         y1 = x[0:M]  # y1 is the measure
-        print x.shape, y1.shape, y1.dtype
+        print(x.shape, y1.shape, y1.dtype)
     elif Mode == "sampling":
         tr = SL0.transformations(N, M, debug=0)
         tr.sampling = np.array(sorted(np.random.permutation(N)[:M]))
@@ -263,7 +264,7 @@ def test_FTgene(N_line=10):
         ttrans = tr.ttransform
         tr.check()
         y1 = tr.sample(x)
-        print "#########", x.shape, y1.shape, y1.dtype
+        print("#########", x.shape, y1.shape, y1.dtype)
     plt.subplot(3,1,1)
 #    plt.plot(fft.fft(x))
     plt.title('noisy original, %d lines, noise at %.1f %% of smallest peak, generated on %d points'%(N_line, 100*noise, N))
@@ -282,13 +283,13 @@ def test_FTgene(N_line=10):
     t0 = time.time()
     if Mode == "random":
 #        sol = SL0.SL0FT(A, y1, sigma_min, sdf, L)
-        print "START"
+        print("START")
         sol = SL0.SL0gene(trans, ttrans, y1, sigma_min, sdf, L)
     else:
 #        sol = SL0.SL0FT(A, y1, sigma_min, sdf, L, A_pinv=A.T, true_s=fft.fft(x0))
-        print "START"
+        print("START")
         sol = SL0.SL0gene(trans, ttrans, y1, sigma_min, sdf, L, true_s=fft.fft(x0))
-    print time.time()-t0,'sec'
+    print(time.time()-t0,'sec')
     plt.subplot(3,1,3)
     plt.plot(sol)
     plt.title('SL0 inversion, using %d points (sampled at %.1f %% using %s mode)'%(M,100.0*M/N, Mode))
@@ -327,9 +328,9 @@ def test_FTgene2(N_line=10):
     sdf= 0.95
     L = 5
     t0 = time.time()
-    print "START"
+    print("START")
     sol = SL0.SL0gene(tr.transform, tr.ttransform, fid, sigma_min, sdf, L)
-    print time.time()-t0,'sec'
+    print(time.time()-t0,'sec')
     plt.subplot(3,1,3)
     plt.plot(sol)
     plt.title('SL0 inversion, using %d points (sampled at %.1f %% using %s mode)'%(M,100.0*M/N, Mode))

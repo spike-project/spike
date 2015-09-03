@@ -1,3 +1,4 @@
+from __future__ import print_function
 import daemon
 import time
 import hgapi as hg
@@ -35,10 +36,10 @@ class automatic_tests(object):
 
     def prepare(self):
         try:
-            print "erasing old NPKv2"
+            print("erasing old NPKv2")
             sh.rmtree(self.path_draft)                                                                  # removes the previous NPKv2 directory if still there.
         except:
-            print "no existing NPKv2 directory here."
+            print("no existing NPKv2 directory here.")
         os.mkdir(self.path_draft)
         ##### Clone
         hg.hg_clone(self.address_repository, self.path_draft)                                           # Retrieves automatically NPKv2
@@ -53,7 +54,7 @@ class automatic_tests(object):
         try:
             os.remove(self.report_stout)
         except:
-            print "no existing report_stout"
+            print("no existing report_stout")
         with open(self.report_stout, "w") as test_report:
             test_report.write(self.sout)
         self.date_old = self.date

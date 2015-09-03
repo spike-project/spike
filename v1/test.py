@@ -3,6 +3,7 @@ This a test suite for NPK.
   
 Note that all functionalities  are not tested yet !
 """
+from __future__ import print_function
 import unittest
 import tempfile
 import math
@@ -15,7 +16,7 @@ class TextNPKv1(unittest.TestCase):
         self.verbose = 1
     def announce(self):
         if self.verbose >0:
-            print "\n========",self.shortDescription(),'==============='
+            print("\n========",self.shortDescription(),'===============')
     def test_benchmark(self):
         """
      benchmark for gifa
@@ -58,17 +59,17 @@ class TextNPKv1(unittest.TestCase):
           chsize(get_si1_2d()*2,get_si2_2d())
           rft("f1")                              # main "f1" proc
           phase(20.0, 20.0, "f1")       #done
-        print 'Total TIME:',time.clock()-t
+        print('Total TIME:',time.clock()-t)
 
-        print ' '
-        print 'Typical results are :'
-        print '====================='
-        print ' 7.00"   - G4 1.68 MHz - Mac Os 10.4 (PowerBook)'
-        print ' 3.00"   - macintel mono core - Mac Os 10.4 (MacMini)'
-        print ' 2.80"   - PIV 2.8 GHz hyperthreading - Linux'
-        print ' 2.45"   - AMD 64  Opteron 2.2 GHz - Linux'
-        print ' 1.52"   - Core 2 duo 2.8 GHz - Mac Os 10.5 (powerbook)'
-        print ' 0.81"   - Xeon 5570 2.66GHz - Mac Os 10.6 (MacPro)'
+        print(' ')
+        print('Typical results are :')
+        print('=====================')
+        print(' 7.00"   - G4 1.68 MHz - Mac Os 10.4 (PowerBook)')
+        print(' 3.00"   - macintel mono core - Mac Os 10.4 (MacMini)')
+        print(' 2.80"   - PIV 2.8 GHz hyperthreading - Linux')
+        print(' 2.45"   - AMD 64  Opteron 2.2 GHz - Linux')
+        print(' 1.52"   - Core 2 duo 2.8 GHz - Mac Os 10.5 (powerbook)')
+        print(' 0.81"   - Xeon 5570 2.66GHz - Mac Os 10.6 (MacPro)')
 
     def test_basic(self):
         """test the basic NPK mechanisms
@@ -146,26 +147,26 @@ class TextNPKv1(unittest.TestCase):
         read(file1)
         com_max()
         ok = (get_si1_1d() == t11) and (math.fabs(geta_max(1)-100)<1) and (math.fabs(geta_max(2)) < 1)
-        print ok
+        print(ok)
         dim(2); chsize( 100, 100); zero()
         read(file2)
         com_max()
         ok = (ok and (get_si1_2d()*get_si2_2d() == (t12*t22)) and (math.fabs(geta_max(1))-1000)<1 and math.fabs(geta_max(2)) < 1)
-        print ok
+        print(ok)
         dim(3); chsize( 10, 10, 10); zero()
         read(file3)
         com_max()
         ok = (ok and (get_si1_3d()*get_si2_3d()*get_si3_3d()) == (t13*t23*t33))
-        print ok
+        print(ok)
         ok = (ok and math.fabs(geta_max(1)-10000)<1 and math.fabs(geta_max(2)) < 1)
-        print geta_max(1)
-        print geta_max(2)
+        print(geta_max(1))
+        print(geta_max(2))
         self.report_result(ok, "Read")
 
         join(file3)
         join(file1)
         join(file2)
-        print "listfilec() yet to be done"
+        print("listfilec() yet to be done")
     #    dataset()
 
        # report_result( (get_c_sizef1()*get_c_sizef2() == t12*t22), "Join")
@@ -498,7 +499,7 @@ class TextNPKv1(unittest.TestCase):
 
 
         #============= proc2d ====
-        print "proc3d yet to be done"
+        print("proc3d yet to be done")
         proc3d(file7, file8, "f1", "chsize(get_si1_2d()/2,get_si2_2d()); mult(-1)",globals() )
         join(file8)
         # procesing results in reducing size in F2 by two
@@ -514,13 +515,13 @@ class TextNPKv1(unittest.TestCase):
         # ================ Getheader, Putheader
 
         join( file6) # was file7
-        print file6
+        print(file6)
         putheader( "Type", repr(12))
         ok = (getheader("Dim") == "3")
         getheader("Type")
         ok = (ok and getheader("Type") == "12")
         putheader("Coucou", "You can even put string in there")
-        print getheader("Coucou")
+        print(getheader("Coucou"))
         ok = (ok and getheader("Coucou") ==  "You can even put string in there")
         putheader( "2nd example", "Parameters can be anything")
         ok = (ok and getheader( "2nd example") ==  "Parameters can be anything")
@@ -533,7 +534,7 @@ class TextNPKv1(unittest.TestCase):
         self.report_result( ok, "Getheader, Putheader")
 
         # ================ addc
-        print "addc() yet to be done"
+        print("addc() yet to be done")
         """
         dim(1); chsize(t11);		one(); writec( file4)
         one(); mult(2)
@@ -558,25 +559,25 @@ class TextNPKv1(unittest.TestCase):
 
     def test_dataset(self):
         if (get_c_joined() == 0) :
-          print "No currently JOINed file"
+          print("No currently JOINed file")
         else:
-            print "Currently JOINed file :"
-            print "Filename       = " +repr(get_c_name())
-            print "Dim            = " +repr(get_c_dim())
-            print "Size f1        = " +repr(get_c_sizef1())
-            print "Size f2        = " +repr(get_c_sizef2())
-            print "Size F3        = " +repr(get_c_sizef3())
-            print "1H Frequency   = " +repr(get_c_freq())
-            print "Freq f1        = " +repr(get_c_freq1())
-            print "Freq f2        = " +repr(get_c_freq2())
-            print "Freq F3        = " +repr(get_c_freq3())
-            print "Specw f1       = " +repr(get_c_specwf1())
-            print "Specw f2       = " +repr(get_c_specwf2())
-            print "Specw F3       = " +repr(get_c_specwf3())
-            print "OffF1          = " +repr(get_c_offsf1())
-            print "OffF2          = " +repr(get_c_offsf2())
-            print "OffF3          = " +repr(get_c_offsf3())
-            print "Max. Abs.      = " +repr(get_c_absmax())
+            print("Currently JOINed file :")
+            print("Filename       = " +repr(get_c_name()))
+            print("Dim            = " +repr(get_c_dim()))
+            print("Size f1        = " +repr(get_c_sizef1()))
+            print("Size f2        = " +repr(get_c_sizef2()))
+            print("Size F3        = " +repr(get_c_sizef3()))
+            print("1H Frequency   = " +repr(get_c_freq()))
+            print("Freq f1        = " +repr(get_c_freq1()))
+            print("Freq f2        = " +repr(get_c_freq2()))
+            print("Freq F3        = " +repr(get_c_freq3()))
+            print("Specw f1       = " +repr(get_c_specwf1()))
+            print("Specw f2       = " +repr(get_c_specwf2()))
+            print("Specw F3       = " +repr(get_c_specwf3()))
+            print("OffF1          = " +repr(get_c_offsf1()))
+            print("OffF2          = " +repr(get_c_offsf2()))
+            print("OffF3          = " +repr(get_c_offsf3()))
+            print("Max. Abs.      = " +repr(get_c_absmax()))
 
 
     def test_extb(self):
@@ -745,7 +746,7 @@ class TextNPKv1(unittest.TestCase):
         try:
             read(f)      # on sorbine
         except:
-            print '** data/ directory is missing, test will not be executed **'
+            print('** data/ directory is missing, test will not be executed **')
 
         com_max()
         self.report_result(get_dim() == 2 and get_si1_2d() == 256 and get_si2_2d() == 2048 and math.fabs(geta_max(1)-45705)<10.0, "Loading of data")
@@ -1320,9 +1321,9 @@ class TextNPKv1(unittest.TestCase):
         self.report_result( a, 'Inverse Laplace Transform (tried %i time)'%(ntrial))
 
         if ( not(a and get_chi2()  < 5)):          # if chi2 is off but not so badly
-                    print "iterdone =",get_iterdone(),"    CHI2 =",get_chi2(), "    SHIFT=",get_shift(), "     NOISE=",get_noise(),"   VAL(68)=",val1d(68)
-                    print 'the Inverse Laplace Transform fails because of a convergence slower than normal'
-                    print 'You can still use this module, but will have not optimal convergence speed'
+                    print("iterdone =",get_iterdone(),"    CHI2 =",get_chi2(), "    SHIFT=",get_shift(), "     NOISE=",get_noise(),"   VAL(68)=",val1d(68))
+                    print('the Inverse Laplace Transform fails because of a convergence slower than normal')
+                    print('You can still use this module, but will have not optimal convergence speed')
 
     def test_memory(self):
         """check for dynamic memory size
@@ -1636,9 +1637,9 @@ class TextNPKv1(unittest.TestCase):
         l = len(msg)
         l = (max(1,80-l))
         if t :
-                print "--- " , msg  , "."*(l-4) , " Ok"
+                print("--- " , msg  , "."*(l-4) , " Ok")
         else: 
-                print "--- " , msg  , "."*(l-8) , " FAILED"
+                print("--- " , msg  , "."*(l-8) , " FAILED")
 
     # def test_report(self,msg):
     #     """report test message
@@ -1666,7 +1667,7 @@ class TextNPKv1(unittest.TestCase):
     #     cache()
 
     def new_func(x):
-        print x
+        print(x)
 
 if __name__ == "__main__":
     unittest.main()

@@ -44,6 +44,7 @@ __author__ = "Marc A. Delsuc <delsuc@igbmc.fr> and Vincent Catherinot <v.catheri
 __date__ = "Oct 2009"
 
 
+from __future__ import print_function
 import math
 import os
 import os.path
@@ -239,7 +240,7 @@ it implements the spectral analysis step :
     #   FID size after truncation
     # %param_cond% [ (f1_trunc_size > 0 ) and (f1_trunc_size <= get_si1_2d() ) ]
     if(key_is_true(p_in,"f1_truncate")):
-        if debug: print "trucation"
+        if debug: print("trucation")
         set_task("F1 truncation")
         s = p_in["f1_trunc_size"]
         if (s <= 0):
@@ -510,7 +511,7 @@ it implements the spectral analysis step :
         if debug: writec("TTT.gs2")
         
         #set_task("F2 apodisation")
-        if debug: print "F2 Apodisation "+p_in.raw("f2_apodisation")
+        if debug: print("F2 Apodisation "+p_in.raw("f2_apodisation"))
         apodise( p_in.raw("f2_apodisation"), "F2")
         audittrail( audit,  "text", "FID apodisation before FT",
                     "function", p_in.raw("f2_apodisation"))
@@ -848,7 +849,7 @@ it implements the massaging of the spectrum after FT :
             dim(1)
             # read("col1.gifa4")
             if ( p_in["f1_phase_algo"] == "apsl" ):
-                print "********* running APSL"
+                print("********* running APSL")
                 apsl()
             if ( p_in["f1_phase_algo"] == "apmin" ):
                 apmin()
@@ -1921,13 +1922,13 @@ This macro implements the massaging of the spectrum after complete Spectral anal
                 bcorr_quest( bcorder, "f2")
             elif (bcalgo == "polynomial"):  # bcorrpx determines which algo is used
                 if (get_debug()):
-                    print "Baseline correction not available in DEBUG mode"
+                    print("Baseline correction not available in DEBUG mode")
                 else:
                     bcorrp0()
                     bcorr(3, "f2")
             elif (bcalgo == "moving_average"):
                 if (get_debug()):
-                    print "Baseline correction not available in DEBUG mode"
+                    print("Baseline correction not available in DEBUG mode")
                 else:
                     bcorrp1()
                     bcorr(3, "f2")
@@ -1981,13 +1982,13 @@ This macro implements the massaging of the spectrum after complete Spectral anal
                 bcorr_quest( bcorder, "f1")
             elif (bcalgo == "polynomial"):  # bcorrpx determines which algo is used
                 if (get_debug()):
-                    print "Baseline correction not available in DEBUG mode"
+                    print("Baseline correction not available in DEBUG mode")
                 else:
                     bcorrp0()
                     bcorr(3, "f1")
             elif (bcalgo == "moving_average"):
                 if (get_debug()):
-                    print "Baseline correction not available in DEBUG mode"
+                    print("Baseline correction not available in DEBUG mode")
                 else:
                     bcorrp1()
                     bcorr(3, "f1")
@@ -2242,7 +2243,7 @@ arguments :
     #   apply level on F1 axis
     # %param% f1_level_correction_pivots list / default (int(0.01*get_si1_2d()),int(0.99*get_si1_2d()))
     #   where level will be computed
-    print p_in["f2_level_correction_pivots"]
+    print(p_in["f2_level_correction_pivots"])
     if key_is_true(p_in,"level_correction"):
         if key_is_true(p_in,"f2_level_correction_axis"):
             bcorr(1,1,"F2",p_in["f2_level_correction_pivots"])

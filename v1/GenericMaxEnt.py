@@ -8,6 +8,7 @@ Most of these functions require that the NPK mathematical kernel is loaded.
 __author__ = "Marc A. Delsuc <delsuc@igbmc.fr>"
 __date__ = "Oct 2009"
 
+from __future__ import print_function
 import os.path
 import sys
 import tempfile
@@ -345,7 +346,7 @@ wucorrec : %i
         preset value ranges from 0 to 5
         sets the parameters for a balance between speed (1) and quality (5), 0 is for fit
         """
-        print "MaxEnt Preset: "+str(preset)
+        print("MaxEnt Preset: "+str(preset))
         if (preset == 1) :
             self.__iltalgo = "MaxEnt"
             self.__iltsize = 64

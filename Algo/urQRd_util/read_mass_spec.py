@@ -1,4 +1,5 @@
 from util.debug_tools import*  
+from __future__ import print_function
 import File.Apex as Apex
 import numpy as np
 from NPKData import NPKData, as_cpx
@@ -12,25 +13,25 @@ class FTICR_treat():
         '''
         Reads Apex or msh5 files. If Apex is used makes locally a corresponding msh5.
         '''
-        print "path exists? ",os.path.exists(add)
+        print("path exists? ",os.path.exists(add))
         nameroot = os.path.basename(add).split(".")[0]
         splitadd = os.path.splitext(add)
         ext = splitadd[-1]
  
         if ext == '.d' and not os.path.exists(splitadd[0]+".msh5"):
             data = Apex.Import_1D(add, '')
-            print "just after Apex kind of data is ", type(data)
+            print("just after Apex kind of data is ", type(data))
         elif ext == '.msh5' or os.path.exists(splitadd[0]+".msh5"):
             filemsh5 = nameroot+'.msh5'
         else : 
-            print "Unknown format"
+            print("Unknown format")
 
         return data
     
     def write(self, data, filename):
-        print "writing to hdf5 file "
-        print 'filename is ', filename
-        print "dir(data) ", dir(data)
+        print("writing to hdf5 file ")
+        print('filename is ', filename)
+        print("dir(data) ", dir(data))
         #data.save(filename)
         data.save_msh5(filename)
 
@@ -41,12 +42,12 @@ class FTICR_treat():
         specmz the corresponding values, y axis
         datafticr (DataFTICR format) is used for recuperating itomz
         '''
-        print "in xymz "
+        print("in xymz ")
         specmz = specfreq
-        print "specfreq.size ",specfreq.size
+        print("specfreq.size ",specfreq.size)
         specmzindex = np.zeros(specfreq.size-1) # initialization
         if resol != 1 : 
-            print "superresolution"
+            print("superresolution")
         for i in range(1, specmzindex.size): # Super resolution size in case of super resol.. 
             mzval = datafticr.axes(1).itomz(i)
             if resol != 1 : 
@@ -54,7 +55,7 @@ class FTICR_treat():
                 specmzindex[i-1] =  mzcorrect
             else :
                 specmzindex[i-1] =  mzval
-        print "specmzindex[specmzindex < mzmax]",specmzindex[specmzindex < mzmax]
+        print("specmzindex[specmzindex < mzmax]",specmzindex[specmzindex < mzmax])
         indexmz = np.where(specmzindex < mzmax)[0]
         yspecmz  = specmz[1:][indexmz]
         xmz = specmzindex[indexmz]
@@ -74,7 +75,7 @@ class Orbitrap_treat():
         a = os.path.basename(f)
         try:
             result = int(re.search('range(\d*)-.*', a).group(1))
-            print "result is ", result
+            print("result is ", result)
             if result <= 100 :
                 self.range_fact = 1
             else:
@@ -87,7 +88,7 @@ class Orbitrap_treat():
         reads Orbitrap .dat FID files
         returns a numpy array with the FID
         """
-        print "f ", f
+        print("f ", f)
         self.find_range(f)
         with open(f,'rb') as F:
             self.entete = ''
@@ -96,7 +97,7 @@ class Orbitrap_treat():
                 self.entete += l
                 pos += len(l)
                 if l.startswith("Data Points"):
-                    print re.findall(r'\d+', l)[0]
+                    print(re.findall(r'\d+', l)[0])
                 if l.startswith("Data:"):
                     break
             F.seek(pos)
@@ -106,7 +107,7 @@ class Orbitrap_treat():
     
     def write(self, data, filename):
         f = open(filename,'wb')
-        print "in write orbitrap type(data) is ", type(data)
+        print("in write orbitrap type(data) is ", type(data))
         new_data = self.entete+data.astype('f4').tostring()
         f.write(new_data)
         f.close()
@@ -115,9 +116,9 @@ class Orbitrap_treat():
         '''
         print spectrum in m/z
         '''
-        print "spec.size",spec.size
+        print("spec.size",spec.size)
         point_ref = spec.size*377500./(2*999982)
-        print "point_ref ",point_ref
+        print("point_ref ",point_ref)
         mz_ref = 715.3122
         trunc = 0.1 * spec.size
         xaxis = mz_ref/(((1 + np.arange(1.0 * spec.size))/point_ref)**2)
@@ -127,14 +128,14 @@ class Orbitrap_treat():
         '''
         Zerofilling and apodisation
         '''
-        print "self.refresol ",self.refresol
+        print("self.refresol ",self.refresol)
         #apod = apod_sq_sin
         #apod = apod_sin
         if zerofill :
             spec = data.apod_sq_sin(maxi = 0.5).chsize(self.refresol).rfft().modulus().buffer
         else :
             spec = data.apod_sq_sin(maxi = 0.5).rfft().modulus().buffer
-        print "spec.size",spec.size
+        print("spec.size",spec.size)
         return spec
     
     def xymz(self, y):
@@ -149,5 +150,5 @@ class Orbitrap_treat():
         xaxis = mz_ref/(((1 + np.arange(1.0*data_size)*self.range_fact)/point_ref)**2)
         xmz = xaxis[trunc:]
         yspecmz =  y[trunc:]
-        print "xmz, yspecmz ", xmz, yspecmz
+        print("xmz, yspecmz ", xmz, yspecmz)
         return xmz, yspecmz

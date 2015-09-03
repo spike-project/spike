@@ -45,7 +45,7 @@ def counting(func_to_decorate):
     count = Counter()
     @atexit.register
     def report():
-        print "function %s called %d times"%(func_to_decorate.__name__, count.count)
+        print("function %s called %d times"%(func_to_decorate.__name__, count.count))
     @functools.wraps(func_to_decorate)
     def wrapper(*args, **kw):
         result = func_to_decorate(*args, **kw)
@@ -65,9 +65,9 @@ def timeit(func_to_decorate):
     @atexit.register
     def report():
         if count.count>0:
-            print "function %s  time : %f sec    called %d times    time/call : %f sec"%(func_to_decorate.__name__, count.tim, count.count, count.tim/count.count)
+            print("function %s  time : %f sec    called %d times    time/call : %f sec"%(func_to_decorate.__name__, count.tim, count.count, count.tim/count.count))
         else:
-            print "function %s called %d times"%(func_to_decorate.__name__, count.count)
+            print("function %s called %d times"%(func_to_decorate.__name__, count.count))
     @functools.wraps(func_to_decorate)
     def wrapper(*args, **kw):
         t0 = time.time()

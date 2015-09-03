@@ -1,4 +1,5 @@
 from .. util.debug_tools import* 
+from __future__ import print_function
 import os, time
 
 @dec_class_pr
@@ -29,7 +30,7 @@ class SAVE(object):
         '''
         self.dir_save()                                                                         # Makes self.dir_saved                                                          # retrieves file 's name from QlineEdit
         path_save = os.path.join(self.dir_saved, namefile)                                      # address where to save the data
-        print "data saved at ", path_save                                                       # tells where it is saved.
+        print("data saved at ", path_save)                                                       # tells where it is saved.
         return path_save
      
 if __name__ == '__main__':

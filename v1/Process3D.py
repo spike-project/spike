@@ -69,6 +69,7 @@
 __author__ = "Marc A. Delsuc <delsuc@igbmc.fr>"
 __date__ = "Oct 2009"
 
+from __future__ import print_function
 import math
 import os
 import time
@@ -98,7 +99,7 @@ def FT3D(audit,p_in_arg,f_in,f_out,inputfilename,outputfilename):
 
     # F2-F3 axes
     tempdata2 = tempfile.mktemp('.npk3D2')
-    print tempdata2
+    print(tempdata2)
     audittrail( audit, "3D-phase", "3D: F2-F3 planes processing - based on the following 2D phases")
     process3DF2F3( audit, inputfilename, tempdata2, p_in, f_in, f_out )
     audittrail( audit, "phase", "All F2-F3 axes processed")
@@ -175,7 +176,7 @@ def process3DF1F2( audit, filein, fileout, p_in_arg, f_in_arg, f_out ):
     This macro realizes the 2D processing of each F1-F2 planes (aka orthogonal to F3) of the 3D
     """ 
     
-    print filein
+    print(filein)
     join(filein)
     dim(2)
     (si1,si2)=plane_size("F3")
@@ -201,7 +202,7 @@ def process3DF1( audit, filein, fileout, p_in_arg, f_in_arg, f_out ):
     p_in["f2_baseline"] = 0 # no F2 baseline
     f_in = change_key_dict('f2', 'f3', f_in_arg)
 
-    print filein
+    print(filein)
     join(filein)
     dim(2)
     (si1,si2)=plane_size("F2")

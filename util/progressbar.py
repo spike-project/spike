@@ -54,6 +54,7 @@ __version__ = "2.2"
 # 2004-??-??: v0.1 first version
 
 
+from __future__ import print_function
 import sys, time
 from array import array
 try:
@@ -329,7 +330,7 @@ if __name__=='__main__':
             # do something
             pbar.update(10*i+1)
         pbar.finish()
-        print
+        print()
 
     def example2():
         class CrazyFileTransferSpeed(FileTransferSpeed):
@@ -348,7 +349,7 @@ if __name__=='__main__':
             # do something
             pbar.update(5*i+1)
         pbar.finish()
-        print
+        print()
 
     def example3():
         widgets = [Bar('>'), ' ', ETA(), ' ', ReverseBar('<')]
@@ -357,7 +358,7 @@ if __name__=='__main__':
             # do something
             pbar.update(10*i+1)
         pbar.finish()
-        print
+        print()
 
     def example4():
         widgets = ['Test: ', Percentage(), ' ',
@@ -369,7 +370,7 @@ if __name__=='__main__':
             time.sleep(0.2)
             pbar.update(i)
         pbar.finish()
-        print
+        print()
 
 
     example1()

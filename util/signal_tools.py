@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 import math
 import scipy.fftpack as fft
@@ -467,11 +468,11 @@ class Test_Units(unittest.TestCase):
         e = d.col(11033)
         e.display(show = True)
         for n in (2,5,10,20,50,100,200):
-            print findnoiselevel(e.buffer, n)
+            print(findnoiselevel(e.buffer, n))
         snr = SNR(e)
-        print "total SNR: %.0f  %.2f dB"%( snr, 20*math.log(snr)/math.log(10))
+        print("total SNR: %.0f  %.2f dB"%( snr, 20*math.log(snr)/math.log(10)))
         snr = SNR(e, peak = 453)
-        print "pk 453 SNR: %.0f  %.2f dB"%( snr, 20*math.log(snr)/math.log(10))
+        print("pk 453 SNR: %.0f  %.2f dB"%( snr, 20*math.log(snr)/math.log(10)))
     
     def ttest_multitests_urQRdtrick(self):
         '''

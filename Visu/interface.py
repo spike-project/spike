@@ -2,6 +2,7 @@
 Created by Lionel Chiron  02/10/2013 
 Copyright (c) 2013 __NMRTEC__. All rights reserved.
 '''
+from __future__ import print_function
 import sys, os
 from .. util.debug_tools import*  
 from .. Visu.init.fticrvisuUi import Ui_MainWindow as Ui
@@ -24,7 +25,7 @@ class INTERFACE(): #interface
         '''
         Two ways for launching Qt application, normal way and Canopy way.
         '''
-        print "in INTERFACE"
+        print("in INTERFACE")
         try:
             whichapp =  'app is QtGui.QApplication(sys.argv)'
             self.app = QtGui.QApplication(sys.argv)
@@ -49,7 +50,7 @@ class INTERFACE(): #interface
         '''
         make the layout in the centralwidget
         '''
-        print "makes and fills the layout"
+        print("makes and fills the layout")
         self.ui.layoutC = QtGui.QVBoxLayout(self.ui.centralwidget)#creation of the layout widget.
         self.ui.layoutC.setContentsMargins(280, 50, 10, 70) # Margin for the picture left, up, right, bottom
         
@@ -58,7 +59,7 @@ class INTERFACE(): #interface
         Clear the layout of the centralwidget
         '''
         if debug(self):
-            print "in interface.clearlayout"
+            print("in interface.clearlayout")
         while layout.count() > 0:
             item = layout.takeAt(0)
             if not item: continue

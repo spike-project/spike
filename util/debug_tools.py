@@ -6,6 +6,7 @@ Copyright (c) 2013 __NMRTEC__. All rights reserved.
 decorate the class with decclassdebugging and in each method to be debugged make :
 if debug(self) : instructions.. 
 '''
+from __future__ import print_function
 import sys, os
 import inspect
 import unittest
@@ -18,9 +19,9 @@ def pr(self, var, message = ''):
     loc = frame.f_back.f_locals
     def show(value):
         if message == '':
-            print var + ' ', value 
+            print(var + ' ', value) 
         else:
-            print message + ' ' + var + ' ', value 
+            print(message + ' ' + var + ' ', value) 
     try:
         show(eval(var))
     except Exception:
@@ -60,14 +61,14 @@ def decclassdebugging(cl):
 class Test_debug_tools(unittest.TestCase):
         
     def hip(self):
-        print "passing by hip"
+        print("passing by hip")
         ici = 'here'
         if debug(self) :
-            print  "hip is being debugged..!"
+            print("hip is being debugged..!")
             self.pr('ici')
         
     def hop(self):
-        print "you are in hop"
+        print("you are in hop")
         variable = 0
         if debug(self) :
             self.pr('variable', 'the unknown is ')
