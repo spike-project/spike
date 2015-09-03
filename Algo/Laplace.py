@@ -1,7 +1,5 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
-
 
 """
 Laplace.py
@@ -10,7 +8,7 @@ Created by Marc-André on 2012-07-27.
 Copyright (c) 2012 IGBMC. All rights reserved.
 """
 
-
+from __future__ import print_function
 import numpy as np
 import math
 import maxent as me

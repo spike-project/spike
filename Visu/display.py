@@ -1,7 +1,7 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
 
+from __future__ import print_function
 from .. util.debug_tools import* 
 from .. Visu.Matplotlib_generictools import*
 from .. Visu.Pyside_PyQt4 import*
@@ -109,7 +109,7 @@ class DISPLAY():# class regrouping tools to change resolution with zoom
     
     def affichd(self, canvas, d, zoom = True): # print data in window C d is a fticrdata
         '''
-        Makes the display with NPKv2. 
+        Makes the display with NPKData display method. 
         '''
         if debug(self):
             print("in display.affichd")
@@ -151,7 +151,6 @@ class DISPLAY():# class regrouping tools to change resolution with zoom
                 rapp2, rapp1 = (dd.size2/float(self.currentd.size2), dd.size1/float(self.currentd.size1))#        
                 self.paramz.zoom_coord = self.multzoom_coord(rapp2, rapp1)              # changing the window with resolution
                 zc = self.paramz.zoom_coord
-
                 self.currentd = dd                                                      # current resolution is the resolution recuperated
                 self.affd(self.currentd, self.data.resmin, layout1, layout2)             # visualize with the current resolution
                 llx , lly = self.distrib(min, zc)

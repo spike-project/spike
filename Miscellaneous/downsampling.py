@@ -1,6 +1,5 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
 
 """
 Processing.py
@@ -11,6 +10,7 @@ Created by Marc-André on 2011-09-23.
 Copyright (c) 2011 IGBMC. All rights reserved.
 """
 
+from __future__ import print_function
 import sys
 import os
 import unittest

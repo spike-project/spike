@@ -1,9 +1,6 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
 
-import numpy as np
-import unittest
 '''
 Code permitting to make easily subplot without having to anticipate the number of plot. 
 Just the number of columns is needed. 
@@ -13,6 +10,11 @@ typical syntax is :
     sub.plot(np.arange(6), np.arange(6)**2, 'g', label = 'one') # first plot in first subplot
     sub.title('One')
 '''
+
+from __future__ import print_function
+
+import numpy as np
+import unittest
 
 def add_meth(attr):
     '''

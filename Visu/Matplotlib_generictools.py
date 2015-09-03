@@ -1,7 +1,7 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
 
+from __future__ import print_function
 import matplotlib.cm as cm
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt

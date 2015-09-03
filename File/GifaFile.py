@@ -1,6 +1,5 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
 
 """
 GifaFile.py
@@ -14,7 +13,7 @@ This module provides a simple access to NMR files in the Gifa format.
 
 """
 
-
+from __future__ import print_function
 import re
 import numpy as np
 from .. import NPKData as npkd

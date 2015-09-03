@@ -1,7 +1,5 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
-
 
 """
 bruker_corr.py
@@ -13,6 +11,7 @@ This file contains bruker specific stuff, as digital filter correction
 DSPFIRM is named form bruker document, however, it seems it is called dspfvs in the header bruker files (acqu)
 It is thus called accordingly in the Gifa User Interface.
 """
+from __future__ import print_function
 
 #/* this table holds the delay values. -1 indicates an invalid entry */
 delay = [

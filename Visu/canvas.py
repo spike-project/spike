@@ -1,7 +1,7 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
 
+from __future__ import print_function
 from .. util.debug_tools import*
 from .. Visu.Matplotlib_QtCanvas import*
 from .. Visu.Pyside_PyQt4 import*

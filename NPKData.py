@@ -1,7 +1,5 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
-
 
 """
 NPKData.py
@@ -11,7 +9,7 @@ Implement the basic mechanisms for spectral data-sets
 Created by Marc-André and Marie-Aude on 2010-03-17.
 """
 
-
+from __future__ import print_function
 import numpy as np
 import numpy.fft as npfft
 import copy
@@ -1271,6 +1269,8 @@ class NPKData(object):
                 else:
                     m = absmax/scale
                     level = (m*0.5, m*0.25, m*0.1, m*0.05)
+                    # print("level ", level)
+                    # print("m ",  m)
                     if xlabel == "" and ylabel == "":
                         fig.set_xticklabels('')
                         fig.set_yticklabels('')

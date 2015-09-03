@@ -1,15 +1,15 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
-
-import sys
-import re
 
 '''
 Usage:  python shift_comment.py file.py nbcolumn
 nb column is the column nb at which we want the comment to be placed.
 If no nb is given will shift the comments from the end of the line at a regular intervall.
 '''
+
+from __future__ import print_function
+import sys
+import re
 
 class SHIFT_COMMENT():
     '''

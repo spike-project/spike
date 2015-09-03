@@ -1,7 +1,5 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
-
 
 """
 rem_ridge.py
@@ -10,6 +8,7 @@ Created by Marc-André on 2011-08-15.
 Copyright (c) 2011 IGBMC. All rights reserved.
 """
 
+from __future__ import print_function
 from spike import NPKError
 from spike.NPKData import NPKData_plugin
 

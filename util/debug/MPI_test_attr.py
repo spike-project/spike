@@ -1,10 +1,10 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
 
 """
 Testing MPI
 """
+from __future__ import print_function
 
 import sys
 sys.path.append('../')

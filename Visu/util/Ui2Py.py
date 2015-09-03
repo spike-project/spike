@@ -1,21 +1,21 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
-from os.path import *
-
-import os
-import shutil
-import Tkinter
-import tkFileDialog as Selector
-import sys
-from os.path import join
 
 """
 Passer en Enthought avant de lancer le code.
-Routine to recuperate the .py code of the interface created with QtDesigner as an .ui file.
+Routine to retrieve the .py code of the interface created with QtDesigner as an .ui file.
 It places the .py code next to the .py file we want to interface.
 The addresses of the .py file to be interfaced and the .ui are asked in this order with a Tkinter interface.
 """
+
+from __future__ import print_function
+import sys, os
+from os.path import *
+from os.path import join
+import shutil
+import Tkinter
+import tkFileDialog as Selector
+
 gene_interf = False
 igbmc = True
 home = False

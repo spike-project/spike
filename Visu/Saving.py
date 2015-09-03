@@ -1,9 +1,9 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
-from .. util.debug_tools import* 
 
+from __future__ import print_function
 import os, time
+from .. util.debug_tools import* 
 
 @dec_class_pr
 @decclassdebugging

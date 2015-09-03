@@ -1,15 +1,14 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
+
 '''
 Created by Lionel Chiron  07/10/2013 
 Copyright (c) 2013 __NMRTEC__. All rights reserved.
-'''
-'''
 decorate the class with decclassdebugging and in each method to be debugged make :
 if debug(self) : instructions.. 
 '''
 
+from __future__ import print_function
 import sys, os
 import inspect
 import unittest

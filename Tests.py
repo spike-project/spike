@@ -1,6 +1,6 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
+
 
 """
 Tests.py
@@ -11,6 +11,7 @@ Copyright (c) 2010 IGBMC. All rights reserved.
 Runs tests on selected modules using the integrated unittests. 
 """
 
+from __future__ import print_function
 import unittest
 import os
 import os.path as op

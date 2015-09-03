@@ -1,7 +1,5 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
-
 
 """
 This module contains several utilities for baseline correction of spectra
@@ -11,8 +9,8 @@ Created by Marc-Andre on 2015-03-26.
 
 """
 
+from __future__ import print_function
 from scipy.optimize import minimize
-
 import numpy as np
 #from numpy.polynomial.legendre import legval as poly
 import unittest

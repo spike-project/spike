@@ -1,7 +1,5 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
-
 
 """
 maxent.py
@@ -9,7 +7,7 @@ maxent.py
 Created by Marc-André on 2012-03-06.
 Copyright (c) 2012 IGBMC. All rights reserved.
 """
-
+from __future__ import print_function
 import sys
 import os
 import math

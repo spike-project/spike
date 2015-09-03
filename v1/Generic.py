@@ -1,6 +1,5 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
 
 """
  The library of NMR processing functions to be used with the NPK program.
@@ -18,7 +17,7 @@ __date__ = "Oct 2009"
 # the NPK.so or NPK.dll should already be loaded in the JVM
 # this is generally done by __init__.py
 
-
+from __future__ import print_function
 import math
 import time
 import re

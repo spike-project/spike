@@ -1,6 +1,6 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
+
 """
 urQRd.py
 #########
@@ -49,7 +49,7 @@ version 2.0
 28/oct/2013
 """
 
-
+from __future__ import print_function
 import numpy as np
 import numpy.linalg as linalg
 from numpy.fft import fft, ifft

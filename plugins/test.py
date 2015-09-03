@@ -1,10 +1,11 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
+
 """
 Test procedure for plug-ins
 """
 
+from __future__ import print_function
 from spike.NPKData import NPKData_plugin
 
 def fake(dd, title):

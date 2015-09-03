@@ -1,6 +1,6 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
+
 """
     This module contains all the routines needed to process 2D NMR spectra
     
@@ -46,8 +46,7 @@ from __future__ import print_function
 __author__ = "Marc A. Delsuc <delsuc@igbmc.fr> and Vincent Catherinot <v.catherinot@nmrtec.com>"
 __date__ = "Oct 2009"
 
-
-
+from __future__ import print_function
 import math
 import os
 import os.path

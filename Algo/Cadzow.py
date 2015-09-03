@@ -1,7 +1,5 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
-
 
 """
 cadzow.py
@@ -13,7 +11,7 @@ __version__ = "0.1.3"
 
 "0.1.3 : added full_matrices=False in truncated mode"
 
-
+from __future__ import print_function
 import numpy as np
 import scipy.linalg as lin
 import math

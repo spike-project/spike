@@ -1,6 +1,5 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
 
 """
 Solarix.py
@@ -14,7 +13,7 @@ Copyright (c) 2013 __NMRTEC__. All rights reserved.
 __author__ = "Marc André Delsuc, Marie-Aude Coutouly <mac@nmrtec.com>"
 __date__ = "July 2011"
 
-
+from __future__ import print_function
 import sys
 import os
 import unittest

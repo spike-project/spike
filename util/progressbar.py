@@ -1,6 +1,6 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
+
 #!/usr/bin/python
 # -*- coding: iso-8859-1 -*-
 #
@@ -57,7 +57,7 @@ __version__ = "2.2"
 # 2004-??-??: v0.1 first version
 
 
-
+from __future__ import print_function
 import sys, time
 from array import array
 try:

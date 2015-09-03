@@ -1,6 +1,5 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
 
 """
 dev_setup.py
@@ -9,7 +8,6 @@ To be called any time a new version is rolled out !
 
 Created by Marc-André on 2010-07-20.
 """
-
 
 ProgramName = "SPIKE"
 VersionName = "Development version - beta"
@@ -71,6 +69,7 @@ if UsingSVN and UsingHG:
     raise Exception("Please define only one flag UsingHG or UsingHG !")
 
 ####################### End of configuration ###################
+from __future__ import print_function
 from subprocess import Popen, PIPE
 
 import re

@@ -1,6 +1,5 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
 
 """
 Illustrate simple contour plotting, contours on an image with
@@ -9,6 +8,7 @@ a colorbar for the contours, and labelled contours.
 See also contour_image.py.
 """
 
+from __future__ import print_function
 import time
 import numpy as np
 import matplotlib

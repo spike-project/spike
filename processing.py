@@ -1,7 +1,5 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
-
 
 """
 Processing.py
@@ -12,6 +10,7 @@ Created by Marc-Andre on 2011-09-23.
 Copyright (c) 2011 IGBMC. All rights reserved.
 """
 
+from __future__ import print_function
 import sys, os, time
 import unittest
 import numpy as np
@@ -707,6 +706,7 @@ processing FT
         os.unlink(interfile)
     print("==  FT Processing finished  ==")
     print_time(time.time()-t0, "FT processing time")
+    
     if param.do_F1:
         downprevious = d1       # used to downsample by step   downprevious -downto-> down
         t0 = time.time()
@@ -734,6 +734,7 @@ downsampling %s
         print_time(time.time()-t0, "Downsampling time")
     # close output file
     hfar.close()
+    
     print("== Processing finished  ==")
     print_time(time.time() - t00, "Total processing time")
     if param.mp:
