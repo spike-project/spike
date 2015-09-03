@@ -1,3 +1,5 @@
+#!/usr/bin/env python 
+# encoding: utf-8
 from __future__ import print_function
 """
 This script computes the speed of the processing in MFlops.

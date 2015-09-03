@@ -1,3 +1,5 @@
+#!/usr/bin/env python 
+# encoding: utf-8
 from __future__ import print_function
 """
     This module contains all the routines needed to process 3D NMR spectra

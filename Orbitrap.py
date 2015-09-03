@@ -1,3 +1,5 @@
+#!/usr/bin/env python 
+# encoding: utf-8
 from __future__ import print_function
 """
 This file implements all the tools for handling Orbitrap data-sets

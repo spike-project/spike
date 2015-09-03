@@ -1,3 +1,5 @@
+#!/usr/bin/env python 
+# encoding: utf-8
 from __future__ import print_function
 from .. NPKConfigParser import NPKConfigParser 
 from .. File.HDF5File import HDF5File

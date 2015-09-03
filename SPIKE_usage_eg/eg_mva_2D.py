@@ -1,6 +1,8 @@
+#!/usr/bin/env python 
+# encoding: utf-8
 from __future__ import print_function
 
-# encoding: utf-8
+
 
 """
 quelques examples de traitements, en utilisant la base du nouveau NPK v2

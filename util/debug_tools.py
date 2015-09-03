@@ -1,3 +1,5 @@
+#!/usr/bin/env python 
+# encoding: utf-8
 from __future__ import print_function
 '''
 Created by Lionel Chiron  07/10/2013 

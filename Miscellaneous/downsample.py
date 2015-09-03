@@ -1,6 +1,8 @@
-from __future__ import print_function
-#!/usr/bin/env python
+#!/usr/bin/env python 
 # encoding: utf-8
+from __future__ import print_function
+
+
 """
 downsample2D.py
 

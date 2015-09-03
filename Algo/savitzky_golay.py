@@ -1,3 +1,5 @@
+#!/usr/bin/env python 
+# encoding: utf-8
 from __future__ import print_function
 """
 Smooth (and optionally differentiate) data with a Savitzky-Golay filter.

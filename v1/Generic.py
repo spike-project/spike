@@ -1,5 +1,7 @@
-from __future__ import print_function
+#!/usr/bin/env python 
 # encoding: utf-8
+from __future__ import print_function
+
 """
  The library of NMR processing functions to be used with the NPK program.
 

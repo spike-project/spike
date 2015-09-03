@@ -1,6 +1,8 @@
+#!/usr/bin/env python 
+# encoding: utf-8
 from __future__ import print_function
 
-# encoding: utf-8
+
 """
 read_msh5.py
 Small class that reads mr_MSH5 file and return a FTICRData
