@@ -37,10 +37,11 @@
     
 """
 
+from __future__ import print_function
+
 __author__ = "Marc A. Delsuc <delsuc@igbmc.fr>"
 __date__ = "Oct 2009"
 
-from __future__ import print_function
 import math
 import os
 import time

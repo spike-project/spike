@@ -15,11 +15,14 @@ It is used to read and store all the parameters used by the NPK program.
     o all arithmetic is evaluated : math.pi/2, 0.1*get_si1_2d(), etc...
   
 """
+
+from __future__ import print_function
+
 __author__ = "Marc A. Delsuc <delsuc@igbmc.fr>"
 __date__ = "Oct 2009"
 
 # UserDict is used for 2.1 compatibility required by jython
-from __future__ import print_function
+
 import UserDict
 import os
 

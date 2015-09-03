@@ -3,7 +3,6 @@
 
 from __future__ import print_function
 
-
 class PARAM_ZOOM(object):
     '''
     Central object for zoom management. 

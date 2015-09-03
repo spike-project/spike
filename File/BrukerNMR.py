@@ -7,10 +7,11 @@
 partitly based on NPK v1 code
 """
 
+from __future__ import print_function
+
 __author__ = "Marc Andre' Delsuc"
 __date__ = "november 2014"
 
-from __future__ import print_function
 import os
 import os.path as op
 import glob

@@ -1,14 +1,13 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
-
-
 
 """
 quelques examples de traitements, en utilisant la base du nouveau NPK v2
 
 il manque encore le module Kore qui fait le lien avec NPK v1
 """
+
+from __future__ import print_function
 
 import File.GifaFile as gf
 import NPKData as npkd

@@ -42,13 +42,14 @@ extended 2014-03-25
 Copyright (c) 2012-2014 IGBMC. All rights reserved.
 """
 
+from __future__ import print_function
 
 """
 Recv is for numpy buffers
 recv is for picklable python objects
 """
 
-from __future__ import print_function
+
 
 try:
     from mpi4py import MPI
