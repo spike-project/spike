@@ -69,6 +69,7 @@ class HDF5File(object):
     def __init__(self, fname, access = 'r', info = None, nparray = None, fticrd = None, debug = 0):
         # still have to deal with changing the file_version when file is opened reading only
         from  .. import FTICR
+        #import spike.FTICR as FTICR
         import getpass
         try:
             owner = getpass.getuser()
