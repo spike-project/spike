@@ -1,3 +1,5 @@
+#!/usr/bin/env python 
+# encoding: utf-8
 from __future__ import print_function
 """
 set of function for the baseline correction

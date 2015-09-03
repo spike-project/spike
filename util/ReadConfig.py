@@ -1,6 +1,8 @@
+#!/usr/bin/env python 
+# encoding: utf-8
 from __future__ import print_function
 
-# encoding: utf-8
+
 """
 ReadConfig.py
 Small programm which reads, presents and adjust configuration file

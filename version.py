@@ -1,3 +1,5 @@
+#!/usr/bin/env python 
+# encoding: utf-8
 from __future__ import print_function
 
 # This file is generated automatically by dev_setup.py 

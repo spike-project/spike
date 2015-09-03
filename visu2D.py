@@ -1,5 +1,7 @@
-from __future__ import print_function
+#!/usr/bin/env python 
 # encoding: utf-8
+from __future__ import print_function
+
 """
 Created by Marc Andre Delsuc & Lionel Chiron on 2011-05-19.
 Copyright (c) 2011 IGBMC. All rights reserved.

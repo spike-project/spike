@@ -1,3 +1,5 @@
+#!/usr/bin/env python 
+# encoding: utf-8
 from __future__ import print_function
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore  import SIGNAL 

@@ -1,3 +1,5 @@
+#!/usr/bin/env python 
+# encoding: utf-8
 from __future__ import print_function
 """
 A utility to set to zero all points below a ratio
