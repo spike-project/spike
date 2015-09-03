@@ -7,11 +7,14 @@ cadzow.py
 Created by Marc-André on 2010-03-18.
 Copyright (c) 2010 IGBMC. All rights reserved.
 """
+
+from __future__ import print_function
+
 __version__ = "0.1.3"
 
 "0.1.3 : added full_matrices=False in truncated mode"
 
-from __future__ import print_function
+
 import numpy as np
 import scipy.linalg as lin
 import math

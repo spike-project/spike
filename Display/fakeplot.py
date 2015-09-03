@@ -11,9 +11,11 @@ Created by Marc-André on 2010-03-22.
 Copyright (c) 2010 IGBMC. All rights reserved.
 """
 
+from __future__ import print_function
+
 __version__ = "0.2.1"
 
-from __future__ import print_function
+
 import sys
 import os
 

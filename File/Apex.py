@@ -5,10 +5,11 @@
     Utility to Handle Apex files
 """
 
+from __future__ import print_function
+
 __author__ = "Marc André Delsuc, Marie-Aude Coutouly <mac@nmrtec.com>"
 __date__ = "July 2011"
 
-from __future__ import print_function
 import sys
 import os
 import unittest

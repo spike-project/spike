@@ -9,6 +9,8 @@ Most of theese functions require that the NPK mathematical kernel is loaded.
 
 """
 
+from __future__ import print_function
+
 __author__ = "Marc A. Delsuc <delsuc@igbmc.fr> and Vincent Catherinot <v.catherinot@nmrtec.com>"
 __date__ = "Oct 2009"
 
@@ -17,7 +19,6 @@ __date__ = "Oct 2009"
 # the NPK.so or NPK.dll should already be loaded in the JVM
 # this is generally done by __init__.py
 
-from __future__ import print_function
 import math
 import time
 import re

@@ -1,6 +1,8 @@
 #!/usr/bin/env python 
 # encoding: utf-8
 
+from __future__ import print_function
+
 # -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file '/Users/chiron/QtSDK/fticrpopup.ui'
@@ -10,7 +12,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from __future__ import print_function
+
 import sys
 from ..Pyside_PyQt4 import QtCore
 

@@ -1,27 +1,6 @@
 #!/usr/bin/env python 
 # encoding: utf-8
 
-#!/usr/bin/python
-# -*- coding: iso-8859-1 -*-
-#
-# progressbar  - Text progressbar library for python.
-# Copyright (c) 2005 Nilton Volpato
-# 
-# This library is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 2.1 of the License, or (at your option) any later version.
-# 
-# This library is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-# 
-# You should have received a copy of the GNU Lesser General Public
-# License along with this library; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-
-
 """Text progressbar library for python.
 
 This library provides a text mode progressbar. This is tipically used
@@ -42,6 +21,28 @@ The progressbar module is very easy to use, yet very powerful. And
 automatically supports features like auto-resizing when available.
 """
 
+from __future__ import print_function
+
+#!/usr/bin/python
+# -*- coding: iso-8859-1 -*-
+#
+# progressbar  - Text progressbar library for python.
+# Copyright (c) 2005 Nilton Volpato
+# 
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+# 
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+# 
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 __author__ = "Nilton Volpato"
 __author_email__ = "first-name dot last-name @ gmail.com"
 __date__ = "2006-05-07"
@@ -56,8 +57,6 @@ __version__ = "2.2"
 # 2005-06-02: v0.5 rewrite
 # 2004-??-??: v0.1 first version
 
-
-from __future__ import print_function
 import sys, time
 from array import array
 try:

@@ -9,6 +9,8 @@ To be called any time a new version is rolled out !
 Created by Marc-André on 2010-07-20.
 """
 
+from __future__ import print_function
+
 ProgramName = "SPIKE"
 VersionName = "Development version - beta"
 VersionInfo = ["0", "6", "4"]   # Major - Minor - Micro
@@ -69,7 +71,6 @@ if UsingSVN and UsingHG:
     raise Exception("Please define only one flag UsingHG or UsingHG !")
 
 ####################### End of configuration ###################
-from __future__ import print_function
 from subprocess import Popen, PIPE
 
 import re

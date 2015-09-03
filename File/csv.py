@@ -8,10 +8,11 @@
     Marc-André adapted from some Lionel code
 """
 
+from __future__ import print_function
+
 __author__ = "Marc André Delsuc"
 __date__ = "april 2014"
 
-from __future__ import print_function
 import numpy as np
 import unittest
 import os
