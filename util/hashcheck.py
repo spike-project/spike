@@ -1,5 +1,13 @@
 #!/usr/bin/env python 
 # encoding: utf-8
+
+'''
+Program for controlling if files are not deteriorated during transmission.
+Usage : write in command line "python hashcheck.py directory-pathname"
+Lionel Chiron, 11 oct 2012
+copyright NMRTEC S.A.S.
+'''
+
 from __future__ import print_function
 
 import hashlib
@@ -7,12 +15,6 @@ import fnmatch
 import os,sys
 import json
 import unittest
-'''
-Program for controlling if files are not deteriorated during transmission.
-Usage : write in command line "python hashcheck.py directory-pathname"
-Lionel Chiron, 11 oct 2012
-copyright NMRTEC S.A.S.
-'''
 
 def md5sum(filename):
     '''

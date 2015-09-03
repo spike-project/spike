@@ -1,7 +1,5 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
-
 
 """
 counter.py
@@ -26,11 +24,10 @@ Created by Marc-André on 2012-11-05.
 Copyright (c) 2012 IGBMC. All rights reserved.
 """
 
-
 ################################################################################
 # UTILITIES
 
-
+from __future__ import print_function
 
 class Counter(object):
     """

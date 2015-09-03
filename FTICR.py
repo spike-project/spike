@@ -1,7 +1,5 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
-
 
 """
 This file implements all the tools for handling FT-ICR data-sets
@@ -25,6 +23,7 @@ Created by Marc-André on 2014-08
 Copyright (c) 2014 IGBMC. All rights reserved.
 """
 
+from __future__ import print_function
 import math
 import unittest
 import numpy as np

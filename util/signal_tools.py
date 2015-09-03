@@ -1,7 +1,14 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
 
+'''
+Created by Lionel Chiron  18/10/2013 
+Copyright (c) 2013 __NMRTEC__. All rights reserved.
+Various tools for performing signal processing (SNR calculation,
+    synthetic Fids with noise, noise level etc... )
+'''
+
+from __future__ import print_function
 import numpy as np
 import math
 import scipy.fftpack as fft
@@ -10,15 +17,7 @@ from numpy.fft import rfft as nprfft
 from numpy.fft import irfft as npirfft
 import unittest
 import time
-
 from ..NPKData import NPKData
-
-'''
-Created by Lionel Chiron  18/10/2013 
-Copyright (c) 2013 __NMRTEC__. All rights reserved.
-Various tools for performing signal processing (SNR calculation,
-    synthetic Fids with noise, noise level etc... )
-'''
 
 def filtering(sig, window = None):
     '''

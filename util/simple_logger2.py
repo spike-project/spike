@@ -1,6 +1,6 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
+
 '''
 Created by Lionel Chiron  18/10/2013 
 Copyright (c) 2013 __NMRTEC__. All rights reserved.
@@ -9,6 +9,7 @@ Utility for copying Standard Error (stderr) and Standard Output (stdout) to a fi
 
 '''
 
+from __future__ import print_function
 import sys, os
 from datetime import datetime
 import os.path as op

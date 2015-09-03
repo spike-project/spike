@@ -1,7 +1,5 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
-
 
 """
 Kore.py
@@ -10,6 +8,7 @@ Created by Marie-Aude Coutouly on 2010-03-26.
 Copyright (c) 2010 NMRTEC. All rights reserved.
 """
 
+from __future__ import print_function
 import numpy as np
 import NPKData as npkd
 import File.GifaFile as gf

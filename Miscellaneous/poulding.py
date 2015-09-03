@@ -1,7 +1,5 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
-
 
 """
 poulding.py
@@ -15,7 +13,7 @@ Created by Marc-André on 2010-10-16.
 Copyright (c) 2010 IGBMC. All rights reserved.
 """
 
-
+from __future__ import print_function
 import numpy as np
 import math
 import matplotlib.pyplot as plt

@@ -1,7 +1,5 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
-
 
 """
 mpiutil.py
@@ -50,7 +48,7 @@ Recv is for numpy buffers
 recv is for picklable python objects
 """
 
-
+from __future__ import print_function
 
 try:
     from mpi4py import MPI

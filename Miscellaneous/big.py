@@ -1,7 +1,5 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
-
 
 """
 big.py
@@ -13,7 +11,7 @@ Copyright (c) 2011 IGBMC. All rights reserved.
 
 """
  
-
+from __future__ import print_function
 import Apex as ap
 import FTICR
 import tables

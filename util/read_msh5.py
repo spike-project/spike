@@ -1,7 +1,5 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
-
 
 """
 read_msh5.py
@@ -11,7 +9,7 @@ Created by mac on 2012-03-29.
 Copyright (c) 2012 __NMRTEC__. All rights reserved.
 """
 
-
+from __future__ import print_function
 import sys
 import os
 import unittest

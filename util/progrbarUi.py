@@ -1,6 +1,6 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
+
 # -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file '/Network/Servers/arou.u-strasbg.fr/Volumes/DroboRMN/lionel/QtSDK/progbar.ui'
@@ -10,7 +10,7 @@ from __future__ import print_function
 #
 # WARNING! All changes made in this file will be lost!
 
-
+from __future__ import print_function
 from PyQt4 import QtCore, QtGui
 
 try:

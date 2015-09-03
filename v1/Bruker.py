@@ -1,13 +1,13 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
+
 """
     Utility for handling Bruker files
 """
 __author__ = "Marc A. Delsuc <delsuc@igbmc.fr>"
 __date__ = "Oct 2009"
 
-
+from __future__ import print_function
 import struct
 import re
 import os

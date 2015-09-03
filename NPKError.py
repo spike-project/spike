@@ -1,7 +1,5 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
-
 
 """
 untitled.py
@@ -9,6 +7,8 @@ untitled.py
 Created by Marc-André on 2010-07-20.
 Copyright (c) 2010 IGBMC. All rights reserved.
 """
+
+from __future__ import print_function
         
 class NPKError(Exception):
     """ implements NPK generic exception

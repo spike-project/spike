@@ -1,7 +1,5 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
-
 
 """
 
@@ -19,7 +17,7 @@ adapted to numpy by Marc-André on 2011-11-18.
 Copyright (c) 2011 IGBMC. All rights reserved.
 """
 
-
+from __future__ import print_function
 import numpy as np
 from ..Display import testplot
 plt = testplot.plot()

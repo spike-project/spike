@@ -1,11 +1,11 @@
 #!/usr/bin/env python 
 # encoding: utf-8
+
 from __future__ import print_function
+import os
 from .. NPKConfigParser import NPKConfigParser 
 from .. File.HDF5File import HDF5File
 from .. util.debug_tools import*
-
-import os
 
 @dec_class_pr
 @decclassdebugging

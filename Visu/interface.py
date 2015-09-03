@@ -1,11 +1,12 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
+
 '''
 Created by Lionel Chiron  02/10/2013 
 Copyright (c) 2013 __NMRTEC__. All rights reserved.
 '''
 
+from __future__ import print_function
 import sys, os
 from .. util.debug_tools import*  
 from .. Visu.init.fticrvisuUi import Ui_MainWindow as Ui

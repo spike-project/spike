@@ -1,8 +1,5 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
-
-
 
 """
 Few examples of how to use NPK v2. 
@@ -15,6 +12,7 @@ Few examples of how to use NPK v2.
 
 """
 
+from __future__ import print_function
 from File.Thermo import Import_1D
 
 import numpy as np                  # pour faire des calculs

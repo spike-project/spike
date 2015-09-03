@@ -1,7 +1,7 @@
 #!/usr/bin/env python 
 # encoding: utf-8
-from __future__ import print_function
 
+from __future__ import print_function
 import smtplib
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEBase import MIMEBase
