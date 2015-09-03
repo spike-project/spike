@@ -8,6 +8,8 @@ syntax: glob
 *.synctex.gz
 *~
 *.log
+*.orig
+.ipynb_checkpoints
 
 Miscellaneous
 Miscellaneous/__init__\.py
@@ -32,3 +34,4 @@ process.mscf
 SPIKE_usage_eg/.ipynb_checkpoints/Processing2D_manual-checkpoint.ipynb
 Algo/urQRd_fft_trick.ipynb
 Algo/.ipynb_checkpoints/urQRd_fft_trick-checkpoint.ipynb
+
