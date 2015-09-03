@@ -2499,9 +2499,6 @@ class NPKData(object):
 
 class NPKDataTests(unittest.TestCase):
     """ - Testing NPKData basic behaviour - """
-    from .Tests import filename
-    name1D = filename("proj.gs1")
-    name2D = filename("dosy-cluster2.gs2")       # Byteorder = big_endian
     def test_fft(self):
         " - Testing FFT methods - "
         print(self.test_fft.__doc__)
@@ -2523,8 +2520,10 @@ class NPKDataTests(unittest.TestCase):
 
     def test_load(self):
         " - Testing load methods"
+        from .Tests import filename
         print(self.test_load.__doc__)
-        E=NPKData(name=self.name1D)
+        name1D = filename("proj.gs1")
+        E = NPKData(name=self.name1D)
         self.assertAlmostEqual(E[0], 1869.4309082)
         self.assertAlmostEqual(E.get_buffer().max(), 603306.75)
 
