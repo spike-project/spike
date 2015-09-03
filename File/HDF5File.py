@@ -8,6 +8,7 @@ Created by Marc-André Delsuc, Marie-Aude Coutouly on 2011-07-13.
 API dealing with HDF5File. For now it is non surclassing tables, you have to use *.hf. to access all tables functionalities
 """
 
+from __future__ import print_function
 import sys
 import os
 import unittest
@@ -88,48 +89,48 @@ class HDF5File(object):
             self.checkversion()
         if access == "r":     
             if (self.debug > 0):
-                print "open in read mode"
+                print("open in read mode")
             self.access = access
             self.hf = tables.openFile(self.fname, self.access)
             self.get_file_infos()
         elif access == "w":
             if (self.debug > 0):
-                print "Open HDF5 File with writing rights"
+                print("Open HDF5 File with writing rights")
             self.access = access
             self.hf = tables.openFile(self.fname, self.access)
             self.create_generic(owner=owner)
             if (info is not None):
                 if (self.debug > 0):
-                    print "Create HDF5 File from info"
+                    print("Create HDF5 File from info")
                 self.info = info
                 self.data = None
                 self.create_HDF5_info()
             elif (nparray is not None):
                 if (self.debug > 0):
-                    print "Create HDF5 File from nparray"
+                    print("Create HDF5 File from nparray")
                 data = FTICR.FTICRData(buffer = nparray)
                 self.create_from_template(data)
             elif (fticrd is not None):
                 if (self.debug > 0):
-                    print "Create HDF5 File from fticrdata"
+                    print("Create HDF5 File from fticrdata")
                 self.create_from_template(fticrd)
             else:
-                if (self.debug > 0): print "without any data nor infos"
+                if (self.debug > 0): print("without any data nor infos")
         elif access == "r+":
             if (self.debug > 0):
-                print "open in modifying mode r+"
+                print("open in modifying mode r+")
             self.access = "r+"
             self.hf = tables.openFile(self.fname, self.access)
             self.get_file_infos()
         elif access == "rw":
             if (self.debug > 0):
-                print "open in modifying mode rw"
+                print("open in modifying mode rw")
             self.access = "r+"
             self.hf = tables.openFile(self.fname, self.access)
             self.get_file_infos()
         elif access == "a":
             if (self.debug > 0):
-                print "open in modifying mode a"
+                print("open in modifying mode a")
             self.access = "a"
             self.hf = tables.openFile(self.fname, self.access)
             self.get_file_infos()
@@ -148,7 +149,7 @@ class HDF5File(object):
             raise Exception("The file %s does not seem to be a valid file"%self.fname)
         info = infos[0]     # only first entry is used
         self.hf.close()
-        if self.debug > 0 : print "File_Version", info["File_Version"]
+        if self.debug > 0 : print("File_Version", info["File_Version"])
         
         if info["File_Version"] != __file_version__:
             msg = """
@@ -213,7 +214,7 @@ python HDF5File.py update {0}
         Fill in the given table. Axis is the dimension we are processing
         """
 
-        if (self.debug > 0): print "table",table
+        if (self.debug > 0): print("table",table)
         rows = table.row
         
         for i in xrange(len(infos)):
@@ -279,7 +280,7 @@ python HDF5File.py update {0}
         """
         Fill in the HDF5 file with the given buffer, HDF5 file is created with the given numpy array and the corresponding tables
         """
-        if (self.debug > 1): print type(self)
+        if (self.debug > 1): print(type(self))
         if self.dim == 2:
             if (self.info is not None):
                 sizeF1 = self.info["Dim1"] 
@@ -287,13 +288,13 @@ python HDF5File.py update {0}
             else:
                 sizeF1 = self.dims[0]
                 sizeF2 = self.dims[1]
-            if (self.debug > 0): print sizeF1, sizeF2
+            if (self.debug > 0): print(sizeF1, sizeF2)
             if self.chunks is not None:
                 chunks = self.chunks
             else:
                 chunks = determine_chunkshape(sizeF1, sizeF2)
 
-            if (self.debug > 0): print "chunks", chunks
+            if (self.debug > 0): print("chunks", chunks)
             Carray = self.createCArray("/"+group, 'data', tables.Float64Atom(), (sizeF1, sizeF2), chunk = chunks)
             # if you have given a numpy array as buffer, it uses it to fillin the data
             if (self.nparray is not None):
@@ -301,7 +302,7 @@ python HDF5File.py update {0}
                     tbuf = self.nparray[i1, 0:sizeF2]
                     Carray[i1, 0:sizeF2] = tbuf[0:sizeF2]
             elif (self.data is not None):
-                if (self.debug > 1): print type(self.data)
+                if (self.debug > 1): print(type(self.data))
                 for i1 in xrange(sizeF1):
                     tbuf = self.data.buffer[i1, 0:sizeF2]
                     Carray[i1, 0:sizeF2] = tbuf[0:sizeF2]
@@ -344,7 +345,7 @@ python HDF5File.py update {0}
             d.data.buffer = b           # and b is used as the data buffer.
         """
         from  .. import FTICR
-        if (self.debug > 0): print group
+        if (self.debug > 0): print(group)
         hfgroup = getattr(self.hf.root, group)
         try:
             hbuf = hfgroup.data
@@ -356,7 +357,7 @@ python HDF5File.py update {0}
             self.data = FTICR.FTICRData(buffer = hbuf[...]) # copy !
         else:
             raise Exception("wrong mode, only 'onfile' and 'memory' allowed")
-        if (self.debug > 1): print type(self.data.buffer)
+        if (self.debug > 1): print(type(self.data.buffer))
         # try:
         # except:
         #     raise Exception(" You might be trying to load a file with another architecture 'maybe different resolutions'")
@@ -456,7 +457,7 @@ python HDF5File.py update {0}
         for i in range(self.dim):
             ii = i + 1
             infos.append( data.axes(ii).__dict__)
-            if (self.debug > 0): print infos
+            if (self.debug > 0): print(infos)
             
             # For the moment we retrieve the dimension at this point
             # We put them in the self.dims list
@@ -496,9 +497,9 @@ python HDF5File.py update {0}
         """
         Closes HDF5File
         """
-        if (self.debug > 0) : print "ABOUT TO CLOSE ", self.fname
+        if (self.debug > 0) : print("ABOUT TO CLOSE ", self.fname)
         self.hf.close()
-        if (self.debug > 0) : print "IT's CLOSED ", self.fname
+        if (self.debug > 0) : print("IT's CLOSED ", self.fname)
     #----------------------------------------------
     def createGroup(self, where, name):
         """
@@ -542,7 +543,7 @@ python HDF5File.py update {0}
         while  ( (float(n2)/ float(n1)) < sz12) and (n1 > 1 ) :
             n1 = n1/2
             n2 = n2*2
-            if (self.debug > 0): print "si1 x si2 : %d %d   n1 x n2 : %d %d" % (float(sizeF1), float(sizeF2), n1, n2)
+            if (self.debug > 0): print("si1 x si2 : %d %d   n1 x n2 : %d %d" % (float(sizeF1), float(sizeF2), n1, n2))
         return(n1, n2)
     #----------------------------------------------
     def get_file_infos(self):
@@ -550,7 +551,7 @@ python HDF5File.py update {0}
         Read the generic_table and return the informations
         """
         infos = self.hf.root.generic_table.read()
-        print "******************* \n %s is a %s file created by %s on %s with code version %s.\n HDF5 version is %s and API version is %s.\n Last modification has been made %s \n********************"% ( self.fname, infos[0]['Method'], infos[0]['Owner'], infos[0]['Creation_Date'], infos[0]['Version'], infos[0]['HDF5_Version'], infos[0]['File_Version'], infos[0]['Last_Modification_Date'])
+        print("******************* \n %s is a %s file created by %s on %s with code version %s.\n HDF5 version is %s and API version is %s.\n Last modification has been made %s \n********************"% ( self.fname, infos[0]['Method'], infos[0]['Owner'], infos[0]['Creation_Date'], infos[0]['Version'], infos[0]['HDF5_Version'], infos[0]['File_Version'], infos[0]['Last_Modification_Date']))
 ################################################
 # Update functions
 def update(fname, debug = 1):
@@ -562,22 +563,22 @@ def update(fname, debug = 1):
         raise Exception("The file %s does not seem to be a valid file"%fname)
     info = infos[0]     # only first entry is used
     fileversion = float(info["File_Version"])
-    if debug > 0 : print "File_Version", fileversion
+    if debug > 0 : print("File_Version", fileversion)
     hf.close()
     hf.close()
     if fileversion == float(__file_version__):
-        print "File is up to date, there is nothing to do"
+        print("File is up to date, there is nothing to do")
     if  fileversion < 0.6:
         raise Exception("The file %s is from version %s, which is too old to be updated, sorry"%(fname, fileversion))
     if fileversion < 0.7:
-        print "updating from 0.6 to 0.7"
+        print("updating from 0.6 to 0.7")
         up0p6_to_0p7(fname, debug=debug)
         fileversion = 0.7
     if fileversion < 0.8:
-        print "updating from 0.7 to 0.8"
+        print("updating from 0.7 to 0.8")
         up0p7_to_0p8(fname, debug=debug)
         fileversion = 0.8
-    print "The file %s has been fully updated to %s"%(fname,__file_version__)
+    print("The file %s has been fully updated to %s"%(fname,__file_version__))
 #----------------------------------------------
 def up0p6_to_0p7(fname, debug = 1):
     """docstring for up0p6_to_0p7
@@ -585,13 +586,13 @@ def up0p6_to_0p7(fname, debug = 1):
     It modifies 
     """
     import time
-    print "modifying dtype of highmass"
+    print("modifying dtype of highmass")
     hf = tables.openFile(fname,"r+")
     for table in hf.walkNodes("/","Table"): # get the list of tables in the axes group
         try :
             table.description.highmass.type = 'float32'
         except:
-            print " no highmass field in this table"
+            print(" no highmass field in this table")
     hf.root.generic_table.modifyColumn(0, column = "0.7", colname = "File_Version")
     hf.root.generic_table.modifyColumn(0, column = time.strftime("%m/%d/%Y %I:%M:%S %p", time.localtime()), colname = "Last_Modification_Date")
     
@@ -622,7 +623,7 @@ def up0p7_to_0p8(fname, debug = 1):
     hf.root.generic_table.modifyColumn(0, column = "0.8", colname = "File_Version")
     hf.root.generic_table.modifyColumn(0, column = time.strftime("%m/%d/%Y %I:%M:%S %p", time.localtime()), colname = "Last_Modification_Date")
     if (debug > 0):
-        print "We have to gather all axes in one table"
+        print("We have to gather all axes in one table")
     hf.close()
 
 #----------------------------------------------
@@ -643,11 +644,11 @@ class HDF5_Tests(unittest.TestCase):
         self.verbose = 1    # verbose > 0 switches messages on
     def announce(self):
         if self.verbose > 0:
-            print "\n========", self.shortDescription(), '==============='
+            print("\n========", self.shortDescription(), '===============')
     def test_get_data(self):
         "Test routine that opens a HDF5 file reading, gets the headers and the buffer"
         self.announce()
-        print "testing get_data the type file"
+        print("testing get_data the type file")
         
         hdf5 = HDF5File(self.name_get,"rw")
         hdf5.load()
@@ -674,7 +675,7 @@ class HDF5_Tests(unittest.TestCase):
         self.announce()
         data_init = 10*np.random.random((2048, 65536)) 
         B = nparray_to_fticrd(self.npar_fticr, data_init)
-        print B.axis1.size
+        print(B.axis1.size)
     #----------------------------------------------
     def test_axes_update(self):
         "Test routine that overloads the parameter from an axis"
@@ -709,19 +710,19 @@ class HDF5_Tests(unittest.TestCase):
         #print HF.hf.root.data[:]
         t1 = time()
         d = Import_2D(self.DataFolder, self.name_chunk)
-        print "---------------SETTINGS---------------------"
-        print "CHUNK_CACHE_PREEMPT " , tables.parameters.CHUNK_CACHE_PREEMPT 
-        print "CHUNK_CACHE_SIZE ", tables.parameters.CHUNK_CACHE_SIZE 
-        print "METADATA_CACHE_SIZE ", tables.parameters.METADATA_CACHE_SIZE 
-        print "NODE_CACHE_SLOTS ", tables.parameters.NODE_CACHE_SLOTS
-        print "---------------SETTINGS---------------------"
+        print("---------------SETTINGS---------------------")
+        print("CHUNK_CACHE_PREEMPT " , tables.parameters.CHUNK_CACHE_PREEMPT) 
+        print("CHUNK_CACHE_SIZE ", tables.parameters.CHUNK_CACHE_SIZE) 
+        print("METADATA_CACHE_SIZE ", tables.parameters.METADATA_CACHE_SIZE) 
+        print("NODE_CACHE_SLOTS ", tables.parameters.NODE_CACHE_SLOTS)
+        print("---------------SETTINGS---------------------")
        #d.hdf5file.close()
        #d = HF.get_data()
-        print "import", time()-t1, "secondes"
+        print("import", time()-t1, "secondes")
         t0 = time()
         t00 = t0
         d.rfft(axis=2)
-        print "rfft2", time()-t0, "secondes"
+        print("rfft2", time()-t0, "secondes")
        # HF = HDF5File("/Users/mac/Desktop/Chunk.hf","r")
        # d = HF.get_data()
         t0 = time()
@@ -733,11 +734,11 @@ class HDF5_Tests(unittest.TestCase):
         # t0 = time()
         # #print type(d)
         d.rfft(axis=1)
-        print "rfft1", time()-t0, "secondes"
+        print("rfft1", time()-t0, "secondes")
         t0 = time()
         d.modulus()
-        print "modulus", time()-t0, "secondes"
-        print "calcul", time()-t00, "secondes"
+        print("modulus", time()-t0, "secondes")
+        print("calcul", time()-t00, "secondes")
 
 
 #----------------------------------------------
@@ -754,7 +755,7 @@ def nparray_to_fticrd(name, nparray):
     
 #----------------------------------------------
 def syntax(prgm):
-    print """
+    print("""
 ****** ERROR ******
 syntax is
 {0}
@@ -762,7 +763,7 @@ syntax is
 {0} Tests     (both run self tests)
    or
 {0} update file_name    to update a old file to current
-""".format(prgm)
+""".format(prgm))
     sys.exit(1)
 #----------------------------------------------
 if __name__ == '__main__':
@@ -782,7 +783,7 @@ if __name__ == '__main__':
             syntax(argv[0])
         update(fname, debug = 1)
     elif action == "Tests":
-        print "running tests"
+        print("running tests")
         argv.pop()
         unittest.main()
     else:

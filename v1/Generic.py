@@ -15,6 +15,7 @@ __date__ = "Oct 2009"
 # the NPK.so or NPK.dll should already be loaded in the JVM
 # this is generally done by __init__.py
 
+from __future__ import print_function
 import math
 import time
 import re
@@ -42,7 +43,7 @@ def dict_load(fname):
     keys are set to lowercase
     """
     dico = {}
-    print fname
+    print(fname)
     try:
         fin = open(fname)
         f=fin.read()
@@ -64,8 +65,8 @@ def dict_load(fname):
             dico[dkey]=fval
         fin.close
     except:
-        print "File "+fname+" not found."
-        print "Creating empty parameter list\n"
+        print("File "+fname+" not found.")
+        print("Creating empty parameter list\n")
     return dico
 #---------------------------------------------------------------------------
 def dict_out(dict,title=""):
@@ -99,7 +100,7 @@ def dict_dump(dict,fname):
     try:
         fout = open(fname, 'w')
     except:
-        print "Error while opening file :", sys.exc_info()[0]
+        print("Error while opening file :", sys.exc_info()[0])
         raise
 
     fout.write("#Property list file, created :"+time.strftime("%a, %d %b %Y %H:%M:%S %Z", time.localtime())+"\n")
@@ -150,7 +151,7 @@ def change_key_dict(patternOut, patternIn, p_in_arg):
     
     """
     verbose = 0
-    if verbose: print "change_key_dict\n", patternIn,patternOut, p_in_arg
+    if verbose: print("change_key_dict\n", patternIn,patternOut, p_in_arg)
     p = Param.NPKParam()
     if (len(p_in_arg)>0):
         for i in p_in_arg.keys():
@@ -160,7 +161,7 @@ def change_key_dict(patternOut, patternIn, p_in_arg):
             except:
                 p[j]=p_in_arg[i]
     if verbose:
-        print p
+        print(p)
         raise "stop"
     return(p)
 
@@ -238,7 +239,7 @@ def save_state(dd):
 
     dim(d)
     saved_state=(dd,where)
-    print repr(saved_state),tempdata
+    print(repr(saved_state),tempdata)
 
 #---------------------------------------------------------------------------
 def get_saved_state(dd):
@@ -421,7 +422,7 @@ def apsl():
     for i in range(1,nfrst+1):
         phi[i] = apsl_cp(pk[i], get_si1_1d() / s_wdth)
         if ( get_debug() ):
-            print (repr(i) + "th peak at index " + repr(pk[i]) + " phase : " + repr(phi[i]))
+            print((repr(i) + "th peak at index " + repr(pk[i]) + " phase : " + repr(phi[i])))
 
     phase0 = 0
     aaa = 0
@@ -432,7 +433,7 @@ def apsl():
     phase0 = phase0 / aaa
     slope = 0.0
     if ( get_debug() ):
-        print "1rst guess on " + repr(nfrst) + " peaks : " + repr(phase0) + " " + repr(slope)
+        print("1rst guess on " + repr(nfrst) + " peaks : " + repr(phase0) + " " + repr(slope))
     phase( phase0, slope)
 
     for i in range(1,nfrst+1):
@@ -442,7 +443,7 @@ def apsl():
     for i in range(nfrst+1,npeaks+1):
         phi[i] = apsl_cp(pk[i], get_si1_1d()/s_wdth)
         if ( get_debug() ):
-            print repr(i) + "th peak at index " + repr(pk[i]) + " phase : " + repr(phi[i])
+            print(repr(i) + "th peak at index " + repr(pk[i]) + " phase : " + repr(phi[i]))
 
     # correct on all points
     # by making a weighted linear fit
@@ -479,7 +480,7 @@ def apsl():
     pkclear()
     phase(phase0+ph02, slope+slope2)
     if ( get_debug() ):
-        print "final correction : " + repr(phase0 + ph02) + " " + repr(slope) + " " + repr(slope2)
+        print("final correction : " + repr(phase0 + ph02) + " " + repr(slope) + " " + repr(slope2))
 
 
 #---------------------------------------------------------------------------
@@ -518,7 +519,7 @@ def ap2d(apfunc,  axis = "F2"):
     MAD nov 2006
     """
     verbose=0
-    if verbose : print "ap2d started"
+    if verbose : print("ap2d started")
     npk = 8
     ret = ""
 
@@ -554,7 +555,7 @@ def ap2d(apfunc,  axis = "F2"):
     pk1 = {}
     pk2 = {}
     amp = {}
-    if verbose : print "ap2d end prep"
+    if verbose : print("ap2d end prep")
     #; do it 4 times, on the 4 quadrants
     for loop in range(1,5):
         if ( loop == 1 ):
@@ -571,25 +572,25 @@ def ap2d(apfunc,  axis = "F2"):
                       get_si1_2d()*0.99, get_si2_2d()*0.99 )
 
         sc = 0.5
-        if verbose : print "ap2d end 2"
+        if verbose : print("ap2d end 2")
         for isc in range(1,100):        # the purpose of this loop is to limitwhen oscilations happen
             # print "SC =",sc
             minimax( geta_max(1)*sc, geta_max(1)+1)
-            if verbose : print "ap2d minimax",isc
+            if verbose : print("ap2d minimax",isc)
             peak(0)
-            if verbose : print "ap2d"
-            if verbose : print "ap2d",get_npk2d()
+            if verbose : print("ap2d")
+            if verbose : print("ap2d",get_npk2d())
             if ( get_npk2d() < npk/2 ):
                 sc = sc / 1.31
                 continue
             if ( get_npk2d() > 2*npk ):
                 sc = sc*1.09
                 continue
-            if verbose : print "ap2d bf break"
+            if verbose : print("ap2d bf break")
             break
 
         #;reset peak coord :
-        if verbose : print "ap2d end 3"
+        if verbose : print("ap2d end 3")
 
         for i in range(1, get_npk2d()+1):
             
@@ -940,13 +941,13 @@ def ft_sim():
         ft()
     elif ( get_dim() == 2):
         if ( (get_itype_2d() == 2) or (get_itype_2d() == 0) ):
-            print "Forcing Complex form in F2"
+            print("Forcing Complex form in F2")
             itype( get_itype_2d() + 1)
         revf("f2")
         ft("f2")
     elif ( get_dim() == 3):
         if ( get_itype_3d() % 2 == 0 ):
-            print "Forcing Complex form in F3"
+            print("Forcing Complex form in F3")
             itype( get_itype_3d() + 1)
         revf("f3")
         ft("f3")
@@ -968,13 +969,13 @@ def ft_seq():
         rft()
     elif ( get_dim() == 2 ):
         if ( get_itype_2d() == 1 or get_itype_2d() == 3 ):
-            print "Forcing Real form in F2"
+            print("Forcing Real form in F2")
             itype( get_itype_2d() - 1)
         revf("f2")
         rft("f2")
     elif ( get_dim() == 3):
         if ( get_itype_3d() % 2 == 1 ):
-            print "Forcing Real form in F3"
+            print("Forcing Real form in F3")
             itype( get_itype_3d() - 1)
         revf("f3")
         rft("f3")
@@ -986,18 +987,18 @@ def ft_tppi( axis = "F1" ):
     if ( get_dim() == 2 ):
         if ( get_itype_2d() == 2 or get_itype_2d() == 3):
             itype( get_itype_2d() - 2)
-            print "Forcing Real form in F1"
+            print("Forcing Real form in F1")
         rft("f1")
     elif ( get_dim() == 3 ):
         axis = axis.upper()
         if ( axis == "F1" ):
             if ( get_itype_3d() > 3 ):
                 itype( get_itype_3d()-4 )
-                print "Forcing Real form in F1"
+                print("Forcing Real form in F1")
         elif ( axis == "F2" ):
             if ( get_itype3d() % 4 > 1):
                 itype( get_itype_3d() - 2)
-                print "Forcing Real form in F2"
+                print("Forcing Real form in F2")
         else:
             raise "wrong axis"
         rft(axis)
@@ -1020,19 +1021,19 @@ def ft_sh( axis = "F1" ):
     if ( get_dim() == 2 ):
         if (get_itype_2d() == 0 or get_itype_2d() == 1):
             itype (get_itype_2d()+2)
-            print "Forcing Complex form in F1"
+            print("Forcing Complex form in F1")
         revf("f1")
         ft("f1")
     elif ( get_dim() == 3 ):
         axis = axis.upper()
         if ( axis == "F1" ):
             if ( get_itype_3d() < 4 ):
-                print "Forcing Complex form in F1"
+                print("Forcing Complex form in F1")
                 itype( get_itype_3d() + 4 )
         elif ( axis == "F2" ):
             if ( get_itype_3d() % 4 < 2 ):
                 itype( get_itype_3d() + 2 )
-                print "Forcing Complex form in F2"
+                print("Forcing Complex form in F2")
         revf(axis)
         ft(axis)
     else:
@@ -1044,18 +1045,18 @@ def ft_sh_tppi( axis = "F1" ):
     if ( get_dim() == 2 ):
         if ( get_itype_2d() == 0 or get_itype_2d() == 1 ):
             itype( get_itype_2d() + 2 )
-            print "Forcing Complex form in F1"            
+            print("Forcing Complex form in F1")            
         ft("F1")
     elif ( get_dim() == 3 ):
         axis = axis.upper();
         if ( axis == "F1" ):
             if( get_itype_3d() < 4 ):
                 itype( get_itype_3d() + 4 )
-                print "Forcing Complex form in F1"            
+                print("Forcing Complex form in F1")            
         elif ( axis == "F2" ):
             if ( get_itype_3d() % 4 < 2 ):
                 itype( get_itype_3d() + 2 )
-                print "Forcing Complex form in F2"
+                print("Forcing Complex form in F2")
         else:
             raise "Wrong axis"
         ft( axis);
@@ -1205,15 +1206,15 @@ def apodise(  apod, axis = "F1" ):
     import types
     debug = 0
     if not type(apod) == types.StringType:
-        print apod
+        print(apod)
         raise "argument should be an NPK executable string\n\n"+apodise.__doc__
     if ( get_dim() == 1 ):
-            if debug: print "apod 1D "+apod
+            if debug: print("apod 1D "+apod)
             exec(apod)
     elif (  get_dim() == 2 ):
         axis = axis.upper()
         if (axis == 'F2'):
-            if debug: print "apod F2 "+apod
+            if debug: print("apod F2 "+apod)
             if debug: writec("TTT1.gs2")
             row(1)         # this brings all the descriptors, and is needed for apod() to work
             dim(1)
@@ -1224,11 +1225,11 @@ def apodise(  apod, axis = "F1" ):
             try:
                 exec(apod)
             except:
-                print "error in apodise(), wrong function : " + apod
+                print("error in apodise(), wrong function : " + apod)
             dim(2)
             mult1d('F2')
         elif (axis == 'F1'):
-            if debug: print "apod F1 "+apod
+            if debug: print("apod F1 "+apod)
             col(1)         # this brings all the descriptors, and is needed for apod() to work
             dim(1)
             if (get_itype_1d() == 0):
@@ -1238,7 +1239,7 @@ def apodise(  apod, axis = "F1" ):
             try:
                 exec(apod)
             except:
-                print "error in apodise(), wrong function : " + apod
+                print("error in apodise(), wrong function : " + apod)
             dim(2)
             mult1d('F1')
         else:
@@ -1256,7 +1257,7 @@ def apodise(  apod, axis = "F1" ):
             try:
                 exec(apod)
             except:
-                print "error in apodise(), wrong function : " + apod
+                print("error in apodise(), wrong function : " + apod)
             dim(3)
             mult1d('F3')
         elif (axis == 'F2'):
@@ -1270,7 +1271,7 @@ def apodise(  apod, axis = "F1" ):
             try:
                 exec(apod)
             except:
-                print "error in apodise(), wrong function : " + apod
+                print("error in apodise(), wrong function : " + apod)
             dim(2)
             mult1d('F2')
         elif (axis == 'F1'):
@@ -1284,7 +1285,7 @@ def apodise(  apod, axis = "F1" ):
             try:
                 exec(apod)
             except:
-                print "error in apodise(), wrong function : " + apod
+                print("error in apodise(), wrong function : " + apod)
             dim(2)
             mult1d('F1')
         else:
@@ -1316,7 +1317,7 @@ def apodise_f(  apod, axis = "F1" ):
             try:
                 exec(apod)
             except:
-                print "error in apodise(), wrong function : " + apod
+                print("error in apodise(), wrong function : " + apod)
             chsize(get_si1_2d()+get_si2_2d())
             put("data")     # now we have in data  : apod() in F2 buffer : 0 in F1 buffer :
             chsize(get_si1_2d())
@@ -1335,7 +1336,7 @@ def apodise_f(  apod, axis = "F1" ):
             try:
                 exec(apod)
             except:
-                print "error in apodise(), wrong function : " + apod
+                print("error in apodise(), wrong function : " + apod)
             reverse()
             chsize(get_si1_2d()+get_si2_2d())
             reverse()
@@ -1360,7 +1361,7 @@ def apodise_p(  apod, axis = "F1" ):
         i = 0
         while( i < leng ):
             apod = lst[i]
-            print "parsing " + apod
+            print("parsing " + apod)
             if ( apod == "sin" ):
                 i= i+1
                 arg = float(lst[i])
@@ -1634,7 +1635,7 @@ def audittrail( auditfile, phtx, *argl ):
             auditfile.flush()
         else:
             for t in argl:
-                print( "--audit--" + repr(t))
+                print(( "--audit--" + repr(t)))
 
 
 #---------------------------------------------------------------------------
@@ -1680,7 +1681,7 @@ def causalize(  delay ):
         iftbis()                    # recompute FID
         chsize(si-n)                # truncate
         revf()
-        print "CAUSALIZE 1D",delay,si,n,get_si1_1d(),get_ph0(),get_ph1()
+        print("CAUSALIZE 1D",delay,si,n,get_si1_1d(),get_ph0(),get_ph1())
     elif ( get_dim() == 2 ):
         si = get_si2_2d()
         revf("f2")
@@ -1737,24 +1738,24 @@ def autocalib_old():
     n15 = Nucleus.freq("15N",1.0)   # was (from NH3) 0.101329118 ; now is 0.10136767 (from MeNO3) - 385.50 ppm shift
     c13 = Nucleus.freq("13C",1.0)   # was 0.251449530 (from DSS); now 0.2514502 (from TMS) - 2.66 ppm shift
     if ( get_dim() == 1 ):
-        print "Nothing to do in F1"
+        print("Nothing to do in F1")
     elif ( get_dim() == 2 ):
         r = get_freq_1_2d() / get_freq_2_2d()
         if ( (0.09 < r) and (r < 0.11)):
-            print "set to 1H-15N"
+            print("set to 1H-15N")
             vish = n15
             ret = "15N"
         elif ( (0.24 < r) and (r < 0.26)):
-            print "set to 1H-13C"
+            print("set to 1H-13C")
             vish = c13
             ret = "13C"
         elif ( (0.98 < r) and (r < 1.02)):
-            print "set to homonuclear"
+            print("set to homonuclear")
             vish = 1.0
             ret = "1H"
         else:
             vish = r
-            print "unknown Nucleus"
+            print("unknown Nucleus")
             ret = "Unknown"
         decalh = itoh( get_si2_2d()/2, 2, 2)
         zeroh = get_freq_2_2d()*1000000 - decalh
@@ -1762,7 +1763,7 @@ def autocalib_old():
         decalx = get_freq_1_2d()*1000000 - zerox
         offset( decalx - get_specw_1_2d()/2, get_offset_2_2d())
     else:
-        print "Not available yet"
+        print("Not available yet")
         ret = "None"
     return ret
 
@@ -1786,14 +1787,14 @@ def autocalib(mode="IUPAC"):
     """
     ret = "None"
     if ( get_dim() == 1 ):
-        print "Nothing to do in F1"
+        print("Nothing to do in F1")
     elif ( get_dim() == 2 ):
         F1 = get_freq_1_2d()
         F2 = get_freq_2_2d()
         for nuc in ("1H","13C","15N","31P","2H"):
             fnuc = Nucleus.freq(nuc,F2,mode)    # freq of nuc, assuming F2 is 1H
             if abs(fnuc-F1)/fnuc <1E-3:    # close to 1000 ppm
-                print "set to ",nuc
+                print("set to ",nuc)
                 vish = Nucleus.freq(nuc,1.0,mode)            # ratio freq_of_nuc / freq_of_1H
                 ret = nuc
                 break
@@ -1805,7 +1806,7 @@ def autocalib(mode="IUPAC"):
             off1 = decalx - get_specw_1_2d()/2
             offset( off1, get_offset_2_2d())
     else:
-        print "Not available yet"
+        print("Not available yet")
     return ret
 #---------------------------------------------------------------------------
 def hilbert(  axis = "F1"):
@@ -1937,7 +1938,7 @@ def filec_status():
     """dumps the detailled header of a joined cache file
     used mostly for debugging
     """
-    print """
+    print("""
     Dim     : %i
     FREQ    : %f
                  F1       F2       F3
@@ -1950,7 +1951,7 @@ def filec_status():
      get_c_specwf1(),     get_c_specwf2(),     get_c_specwf3(),
      get_c_offsf1(), get_c_offsf2(), get_c_offsf3(),
      get_c_freq1(),     get_c_freq2(),    get_c_freq3()
-     )
+     ))
 
 #---------------------------------------------------------------------------
 def proc3d( sourcefile, destinationfile, plane_to_process, commands, context):
@@ -2056,12 +2057,12 @@ def proc3d( sourcefile, destinationfile, plane_to_process, commands, context):
 # process
     dim(2)
     if (debug ==1):
-        print "PROC3D : number of plane to process :", iter
+        print("PROC3D : number of plane to process :", iter)
         iter = min(iter,4)
-        print "PROC3D : limited to ",iter,"for debuging purposes"
-        print "PROC3D : planes : (%i,%i)->(%i,%i)"%(si1,si2,si1ap,si2ap)
+        print("PROC3D : limited to ",iter,"for debuging purposes")
+        print("PROC3D : planes : (%i,%i)->(%i,%i)"%(si1,si2,si1ap,si2ap))
     for i in range(1,iter+1):
-        print "### IN : %s, OUT %s, plane %d / %d"%(infile,outfile,i,iter)
+        print("### IN : %s, OUT %s, plane %d / %d"%(infile,outfile,i,iter))
         join(infile)
         getc(axis,i,1,1,si1,si2)
         exec commands in context
@@ -2391,7 +2392,7 @@ def burg2d(  axis = "F1", nsz = None ):
     else:
         raise "Wrong axis for LP"
     if ( ext == "col" ):
-        print get_order()
+        print(get_order())
         for i in range(1,imax+1):
             col(i)
             dim(1)
@@ -2541,7 +2542,7 @@ def bcorr_offset( spec_n=30, axis = "F1"):
     spec_n is the argument to spec_noise() 
     axis is the axis to process when in nD 
     """
-    print "bcorr_offset",spec_n,axis
+    print("bcorr_offset",spec_n,axis)
     if ( get_dim() == 1 ):
         spec_noise(spec_n)
         addbase( get_shift())
@@ -2933,7 +2934,7 @@ def pkwrite_p(filepeak):
     try:
         fout = open(filepeak, 'w')
     except:
-        print "Error while opening file :", sys.exc_info()[0]
+        print("Error while opening file :", sys.exc_info()[0])
         raise
     pph2 = get_specw_2_2d() / get_si2_2d()
     ppp2 = pph2 / get_freq_2_2d()
@@ -2973,7 +2974,7 @@ def pkfilter(mode="add",tol=10):
     
     first try...
     """
-    print "   nbr de pics:", get_npk2d()
+    print("   nbr de pics:", get_npk2d())
 #---------------------------------------------------------------------------
 def pksym_p(mode="add",tol=10):
     """peak symmetrisation algorithm
@@ -2982,9 +2983,9 @@ def pksym_p(mode="add",tol=10):
     """
     if (get_dim() !=2):
         raise "works only on 2D data-sets"
-    print "   nbr de pics:", get_npk2d()
+    print("   nbr de pics:", get_npk2d())
     t = time.clock()
-    print "----------debut du timer"
+    print("----------debut du timer")
     for i in range (1, get_npk2d() + 1):
         f1i=geta_pk2d_f1f(i)
         f2i=geta_pk2d_f2f(i)
@@ -2995,7 +2996,7 @@ def pksym_p(mode="add",tol=10):
             if (diff>10):
                 a=i+j
     t=time.clock()-t
-    print "----------fin du timer", str(t)
+    print("----------fin du timer", str(t))
 
 #---------------------------------------------------------------------------
 def peak1d_integ(index,factor=0.1,  thresh=0, slope=0.001):
@@ -3017,7 +3018,7 @@ def peak1d_integ(index,factor=0.1,  thresh=0, slope=0.001):
     toreal()
     top=val1d(index)
     level = max(thresh,top*factor)
-    print level
+    print(level)
     left=index-1
     lval=val1d(left)
     prev=top
@@ -3053,7 +3054,7 @@ def spectral_zone(left, right, axis="F1", left_unit="ppm", right_unit="ppm"):
     returns [left,right]
         the left and right coordinates of the extracted spectral zone in index
     """
-    print left, right, axis, left_unit, right_unit
+    print(left, right, axis, left_unit, right_unit)
     if ( get_dim() == 1 ):
         pass
     elif ( get_dim() == 2 ):
@@ -3068,7 +3069,7 @@ def spectral_zone(left, right, axis="F1", left_unit="ppm", right_unit="ppm"):
 
         if (left_unit == 'ppm'):
             l = (ptoi(left,2,iaxis))
-            print "L :",left,"ppm ->",l
+            print("L :",left,"ppm ->",l)
         elif (left_unit == 'hz'):
             l = (htoi(left,2,iaxis))
         elif (left_unit == 'index'):
@@ -3078,7 +3079,7 @@ def spectral_zone(left, right, axis="F1", left_unit="ppm", right_unit="ppm"):
 
         if (right_unit == 'ppm'):
             r = (ptoi(right,2,iaxis))
-            print "R :",right,"ppm ->",r
+            print("R :",right,"ppm ->",r)
         elif (right_unit == 'hz'):
             r = (htoi(right,2,iaxis))
         elif (right_unit == 'index'):
@@ -3117,7 +3118,7 @@ def aparm():
     chsize (32*get_si1_1d())
     ift()
     # extend backward the fid to 2 dwell points
-    print get_si1_1d()
+    print(get_si1_1d())
     reverse()
     burg(get_si1_1d()+64)
     reverse()
@@ -3129,13 +3130,13 @@ def aparm():
         if val1d(i) > vmax:
             imax=i; vmax=val1d(i)
     get("data")
-    print "max at",32-(imax-1)/32
+    print("max at",32-(imax-1)/32)
     ph1 = -360*(imax-1)/64
-    print "PH1",ph1
+    print("PH1",ph1)
     phase(0,ph1)
     ift()
     ph0 = -(180/math.pi)*math.atan(val1d(2)/val1d(1))
-    print "PH0",ph0
+    print("PH0",ph0)
     ft()
     phase(ph0,0)
 
@@ -3221,7 +3222,7 @@ class Generic_Tests(unittest.TestCase):
         self.verbose = 1    # verbose > 0 switches messages on
     def announce(self):
         if self.verbose > 0:
-            print "\n========", self.shortDescription(), '==============='
+            print("\n========", self.shortDescription(), '===============')
     def test_load(self):
         load(self.fid)
 if __name__ == '__main__':

@@ -5,6 +5,7 @@
 quelques examples de traitements, en utilisant la base du nouveau NPK v2
 
 """
+from __future__ import print_function
 import NPKData as npkd
 import Cadzow
 import numpy as np                  # pour faire des calculs supplémentaie  - pas utilisé ici
@@ -13,7 +14,7 @@ import matplotlib.pyplot as plt     # pour afficher les données brutes - pas ut
 
 d1 = npkd.NPKData(name="/DATA/Marie van/data_raw.gf2")  # je charge les données
 
-print d1.report()       # état des lieux
+print(d1.report())       # état des lieux
 
 d1.apod_sin(axis=2,maxi=0.5).rfft(axis=2)               # en F2 d'abord
 

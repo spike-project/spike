@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 from .. util.debug_tools import*  
 from .. Visu.Matplotlib_generictools import*
@@ -24,7 +25,7 @@ class ZOOM_PLOT(object):                                                        
         Grey area around the zoom
         '''
         if debug(self):
-            print "in zooming.greyzoom"
+            print("in zooming.greyzoom")
         patches = []
         hei = self.display.currentd.buffer.shape[0]
         wid = self.display.currentd.buffer.shape[1]
@@ -65,12 +66,12 @@ class ZOOM_PLOT(object):                                                        
         Draws a grey area around the zoom. 
         '''
         if debug(self):
-            print "in zooming._draw_grey_zone"
+            print("in zooming._draw_grey_zone")
         try :
             self.greyzoo.remove()                       # remove the greyzoom first
         except :
             if debug(self):
-                print "no grey zoom yet"
+                print("no grey zoom yet")
         llx, lly, urx, ury = self.gtools.right_order_coord(llx, lly, urx, ury)
         self.greyzoom(llx, lly, urx, ury)                                                           # draw a grey zone around the zoom
     
@@ -99,7 +100,7 @@ class ZOOM_PLOT(object):                                                        
         Draws the zoom rectangle in the C windows
         '''
         if debug(self):
-            print "in zooming.drawrectC"
+            print("in zooming.drawrectC")
         verticesC = []
         llx, lly, urx, ury = self.gtools.convert.pass_to_curr_mode(llx, lly, urx, ury)                      # if mode m/z restablish mz coordinates
         codes, pt0, pt1, pt2, pt3, pt4 = self._makes_poly(llx, lly, urx, ury)                                                                                        # make vertices
@@ -112,7 +113,7 @@ class ZOOM_PLOT(object):                                                        
             self.rectc = self.display.qmc.axes.add_patch(pathrectc)
             self.display.qmc.fig.canvas.draw()                                                      # draws rectangle in C
         if debug(self):
-            print "coordinates for greyzoom are ", llx, lly, urx, ury
+            print("coordinates for greyzoom are ", llx, lly, urx, ury)
         if abs(llx - urx) > 5 and abs(lly - ury) > 5:                                                       # makes the grey zone only if rectangle large enough
             if self.drawgreyzoom:
                 self._draw_grey_zone(llx, lly, urx, ury)                                                     # draw grey zone around the zoom.
@@ -122,7 +123,7 @@ class ZOOM_PLOT(object):                                                        
         Draws the zoom rectangle in the D windows
         '''
         if debug(self):
-            print "in zooming.drawrectD"
+            print("in zooming.drawrectD")
         rapp2, rapp1 = (self.data.resmin.size2/float(self.display.currentd.size2),
                         self.data.resmin.size1/float(self.display.currentd.size1))                  # 
         verticesD = []
@@ -133,7 +134,7 @@ class ZOOM_PLOT(object):                                                        
         pathrectd = PathPatch(pathD, facecolor = 'None', edgecolor = self.gtools.colzoo)
         if layout2:                                                                                 # if layout 2 is asked to be changed
             if debug(self):
-                print "shows zoom in D "
+                print("shows zoom in D ")
             self.rectd = self.display.qmd.axes.add_patch(pathrectd)
             self.display.qmd.fig.canvas.draw()                                                      # draw rectangle in D
 
@@ -143,7 +144,7 @@ class ZOOM_PLOT(object):                                                        
         Draws rectangles with absolute coordinates llx, lly, urx, ury in C and D windows 
         '''
         if debug(self):
-            print "in zooming.drawrect"
+            print("in zooming.drawrect")
         self.drawrectC(llx, lly, urx, ury, layout1 = layout1)   
         self.drawrectD(llx, lly, urx, ury, layout2 = layout2)
     

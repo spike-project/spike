@@ -6,6 +6,7 @@
 __author__ = "Marc André Delsuc, Marie-Aude Coutouly <mac@nmrtec.com>"
 __date__ = "July 2011"
 
+from __future__ import print_function
 import sys
 import os
 import unittest
@@ -82,7 +83,7 @@ def locate_acquisition(folder):
         It should always be in a subfolder 
     """
     L = glob.glob(op.join(folder,"*","apexAcquisition.method"))
-    print L,len(L)
+    print(L,len(L))
     if len(L)>1:
         raise Exception( "You have more than 1 apexAcquisition.method file in the %s folder, using the first one"%folder )
     elif len(L) == 0: 
@@ -113,7 +114,7 @@ def Import_1D(folder,outfile=""):
     if os.path.isfile(os.path.join(folder, "fid")):
         fname = os.path.join(folder, "fid")
     else:
-        print "You are dealing with 2D data, you should use Import_2D"
+        print("You are dealing with 2D data, you should use Import_2D")
         sys.exit(1)
     data = FTICRData( dim=1 )   # create dummy 1D
     data.axis1.size = sizeF1    # then set parameters
@@ -168,7 +169,7 @@ def Import_2D(folder,outfile = "",F1specwidth = None):
         
         fname = os.path.join(folder, "ser")
     else:
-        print "You are dealing with 1D data, you should use Import_1D"
+        print("You are dealing with 1D data, you should use Import_1D")
         sys.exit(1)
     data = FTICRData( dim=2 )   # create dummy 2D
     data.axis1.size = sizeF1    # then set parameters
@@ -211,8 +212,8 @@ def Ser2D_to_H5f(sizeF1, sizeF2, filename = "ser",outfile = "H5f.h5",chunks = No
     Charge any ser file directly in H5f file
     """
     import array
-    print filename
-    print outfile
+    print(filename)
+    print(outfile)
     if sys.maxint == 2**31-1:   # the flag used by array depends on architecture - here on 32biy
         flag = 'l'              # Apex files are in int32
     else:                       # here in 64bit
@@ -308,7 +309,7 @@ class Apex_Tests(unittest.TestCase):
         self.verbose = 1    # verbose > 0 switches messages on
     def announce(self):
         if self.verbose >0:
-            print "\n========",self.shortDescription(),'==============='
+            print("\n========",self.shortDescription(),'===============')
     #-------------------------------------------------
     def test_Import_2D(self):
         "Test and time routine that import 2D from the MS-FTICR folder to the file given as second argument "
@@ -317,7 +318,7 @@ class Apex_Tests(unittest.TestCase):
         t0 = time()
         d = Import_2D(self.DataFolder, self.name_get)
         #d = Import_2D("/Volumes/XeonData/Developement/MS-FTICR/cytoC_2D_000006.d")
-        print "import",time()-t0,"secondes"
+        print("import",time()-t0,"secondes")
         """
         sur mon ordi
         d = Import_2D("/DATA/FT-ICR-Cyto/cytoC_2D_000006.d")                prend 1080Mo de mémoire en 18 secondes
@@ -331,7 +332,7 @@ class Apex_Tests(unittest.TestCase):
         t0 = time()
         d = Import_2D( self.DataFolder )
         #d = Import_2D("/Volumes/XeonData/Developement/MS-FTICR/cytoC_2D_000006.d")
-        print "import",time()-t0,"secondes"
+        print("import",time()-t0,"secondes")
         """
         sur mon ordi
         d = Import_2D("/DATA/FT-ICR-Cyto/cytoC_2D_000006.d")                prend 1080Mo de mémoire en 18 secondes
@@ -351,16 +352,16 @@ class Apex_Tests(unittest.TestCase):
         t0 = time()
         t00 = t0
         d.rfft(axis=2)
-        print "rfft2",time()-t0,"secondes"
+        print("rfft2",time()-t0,"secondes")
         t0 = time()
         d.rfft(axis=1)
-        print "rfft1",time()-t0,"secondes"
+        print("rfft1",time()-t0,"secondes")
         t0 = time()
         d.modulus()
-        print "modulus",time()-t0,"secondes"
+        print("modulus",time()-t0,"secondes")
         t0 = time()
-        print "modulus",time()-t0,"secondes"
-        print "calcul",time()-t00,"secondes"
+        print("modulus",time()-t0,"secondes")
+        print("calcul",time()-t00,"secondes")
         d.display(scale=5, show=True)
         d.hdf5file.close()
         """
@@ -394,22 +395,22 @@ class Apex_Tests(unittest.TestCase):
         t00 = t0
         d.rfft(axis=2)
         d.hdf5file.close()  # je ferme
-        print "rfft2",time()-t0,"secondes"
+        print("rfft2",time()-t0,"secondes")
         t0 = time()
         # je réouvre
         H = hf.HDF5File(self.name3,"rw")
         H.load()
         d2 = H.data      # B is a FTICRdata
         d2.rfft(axis=1)
-        print "rfft1",time()-t0,"secondes"  # toujours aussi lent !
+        print("rfft1",time()-t0,"secondes")  # toujours aussi lent !
 
         t0 = time()
         d2.modulus()
-        print "modulus",time()-t0,"secondes"
+        print("modulus",time()-t0,"secondes")
         t0 = time()
-        print "modulus",time()-t0,"secondes"
-        print "calcul",time()-t00,"secondes"
-        print type(d)
+        print("modulus",time()-t0,"secondes")
+        print("calcul",time()-t00,"secondes")
+        print(type(d))
         d2.display(scale=5, show=True)
         H.close()
         H = hf.HDF5File(self.name3,"r")

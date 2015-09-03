@@ -6,6 +6,7 @@ maxent.py
 Created by Marc-André on 2012-03-06.
 Copyright (c) 2012 IGBMC. All rights reserved.
 """
+from __future__ import print_function
 import sys
 import os
 import math
@@ -230,7 +231,7 @@ class MaxEnt(object):
         for i in dir(self):
             att = getattr(self,i)
             if not callable(att) and not i.startswith('_'):
-                print "%s\t:\t%s"% (i, att)
+                print("%s\t:\t%s"% (i, att))
     def setup(self, mode="default"):
         """ 
         Set-up internal MaxEnt parameters so that a kind of optimal state is given
@@ -310,7 +311,7 @@ class MaxEnt(object):
         S = self.do_entropy(imclp, mode="entropy")
         Chi2 = self.do_chisquare(imclp, mode="Chi2")
         Q = S - self.lamb*Chi2
-        if self.debug>2: print "in Qfunc     S=%f, Chi2=%f,  Q=%f"%( S, Chi2, Q)
+        if self.debug>2: print("in Qfunc     S=%f, Chi2=%f,  Q=%f"%( S, Chi2, Q))
         return -Q
     #-------------------------------
     def sexp(self,x):
@@ -337,7 +338,7 @@ class MaxEnt(object):
                 conv = dSdC / math.sqrt(dSsq*dCsq)   # conv is the cos(angle) between dC and dS
                 SCratio = math.sqrt(dSsq/dCsq)
             else:
-                if self.debug>0: print "*** WARNING in drive_conv, dSsq*dCsq == 0.0"
+                if self.debug>0: print("*** WARNING in drive_conv, dSsq*dCsq == 0.0")
                 conv = 0.0
                 SCratio = 1.0
 # lambda control
@@ -355,7 +356,7 @@ class MaxEnt(object):
                     lambda_optim = dSsq / dSdC
                 else:
                     lambda_optim = 0.0
-                    print "Warning : Inverse geometry in Angle"
+                    print("Warning : Inverse geometry in Angle")
     #     or such as cos(dQ,-dC) = cos(dQ.dS)           if lambcont == "cosine"
             elif self.lambdacont == "cosine":
                 lambda_optim = (SCratio*dSdC + dSsq)/(SCratio*dCsq + dSdC)
@@ -366,7 +367,7 @@ class MaxEnt(object):
                 raise Exception("error in lambdacont value")
             if lambda_optim < 0.0:
                 if self.debug>1:
-                    print "lambda_optim neg",lambda_optim
+                    print("lambda_optim neg",lambda_optim)
                 lambda_optim = 0.0
         return (conv, lambda_optim)
     #-------------------------------
@@ -388,7 +389,7 @@ class MaxEnt(object):
         "used when no valid step is found"
         # set as a function to allow counting
         self.image *= 0.99
-        if self.debug>0: print "concentring"
+        if self.debug>0: print("concentring")
     #-------------------------------
     @timeit
     def solve(self):
@@ -443,9 +444,9 @@ class MaxEnt(object):
 #            print "self.chi2 > self.chi2target",self.chi2, self.chi2target, self.chi2 > self.chi2target
             # prepare
             self.sum = np.sum(self.image)
-            print "----------- ITER:",self.iter
+            print("----------- ITER:",self.iter)
             if self.debug>1:
-                print "Sum : %f"%self.sum
+                print("Sum : %f"%self.sum)
             # compute values and derivatives
             (chi2,dchi) =  self.do_chisquare(self.image)
             self.chi2 = chi2
@@ -454,16 +455,16 @@ class MaxEnt(object):
             self.dchi2 = dchi
             self.dS = dS
             if self.debug>0:
-                print "S : %f   Chi2 : %f"%(self.S, self.chi2)
+                print("S : %f   Chi2 : %f"%(self.S, self.chi2))
                 self.lchi2.append(chi2)
                 self.lentropy.append(S)
             # compute convergence and lambda
             conv, lambda_optim = self.drive_conv(dchi,dS)
             self.update_lambda(lambda_optim)
-            print "convergence : %F   lambda : %f"%(conv,self.lamb)
+            print("convergence : %F   lambda : %f"%(conv,self.lamb))
             step = 0.0
             if self.debug>0:
-                print "lambda_optim : %f,    new_lambda : %f"%(lambda_optim, self.lamb)
+                print("lambda_optim : %f,    new_lambda : %f"%(lambda_optim, self.lamb))
                 Q0 = self.Q(self.image)    # store for later
             # make one step
             if self.algo == "steepest":            #here steepest descent !
@@ -494,12 +495,12 @@ class MaxEnt(object):
                 raise Exception('Error with algo')
             # and update
             if self.debug>0:
-                print "Q avant %f    Q apres %f    inc %f"%(Q0, self.Q(self.image), step)
+                print("Q avant %f    Q apres %f    inc %f"%(Q0, self.Q(self.image), step))
             self.iter += 1
             if self.debug >1:
                 plot(self.image,"iter %d"%self.iter,fig=fig)
             if self.true_s is not None:
-                print 'SNR ',estimate_SNR(self.image, self.true_s)
+                print('SNR ',estimate_SNR(self.image, self.true_s))
         if self.debug >0:
             plot(self.lentropy,"Entropy")
             plot(self.lchi2, "$\chi^2$",logy=True)
@@ -580,7 +581,7 @@ class maxent_Tests(unittest.TestCase):
         residu = T.transform(M.image) - D.data
         plt.subplot(414)
         plot(residu, 'residu',fig = f)
-        print "Noise in residu :", np.sum(residu**2), M.chi2
+        print("Noise in residu :", np.sum(residu**2), M.chi2)
         return  M.report_convergence()
 if __name__ == '__main__':
     unittest.main()

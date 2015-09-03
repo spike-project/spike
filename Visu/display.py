@@ -60,7 +60,7 @@ class DISPLAY():# class regrouping tools to change resolution with zoom
         Makes the canvas C
         '''
         if debug(self):
-            print "in display.set_canvasC"
+            print("in display.set_canvasC")
         self.qmc = self.QtMplCv(self.interface.ui.centralwidget, self.paramz) # recreate a Qt for Mpl canvas for C
         self.setcursor('cross')
         
@@ -69,7 +69,7 @@ class DISPLAY():# class regrouping tools to change resolution with zoom
         Makes the canvas D
         '''
         if debug(self):
-            print "in display.set_canvasD"
+            print("in display.set_canvasD")
         self.qmd = self.QtMplCv(self.interface.ui.centralwidget, self.paramz) # recreate a Qt for Mpl canvas for D
         self.setcursor('hand', 'D')    # make the cursor in openhand mode.
         
@@ -78,7 +78,7 @@ class DISPLAY():# class regrouping tools to change resolution with zoom
         Make list with the resolutions
         '''
         if debug(self):
-            print "in display.list_res"
+            print("in display.list_res")
         self.LISTR = ['resol'+ str(i) for i in xrange(self.data.NBRES, 0, -1)]
         self.LISTRMAX = self.LISTR[0] # maximal resolution
         self.LISTD = self.data.d # list of the different resolutions
@@ -90,7 +90,7 @@ class DISPLAY():# class regrouping tools to change resolution with zoom
         Applying f to pairs of arg.
         '''
         if debug(self):
-            print "in display.distrib"
+            print("in display.distrib")
         return f(arg[0], arg[2]), f(arg[1], arg[3])
     
     def multzoom_coord(self, alpha, beta):
@@ -99,7 +99,7 @@ class DISPLAY():# class regrouping tools to change resolution with zoom
         factors (alpha, beta) according to the direction.
         '''
         if debug(self):
-            print "in display.multzoom_coord"
+            print("in display.multzoom_coord")
         zc = self.paramz.zoom_coord
         return [alpha*zc[0], beta*zc[1], alpha*zc[2], beta*zc[3]]
     
@@ -108,17 +108,17 @@ class DISPLAY():# class regrouping tools to change resolution with zoom
         Makes the display with NPKv2. 
         '''
         if debug(self):
-            print "in display.affichd"
-            print "in affichd, at beginning, self.paramz.zoom_coord ", self.paramz.zoom_coord
-            print " zoom ", zoom 
+            print("in display.affichd")
+            print("in affichd, at beginning, self.paramz.zoom_coord ", self.paramz.zoom_coord)
+            print(" zoom ", zoom) 
         if len(self.paramz.zoom_coord) == 0 or zoom == False :
-            print "using old coordinates"
+            print("using old coordinates")
             coord = self.paramz.zoom_coord_old
             self.paramz.zoom_coord = self.paramz.zoom_coord_old
         else :
             coord = self.paramz.zoom_coord
         if debug(self):
-            print "in affichd, coord zoom are ", coord
+            print("in affichd, coord zoom are ", coord)
         f1limits = (int(round(coord[1])), int(round(coord[3])))
         f2limits = (int(round(coord[0])), int(round(coord[2])))
         zoomtup = (f1limits, f2limits)
@@ -130,7 +130,7 @@ class DISPLAY():# class regrouping tools to change resolution with zoom
         It uses the coordinates of the zoom for a given resolution.
         '''
         if debug(self):
-            print "in display.affi"
+            print("in display.affi")
         d.display( figure = canvas.axes,  xlabel = "", ylabel = "") #, tick = False scale = res.scale,
 
     def change_resolution(self, layout1 = None, layout2 = None): # change resolution keeping the zoom.
@@ -139,7 +139,7 @@ class DISPLAY():# class regrouping tools to change resolution with zoom
         self.currentd is selected according to vis.resolu.
         '''
         if debug(self):
-            print "in display.resol"
+            print("in display.resol")
         for reso in self.LISTR:                                                         # loop on the resolutions. Change resolution and zoom
             if self.data.resolu == reso :
                 dd = self.LISTD[self.LISTR.index(reso)]                                 # recuperation of the corresponding resolution
@@ -171,7 +171,7 @@ class DISPLAY():# class regrouping tools to change resolution with zoom
         zc = self.paramz.zoom_coord
         x, y, z = d.peaks2d(zoom = [[zc[1], zc[3]], [zc[0], zc[2]]], value = True)
         if debug(self):
-            print "maxi intensity is ", z.max()
+            print("maxi intensity is ", z.max())
         self.interface.ui.label.setText("{0:.2e}".format(int(z.max()))) # shows absmax in the interface 
 
     def affd(self, d1, d2 , layout1, layout2 = None, zoom = True, message = None):# routine to visualize contours of 2D data.
@@ -181,27 +181,27 @@ class DISPLAY():# class regrouping tools to change resolution with zoom
         
         """
         if debug(self):
-            print "in display.affd"
-            print "in display self.interface.clearlayout(self.interface.ui.layoutC)"
+            print("in display.affd")
+            print("in display self.interface.clearlayout(self.interface.ui.layoutC)")
         self.interface.clearlayout(self.interface.ui.layoutC) # Clear the data window C
         self.set_canvasC() # makes the canvas C
         lay1 = self.interface.ui.layoutC.addWidget(self.qmc)
 
         if message:
-            print "self.paramz.zoom_coord[2] ", self.paramz.zoom_coord[2]
+            print("self.paramz.zoom_coord[2] ", self.paramz.zoom_coord[2])
             x, y = self.paramz.zoom_coord[3], self.paramz.zoom_coord[2]
             #x, y = 100,100
             self.message(message, posx = x,  posy = y)
         if debug(self):
-            print "in affd, using zoom ", zoom
+            print("in affd, using zoom ", zoom)
         self.affichd(self.qmc, d1, zoom = zoom) # window C
         if debug(self):
-            print "in display.affd show absmax"
+            print("in display.affd show absmax")
         self.local_abs_max()
         if self.interface.ui.layoutD is not None :
             if debug(self):
-                print "in display.affd"
-                print "in display self.interface.clearlayout(self.interface.ui.layoutD)"
+                print("in display.affd")
+                print("in display self.interface.clearlayout(self.interface.ui.layoutD)")
             self.interface.clearlayout(self.interface.ui.layoutD) # Clears the data window D
             self.set_canvasD() # makes the canvas D
             self.interface.ui.layoutD.addWidget(self.qmd)
@@ -212,8 +212,8 @@ class DISPLAY():# class regrouping tools to change resolution with zoom
         Function to load the resolution from the current vis.resolu name
         '''
         if debug(self):
-            print "in display.res2dd "
-            print "vis.resolu ", vis.resolu
+            print("in display.res2dd ")
+            print("vis.resolu ", vis.resolu)
         dd = self.LISTD[self.LISTR.index(self.data.resolu)]#recuperation of the corresponding resolution
         self.currentd = dd # changing the resolution data
         return dd
@@ -224,13 +224,13 @@ class DISPLAY():# class regrouping tools to change resolution with zoom
         at position self.paramz.listview_index.
         '''
         if debug(self):
-            print "in display.afflistco" 
-        print "self.paramz.listview ", self.paramz.listview
+            print("in display.afflistco") 
+        print("self.paramz.listview ", self.paramz.listview)
         pos = self.paramz.listview_index
         self.paramz.zoom_coord = self.paramz.listview[pos]['zoom'] #retrieves old coordinates
-        print "retrieved self.paramz.zoom_coord ",  self.paramz.zoom_coord
+        print("retrieved self.paramz.zoom_coord ",  self.paramz.zoom_coord)
         self.paramz.scale = self.paramz.listview[pos]['scale'] #retrieves old scale
-        print "retrieved self.paramz.scale ",  self.paramz.scale
+        print("retrieved self.paramz.scale ",  self.paramz.scale)
         self.data.resolu = self.paramz.listview[pos]['resolution'] # retrieves old resolution
         self.paramz.sliderpos = self.paramz.listview[pos]['slider'] #retrieves old slider position
         #self.interface.ui.horizontalSlider.setValue(self.sliderpos)
@@ -251,7 +251,7 @@ class DISPLAY():# class regrouping tools to change resolution with zoom
         Keeps in a list "self.paramz.listview" the zooms coordinates and the associated resolutions.
         '''
         if debug(self):
-            print "register coordinates ", self.paramz.zoom_coord
+            print("register coordinates ", self.paramz.zoom_coord)
         self.paramz.listview = self.paramz.listview[:int(self.paramz.listview_index) + 1]           # cuts self.paramz.listview current element
         self.paramz.listview += [{'zoom' : self.paramz.zoom_coord,\
             'resolution': self.data.resolu, 'scale' : self.paramz.scale, 'slider': self.paramz.sliderpos }]                # keeps the zoom, the resolution
@@ -262,17 +262,17 @@ class DISPLAY():# class regrouping tools to change resolution with zoom
         In function of the size of the zoom chose the best resolution.
         '''
         if debug(self):
-            print "in display.select_best_resolution"
+            print("in display.select_best_resolution")
         if self.zoom_area()  < self.AREAMIN and self.data.resolu != self.LISTRMAX :
             if debug(self):
-                print "self.zoom_area()  < self.AREAMIN and self.data.resolu != self.LISTRMAX ",\
-                 self.zoom_area()  < self.AREAMIN and self.data.resolu != self.LISTRMAX
+                print("self.zoom_area()  < self.AREAMIN and self.data.resolu != self.LISTRMAX ",\
+                 self.zoom_area()  < self.AREAMIN and self.data.resolu != self.LISTRMAX)
             while self.zoom_area()  < self.AREAMIN and self.data.resolu != self.LISTRMAX :
                 self.data.resolu = self.LISTR[self.LISTR.index(self.data.resolu)-1] # next resolution
                 self.change_resolution(layout1 = self.interface.ui.layoutC,
                            layout2 = self.interface.ui.layoutD) # Calculates new zoom with new resolution
         else :
-            print "in changeres_listzoom refresh"
+            print("in changeres_listzoom refresh")
             self.change_resolution(layout1 = self.interface.ui.layoutC, layout2 = self.interface.ui.layoutD)
     
     def aff_resolution(self):
@@ -280,7 +280,7 @@ class DISPLAY():# class regrouping tools to change resolution with zoom
         Shows the resolution in the interface.
         '''
         if debug(self):
-            print "in display.aff_resolution"
+            print("in display.aff_resolution")
         curr_numres = str(self.data.NBRES - self.LISTR.index(self.data.resolu))
         self.interface.ui.label_2.setText("res :" + curr_numres +'/' + str(self.data.NBRES))         # setting the resolution in the ui
         self.interface.ui.lineEdit_3.setText(str(self.paramz.scale))    # setting the resolution in the ui
@@ -293,10 +293,10 @@ class DISPLAY():# class regrouping tools to change resolution with zoom
         self.qmc.axes.add_patch(el)
         color = colorlab
         if posx and posy :          
-            print "posx, posy ", posx, posy                                                                                
+            print("posx, posy ", posx, posy)                                                                                
             ann = self.qmc.axes.annotate(message, xy = (posy, posx),  #xycoords='data',
                         xytext = (posy, posx), textcoords = 'offset points', size = 10,# va="center", #xytext=(posx, posy), 
                         bbox = dict(boxstyle = "round", fc = color, ec = "none"),)
                  
 if __name__ == '__main__':
-    print "hello"
+    print("hello")

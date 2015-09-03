@@ -1,3 +1,4 @@
+from __future__ import print_function
 import hashlib
 import fnmatch
 import os,sys
@@ -50,7 +51,7 @@ def hash_make_or_control(rootpath = ".", verbose = False):
         f = open(os.path.join(dirhash,'hashfile'),'wb')
         json.dump(hashres,f)
         f.close()
-        print "%s created"%os.path.join(dirhash,'hashfile')
+        print("%s created"%os.path.join(dirhash,'hashfile'))
     else : # compare to hashed files
         allok = True
         addhash = os.path.join(dirhash,'hashfile')
@@ -58,14 +59,14 @@ def hash_make_or_control(rootpath = ".", verbose = False):
         hash2 = hashdir(rootpath)
         for key in hash1 :
             if key in hash2 :
-                if verbose: print "ok for %s : %s"%(hash2[key], key)
+                if verbose: print("ok for %s : %s"%(hash2[key], key))
             else :
-                print "error in %s : %s"%(hash1[key], key)
+                print("error in %s : %s"%(hash1[key], key))
                 allok = False
         if allok:
-            print "hashcheck : Ok, directory not corrupted or modified."
+            print("hashcheck : Ok, directory not corrupted or modified.")
         else:
-            print "This directory has been corrupted or modified"
+            print("This directory has been corrupted or modified")
 
 class Test_hashcheck(unittest.TestCase):
     def test_hash(self):

@@ -30,4 +30,4 @@ class Qt4MplCanvas(FigureCanvas):
         menu.exec_(event.globalPos())
         
 if __name__ == '__main__':
-    print "hello"
+    print("hello")

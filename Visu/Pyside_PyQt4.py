@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 from matplotlib import pyplot as plt
 
@@ -5,14 +6,14 @@ try:
     #import PySide
     import PySide.QtGui 
     pyside = True
-    print "using PySide for visu2D"
+    print("using PySide for visu2D")
 except ImportError:
     try:
         import PyQt4.QtGui 
         pyside = False
-        print "using PyQt4 for visu2D"
+        print("using PyQt4 for visu2D")
     except ImportError:
-        print "neither PySide nor PyQt4 work."
+        print("neither PySide nor PyQt4 work.")
     
 try:
     if pyside:
@@ -31,5 +32,5 @@ try:
     except AttributeError:
         _fromUtf8 = lambda s: s
 except:
-    print "neither Pyside not PyQt4 are imported."
+    print("neither Pyside not PyQt4 are imported.")
 

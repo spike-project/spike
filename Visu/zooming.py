@@ -1,4 +1,5 @@
 from .. util.debug_tools import*
+from __future__ import print_function
 import json, io
 import numpy as np
 import scipy.interpolate as spinterp
@@ -17,7 +18,7 @@ class ZOOMING():                                                                
     so as to simplify all the procedure. 
     '''
     def __init__(self, display, interf, data, paramz, gtools, convert, stools, mwind):
-        print "in ZOOMING"
+        print("in ZOOMING")
         self.display = display
         self.interface = interf
         self.layoutC = self.interface.ui.layoutC
@@ -54,7 +55,7 @@ class ZOOMING():                                                                
         Changes views.
         '''
         if debug(self):
-            print "in zooming.change_view"
+            print("in zooming.change_view")
         if not change_layoutD:
             self.display.change_resolution(layout1 = self.layoutC)                                              # 
         else: 
@@ -66,7 +67,7 @@ class ZOOMING():                                                                
         Refreshes views from history.
         '''
         if debug(self):
-            print "in zooming.change_view_from_list"
+            print("in zooming.change_view_from_list")
         self.display.afflistco()                                                                    # 
         self.canv_event.interact_with_canvasC()                                                     # restablishes interaction with canvas.
      
@@ -118,7 +119,7 @@ class ZOOMING():                                                                
         Calculates the coordinates of the zoom and prints in both windows
         '''
         if debug(self):
-            print "in zooming.cal_coor"
+            print("in zooming.cal_coor")
         llx, lly, urx, ury = self.gtools.param_zoom_right_order()
         self.paramz.zoom_coord = [llx, lly, urx, ury]                                            # updates coordinates
         self.zplot.drawrect(llx - self.margin, lly - self.margin, urx + self.margin, ury + self.margin,
@@ -132,7 +133,7 @@ class ZOOMING():                                                                
         and sets flag self.newrectcready to True
         '''
         if debug(self):
-            print "in zooming.zoom_check_size"
+            print("in zooming.zoom_check_size")
         zc = self.paramz.zoom_coord
         cnd1 = (abs(zc[2] - zc[0]) < 10)                                                            # condition along x axis                 
         cnd2 = (abs(zc[3] - zc[1]) < 10)                                                            # condition along y axis   
@@ -144,9 +145,9 @@ class ZOOMING():                                                                
         Activated when zoom is ready and pressed is in the zoom window.
         '''
         if debug(self):   
-            print "in zooming.press_zoomready_and_in"
+            print("in zooming.press_zoomready_and_in")
         self.paramz.zoom_coord_old = self.paramz.zoom_coord                                         # keeps last window coordinates
-        if debug(self): print "in and zoom ready so makes zoom"
+        if debug(self): print("in and zoom ready so makes zoom")
         self.change_zoom()                                                                          # makes zoom and put the zoom and resolution in a list
         self.newrectcready = True   # ready for new zoom                                                                 # ready to draw an other zoom window
         self.canv_event.aff_param()
@@ -156,12 +157,12 @@ class ZOOMING():                                                                
         Activated when zoom is ready an pressed is outside the zoom window
         '''
         if debug(self):   
-            print "in zooming.press_zoomready_and_out"                                                         
-            print "remove grey area in draw C cursor"
+            print("in zooming.press_zoomready_and_out")                                                         
+            print("remove grey area in draw C cursor")
         self.newrectcready = True
         try:
             if debug(self):
-                print "removing rectangles C and D"
+                print("removing rectangles C and D")
             self.zplot.rectc.remove()                                                                # clicked not in the area .. new rectangle is possible
             self.zplot.rectd.remove()                                                                   # removes zoom window in window D
             #self.zplot.greyzoo.remove() # remove the grey area.. 
@@ -169,20 +170,20 @@ class ZOOMING():                                                                
             pass
         self.paramz.zoomready = False
         if debug(self):
-            print "self.paramz.zoomready set to False"
+            print("self.paramz.zoomready set to False")
         self.zplot.rectc = None
         if debug(self):
-            print "Redraw"
+            print("Redraw")
         self.display.qmc.fig.canvas.draw()                                                          # refreshes layout C
         self.display.qmd.fig.canvas.draw()                                                          # refreshes layout D
         if debug(self):
-            print "keep last zoom"
+            print("keep last zoom")
         last_zoom = self.paramz.listview[int(self.paramz.listview_index)]['zoom']
         self.paramz.zoom_coord = last_zoom                                                          # reinitializes coordinates.
         self.paramz.zoom_coord_old = last_zoom
         if debug(self):
-            print "self.paramz.zoom_coord_old ", self.paramz.zoom_coord_old
-            print "in zooming.press_zoomready_and_out"
+            print("self.paramz.zoom_coord_old ", self.paramz.zoom_coord_old)
+            print("in zooming.press_zoomready_and_out")
             self.paramz.report()
         #self.paramz.zoom_coord = []
 
@@ -191,7 +192,7 @@ class ZOOMING():                                                                
         Zoom activated or not after pressing the left mouse button
         '''
         if debug(self):
-            print " in zooming.press_zoom "
+            print(" in zooming.press_zoom ")
         llx, lly, urx, ury = self.gtools.param_zoom_right_order()
         inzoom = xpress > llx and xpress < urx and ypress > lly and ypress < ury
         if self.paramz.zoomready: # zoom is ready
@@ -204,7 +205,7 @@ class ZOOMING():                                                                
         else :
             
             self.paramz.zoom_coord = []
-        if debug(self): print "self.paramz.zoom_coord ", self.paramz.zoom_coord
+        if debug(self): print("self.paramz.zoom_coord ", self.paramz.zoom_coord)
            
     def change_zoom(self):
         '''
@@ -213,7 +214,7 @@ class ZOOMING():                                                                
         vis.resolu is the name of the current resolution. 
         '''  
         if debug(self):
-            print "in zooming.change_zoom "  
+            print("in zooming.change_zoom ")  
         if self.select_tools.zoom:                            
             self.find_numbpix()
             self.display.select_best_resolution()                                                       # changes to the best resolution.
@@ -237,8 +238,8 @@ class ZOOM3D(object):
         Called after make_mz_xyz()
         '''
         if debug(self):
-            print "in makemeshfromirreg "
-            print "x.size, y.size, z.size ", x.size, y.size, z.size
+            print("in makemeshfromirreg ")
+            print("x.size, y.size, z.size ", x.size, y.size, z.size)
         spline = spinterp.Rbf(x, y, z, function = 'cubic')                                          # Spline interpolation function.
         xi = np.linspace(x.min(), x.max(), sizef1)                                                  # m/z1
         yi = np.linspace(y.min(), y.max(), sizef2)                                                  # m/z2
@@ -253,7 +254,7 @@ class ZOOM3D(object):
         returns the m/z coordinates x, y, z for making the irregular meshgrid.
         '''
         if debug(self):
-            print "in make_mz_xyz "
+            print("in make_mz_xyz ")
         x, y, z = [], [], []                                                                        # initializes the m/z coordinates x, y, z
         for i in range(pt1min, pt1max) : 
             for j in range(pt2min, pt2max) :                                                        # scans the area in mode point and makes x, y, z in m/z coordinates.
@@ -262,8 +263,8 @@ class ZOOM3D(object):
                 z.append(d.col(j)[i])
         x, y, z = np.array(x), np.array(y), np.array(z)
         if debug(self):
-            print "x.min(), x.max(), y.min(), y.max() ", x.min(), x.max(), y.min(), y.max()
-            print "x, y", x, y
+            print("x.min(), x.max(), y.min(), y.max() ", x.min(), x.max(), y.min(), y.max())
+            print("x, y", x, y)
         return x, y, z
                 
     def makemesh(self, d, pt1min, pt1max, pt2min, pt2max):
@@ -272,15 +273,15 @@ class ZOOM3D(object):
         Calls make_mz_xyz() then makemeshfromirreg().
         '''
         if debug(self):
-            print "makemesh"
-            print "pt1min, pt1max, pt2min, pt2max ", pt1min, pt1max, pt2min, pt2max
+            print("makemesh")
+            print("pt1min, pt1max, pt2min, pt2max ", pt1min, pt1max, pt2min, pt2max)
         x, y, z = self.make_mz_xyz(d, pt1min, pt1max, pt2min, pt2max)                               # Makes the regular m/z mesh from limits in point coordinates.
         sizef1 = pt1max - pt1min                                                                    # number of points in f1 direction
         sizef2 = pt2max - pt2min                                                                    # number of points in f2 direction
         X, Y, zs = self.makemeshfromirreg(x, y, z, sizef1, sizef2)                                  # Makes interpolation 
         np.clip(zs, zs.min(), zs.max()/self.trunc, out = zs)                                        # truncates 
         if debug(self):
-            print "X.shape", X.shape
+            print("X.shape", X.shape)
         Z = zs.reshape(X.shape)
         return X, Y, Z
     
@@ -306,7 +307,7 @@ class ZOOM3D(object):
         Makes the json that is read by FTICR2D_3d.html
         '''
         if debug(self):
-            print "pt1min, pt1max, pt2min, pt2max",pt1min, pt1max, pt2min, pt2max
+            print("pt1min, pt1max, pt2min, pt2max",pt1min, pt1max, pt2min, pt2max)
         X, Y, Z = self.makemesh(d, pt1min, pt1max, pt2min, pt2max)                                   # makes the meshgrid
         data = []
         dimx, dimy = X.shape[0], X.shape[1]
@@ -316,7 +317,7 @@ class ZOOM3D(object):
         sizemat = xflat.size
         with io.open('spike/Visu/3d.json', 'w', encoding ='utf-8') as f:
               for i in range(sizemat):
-                  print xflat[i]
+                  print(xflat[i])
                   data.append({'x':int(xflat[i]),'y':int(yflat[i]),'z': zflat[i]*1e-5 })
               f.write(unicode('data = '))
               f.write(unicode(json.dumps(data, ensure_ascii = False)))

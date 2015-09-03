@@ -4,6 +4,7 @@
 __author__ = "Marc A. Delsuc <delsuc@igbmc.fr>"
 __date__ = "Oct 2009"
 
+from __future__ import print_function
 import struct
 import re
 import os
@@ -38,7 +39,7 @@ def find_acqu_gene(dir=".",acqulist=('acqus','acqu','ACQUS','ACQU')):
             found = 1
             break
         except:
-            print a+" not found"
+            print(a+" not found")
     if (found == 0):
         raise "No acqu file of type "+l[0]+" found in "+dir
     return(filename)
@@ -87,7 +88,7 @@ def find_proc_gene(dir=".",proclist=('procs','proc','PROCS','PROC')):
                 found = 1
                 break
             except:
-                print filename+" not found"
+                print(filename+" not found")
         if (found == 1):
             break
     if (found == 0):
@@ -146,13 +147,13 @@ def read_param(filename="acqus"):
     while ls:
         v=ls.pop(0)
         v = v.lstrip()
-        if debug: print "-",v,"-"
+        if debug: print("-",v,"-")
         if (re.search(r"^\$\$",v)):  # print comments
             dict['comments']=dict['comments']+"\n"+v
         else:
             m=re.match(r"##(.*)= *\(0\.\.([0-9]*)\)(.*)$",v )   # match arrays
             if (m is not None):
-                if debug: print "ARRAY",v,m.group(1,2,3)
+                if debug: print("ARRAY",v,m.group(1,2,3))
                 (key,numb,line)=m.group(1,2,3)
                 v=ls.pop(0)
                 v = v.lstrip()
@@ -162,27 +163,27 @@ def read_param(filename="acqus"):
                     if debug: v = v.lstrip()
                 ls.insert(0,v)
                 array=line.split()
-                if debug: print key,numb,len(array),array
+                if debug: print(key,numb,len(array),array)
                 if ((int(numb)+1) != len(array)):   # (0..9) is 10 entries !
                     raise "size mismatch in array"
                 dict[key] = array
                 continue
             m=re.match(r"##(.*)= *<(.*)>",v )   #match string
             if (m is not None): 
-                if debug: print "STRING",v
+                if debug: print("STRING",v)
                 (key,val) = m.group(1,2)
                 dict[key] = val
                 continue
             m=re.match(r"##(.*)= *(.*)$",v )   #match value
             if (m is not None):
-                if debug: print "VAL",v
+                if debug: print("VAL",v)
                 (key,val) = m.group(1,2)
                 dict[key] = val
                 continue
 # debug code
     if debug:
         for i in dict.keys():
-            print i+" = "+str(dict[i])
+            print(i+" = "+str(dict[i]))
     return dict
 
 ################################################################
@@ -244,7 +245,7 @@ def read_3D(sizeF1,sizeF2,sizeF3,filename="ser"):
     chsize(int(sizeF1),int(sizeF2),int(sizeF3))
     f=open(filename,"rb")
     for i1 in range(sizeF1):
-        print i1,
+        print(i1, end=' ')
         for i2 in range(sizeF2):
             for i3 in range(0,sizeF3,64): # read by 64 steps
                 buf = f.read(256)
@@ -318,7 +319,7 @@ def read_3D_java(sizeF1,sizeF2,sizeF3,filename="ser"):
     chsize(int(sizeF1),int(sizeF2),int(sizeF3))
     f=RandomAccessFile(filename,"r")
     for i1 in range(sizeF1):
-        print i1,
+        print(i1, end=' ')
         for i2 in range(sizeF2):
             for i3 in range(sizeF3):
                 x = f.readInt()
@@ -424,7 +425,7 @@ def Import_1D(filename="fid",outfile=""):
     dire=op.dirname(filename)
     acqu = read_param(find_acqu(dire))
     size= int(acqu['$TD'])  # get size
-    print "importing 1D FID, size =",size
+    print("importing 1D FID, size =",size)
     read_1D(size,filename,bytorda=int(acqu['$BYTORDA']))
 
 # then set parameters
@@ -462,7 +463,7 @@ def Import_2D(filename="ser",outfile=""):
     acqu2 = read_param(find_acqu2(dir))
     sizeF1= int(acqu2['$TD'])  # get size
     sizeF2= int(acqu['$TD'])  # get size
-    print "importing 2D FID, size =",sizeF1,"x",sizeF2
+    print("importing 2D FID, size =",sizeF1,"x",sizeF2)
     read_2D(sizeF1,sizeF2,filename)
 # then set parameters
     freq(float(acqu['$SFO1']), float(acqu2['$SFO1']), float(acqu['$SFO1']))
@@ -508,7 +509,7 @@ def Import_3D(filename="ser",outfile=""):
     sizeF1= int(acqu3['$TD'])  # get size
     sizeF2= int(acqu2['$TD'])  # get size
     sizeF3= int(acqu['$TD'])  # get size
-    print "importing 3D FID, size =",sizeF1,"x",sizeF2,"x",sizeF3
+    print("importing 3D FID, size =",sizeF1,"x",sizeF2,"x",sizeF3)
     read_3D(sizeF1,sizeF2,sizeF3,filename)
 
 # then set parameters
@@ -563,7 +564,7 @@ def Import(audit,filename=".",outfile="-"):
                 Generic.audittrail( audit, "text", "imported 2D file", filename+"  converted to   ", outfile, "Size", size )
 
     elif op.isdir(filename):
-        print "**DIR**"+filename
+        print("**DIR**"+filename)
         for i in glob.glob(op.join(filename,"*")):
             if (i != "."):
                 Import(audit,i, "-")
@@ -623,5 +624,5 @@ def calibdosy(file="acqus"):
         bdelta = d20-(2*p1)-(p30)-(2*d16)-(p19)
        	tau = d16
     else:
-        print "Unsupported pulse program."
+        print("Unsupported pulse program.")
     return (bdelta,delta,tau,sequence, nucleus)

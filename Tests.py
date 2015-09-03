@@ -7,6 +7,7 @@ Copyright (c) 2010 IGBMC. All rights reserved.
 
 Runs tests on selected modules using the integrated unittests. 
 """
+from __future__ import print_function
 import unittest
 import os
 import os.path as op
@@ -55,7 +56,7 @@ def msg(st, sep = '='):
     s = sep*(len(st) + 4)+"\n"
     s = s+ '| '+ st+ ' |'+"\n"
     s = s + sep*(len(st) + 4)+"\n"
-    print s
+    print(s)
     return s
 
 def cleanspike():
@@ -68,7 +69,7 @@ def cleanspike():
             r,ext = os.path.splitext(f)
             if ext == '.pyc':
                 addr = os.path.join(root,f)
-                print addr
+                print(addr)
                 os.remove(addr)
 
 def cleandir():
@@ -81,18 +82,18 @@ def cleandir():
                 'ubiquitine_2D_000002_Sampling_2k.list',
                 'Sampling_file_aposteriori_cytoCpnas.list','angio_ms_000005.d')
     for i in glob.glob(filename("*")):
-        print i,
+        print(i, end=' ')
         if os.path.basename(i) in files_to_keep:
-            print " Ok"
+            print(" Ok")
         else:
             if CLEAN:
                 try:
                     os.remove(i)
-                    print " removed"
+                    print(" removed")
                 except OSError:
-                    print " **** could not be removed ****"
+                    print(" **** could not be removed ****")
             else:
-                print " should be removed"
+                print(" should be removed")
 
 class NPKTest(unittest.TestCase):
     """overload unittest.TestCase for default verbosity - Not Used - """
@@ -100,7 +101,7 @@ class NPKTest(unittest.TestCase):
             self.verbose = 1    # verbose > 0 switches messages on
     def announce(self):
         if self.verbose >0:
-            print "\n========",self.shortDescription(),'==============='
+            print("\n========",self.shortDescription(),'===============')
 
 def do_Test():
     '''
@@ -112,7 +113,7 @@ def do_Test():
     to_mail = [msg(subject)]
     msg("modules to be tested are:")
     for mod in list_of_modules:
-        print mod
+        print(mod)
     msg("First removing leftover files")
     cleandir()
     msg("removing .pyc in spike")
@@ -129,7 +130,7 @@ def do_Test():
         subject = "SUCCESS :)  " + subject
         to_mail.append( msg("modules tested were:"))
         for mod in list_of_modules:
-            print mod
+            print(mod)
             to_mail.append(mod)
         to_mail.append( msg("test performed in %.2f sec"%elaps) )
     else:
@@ -139,7 +140,7 @@ def do_Test():
         for err in results.errors:
             to_mail.append( msg("%s"%(err[0]) ) )
             to_mail.append( err[1] )
-    print "\n".join(to_mail)
+    print("\n".join(to_mail))
     if MAIL:
         for address in list_of_mails:
             mail(address, subject, "\n".join(to_mail) )

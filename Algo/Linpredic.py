@@ -13,6 +13,7 @@ Created by Lionel on 2011-09-18.
 Removed the "for loops" so as to speed up using numpy capabilities.
 Copyright (c) 2010 IGBMC. All rights reserved.
 """
+from __future__ import print_function
 import numpy as np
 import random
 import time
@@ -82,7 +83,7 @@ class LinpredTests(unittest.TestCase):
         self.verbose = 1    # verbose > 0 switches messages on
     def announce(self):
         if self.verbose >0:
-            print "\n========",self.shortDescription(),'==============='
+            print("\n========",self.shortDescription(),'===============')
     def curvetest(self):
         longtest=128
         x = np.arange(longtest)

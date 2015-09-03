@@ -8,11 +8,11 @@ rev_date = '12-03-2015'
 
 def report():
     "prints version name when SPIKE starts"
-    print '''
+    print('''
     ========================
           %s
     ========================
     Version     : %s
     Date        : %s
-    ========================'''%(ProgramName, version, rev_date)
+    ========================'''%(ProgramName, version, rev_date))
 report()

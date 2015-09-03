@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys, os, math
 import numpy as np
 from numpy import linspace
@@ -59,11 +60,11 @@ class NavigToolbar(NavigationToolbar):
         self.insertWidget(self.next.defaultAction(), button)                                        # insert the button in the toolbar.
         if action.find('save') == 0:
             kind_saved = action[4:]
-            print "kind_saved ", kind_saved
+            print("kind_saved ", kind_saved)
             if self.data_profile.axis1.units == 'm/z':
                 act.triggered.connect(partial(self.dial.open_file_dialog, kind_saved))                 # Opens window dialog box
             else:
-                print "can be saved only in m/z mode."
+                print("can be saved only in m/z mode.")
         else:
             act.triggered.connect(getattr(self, action))
         
@@ -147,8 +148,8 @@ class PROFILE(QMainWindow):
         Plots the profile in the window
         '''
         if debug(self):
-            print "self.data_profile.units ", self.data_profile.units
-        print "self.data_profile.along  ", self.data_profile.along
+            print("self.data_profile.units ", self.data_profile.units)
+        print("self.data_profile.along  ", self.data_profile.along)
         if 'diag' in self.data_profile.along :
             if self.data_profile.along[-1] == 'x':
                 axis_profile = self.data_profile.axes(2).itomz(self.ptlx)                                       # m/z diago  
@@ -159,7 +160,7 @@ class PROFILE(QMainWindow):
         elif self.data_profile.along == 'y':
             axis_profile = self.axes_mz(self.data_profile.axes(2))                                          # m/z axis y values
         if self.data_profile.axis1.units == 'm/z':
-            print "makes plot for m/z format "
+            print("makes plot for m/z format ")
             self.axes.set_xlabel('m/z')
             self.axes.plot(axis_profile, self.data_profile.buffer, self.kind_line)                          # Plots the data in m/z in the popup window
         elif self.data_profile.axis1.units == 'points':
@@ -189,9 +190,9 @@ class Dialog(QtGui.QWidget):
         qd = QtGui.QInputDialog()
         name_data, result = qd.getText(self, self.name_dialog, self.message_input, QtGui.QLineEdit.Normal, self.toolbar.prep_name_profile)
         name_data = self.save.prep_path_save(str(name_data))
-        print "name_data ", name_data
+        print("name_data ", name_data)
         if kind_saved == 'csv':
-            print "saving CSV file"
+            print("saving CSV file")
             self.data_profile.save_csv(name_data + '.csv')
         elif kind_saved == 'pdf':
             self.toolbar.fig.savefig(name_data + '.pdf')

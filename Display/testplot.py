@@ -7,6 +7,7 @@ allow to import either matplotlib.pyplor or fakeplot depending on the PLOT flag
 
 usage:
 
+from __future__ import print_function
 import Display.testplot as testplot
 testplot.PLOT = False    # eventually
 plt = testplot.plot()

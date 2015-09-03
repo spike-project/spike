@@ -8,6 +8,7 @@ Most of these functions require that the NPK mathematical kernel is loaded.
 __author__ = "Marc A. Delsuc <delsuc@igbmc.fr>"
 __date__ = "Oct 2009"
 
+from __future__ import print_function
 import os.path
 import sys
 import copy
@@ -49,7 +50,7 @@ Please verify that F1 size = gradient table size"""
         raise "No columns selected"
 
 # setup the inprogress
-    print ('%i columns are to process' % countcol)
+    print(('%i columns are to process' % countcol))
     peakcount = 1
 
 #?MAD?
@@ -57,7 +58,7 @@ Please verify that F1 size = gradient table size"""
     result.write("# processing bidon\n")
 # Do the processing
     for i in list_to_do:
-        print ("Processing col %i ... "%(i))
+        print(("Processing col %i ... "%(i)))
         st = ("col %i iter. count %i chi2 %f\\n"%(i, 1000, 12.34))
         result.write(st)
 
@@ -104,11 +105,11 @@ def dosy2d(datafile, Dmin, Dmax, Dfactor, me, list_to_do):
 
 # MAD
     (here,file) = os.path.split(datafile)
-    print datafile 
+    print(datafile) 
     join(datafile)
     if (me.get_ilttype() == "Tabulated" and get_si_tab() != get_c_sizef1() ) :
         disjoin()
-        print "file size: ",get_c_sizef1(),"  tabulated value size : ",get_si_tab()
+        print("file size: ",get_c_sizef1(),"  tabulated value size : ",get_si_tab())
         raise """
 SIZE MISMATCH
 F1 dimension of input datafile
@@ -145,7 +146,7 @@ Please verify that F1 size = gradient table size"""
 
 
 # setup the inprogress
-    print ('%i columns are to process' % countcol)
+    print(('%i columns are to process' % countcol))
     peakcount = 0
 
 # fake a regular mode in FIT
@@ -188,7 +189,7 @@ Please verify that F1 size = gradient table size"""
 
         dim(2)
         put("col",i)
-        print (("column : %i  "+st)%(i))
+        print((("column : %i  "+st)%(i)))
         result.write(("column : %i  "+st+"\n")%(i))
         peakcount=peakcount+1
         avncmt=open(os.path.join(here,'avancement'),"w")
@@ -207,7 +208,7 @@ Please verify that F1 size = gradient table size"""
     specw( math.log(Dmax)-math.log(Dmin), get_c_specwf2()) 
     offset(math.log(Dmax), get_c_offsf2())
 
-    print ("Finally process %i columns :"%(peakcount))
+    print(("Finally process %i columns :"%(peakcount)))
 
     if os.path.exists('avancement'):
         os.remove('avancement')
@@ -373,7 +374,7 @@ see also : dosy2d INVTLAP INVTLAPCONT
         me.set_lambsp (me.get_lambsp() / 5)
         lambsp(me.get_lambsp())
         if bavard:
-           print "initial divergence - new lambsp : ", me.get_lambsp()
+           print("initial divergence - new lambsp : ", me.get_lambsp())
         get("data")
         cont_maxent_ilt(me)
         iterfait = (get_iterdone())
@@ -393,7 +394,7 @@ see also : dosy2d INVTLAP INVTLAPCONT
 # following iterations  - will be executed only if 1st try converged and me.get_ndisp() < me.get_iter()
     compteur = 0    # count how many time it stalled
     if bavard:
-           print "chi2min", chi2min
+           print("chi2min", chi2min)
     while ((iterfait < itermax) ):   # iterations left to do, and not stalled
         me.set_iter(me.get_iter() + me.get_ndisp())
         iter(me.get_iter())
@@ -406,7 +407,7 @@ see also : dosy2d INVTLAP INVTLAPCONT
             me.set_lambsp(me.get_lambsp() / 1.2)
             lambsp(me.get_lambsp())
             if bavard:
-              print  "Diverged - new lambsp : ",me.get_lambsp()
+              print("Diverged - new lambsp : ",me.get_lambsp())
             me.set_iter(me.get_iter() + me.get_ndisp())
             iter(me.get_iter())
             cont_maxent_ilt(me)
@@ -424,7 +425,7 @@ see also : dosy2d INVTLAP INVTLAPCONT
             if ((math.fabs(get_chi2() - chi2old)) < (0.0001 * get_chi2())):   # if not changing by more than 0.0001 == stalled
                 compteur = (compteur + 1)
                 if bavard:
-                   print "Stalled"
+                   print("Stalled")
             else:   # going up
                 compteur = 0
 
@@ -434,7 +435,7 @@ see also : dosy2d INVTLAP INVTLAPCONT
                 if (me.get_miniter() > 2.5):
                     me.set_miniter(me.get_miniter() / 1.2)
                 if bavard:
-                    print  "Stalled - new me_int_iteration : ",me.get_miniter()," - new labsp : ",me.get_lambsp()
+                    print("Stalled - new me_int_iteration : ",me.get_miniter()," - new labsp : ",me.get_lambsp())
 
         if (compteur == 4):
                 iterfait = itermax
@@ -478,7 +479,7 @@ see also : dosy2d INVTLAP INVTLAPCONT
     while ((diverged) and (iterfait < itermax) ): # searching as much as possible
         me.set_lambsp (me.get_lambsp() / 5)
         lambsp(me.get_lambsp())
-        print "initial divergence - new lambsp : ", me.get_lambsp()
+        print("initial divergence - new lambsp : ", me.get_lambsp())
         get("data")
         cont_maxent_ilt(me)
         iterfait = (get_iterdone())
@@ -498,7 +499,7 @@ see also : dosy2d INVTLAP INVTLAPCONT
 # following iterations  - will be executed only if 1st try converged and me.get_ndisp() < me.get_iter()
     compteur = 0    # cout how many time it stalled
     compt_moved = 0    # count how time lambda was modified for stalling
-    print "chi2min", chi2min
+    print("chi2min", chi2min)
     while ((iterfait < itermax) and (compteur <stalled) and (chi2min>1.0 and chi2min!=0.0)):   # iterations left to do, and not stalled
         me.set_iter(me.get_iter() + me.get_ndisp())
         iter(me.get_iter())
@@ -510,7 +511,7 @@ see also : dosy2d INVTLAP INVTLAPCONT
             read(temp)  # restart from previous
             me.set_lambsp(me.get_lambsp() / 1.2)
             lambsp(me.get_lambsp())
-            print  "Diverged - new lambsp : ",me.get_lambsp()
+            print("Diverged - new lambsp : ",me.get_lambsp())
             
         else:       # if converging
             if (get_chi2() < chi2min):  # if better, (as it should), keep it
@@ -522,27 +523,27 @@ see also : dosy2d INVTLAP INVTLAPCONT
                 compt_moved=0
             elif ((math.fabs(get_chi2() - chi2old)) < (0.0001 * get_chi2())):   # if not changing by more than 0.0001 == stalled
                 compteur = (compteur + 1)
-                print "Stalled"
+                print("Stalled")
             else:   # going up
                 if (get_chi2()/chi2min < 4 ):
                     me.set_lambsp((me.get_lambsp() * 1.2))
                     lambsp(me.get_lambsp())
-                    print  "Going up - new lambsp : ",me.get_lambsp()
+                    print("Going up - new lambsp : ",me.get_lambsp())
                 else: 
                     me.set_lambsp((me.get_lambsp() / 2))
                     lambsp(me.get_lambsp())
-                    print  "Diverging - new lambsp : ",me.get_lambsp()
+                    print("Diverging - new lambsp : ",me.get_lambsp())
                 compt_moved =compt_moved+1
                 compteur = 0
         if (compteur >= 2):     #if starting to stall, try to move it 
             if (get_chi2()/chi2min < 4 ):
                 me.set_lambsp((me.get_lambsp() * 1.2))
                 lambsp(me.get_lambsp())
-                print  "Stalled - new lambsp : ",me.get_lambsp()
+                print("Stalled - new lambsp : ",me.get_lambsp())
             else: 
                 me.set_lambsp((me.get_lambsp() / 2))
                 lambsp(me.get_lambsp())
-                print  "Diverging - new lambsp : ",me.get_lambsp()
+                print("Diverging - new lambsp : ",me.get_lambsp())
 #            me.set_miniter(me.get_miniter() / 1.2)
             compt_moved =compt_moved+1
             compteur = 0
@@ -552,7 +553,7 @@ see also : dosy2d INVTLAP INVTLAPCONT
             miniter(me.get_miniter())
             me.set_lambsp((me.get_lambsp() / 2))
             lambsp(me.get_lambsp())
-            print  "Stalled - new me_int_iteration : ",me.get_miniter()," - new labsp : ",me.get_lambsp()
+            print("Stalled - new me_int_iteration : ",me.get_miniter()," - new labsp : ",me.get_lambsp())
     return st
 
 def do_maxent_ilt(me):
@@ -582,13 +583,13 @@ def check_diverged():
     try:
         ent = 1.0*get_entropy()
     except:
-        print "diverged by entropy"
+        print("diverged by entropy")
         diverged = (1==1)
         ent=1.0
     try:
         chi2 = 1.0*get_chi2()
     except:
-        print "diverged by chi2"
+        print("diverged by chi2")
         chi2=1.0
         diverged = (1==1)
     return diverged
@@ -736,7 +737,7 @@ def auto_damp_width():
         x =  geta_tab(i)
         mn = min(mn,x)
         mx = max(mx,x)
-    print mn,mx
+    print(mn,mx)
     idmax = (get_dfactor()*2/(mn*mn))
     idmin = (get_dfactor()*0.5/(mx*mx))
     logidmin = (int(math.log(idmin)/math.log(10)))
@@ -754,11 +755,11 @@ def auto_damp_width():
 #------------------------------------------------------------
 def RemoveRows(list):
     """ remove the rows of the current 2D  which index is given in list """
-    print get_si1_2d(), get_si2_2d()
+    print(get_si1_2d(), get_si2_2d())
     l=list
     l.sort(lambda x,y :cmp(int(x),int(y)) )   # sort the list
     for i in (l[::-1]): # then go through backward
-         print "***",i
+         print("***",i)
          dim(2)
          for j in range(int(i),get_si1_2d()):
              row(j+1)
@@ -772,7 +773,7 @@ def RemovePoints(list):
     l=list
     l.sort(lambda x,y :cmp(int(x),int(y)) )   # sort the list
     for i in (l[::-1]): # then go through backward
-        print "***",i
+        print("***",i)
         dim(1)
         for j in range(int(i),get_si1_1d()):
             setval(j,val1d(j+1))
@@ -929,7 +930,7 @@ wucorrec : %i
         preset value ranges from 0 to 5
         sets the parameters for a balance between speed (1) and quality (5), 0 is for fit
         """
-        print "MaxEnt Preset: "+str(preset)
+        print("MaxEnt Preset: "+str(preset))
         if (preset == 1) :
             self.__iltalgo = "MaxEnt"
             self.__iltsize = 64

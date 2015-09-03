@@ -20,6 +20,7 @@ Copyright (c) 2011 IGBMC. All rights reserved.
 modif on 21 - may 2012 - added getword and removing trailing comments
 """
 
+from __future__ import print_function
 import sys
 import os
 import unittest
@@ -39,7 +40,7 @@ class NPKConfigParser(SafeConfigParser):
             vl = re.split('\s*#',vv)        # this removes trailing comments
             return vl[0]
         else:
-            print "Using default value for {} : {}".format(option,default) # send message if option not in configfile
+            print("Using default value for {} : {}".format(option,default)) # send message if option not in configfile
             return default
     def getword(self, section, option, default = None, raw = 0, vars = None):
         "read a value from the configuration, with a default value - takes the first word of the string"
@@ -79,7 +80,7 @@ class Tests(unittest.TestCase):
         self.verbose = 1    # verbose >0 switches on messages
     def announce(self):
         if self.verbose >0:
-            print self.shortDescription()
+            print(self.shortDescription())
     def test_def(self):
         "testing configparser default values"
         self.announce()

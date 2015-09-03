@@ -10,6 +10,7 @@ Typical syntax is:
     f = open("fff.jpg")
 If the picture "fff.jpg" doesn't exist, an arror message is sent by mail. 
 '''
+from __future__ import print_function
 import sys, os
 from time import sleep, localtime, strftime
 import os.path as op
@@ -23,7 +24,7 @@ class Logger(object):
         try:
             applic = sys.modules['__main__'].__file__ # retrieve the name of the module.
         except Exception:
-            print "no __file__"
+            print("no __file__")
             applic = ''
         self.stderr = sys.stderr
         date = self.datetime() # takes the date 
@@ -53,7 +54,7 @@ class Logger(object):
 if __name__ == '__main__':
     sys.stderr = Logger(erase = True)
     sys.stdout = Logger()
-    print "hello toto"
+    print("hello toto")
     f = open("fff.jpg")
 
     

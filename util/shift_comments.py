@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys
 import re
 
@@ -25,7 +26,7 @@ class SHIFT_COMMENT():
             self.linecorr = line[: posin] + (self.poscomment - posin)*' ' + comment # corrected line
         else: # the desired position is shorter than the line.
             self.linecorr = line[: self.poscomment] + comment # corrected line
-        print self.linecorr
+        print(self.linecorr)
     
     def make_linecorr_shiftedpos(self, lenline, comment, line):
         '''
@@ -39,9 +40,9 @@ class SHIFT_COMMENT():
         '''
         for line in self.f.readlines():
             if re.findall('# ', line) != []:        # find the existence of comment.. 
-                print line
+                print(line)
                 posin = line.find('# ')
-                print posin
+                print(posin)
                 lenline = len(line[:posin].rstrip())
                 comment = line[posin: ]         # take all the line from posin to the end
                 if self.poscomment:

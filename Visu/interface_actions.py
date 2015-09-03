@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys, os, re, time
 from functools import partial
 from ..util.debug_tools import *  
@@ -10,7 +11,7 @@ from .canvas_event import CANVAS_EVENT
 @decclassdebugging
 class INTERACT(object):
     def __init__(self, zoom, mwind, data, display, interf, paramz, gtools, zoom3d, stools, convert, save):
-        print "in INTERACT"
+        print("in INTERACT")
         self.zoom = zoom
         self.data = data            # data loaded
         self.display = display
@@ -116,7 +117,7 @@ class INTERACT(object):
         function for swapping between two states..
         have to define first value of state before.
         '''
-        if debug(self): print "etat is : ", test
+        if debug(self): print("etat is : ", test)
         if test == etat0:  test = etat1
         else : test = etat0
         return test
@@ -134,8 +135,8 @@ class INTERACT(object):
         Select the drag function (hand)
         '''
         if debug(self):   
-            print "in interface_actions.select_drag" 
-            print self.select_tools.drag
+            print("in interface_actions.select_drag") 
+            print(self.select_tools.drag)
         self.select_tools.change_to('drag')                                                         # passses to drag mode
         self.drag_connect()
         if debug(self):   
@@ -146,7 +147,7 @@ class INTERACT(object):
         Select the arrow cursor
         '''
         if debug(self):   
-            print "in interface_actions.select_curs"
+            print("in interface_actions.select_curs")
         self.select_tools.change_to('curs')
         if self.select_tools.curs :
             self.paramz.mouse_motion = self.display.connect(\
@@ -162,7 +163,7 @@ class INTERACT(object):
         Select the function manual_profile
         '''
         if debug(self):   
-            print "in interface_actions.select_manual_profile"
+            print("in interface_actions.select_manual_profile")
         self.select_tools.change_to('manual_profile') 
         if self.select_tools.manual_profile :
             self.paramz.mouse_motion = self.display.connect(\
@@ -178,19 +179,19 @@ class INTERACT(object):
     def whichres(self):                                                                             # function to know the current resolution
         for delem in self.LISTD :
             if self.display.currentd == delem :
-                print self.LISTDNAME[self.LISTD.index(delem)]
+                print(self.LISTDNAME[self.LISTD.index(delem)])
 
     def scale_control(self):
         '''
         Show scale in the interface.
         '''
         if debug(self):   
-            print "in interface_actions.scale_control"
+            print("in interface_actions.scale_control")
         self.interface.ui.label.setText(str(int(self.scale)))                                       # prints value of the scale
         if len(self.paramz.zoom_coord) == 0 :
              self.paramz.zoom_coord = self.paramz.zoom_coord_old
         if debug(self):
-            print "len(self.paramz.zoom_coord)", len(self.paramz.zoom_coord)
+            print("len(self.paramz.zoom_coord)", len(self.paramz.zoom_coord))
         self.display.affd(self.display.currentd, self.data.resmin, self.interface.ui.layoutC)                       # changes scale in real time only in C window
         
     def afffile(self):
@@ -199,16 +200,16 @@ class INTERACT(object):
         vis.resmin : resolution for window D
         '''
         if debug(self):   
-            print "##                                                                               # in interface_actions.afffile"
+            print("##                                                                               # in interface_actions.afffile")
         sizefticr = os.path.getsize(self.data.param.multresfile)                                    # Takes the size of the multiresolution file
         self.interface.ui.label_8.setText(str(round(sizefticr/1e6)) + " MB")                        # show the size of the data in the interface 
         self.interface.ui.label_6.setText(self.data.param.multresfile)                              # Path to the multiresolution file
         if debug(self):
-            print "in interface_actions.afffile makes self.display.affd "
+            print("in interface_actions.afffile makes self.display.affd ")
         self.display.affd(self.data.d[len(self.data.d)-1], self.data.resmin,
                       self.interface.ui.layoutC, self.interface.ui.layoutD)                                                 #initialisation with resolution 1
         if debug(self):
-            print "in interface_actions.afffile makes self.canv_event.interact_with_canvasC "
+            print("in interface_actions.afffile makes self.canv_event.interact_with_canvasC ")
         self.canv_event.interact_with_canvasC()
         absmx = self.data.d[len(self.data.d)-1].absmax
         for dd in self.data.d:
@@ -221,23 +222,23 @@ class INTERACT(object):
         Passes from point to m/z
         '''
         if debug(self):   
-            print "in interface_actions.swap_from_proint"
+            print("in interface_actions.swap_from_proint")
         self.data.mode_point = False
         self.interface.ui.pushButton_4.setText("go to pt")
         for dd in self.data.d:
             if debug(self):   
-                print "dd.units = m/z"
+                print("dd.units = m/z")
             dd.units = "m/z"
     
     def swap_from_mz(self):
         '''
         Passes from m/z to point
         '''
-        if debug(self): print "swap_from_mz "
+        if debug(self): print("swap_from_mz ")
         self.data.mode_point = True
         self.interface.ui.pushButton_4.setText("go to m/z")
         for dd in self.data.d:  # change the mode in all the resolutions
-            if debug(self): print "dd.units = pt"
+            if debug(self): print("dd.units = pt")
             dd.units = "points"
 
     def swap_pt_mz(self):                                                                         
@@ -246,14 +247,14 @@ class INTERACT(object):
         Change only in C window
         '''
         if debug(self):
-            print " in swap_pt_mz, self.paramz.zoom_coord ", self.paramz.zoom_coord
-            print "self.data.mode_point ", self.data.mode_point
+            print(" in swap_pt_mz, self.paramz.zoom_coord ", self.paramz.zoom_coord)
+            print("self.data.mode_point ", self.data.mode_point)
         if self.data.mode_point :                                                                   # if mode point is true
             self.swap_from_proint()
         elif not self.data.mode_point :
             self.swap_from_mz()
         if debug(self):
-            print "after swap_from_mz,  self.paramz.zoom_coord ", self.paramz.zoom_coord
+            print("after swap_from_mz,  self.paramz.zoom_coord ", self.paramz.zoom_coord)
         self.display.affd(self.display.currentd, self.data.resmin,\
             self.zoom.layoutC, self.zoom.layoutD, zoom = not(self.paramz.zoomready) ) #not(self.paramz.zoomready)
         self.select_tools.change_to('zoom')
@@ -268,8 +269,8 @@ class INTERACT(object):
         '''
         dd = self.display.currentd
         if debug(self):
-            print "in interface_actions.coord_profile_y"
-            print "in interface_actions.coord_profile_y yval is ", yval
+            print("in interface_actions.coord_profile_y")
+            print("in interface_actions.coord_profile_y yval is ", yval)
         if self.data.mode_point :
             '''
             point mode
@@ -280,11 +281,11 @@ class INTERACT(object):
             m/z mode
             '''
             if debug(self):
-                print "in interface_actions.coord_profile_y  self.data.mode_point = True"
-                print "dd.axes(2).highmass ", dd.axes(2).highmass
+                print("in interface_actions.coord_profile_y  self.data.mode_point = True")
+                print("dd.axes(2).highmass ", dd.axes(2).highmass)
             llx, lly, urx, ury = dd.axes(2).highmass, yval, dd.axes(2).lowmass + self.lowmass_shift, yval
         if debug(self):
-            print 'in interface_actions.coord_profile_y coordinates for profile are ', llx, lly, urx, ury
+            print('in interface_actions.coord_profile_y coordinates for profile are ', llx, lly, urx, ury)
         return llx, lly, urx, ury
     
     def coord_profile_x(self, xval):
@@ -295,8 +296,8 @@ class INTERACT(object):
         '''
         dd = self.display.currentd
         if debug(self):
-            print "in interface_actions.coord_profile_x"
-            print "in interface_actions.coord_profile_x xval is ", xval
+            print("in interface_actions.coord_profile_x")
+            print("in interface_actions.coord_profile_x xval is ", xval)
         if self.data.mode_point :
             '''
             point mode
@@ -307,11 +308,11 @@ class INTERACT(object):
             m/z mode
             '''
             if debug(self):
-                print "in interface_actions.coord_profile_x  self.data.mode_point = True"
-                print "dd.axes(1).highmass ", dd.axes(1).highmass
+                print("in interface_actions.coord_profile_x  self.data.mode_point = True")
+                print("dd.axes(1).highmass ", dd.axes(1).highmass)
             llx, lly, urx, ury = xval , dd.axes(1).highmass , xval, dd.axes(1).lowmass + self.lowmass_shift
         if debug(self):
-            print "in interface_actions.coord_profile_x llx, lly, urx, ury is ", llx, lly, urx, ury
+            print("in interface_actions.coord_profile_x llx, lly, urx, ury is ", llx, lly, urx, ury)
         return llx, lly, urx, ury
     
     def prepare_coord_profile(self, values, ct = None):
@@ -320,20 +321,20 @@ class INTERACT(object):
         Called by take_lineEdit_xy_format
         '''
         if debug(self):
-            print "###########                                                                      # in interface_actions.coord_profile "
+            print("###########                                                                      # in interface_actions.coord_profile ")
         val = float(values.split(ct)[1])
         if ct == 'x':
             self.zoom.profile_type = 'x'
             if debug(self):
-                print "in interface_actions.coord_profile case x "
+                print("in interface_actions.coord_profile case x ")
             llx, lly, urx, ury = self.coord_profile_x(val)                                          # Completes x coordinates
         elif ct == 'y':
             self.zoom.profile_type = 'y'
             if debug(self):
-                print "in interface_actions.coord_profile case y "
+                print("in interface_actions.coord_profile case y ")
             llx, lly, urx, ury = self.coord_profile_y(val)                                          # Completes y coordinates
         if debug(self):
-            print 'in interface_actions.coord_profile coordinates for profile are ', llx, lly, urx, ury
+            print('in interface_actions.coord_profile coordinates for profile are ', llx, lly, urx, ury)
         return llx, lly, urx, ury
            
     def take_lineEdit_xy_format(self, lineEdit_value):
@@ -342,23 +343,23 @@ class INTERACT(object):
         ct is the coordinates type
         '''
         if debug(self):
-            print "in interface_actions.take_lineEdit_xy_format values is ", lineEdit_value
-            print "will check kind of coordinates "
-            print "type(lineEdit_value) ", type(lineEdit_value)
-            print "lineEdit_value ", lineEdit_value
+            print("in interface_actions.take_lineEdit_xy_format values is ", lineEdit_value)
+            print("will check kind of coordinates ")
+            print("type(lineEdit_value) ", type(lineEdit_value))
+            print("lineEdit_value ", lineEdit_value)
         lcoord_type = ['x','y']
         for ct in lcoord_type:                                                                      # search if the lines begins with x or y
             if debug(self):
-                print "lineEdit_value ", lineEdit_value
-                print "ct ", ct
+                print("lineEdit_value ", lineEdit_value)
+                print("ct ", ct)
             if lineEdit_value.find(ct) == 0:                                                        # if x or y is found
                 if debug(self):
-                    print "coord type is ", ct
+                    print("coord type is ", ct)
                 self.name_profile = lineEdit_value.replace('.','-')
                 llx, lly, urx, ury =  self.prepare_coord_profile(lineEdit_value, ct)                # returns profile coordinates from lineEdit value.
                 if debug(self):
-                    print "name profile is ", self.name_profile
-                    print "extracted values for profile are ", llx, lly, urx, ury
+                    print("name profile is ", self.name_profile)
+                    print("extracted values for profile are ", llx, lly, urx, ury)
         return llx, lly, urx, ury, ct
 
     def take_lineEdit(self, ledit):
@@ -370,19 +371,19 @@ class INTERACT(object):
         ct = None
         try:
             if debug(self):
-                print "using PyQt4 lineEdit"
+                print("using PyQt4 lineEdit")
             values = str(ledit.text())              # coordinates from QlineEdit PyQt4
         except:
             if debug(self):
-                print "using PySide lineEdit"
+                print("using PySide lineEdit")
             values = ledit.text()                                   # coordinates from QlineEdit PySide
         if debug(self):
-            print "values is ", values
-        print "type(values) ", type(values)
+            print("values is ", values)
+        print("type(values) ", type(values))
         if values[-1] in ['x', 'y']:
             axeprofile = values[-1]
             values = values[:-1]
-            print "####### axeprofile ", axeprofile
+            print("####### axeprofile ", axeprofile)
         try:                            # Diagonal profile
 
             if self.data.mode_point:
@@ -391,22 +392,22 @@ class INTERACT(object):
                 urx, ury, llx, lly = map(float, values.split(','))                                  # from string to float
             self.zoom.profile_type = 'diag' + axeprofile
             if debug(self):
-                print "in take_lineEdit profile coordinates are ", llx, lly, urx, ury
+                print("in take_lineEdit profile coordinates are ", llx, lly, urx, ury)
             #self.name_profile = 'diagonal'
             self.name_profile = 'diag_'+ values.replace(',','-')
         except:   # x/y profile
           try:
-            print "values = ", values
-            print "x/y profile"
+            print("values = ", values)
+            print("x/y profile")
             llx, lly, urx, ury, ct = self.take_lineEdit_xy_format(values)                           # takes the profiles in format y345 etc.. 
           except:
-            print "format incorrect"
-            print "values ", values                                                                  # passing to point
+            print("format incorrect")
+            print("values ", values)                                                                  # passing to point
         if llx ==  urx:                                                                             # correction for avoiding division by 0 in profile
-            if debug(self): print "adding 1e-7 to urx"                                                                                   
+            if debug(self): print("adding 1e-7 to urx")                                                                                   
             urx += 1e-7
         elif lly == ury:                                                                            # correction for avoiding division by 0 in profile
-            if debug(self): print "adding 1e-7 to ury"
+            if debug(self): print("adding 1e-7 to ury")
             ury += 1e-7
         return llx, lly, urx, ury
 
@@ -420,24 +421,24 @@ class INTERACT(object):
         self.canv_event.release_refrechC()                                                          # Makes the zoom
         self.zoom.change_zoom()                                                                     # makes zoom and saves the zoom, resolution and scale
         if debug(self):
-            print "#### changing to zoom mode   "
+            print("#### changing to zoom mode   ")
         self.select_tools.change_to('zoom') 
         if debug(self):
-            print "self.paramz.zoomready ", self.paramz.zoomready
+            print("self.paramz.zoomready ", self.paramz.zoomready)
         
     def manual_profile(self):
         '''
         Manual profile
         '''
         if debug(self):
-            print "#### in manual_profile "
+            print("#### in manual_profile ")
         self.select_tools.change_to('profile')                                                      # set mode to profile.
         self.select_tools.report()
         llx, lly, urx, ury = self.take_lineEdit(self.interface.ui.lineEdit_4)                       # retrieves from interface values for profile.
         if debug(self):
-            print "pass to current mode"
-            print "drawline"
-            print "llx, lly, urx, ury ", llx, lly, urx, ury
+            print("pass to current mode")
+            print("drawline")
+            print("llx, lly, urx, ury ", llx, lly, urx, ury)
         self.gtools.drawline(llx, lly, urx, ury, layout1 = self.interface.ui.layoutC)               # draws the line in the 2D on which is made the profile.
         llx, lly, urx, ury = self.convert.maxres(llx, lly, urx, ury)
         self.gtools.do_profile_coord(llx, lly, urx, ury)                                            # Makes the coordinates for plotting the profile in a new window
@@ -454,7 +455,7 @@ class INTERACT(object):
         else:
             llx, lly, urx, ury = self.convert.pass_to_pt(llx, lly, urx, ury)
             self.convert.set(llx, lly, urx, ury)
-        if debug(self): print "in manual_zoom, self.paramz.zoom_coord ", self.paramz.zoom_coord
+        if debug(self): print("in manual_zoom, self.paramz.zoom_coord ", self.paramz.zoom_coord)
         self.zoom.change_view(change_layoutD = True)                                                # Refreshes resolution
         self.canv_event.release_refrechC()                                                          # prepares the zoom
         self.zoom.change_zoom()                                                                     # makes zoom and put the zoom and resolution in a list
@@ -509,14 +510,14 @@ class INTERACT(object):
         If the area is small enough, makes the 3D reprensentation in m/z coordinates.
         '''                                                                                   # in interface_actions, 3D zoom"
         f2min, f1min, f2max, f1max = map(int, self.paramz.zoom_coord)
-        if debug(self): print "f2min, f2max, f1min, f1max ",f2min, f2max, f1min, f1max
+        if debug(self): print("f2min, f2max, f1min, f1max ",f2min, f2max, f1min, f1max)
         area = abs(f1min - f1max)*abs(f2min - f2max)                                                # calculates the zoom area.
-        if debug(self): print area
+        if debug(self): print(area)
         if area < 1e9: #self.paramz.area3Dmax                                                                   # test if area is small enough
             if self.data.mode_point:
-                print "point"
+                print("point")
             else:
-                print "in m/z mode"
+                print("in m/z mode")
             d = self.display.data.d[len(self.display.data.d)-1]                                       # lowest resolution
             #d = self.display.data.currentd 
             self.zoom3d.trunc = 1
@@ -524,7 +525,7 @@ class INTERACT(object):
             plt.show()
         else :
             message = " the zoom area is too large"
-            print message
+            print(message)
             self.display.affd(self.display.currentd, self.data.resmin,\
              self.interface.ui.layoutC, zoom = False, message = message)
         self.select_tools.change_to('zoom')

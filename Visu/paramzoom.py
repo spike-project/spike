@@ -27,9 +27,9 @@ class PARAM_ZOOM(object):
         return vx, vy
     
     def report(self):
-        print "############ report paramz"
+        print("############ report paramz")
         for elem in dir(self):
             if elem.find('_') != 0:
                 if not hasattr(getattr(self, elem), '__call__') :
-                    print elem, getattr(self, elem)
-        print "############ "
+                    print(elem, getattr(self, elem))
+        print("############ ")

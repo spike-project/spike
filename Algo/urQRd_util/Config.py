@@ -3,6 +3,7 @@ Created by Lionel Chiron  03/12/2013
 Copyright (c) 2013 __NMRTEC__. All rights reserved.
 '''
 from NPKConfigParser import NPKConfigParser
+from __future__ import print_function
 import re, os, sys
 
 class Proc_Parameters(object):
@@ -43,16 +44,16 @@ class Proc_Parameters(object):
      
     def report(self):
         "print a formatted report"
-        print "------------ processing parameters ------------------"
+        print("------------ processing parameters ------------------")
         for i in dir(self):
             if not i.startswith('_'):
                 v = getattr(self,i)
                 if not callable(v):
-                    print i, ' :', v
-        print "-----------------------------------------------------"
+                    print(i, ' :', v)
+        print("-----------------------------------------------------")
         
 def config_urqrd(configfile = "Applic_urqrd.mscf"):
-    print "using %s as configuration file"%configfile
+    print("using %s as configuration file"%configfile)
 
     #### get parameters from configuration file - store them in a parameter object
     cp = NPKConfigParser()

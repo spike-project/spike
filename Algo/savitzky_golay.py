@@ -4,6 +4,7 @@ Smooth (and optionally differentiate) data with a Savitzky-Golay filter.
 CODE from http://www.scipy.org/Cookbook/SavitzkyGolay
     adapted by M-A Delsuc, august 2011
 """
+from __future__ import print_function
 import numpy as np
 import scipy.signal
 

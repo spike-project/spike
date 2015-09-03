@@ -11,6 +11,7 @@ Created by Marc-André on 2014-08
 Copyright (c) 2014 IGBMC. All rights reserved.
 """
 
+from __future__ import print_function
 import math
 import unittest
 import numpy as np
@@ -156,7 +157,7 @@ class FTMSData(NPKData.NPKData):
             self.axis2 = FTMSAxis()
         if name:
             if name.endswith(".msh5"):  # try loading .msh5 file
-                if debug>0: print "reading msh5"
+                if debug>0: print("reading msh5")
                 H = HDF5File(name,"r")
                 H.load(mode=mode)      # load into memory by default !
                 super(FTMSData, self).__init__(buffer=H.data.buffer, debug=debug)
@@ -166,12 +167,12 @@ class FTMSData(NPKData.NPKData):
             else:
                 raise Exception("Filename should have a .msh5 extension")
         else:
-            if debug>0: print "calling super"
+            if debug>0: print("calling super")
             super(FTMSData, self).__init__(dim=dim, shape=shape, buffer=buffer, name=name, debug=debug)
             for i in range(self.dim):
                 axis = self.axes(i+1)
                 setattr(self, "axis%d"%(i+1), FTMSAxis(size=axis.size, specwidth=axis.specwidth, itype=axis.itype) )
-        if debug>1: print self.report()
+        if debug>1: print(self.report())
     #------------------------------------------------
     def _gspecwidth(self):
         "copy specwidth to all the axes"
@@ -233,7 +234,7 @@ class FTMSData(NPKData.NPKData):
                     ext = ext + [int(self.axes(i+1).mztoi(self.axes(i+1).highmass)), self.axes(i+1).size]
                 else:
                     ext = ext + [0,self.axes(i+1).size]
-            print "extracting :", ext
+            print("extracting :", ext)
             self.extract(ext)
         return self
     #------------------------------------------------
@@ -262,7 +263,7 @@ class FTMSData(NPKData.NPKData):
         
         """
 
-        if self.debug>0: print "zoom at the beginning of display ",zoom,axis
+        if self.debug>0: print("zoom at the beginning of display ",zoom,axis)
         if self.dim == 1:
             if zoom is None:
                 zm = [0,self.size1]
@@ -299,7 +300,7 @@ class FTMSData(NPKData.NPKData):
                         ax[i] = np.arange(ax.size)
             if not self.check_zoom(zm):
                 raise NPKError("zoom window is below high-mass limit: %s "%(str(zm)), data=self)
-        if self.debug>0: print "in FTICR zoom if m/z ",zoom, zm
+        if self.debug>0: print("in FTICR zoom if m/z ",zoom, zm)
         # then super.display()
         #print "in FTICR zoom ",zoom
         

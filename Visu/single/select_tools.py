@@ -19,7 +19,7 @@ class SELECT_TOOLS(object):
                                   
         for t in self.tools:                                                            # Reinitializes to False
             setattr(self, t, False)
-        print "### change tool to ", tool
+        print("### change tool to ", tool)
         setattr(self, tool, True)     # makes the tool flag to True
         if tool == 'zoom':
             self.paramz.zoomready = False
@@ -40,6 +40,6 @@ class SELECT_TOOLS(object):
         '''
         for t in self.tools:
             attr = getattr(self, t)
-            print "tool {} : {}".format(t, attr)
+            print("tool {} : {}".format(t, attr))
 
     

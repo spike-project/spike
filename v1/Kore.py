@@ -6,6 +6,7 @@ Kore.py
 Created by Marie-Aude Coutouly on 2010-03-26.
 Copyright (c) 2010 NMRTEC. All rights reserved.
 """
+from __future__ import print_function
 import numpy as np
 import NPKData as npkd
 import File.GifaFile as gf
@@ -71,7 +72,7 @@ class Kore(object):
         buffer 3D : %s
         current   : %s
         """%(self._column.report(),self._plane2d.report(),self._image.report(),self._current.report())
-        print report
+        print(report)
     #-------------------------------------------------------------------------
     def status(self):
         """
@@ -369,7 +370,7 @@ class Kore(object):
                      self._current.buffer[1::2] = 0.0
                      self._current.buffer[:,1::2] = 0.0
         elif self._dim == 3: 
-            print "ONE 3D A FINIR"
+            print("ONE 3D A FINIR")
             if self._current.axis1.itype == 0:
                  if self._current.axis3.itype == 0:
                      self._current.buffer = np.ones_like(self._current.buffer)
@@ -424,18 +425,18 @@ class Kore(object):
                 axis = arg[1]
                 xpoints = arg[2]
                 if mode == 1:
-                    print "attention, c'est faux"
+                    print("attention, c'est faux")
                     self._current.linear_interpolate(xpoints, axis=axis)
                 elif mode == 2:
                     self._current.spline_interpolate(xpoints, axis=axis, kind=3)
             else:
                 raise Exception("not implemented")
         elif mode == 3:
-            print " bcorr 3 a faire"
+            print(" bcorr 3 a faire")
     def bcorrp1(self):
-        print "bcorrp1 a faire"
+        print("bcorrp1 a faire")
     def bcorrp0(self):
-        print "bcorrp0 a faire"
+        print("bcorrp0 a faire")
         # from scipy import interpolate
         # 
         # A = arg[0]
@@ -498,7 +499,7 @@ class Kore(object):
         
         see also : chsize
         """
-        print "modifisize A VALIDER"
+        print("modifisize A VALIDER")
         if self._dim == 2:
             self._plane2d.chsize(si1, si2)
         elif self._dim == 3:
@@ -567,7 +568,7 @@ class Kore(object):
         elif self._dim == 2:
             self.peaks2d = self._current.peaks2d(threshold = self.mini, zoom = ((self._current.zo_2_1l,self._current.zo_2_1m),(self._current.zo_2_2l,self._current.zo_2_2m)))
         else:
-            print "3D Pick peaker is not yet written"
+            print("3D Pick peaker is not yet written")
     #---------------------------------------------------------------------------
     def geta_pk1d_a(self,i):
         return self._current.buffer[self.peaks[self.index[i-1]]]
@@ -654,7 +655,7 @@ class Kore(object):
         elif self._dim == 3 :
             self.freq3d(*args)
         else:
-            print "This should never happen", self._dim
+            print("This should never happen", self._dim)
     #---------------------------------------------------------------------------
     def freq1d(self,freq_h1, freq1):
         self._column.frequency = freq_h1
@@ -710,7 +711,7 @@ class Kore(object):
         """
         #print "A TESTER"
         for ax in self._test_axis(axis):
-            print ax
+            print(ax)
             self._current.ifft(ax)
     #---------------------------------------------------------------------------
     def ftbis(self,axis="F1"):
@@ -747,7 +748,7 @@ class Kore(object):
         elif index == 2:
             return self.mini
         else:
-            print "we have a problem"
+            print("we have a problem")
     #---------------------------------------------------------------------------
     def dmax(self,value):
         """
@@ -787,7 +788,7 @@ class Kore(object):
         elif self._dim == 3 :
             self.offset3d(*args)
         else:
-            print "This should never happen", self._dim
+            print("This should never happen", self._dim)
     #---------------------------------------------------------------------------
     def offset1d(self, off1): 
         self._column.axis1.offset = off1
@@ -923,7 +924,7 @@ class Kore(object):
         elif self._dim == 3 :
             self.setval3d(*args)
         else:
-            print "This should never happen", self._dim
+            print("This should never happen", self._dim)
     #---------------------------------------------------------------------------
     def setval1d(self,i,x):
         self._column.buffer[i-1] = x
@@ -933,13 +934,13 @@ class Kore(object):
         try:
             self._plane2d.buffer[i-1][j-1] = x
         except:
-            print "Pb in setval 2D " , i,j ,x
+            print("Pb in setval 2D " , i,j ,x)
     #---------------------------------------------------------------------------
     def setval3d(self,i,j,k,x):
         try:
             self._image.buffer[i-1][j-1][k-1] = x
         except:
-            print "Pb in setval 3D " , i,j ,k,x
+            print("Pb in setval 3D " , i,j ,k,x)
     #---------------------------------------------------------------------------
     def val1d(self,i):
         return self._column.buffer[i-1]
@@ -972,7 +973,7 @@ class Kore(object):
         elif self._dim == 3 :
             self.specw3d(*args)
         else:
-            print "This should never happen", self._dim
+            print("This should never happen", self._dim)
     #---------------------------------------------------------------------------
     def specw1d(self,x):
         self._column.axis1.specwidth = x            
@@ -1004,7 +1005,7 @@ class Kore(object):
     writec = write
     #---------------------------------------------------------------------------
     def set_task(self, task):
-        print task
+        print(task)
     #---------------------------------------------------------------------------
     def window(self):
         """
@@ -1152,7 +1153,7 @@ class Kore(object):
         elif dim ==3:
             return self._image.itoh(axis,index)
         else:
-            print "problem in itoh"
+            print("problem in itoh")
     def itop(self,index,dim,axis):
         if dim == 1:
             return self._column.itop(axis,index)
@@ -1161,7 +1162,7 @@ class Kore(object):
         elif dim == 3:
             return self._image.itop(axis,index)
         else:
-            print "problem in itop"
+            print("problem in itop")
     def htop(self,index,dim,axis):
         if dim == 1:
             return self._column.htop(axis,index)
@@ -1170,7 +1171,7 @@ class Kore(object):
         elif dim ==3:
             return self._image.htop(axis,index)
         else:
-            print "problem in htop"
+            print("problem in htop")
     def htoi(self,index,dim,axis):
         if dim == 1:
             return self._column.htoi(axis,index)
@@ -1179,7 +1180,7 @@ class Kore(object):
         elif dim == 3:
             return self._image.htoi(axis,index)
         else:
-            print "problem in htoi"
+            print("problem in htoi")
     def ptoh(self,index,dim,axis):
         if dim == 1:
             return self._column.ptoh(axis,index)
@@ -1188,7 +1189,7 @@ class Kore(object):
         elif dim ==3:
             return self._image.ptoh(axis,index)
         else:
-            print "problem in ptoh"
+            print("problem in ptoh")
     def ptoi(self,index,dim,axis):
         if dim ==1:
             return self._column.ptoi(axis,index)
@@ -1197,7 +1198,7 @@ class Kore(object):
         elif dim == 3:
              return self._image.ptoi(axis,index)
         else:
-            print "problem in ptoi"
+            print("problem in ptoi")
     #---------------------------------------------------------------------------
     def bruker_corr(self,):
         self._current.bruker_corr()
@@ -1207,7 +1208,7 @@ class Kore(object):
         self._current.apod_em(axis,lb)
         self.lb = lb
     def tm(self,tm1,tm2,axis=0):
-        print "TM still to do"
+        print("TM still to do")
         self._current.apod_tm(axis,tm1,tm2)
         self.lb = lb
     def sqsin(self,maxi,axis=1):
@@ -1261,9 +1262,9 @@ class Kore(object):
             elif parameter == "TAB":
                 self._tab = self._current.copy()
             else:
-                print "********************* Nothing has been done yet"
+                print("********************* Nothing has been done yet")
         else:
-            print "********************* Nothing has been done yet"
+            print("********************* Nothing has been done yet")
                  
     #---------------------------------------------------------------------------
     def get(self, buffer_name):

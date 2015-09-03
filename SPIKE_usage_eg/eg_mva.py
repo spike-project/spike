@@ -5,6 +5,7 @@
 quelques examples de traitements, en utilisant la base du nouveau NPK v2
 
 """
+from __future__ import print_function
 import NPKData as npkd
 import numpy as np                  # pour faire des calculs supplémentaires  - pas utilisé ici
 import matplotlib.pyplot as plt     # pour afficher les données brutes - pas utilisé ici
@@ -13,7 +14,7 @@ import matplotlib.pyplot as plt     # pour afficher les données brutes - pas ut
 ######## chargement
 d1 = npkd.NPKData(name="/DATA/Marie van/data_raw.gf2")  # je charge les données
 
-print d1.report()       # état des lieux
+print(d1.report())       # état des lieux
 
 ###### calculs 1D
 d1.row(0).rfft().modulus().display(label="FT de la premiere ligne")    # je montre la 1ere ligne

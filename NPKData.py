@@ -8,6 +8,7 @@ Implement the basic mechanisms for spectral data-sets
 Created by Marc-André and Marie-Aude on 2010-03-17.
 """
 
+from __future__ import print_function
 import numpy as np
 import numpy.fft as npfft
 import copy
@@ -202,8 +203,8 @@ def flatten(*arg):
     return r
 def warning(msg):
     """issue a warning message to the user"""
-    print "WARNING"
-    print msg
+    print("WARNING")
+    print(msg)
 ########################################################################
 class Axis(object):
     """
@@ -399,7 +400,7 @@ class LaplaceAxis(Axis):
         """
         returns damping value (d) from point value (i)
         """
-        print "itod might have to be checked"
+        print("itod might have to be checked")
         cst = (math.log(self.dmax)-math.log(self.dmin)) / (float(self.size)-1)
         d = (self.dmin )* np.exp(cst*(value -1.0))
         return d
@@ -407,7 +408,7 @@ class LaplaceAxis(Axis):
         """
         returns point value (i) from damping value (d)
         """
-        print "dtoi might have to be checked"
+        print("dtoi might have to be checked")
         cst = (math.log(self.dmax)-math.log(self.dmin)) / (float(self.size)-1)
 
         i = 1.0 + (np.log(value) - np.log(self.dmin)) / cst
@@ -687,7 +688,7 @@ class NPKData(object):
             if warn:
                 warning( "WARNING in NPKData.check() : "+string)
             else:
-                print self.report()
+                print(self.report())
                 raise Exception(string)
         #----------------------------------------------
         try:                            # self.buffer might come from HDF5File and doesn't have flags
@@ -1249,7 +1250,7 @@ class NPKData(object):
                 self.absmax = absmax
 #            print absmax, self.absmax
             if mode3D:
-                print "3D not implemented"
+                print("3D not implemented")
                 # from enthought.tvtk.tools import mlab
                 # from enthought.pyface.api import GUI
                 # gui = GUI()
@@ -1451,7 +1452,7 @@ class NPKData(object):
     def __add__(self, otherdata):
         import numbers
         # as add() but creates a new object
-        print 'radd'
+        print('radd')
         if isinstance(otherdata, NPKData):
             return self.copy().add(otherdata)
         elif isinstance(otherdata,numbers.Number):
@@ -1644,7 +1645,7 @@ class NPKData(object):
         todo = self.test_axis(axis)
         it = self.axes(todo).itype
         if it == 0:
-            print "You already have real data - nothing done"
+            print("You already have real data - nothing done")
             return self
         if self.dim == 1:
             self.buffer = self.buffer[::2]
@@ -1654,7 +1655,7 @@ class NPKData(object):
             elif todo == 2:
                 self.buffer = self.buffer[:,::2]
             else:
-                print "this should never happen"
+                print("this should never happen")
         elif self.dim ==3:
             if todo == 1:
                 self.buffer = self.buffer[:,::2]
@@ -1663,9 +1664,9 @@ class NPKData(object):
             elif todo == 3:
                 self.buffer = self.buffer[:,:,::2]
             else:
-                print "this should never happen"
+                print("this should never happen")
         else:
-            print " this should never happen"
+            print(" this should never happen")
         self.axes(todo).itype = 0
         self.adapt_size()
         return self
@@ -1832,7 +1833,7 @@ class NPKData(object):
                 elif ptype == "m":
                     c = Data(buffer =self.buffer.mean(axis = 0))     # mean of each column
         elif self.dim == 3 :
-            print "3D"
+            print("3D")
             # if todo == 1:
             #     if projtype == "s":
             #     elif projtype == "m":
@@ -1843,7 +1844,7 @@ class NPKData(object):
             #     if projtype == "s":
             #     elif projtype == "m":
         else :
-            print "Dim should be at least 2"
+            print("Dim should be at least 2")
         return c
 
     #-------------------------------------------------------------------------------
@@ -2025,7 +2026,7 @@ class NPKData(object):
                     a[:] = self.buffer[:,i]
                     self.buffer[:,i] = fft_base(a)
         elif self.dim == 3:
-            print "A TESTER"
+            print("A TESTER")
             if todo == 3:
                 for i in xrange(self.size1):
                     for j in xrange(self.size2):
@@ -2083,7 +2084,7 @@ class NPKData(object):
                     i += 1
                     self.buffer[:,i] = r.buffer[:]
         elif self.dim == 3:
-            print "A FAIRE"
+            print("A FAIRE")
             
     #---------------------------------------------------------------------------
     def transpose(self, axis=0):
@@ -2100,7 +2101,7 @@ class NPKData(object):
         todo = self.test_axis(axis)
         if self.dim == 2:
             if np.isInt(self.size1/2) :
-                print "Ok"
+                print("Ok")
             
     #---------------------------------------------------------------------------
     def reverse(self, axis=0):
@@ -2163,7 +2164,7 @@ class NPKData(object):
                 else:
                     raise NPKError("internal error")
         else:
-            print "This should never happen ",self.dim
+            print("This should never happen ",self.dim)
         return self
     #-------------------------------------------------------------------------------
     def conjg(self, axis=0):
@@ -2254,7 +2255,7 @@ class NPKData(object):
                 e[i] = 1.
             for i in range(tm2, size):
                 e[i] =float(i)/size
-            print "****** ",e[0]
+            print("****** ",e[0])
         elif it ==1:
             for i in range(1,ftm1,2):
                 e[i] = float(i)/ftm1
@@ -2267,7 +2268,7 @@ class NPKData(object):
                 e[i+1] = float(size-i+1)/ftm2
         #if it == 1:
         #    e = as_float((1 + 1.0j)*e)
-        print "APOD_TM still to be doublechecked",e
+        print("APOD_TM still to be doublechecked",e)
         #return self.apod_apply(axis,e)
     #-------------------------------------------------------------------------------
     def apod_em(self, axis=0,lb=1.0):
@@ -2389,7 +2390,7 @@ class NPKData(object):
                 for i in xrange(self.size2):
                     self.buffer[:,i] = as_float(tf(self.buffer[:,i].copy())*vector)
         if self.dim == 3:
-            print "A VERIFIER"
+            print("A VERIFIER")
             if todo == 3:
                 self.buffer = as_float(tf(self.buffer)*vector)         # broadcast does its work
             if todo == 2:
@@ -2488,7 +2489,7 @@ class NPKData(object):
     def itoh(self,axis,value):
         todo = self.test_axis(axis)
         if self.dim == 1:
-            print "going for F1 , on ", value
+            print("going for F1 , on ", value)
             return self.axis1.itoh(value)
         elif self.dim == 2:
             return self.axes(todo).itoh(value)
@@ -2500,7 +2501,7 @@ class NPKDataTests(unittest.TestCase):
     name2D = filename("dosy-cluster2.gs2")       # Byteorder = big_endian
     def test_fft(self):
         " - Testing FFT methods - "
-        print self.test_fft.__doc__
+        print(self.test_fft.__doc__)
         x = np.arange(1024.0)
         E=NPKData(buffer=x)
         E.axis1.itype = 0
@@ -2512,14 +2513,14 @@ class NPKDataTests(unittest.TestCase):
         D2 = D.copy().phase(p,0).fftr()                             #.display(new_fig=False,label='fftr')
         D3 = D2.ifftr()                                             #.display(show=True,new_fig=False)
         D.phase(p,0).add(D3.mult(-1))                               #.display(show=True,label='difference sur les FID')
-        print "ecart max :",   np.max(D.get_buffer())
-        print "ecart moyen :", np.mean(D.get_buffer())
+        print("ecart max :",   np.max(D.get_buffer()))
+        print("ecart moyen :", np.mean(D.get_buffer()))
         self.assertTrue(np.max(D.get_buffer()) < 1E-14)
         self.assertTrue(np.mean(D.get_buffer()) < 1E-14)
 
     def test_load(self):
         " - Testing load methods"
-        print self.test_load.__doc__
+        print(self.test_load.__doc__)
         E=NPKData(name=self.name1D)
         self.assertAlmostEqual(E[0], 1869.4309082)
         self.assertAlmostEqual(E.get_buffer().max(), 603306.75)
@@ -2554,7 +2555,7 @@ class NPKDataTests(unittest.TestCase):
 
     def test_dampingunit(self):
         "test itod and dtoi"
-        print self.test_dampingunit.__doc__
+        print(self.test_dampingunit.__doc__)
         LA = LaplaceAxis( dmin = 10.0, dmax = 10000.0, dfactor = 35534.34765625)
         damping = LA.itod(50)
         point = LA.dtoi(damping)

@@ -1,4 +1,5 @@
 from .. util.debug_tools import* 
+from __future__ import print_function
 import numpy as np 
 import matplotlib.pyplot as plt
 from matplotlib.path import Path
@@ -17,7 +18,7 @@ class MOVE_WINDOW():                                                            
     so as to simplify all the procedures. 
     '''
     def __init__(self, display, interf, data, paramz, gtools, convert, stools):
-        print "in MOVE_WINDOW"
+        print("in MOVE_WINDOW")
         self.display = display
         self.interface = interf
         self.layoutC = self.interface.ui.layoutC
@@ -56,7 +57,7 @@ class MOVE_WINDOW():                                                            
         Moves  the profile line with mouse.
         '''
         if debug(self):
-            print 'in move_refreshC_line '
+            print('in move_refreshC_line ')
         zc = self.paramz.zoom_coord
         self.display.qmc.setCursor(QtGui.QCursor(QtGui.QPixmap(\
                 'spike/Visu/iconsUi/pencil-iconsm.jpg')))
@@ -75,12 +76,12 @@ class MOVE_WINDOW():                                                            
             try:
                 self.zplot.rectc.remove()                                                               # erases the zoom rectangle in canvas c
             except:
-                print "no self.zplot.rectc"
+                print("no self.zplot.rectc")
         if self.zplot.rectd is not None :
             try:
                 self.zplot.rectd.remove()                                                               # erases the zoom rectangle in canvas d
             except:
-                print "no self.zplot.rectd"
+                print("no self.zplot.rectd")
         zc = self.paramz.zoom_coord
         self.zplot.drawrect(zc[0], zc[1], dx, dy, self.layoutC, self.layoutD)                       # draw zoom rectangles in windows C and D
 
@@ -90,7 +91,7 @@ class MOVE_WINDOW():                                                            
         if drag mode, drags the whole window else changes its size.
         '''
         if debug(self):
-             print "in move_refreshC "
+             print("in move_refreshC ")
         zc = self.paramz.zoom_coord
         try :
             llx , lly = self.display.distrib(min, zc)
@@ -106,7 +107,7 @@ class MOVE_WINDOW():                                                            
                 self.move_refreshC_line(dx, dy)
             else : 
                 if debug(self):
-                     print "will make self.move_refreshC_rect "                                                                                 # draw zoom window in C and D
+                     print("will make self.move_refreshC_rect ")                                                                                 # draw zoom window in C and D
                 self.move_refreshC_rect(dx, dy)
                     
     def move_zoom_win(self, poswin, llx , lly, urx, ury):
@@ -149,15 +150,15 @@ class MOVE_WINDOW():                                                            
         Drags the zoom area with mouse
         '''
         if debug(self):
-            print "in moverectC "
+            print("in moverectC ")
         llx, lly, urx, ury = self.paramz.zoom_coord_old
         # self.gtools.param_zoom_right_order()
         
-        print "before shift llx, lly, urx, ury ", llx, lly, urx, ury
+        print("before shift llx, lly, urx, ury ", llx, lly, urx, ury)
         self.vecshift = list(self.paramz.zoom_diag_vector())
-        print "self.vecshift = ", self.vecshift
+        print("self.vecshift = ", self.vecshift)
         newllx, newlly, newurx, newury  = llx + self.vecshift[0], lly + self.vecshift[1], urx + self.vecshift[0], ury + self.vecshift[1]
-        print "after shift newllx, newlly, newurx, newury ", newllx, newlly, newurx, newury
+        print("after shift newllx, newlly, newurx, newury ", newllx, newlly, newurx, newury)
         self.paramz.zoom_coord = [newllx, newlly, newurx, newury] #
         self.zplot.drawrect(newllx, newlly, newurx, newury, layout1 = self.layoutC)             # draws zoom rectangle in C
         self.zplot.drawrect(newllx, newlly, newurx, newury, layout2 = self.layoutD)             # draws zoom rectangle in D
@@ -169,7 +170,7 @@ class MOVE_WINDOW():                                                            
         Takes care of the ration due to the changing resolution.
         '''
         if debug(self):
-            print "in moverectD "
+            print("in moverectD ")
         rapp2, rapp1 = (self.data.resmin.size2/float(self.display.currentd.size2),
                         self.data.resmin.size1/float(self.display.currentd.size1))                  # 
         winx = (urx - llx)/2; winy = (ury-lly)/2
@@ -184,7 +185,7 @@ class MOVE_WINDOW():                                                            
         winselect is the window in which we want to move the zoom rectangle it is "C " or "D"
         '''
         if debug(self):
-            print "in moverect "
+            print("in moverect ")
         llx, lly, urx, ury = self.gtools.param_zoom_right_order()
         if winselect == "D" :
              self.moverectD(poswin, llx , lly, urx, ury)

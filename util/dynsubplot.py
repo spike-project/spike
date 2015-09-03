@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 import unittest
 '''
@@ -61,7 +62,7 @@ class subpl():
     def __init__(self, nbsub_h = 1, which_plot = None):
         global plt
         if which_plot:
-            print "using injected pyplot"
+            print("using injected pyplot")
             plt = which_plot # possibility to replace plot by fakeplot with testplot.
         else:
             plt = globals()['plt']

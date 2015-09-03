@@ -69,6 +69,7 @@ if UsingSVN and UsingHG:
 
 ####################### End of configuration ###################
 from subprocess import Popen, PIPE
+from __future__ import print_function
 import re
 from datetime import date
 
@@ -161,7 +162,7 @@ report()
 
 def do(arg):
     "print and execute"
-    print " ".join(arg)
+    print(" ".join(arg))
     retcode = Popen(arg)
 
 def plier():
@@ -179,14 +180,14 @@ def plier():
 if __name__ == '__main__':
     # generate version file
     (version, revision, today) = generate_version()
-    print """
+    print("""
 =====================
 Generating version.py
 =====================
 Version      :  %s
 Revision Id  :  %s
 =====================
-"""%(version, revision)
+"""%(version, revision))
     generate_file("version.py")
 #    plier()
     # then tests

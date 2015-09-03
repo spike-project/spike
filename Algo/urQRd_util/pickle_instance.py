@@ -1,3 +1,4 @@
+from __future__ import print_function
 import copy_reg
 import types
 

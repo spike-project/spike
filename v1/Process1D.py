@@ -31,6 +31,7 @@
 """
 __author__ = "Marc A. Delsuc <delsuc@igbmc.fr>"
 __date__ = "Oct 2009"
+from __future__ import print_function
 import math
 from Generic import *
 
@@ -308,7 +309,7 @@ This macro realizes the FT operation on a 1D FID
         if ( p_in["lp_ext_algo"] == "burg" ):
             t=get_itype_1d() ; itype(1)     # assume to be complex, burg is not defined on real!
             burg( p_in["lp_ext_size"] )
-            print "BURG",p_in["lp_ext_size"],get_si1_1d(), get_order(), t
+            print("BURG",p_in["lp_ext_size"],get_si1_1d(), get_order(), t)
             itype(t)
 
         elif ( p_in["lp_ext_algo"] == "mirror" ):
@@ -676,14 +677,14 @@ This macro realizes the Post processing of a 1D spectrum
 
             elif (bcalgo == "polynomial"):  # bcorrpx determines which algo is used
                 if (get_debug()):
-                    print "Baseline correction not available in DEBUG mode"
+                    print("Baseline correction not available in DEBUG mode")
                 else:
                     bcorrp0()
                     bcorr(3)
 
             elif (bcalgo == "moving_average"):
                 if (get_debug()):
-                    print "Baseline correction not available in DEBUG mode"
+                    print("Baseline correction not available in DEBUG mode")
                 else:
                     bcorrp1()
                     bcorr(3)
@@ -961,7 +962,7 @@ This macro realizes the peak picking of a 1D spectrum
         com_max()
         mn = max(geta_max(1)/p_in["ratio_thresh"],p_in["noise_thresh"]*get_noise())
         minimax(mn, geta_max(1) + 1)
-        print "+++ minimax " + repr(mn) + " " + repr(geta_max(1)+1)
+        print("+++ minimax " + repr(mn) + " " + repr(geta_max(1)+1))
         
         f_out["low_limit"] = mn
         if (p_in["peak_sign"] == "negative"):
@@ -972,7 +973,7 @@ This macro realizes the peak picking of a 1D spectrum
         pkclear()
         peak()
         f_out["nb_detect_peaks"] = get_npk1d()
-        print "+++ detected " + repr(get_npk1d())
+        print("+++ detected " + repr(get_npk1d()))
         get("data")
         pkreset()
         audittrail( audit, "text", "Peak Picking applied",
@@ -1115,7 +1116,7 @@ This macro Computes integrales of a 1D spectrum
     else:
         audittrail( audit, "text", "using data in memory")
 
-    print "+++ ITYPE = " + repr(get_itype_1d())
+    print("+++ ITYPE = " + repr(get_itype_1d()))
     if ( get_itype_1d() == 1):
         real()
         audittrail( audit, "text", "complex data-set, removing the imaginary part")
@@ -1497,7 +1498,7 @@ def post_maxent_1d(  audit, filein, fileout, p_in, f_in, f_out):
     #     offset computed from the pivot points when using the offset algo
     if (key_is_true(p_in,"baseline")):
         if (get_debug()):
-            print "Baseline correction not available in DEBUG mode"
+            print("Baseline correction not available in DEBUG mode")
         else:
             toreal()
             pivots = "not used"

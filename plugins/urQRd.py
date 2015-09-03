@@ -1,4 +1,5 @@
 # plugin for urqrd
+from __future__ import print_function
 import unittest
 
 from spike.NPKData import NPKData_plugin,  as_cpx, as_float, _base_fft,\

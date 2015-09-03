@@ -7,6 +7,7 @@ Created by mac on 2012-02-27.
 Copyright (c) 2012 __NMRTEC__. All rights reserved.
 """
 
+from __future__ import print_function
 import os
 from os import path
 import sys
@@ -28,10 +29,10 @@ def set_config(paramdic, configfilename="process.mscf"):
                 config[section][item] = paramdic[item]
     config.write()  # c'est tout !
     if params != done:      # je laisse quand meme le test
-        print "WARNING, problem in %s"%configfilename
-        print "the following parameter(s) were not found, and thus not updated:"
+        print("WARNING, problem in %s"%configfilename)
+        print("the following parameter(s) were not found, and thus not updated:")
         for i in sparams.difference(done):      # contains element in sparams but not in done
-            print " - "+i
+            print(" - "+i)
 
 
 

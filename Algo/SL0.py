@@ -12,6 +12,7 @@ adapted to numpy by Marc-André on 2011-11-18.
 Copyright (c) 2011 IGBMC. All rights reserved.
 """
 
+from __future__ import print_function
 import numpy as np
 import scipy.fftpack as fft
 import unittest
@@ -115,7 +116,7 @@ def SL0(A, x, sigma_min, sigma_decrease_factor=0.5, mu_0=2, L=3, A_pinv=None, tr
             s -=  np.dot(A_pinv, np.dot(A,s)-x)   # Projection
     
         if true_s is not None:
-            print '     sigma=%f, SNR=%f' % (sigma,estimate_SNR(s,true_s))
+            print('     sigma=%f, SNR=%f' % (sigma,estimate_SNR(s,true_s)))
     
         sigma = sigma * sigma_decrease_factor
     return s
@@ -148,7 +149,7 @@ def SL0FT(A, x, sigma_min, sigma_decrease_factor=0.5, mu_0=2, L=3, A_pinv=None, 
             s -=  ttrans(trans(s)-x)   # Projection
     
         if true_s is not None:
-            print '     sigma=%f, SNR=%f' % (sigma,estimate_SNR(s,true_s))
+            print('     sigma=%f, SNR=%f' % (sigma,estimate_SNR(s,true_s)))
     
         sigma = sigma * sigma_decrease_factor
     return s
@@ -178,10 +179,10 @@ class transformations(object):
         return x
     def check(self):
         if self.debug:
-            print """
+            print("""
 size_image: %d - size_mesure: %d
 sampling
-%s"""%(self.size_image, self.size_mesure, str(self.sampling))
+%s"""%(self.size_image, self.size_mesure, str(self.sampling)))
         if self.sampling is not None:
             assert(len(self.sampling) == self.size_mesure)
             assert(max(self.sampling) <= self.size_image)
@@ -210,44 +211,44 @@ sampling
         ft()     : s->x - fft.ifft by default - should not change size
         post_ft() : x->x - typically : broadening, sampling, truncating, etc...
         """
-        if self.debug: print 'entering trans', s.shape
+        if self.debug: print('entering trans', s.shape)
         if self.pre_ft != self.Id:
-            if self.debug: print 'trans pre_ft'
+            if self.debug: print('trans pre_ft')
             s = self.pre_ft(s)
         x = self.ft(s)
         if self.post_ft != self.Id:
-            if self.debug: print 'trans post_ft'
+            if self.debug: print('trans post_ft')
             x = self.post_ft(x)
         if self.sampling is not None:
-            if self.debug: print 'trans sample'
+            if self.debug: print('trans sample')
             x = self.sample(x)
         if self.size_mesure != len(x):      # eventually truncate
-            if self.debug: print 'trans trunc'
+            if self.debug: print('trans trunc')
             x = x[0:self.size_mesure]
-        if self.debug: print 'exiting trans', x.shape
+        if self.debug: print('exiting trans', x.shape)
         return x
     def ttransform(self, x):
         """
         the transpose of transform
         transform x to s
         """
-        if self.debug: print 'entering ttrans', x.shape, x.dtype
+        if self.debug: print('entering ttrans', x.shape, x.dtype)
         if self.sampling is not None:
-            if self.debug: print 'ttrans sample'
+            if self.debug: print('ttrans sample')
             x = self.tsample(x)
         elif self.size_image != len(x):      # eventually zerofill
-            if self.debug: print 'ttrans zerofill',len(x),self.size_image
+            if self.debug: print('ttrans zerofill',len(x),self.size_image)
             xx = np.zeros(self.size_image, dtype='complex')
             xx[:len(x)] = x[:]
             x = xx
         if self.tpost_ft != self.Id:
-            if self.debug: print 'ttrans tpost_ft'
+            if self.debug: print('ttrans tpost_ft')
             x = self.tpost_ft(x)
         s = self.tft(x)
         if self.tpre_ft != self.Id:
-            if self.debug: print 'ttrans tpre_ft'
+            if self.debug: print('ttrans tpre_ft')
             s = self.tpre_ft(s)
-        if self.debug: print 'exiting ttrans', s.shape
+        if self.debug: print('exiting ttrans', s.shape)
         return s
 def SL0gene(transf, ttransf, x, sigma_min, sigma_decrease_factor=0.5, mu_0=2, L=3, true_s=None):
     """
@@ -267,7 +268,7 @@ def SL0gene(transf, ttransf, x, sigma_min, sigma_decrease_factor=0.5, mu_0=2, L=
     """
     s = ttransf(x)
     sigma = 2*max(np.abs(s))
-    print "sigma initial:", sigma
+    print("sigma initial:", sigma)
     # Main Loop
     while sigma>sigma_min:
         for i in range(L):
@@ -276,9 +277,9 @@ def SL0gene(transf, ttransf, x, sigma_min, sigma_decrease_factor=0.5, mu_0=2, L=
             s -=  ttransf(transf(s)-x)   # Projection
     
         if true_s is not None:
-            print '     sigma=%f, SNR=%f' % (sigma,estimate_SNR(s,true_s))
+            print('     sigma=%f, SNR=%f' % (sigma,estimate_SNR(s,true_s)))
         else:
-            print '     sigma=%f' % (sigma)
+            print('     sigma=%f' % (sigma))
         sigma = sigma * sigma_decrease_factor
     return s
 def OurDelta(s,sigma):

@@ -2,6 +2,7 @@
 This file implements all the tools for handling Orbitrap data-sets
 
 To use it :
+from __future__ import print_function
 import Orbitrap
 d = Orbitrap.OrbiData(...)    # There are several possible initialisation : empty, from file
 play with d
@@ -98,7 +99,7 @@ class OrbiData(FTMS.FTMSData):
             raise Exception("2D Orbitrap is not physcally defined (yet ?)")
         if name:
             if name.endswith(".msh5"):  # try loading .msh5 file
-                if debug>0: print "reading msh5"
+                if debug>0: print("reading msh5")
                 H = HDF5File(name,"r")
                 H.load(mode=mode)      # load into memory by default !
                 super(OrbiData, self).__init__(buffer=H.data.buffer, debug=debug)
@@ -108,12 +109,12 @@ class OrbiData(FTMS.FTMSData):
             else:
                 raise Exception("Filename should have a .msh5 extension")
         else:
-            if debug>0: print "calling super"
+            if debug>0: print("calling super")
             super(OrbiData, self).__init__(dim=dim, shape=shape, buffer = buffer, name = name, debug=debug)
             for i in range(self.dim):
                 axis = self.axes(i+1)
                 setattr(self, "axis%d"%(i+1), OrbiAxis(size=axis.size, itype=0) )
-        if debug>1: print self.report()
+        if debug>1: print(self.report())
 
 
 #-------------------------------------------------------------------------------
@@ -122,7 +123,7 @@ class Orbi_Tests(unittest.TestCase):
         self.verbose = 1    # verbose > 0 switches messages on
     def announce(self):
         if self.verbose >0:
-            print "\n========",self.shortDescription(),'==============='
+            print("\n========",self.shortDescription(),'===============')
     def test_atob(self):
         "testing unit conversion functions"
         self.announce()
@@ -133,10 +134,10 @@ class Orbi_Tests(unittest.TestCase):
         self.assertAlmostEqual(123**2*Oaxis.itomz(123), 321**2*Oaxis.itomz(321))    # verify that f*m/z is constant !
         self.assertAlmostEqual(123*Oaxis.mztoi(123)**2, 321*Oaxis.mztoi(321)**2)    # verify that f*m/z is constant !
         for i in (1,2):
-            print Oaxis.report()
-            print Oaxis._report()   # low level report
+            print(Oaxis.report())
+            print(Oaxis._report())   # low level report
             for x in (1.0, 301.0, Oaxis.size-20.0, Oaxis.size-1.0):    # last point is size-1 !!!
-                print "point at index %d is at freq %f, m/z %f"%(x, Oaxis.itoh(x), Oaxis.itomz(x))
+                print("point at index %d is at freq %f, m/z %f"%(x, Oaxis.itoh(x), Oaxis.itomz(x)))
                 self.assertAlmostEqual(Oaxis.mztoi(Oaxis.itomz(x)), x)
                 self.assertAlmostEqual(Oaxis.itoh(Oaxis.htoi(x)), x)
             Oaxis.extract([300,-20])
@@ -150,7 +151,7 @@ class Orbi_Tests(unittest.TestCase):
         O.ref_mass = 344.0974
         O.ref_freq = 419620.0
         O.highmass = 1000.0
-        print O.report()
+        print(O.report())
         l1 = int(O.axis1.mztoi(O.axis1.highmass))
         l2 = int(O.axis2.mztoi(O.axis2.highmass))
         O.trimz()
@@ -158,7 +159,7 @@ class Orbi_Tests(unittest.TestCase):
         self.assertEqual(l2, O.axis2.left_point)
         self.assertEqual(O.size1, 500-l1)
         self.assertEqual(O.size2, 10000-l2)
-        print "2D trimz gain is : %d %%" % (100*(1-(O.size1*O.size2/(500.*10000))))
+        print("2D trimz gain is : %d %%" % (100*(1-(O.size1*O.size2/(500.*10000)))))
 
 #-------------------------------------------------------------------------------
 if __name__ == '__main__':

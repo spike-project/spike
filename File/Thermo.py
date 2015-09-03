@@ -8,6 +8,7 @@
 __author__ = "Marc André Delsuc"
 __date__ = "april 2014"
 
+from __future__ import print_function
 import os
 import unittest
 import numpy as np
@@ -51,7 +52,7 @@ def read_param(F):
             break
         v = l.rstrip().split(':')       # remove trailing chars and split around :
         if len(v)<2:    # comment lines
-            print l
+            print(l)
         else:
             dic[v[0]] = v[1].lstrip()    # metadata lines
     return dic
@@ -65,7 +66,7 @@ def read_data(F, typ='float'):
     for l in F:
         pos += len(l)
         if l.startswith("Data Points"):
-            print re.findall(r'\d+', l)[0]
+            print(re.findall(r'\d+', l)[0])
         if l.startswith("Data:"):
             break
     F.seek(pos)
@@ -90,7 +91,7 @@ class Thermo_Tests(unittest.TestCase):
         self.verbose = 1    # verbose > 0 switches messages on
     def announce(self):
         if self.verbose >0:
-            print "\n========",self.shortDescription(),'==============='
+            print("\n========",self.shortDescription(),'===============')
     #-------------------------------------------------
 
 if __name__ == '__main__':

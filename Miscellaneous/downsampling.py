@@ -7,6 +7,7 @@ This program realises the processing of an FTICR data
 Created by Marc-André on 2011-09-23.
 Copyright (c) 2011 IGBMC. All rights reserved.
 """
+from __future__ import print_function
 import sys
 import os
 import unittest
@@ -57,7 +58,7 @@ def pred_sizes(d0, zf=0, sizemin=SIZEMIN):
     r = []      # will build into r
     for i in range(d0.dim):
         r.append( dopow2(d0.axes(i+1).size, zf, sizemin)) # apply l() for each axes
-    if debug>0: print r, reduce(lambda x,y:x*y, r)/1024/1024, 'Mpoint'     # report if debug
+    if debug>0: print(r, reduce(lambda x,y:x*y, r)/1024/1024, 'Mpoint')     # report if debug
     return tuple(r)
 
 def comp_sizespow2(d0,  zflist, largest = LARGESTDATA, sizemin=SIZEMIN, vignette=True):
@@ -73,7 +74,7 @@ def comp_sizespow2(d0,  zflist, largest = LARGESTDATA, sizemin=SIZEMIN, vignette
         (si1,si2) = sz
         while si1*si2 > largest:
             si2 /= 2
-            print "Warning, reducing SI2 to %s"%si2
+            print("Warning, reducing SI2 to %s"%si2)
         sz = (si1,si2)
         if not sz in sizes:     # insure this size is not here yet ! 
             sizes.append(sz)
@@ -129,13 +130,13 @@ def comp_sizes(d0,  zflist, largest = LARGESTDATA, sizemin=SIZEMIN, vignette=Tru
        (si1,si2) = sz
        while si1*si2 > largest:
            si2 /= 2
-           print "Warning, reducing SI2 to %s"%si2
+           print("Warning, reducing SI2 to %s"%si2)
        sz = (si1,si2)
        if not sz in sizes:     # insure this size is not here yet ! 
            sizes.append(sz)
     if vignette:
-       print "############################"
-       print "nearfactor(d0.axes(1).size,sizemin)",nearfactor(d0.axes(1).size,sizemin)
+       print("############################")
+       print("nearfactor(d0.axes(1).size,sizemin)",nearfactor(d0.axes(1).size,sizemin))
        sz = (nearfactor(d0.axes(1).size,sizemin), nearfactor(d0.axes(2).size,sizemin))
        if not sz in sizes:
            sizes.append(sz)
@@ -161,17 +162,17 @@ def do_proc_F2(dinp, doutp):
     widgets = ['Processing F2: ', pg.Percentage(), ' ', pg.Bar(marker='-',left='[',right=']'), pg.ETA()]
     pbar= pg.ProgressBar(widgets=widgets, maxval=scan) #, fd=sys.stdout)
     
-    print "dinp.axis1.itype ",dinp.axis1.itype 
-    print "dinp.axis2.itype ",dinp.axis2.itype
-    print "doutp.axis1.itype ",doutp.axis1.itype 
-    print "doutp.axis2.itype ",doutp.axis2.itype
+    print("dinp.axis1.itype ",dinp.axis1.itype) 
+    print("dinp.axis2.itype ",dinp.axis2.itype)
+    print("doutp.axis1.itype ",doutp.axis1.itype) 
+    print("doutp.axis2.itype ",doutp.axis2.itype)
     
-    print "dinp.axis1.size ",dinp.axis1.size 
-    print "dinp.axis2.size ",dinp.axis2.size 
-    print "doutp.axis1.size ",doutp.axis1.size 
-    print "doutp.axis2.size ",doutp.axis2.size 
-    print doutp.report()
-    print dir(doutp)
+    print("dinp.axis1.size ",dinp.axis1.size) 
+    print("dinp.axis2.size ",dinp.axis2.size) 
+    print("doutp.axis1.size ",doutp.axis1.size) 
+    print("doutp.axis2.size ",doutp.axis2.size) 
+    print(doutp.report())
+    print(dir(doutp))
    
     
     for i in xrange( scan):
@@ -272,13 +273,13 @@ def do_proc_F1_flip_modu(dinp, doutp, parameter, nproc=None):
     shift = doutp.axis1.mztoi( doutp.axis1.highmass )   # frequency shift in points, computed from location of highmass
     hshift = doutp.axis1.itoh(shift)                    # the same in Hz
     rot = dinp.axis1.mztoi( dinp.axis1.highmass )       # but correction is applied in the starting space
-    print "LEFT_POINT", shift
+    print("LEFT_POINT", shift)
     doutp.axis1.left_point = shift      
     doutp.axis1.specwidth += hshift    # correction of specwidth
     if mpiutil.MPI_size>1:      # MAD : KLUDGE
         nproc = 0
     if nproc==None:
-        print  "doutp.axis1.itype ",doutp.axis1.itype
+        print("doutp.axis1.itype ",doutp.axis1.itype)
         d = FTICRData( buffer=np.zeros((dinp.size1,2)) )     # 2 columns - used for hypercomplex modulus 
         for i in xrange( scan ):
             for off in (0,1):
@@ -326,8 +327,8 @@ def do_process2D(dinp, datatemp, doutp, parameter, nproc=None):
     """
     if debug>0:
         for f,d in ((parameter.infile,dinp), (parameter.interfile,datatemp), (parameter.outfile,doutp)):
-            print "----------",f
-            print d
+            print("----------",f)
+            print(d)
     # in F2
     if parameter.do_F2:
         do_proc_F2(dinp, datatemp)
@@ -353,9 +354,9 @@ def downsample2D(data, outp, n1, n2):
     ** Not tested on non powers of 2 **
     
     """
-    print "downsampling"
-    print "data.row(0).buffer ",data.row(0).buffer
-    print data.report()
+    print("downsampling")
+    print("data.row(0).buffer ",data.row(0).buffer)
+    print(data.report())
     ooo
   
     # for i in xrange(0, data.size1, n1):
@@ -370,13 +371,13 @@ def downsample2D(data, outp, n1, n2):
         
         for j in xrange(n1):
             yy = decimate(data.row(i+j).buffer, n2,ftype="fir")   # filter along F2
-            print "data.row(i+j).buffer ",data.row(i+j).buffer
-            print "yy ",yy
+            print("data.row(i+j).buffer ",data.row(i+j).buffer)
+            print("yy ",yy)
             #print "yy.size",yy.size
             #print "yy[n2/2:None:n2].size ",yy[n2/2:None:n2].size
             temp += yy#[n2/2:None:n2]
         outp.buffer[i/n1,:] = (1.0/n1)*temp
-        print "########## outp.buffer[i/n1,:] ",outp.buffer[i/n1,:]
+        print("########## outp.buffer[i/n1,:] ",outp.buffer[i/n1,:])
         
     copyaxes(data, outp)
     outp.axis1.left_point = outp.axis1.left_point/n1
@@ -386,7 +387,7 @@ def downsample2D(data, outp, n1, n2):
 
 def load_input(name):
     """load input file and returns it, in read-only mode"""
-    if debug>0: print "reading", name
+    if debug>0: print("reading", name)
     hf = HDF5File(name, "r")    # reading the data 
     d0 = hf.load()
     return d0
@@ -445,20 +446,20 @@ class Proc_Parameters(object):
         
     def report(self):
         "print a formatted report"
-        print "------------ processing parameters ------------------"
+        print("------------ processing parameters ------------------")
         for i in dir(self):
             if not i.startswith('_'):
                 v = getattr(self,i)
                 if not callable(v):
-                    print i, ' :', v
-        print "-----------------------------------------------------"
+                    print(i, ' :', v)
+        print("-----------------------------------------------------")
 
 ########################################################################################
 class Test(unittest.TestCase):
     """tests """        
     def test_zf(self):
         "testing zerofilling computation"
-        print self.test_zf.__doc__
+        print(self.test_zf.__doc__)
         d = FTICRData(dim=2)
         d.axis1.size = 1024
         d.axis2.size = 16*1024
@@ -469,23 +470,23 @@ class Test(unittest.TestCase):
         main(["prgm", "test.mscf",])
 
 def Report_Table_Param():
-    print "---------------SETTINGS---------------------"
-    print "| MAX_COLUMNS ",tables.parameters.MAX_COLUMNS
-    print "| MAX_NODE_ATTRS " ,tables.parameters.MAX_NODE_ATTRS
-    print "| MAX_GROUP_WIDTH ",tables.parameters.MAX_GROUP_WIDTH
-    print "| MAX_UNDO_PATH_LENGTH ",tables.parameters.MAX_UNDO_PATH_LENGTH
-    print "| CHUNK_CACHE_NELMTS ",tables.parameters.CHUNK_CACHE_NELMTS
-    print "| CHUNK_CACHE_PREEMPT " , tables.parameters.CHUNK_CACHE_PREEMPT 
-    print "| CHUNK_CACHE_SIZE ", tables.parameters.CHUNK_CACHE_SIZE 
-    print "| METADATA_CACHE_SIZE ", tables.parameters.METADATA_CACHE_SIZE 
-    print "| NODE_CACHE_SLOTS ", tables.parameters.NODE_CACHE_SLOTS
-    print "| IO_BUFFER_SIZE ",tables.parameters.IO_BUFFER_SIZE
-    print "| BUFFER_TIMES ",tables.parameters.BUFFER_TIMES 
-    print "| EXPECTED_ROWS_EARRAY ",tables.parameters.EXPECTED_ROWS_EARRAY
-    print "| EXPECTED_ROWS_TABLE ",tables.parameters.EXPECTED_ROWS_TABLE
-    print "| PYTABLES_SYS_ATTRS ",tables.parameters.PYTABLES_SYS_ATTRS
-    print "| MAX_THREADS ",tables.parameters.MAX_THREADS 
-    print "---------------SETTINGS---------------------"
+    print("---------------SETTINGS---------------------")
+    print("| MAX_COLUMNS ",tables.parameters.MAX_COLUMNS)
+    print("| MAX_NODE_ATTRS " ,tables.parameters.MAX_NODE_ATTRS)
+    print("| MAX_GROUP_WIDTH ",tables.parameters.MAX_GROUP_WIDTH)
+    print("| MAX_UNDO_PATH_LENGTH ",tables.parameters.MAX_UNDO_PATH_LENGTH)
+    print("| CHUNK_CACHE_NELMTS ",tables.parameters.CHUNK_CACHE_NELMTS)
+    print("| CHUNK_CACHE_PREEMPT " , tables.parameters.CHUNK_CACHE_PREEMPT) 
+    print("| CHUNK_CACHE_SIZE ", tables.parameters.CHUNK_CACHE_SIZE) 
+    print("| METADATA_CACHE_SIZE ", tables.parameters.METADATA_CACHE_SIZE) 
+    print("| NODE_CACHE_SLOTS ", tables.parameters.NODE_CACHE_SLOTS)
+    print("| IO_BUFFER_SIZE ",tables.parameters.IO_BUFFER_SIZE)
+    print("| BUFFER_TIMES ",tables.parameters.BUFFER_TIMES) 
+    print("| EXPECTED_ROWS_EARRAY ",tables.parameters.EXPECTED_ROWS_EARRAY)
+    print("| EXPECTED_ROWS_TABLE ",tables.parameters.EXPECTED_ROWS_TABLE)
+    print("| PYTABLES_SYS_ATTRS ",tables.parameters.PYTABLES_SYS_ATTRS)
+    print("| MAX_THREADS ",tables.parameters.MAX_THREADS) 
+    print("---------------SETTINGS---------------------")
 
 def Set_Table_Param():
 #    if debug>0: return
@@ -504,7 +505,7 @@ def print_time(t,st="Processing time"):
     h = int(t/3600)
     m = int ((t-3600*h)/60)
     s = int(t-3600*h - 60*m)
-    print " %s : %d:%02d:%02d"%(st,h,m,s)
+    print(" %s : %d:%02d:%02d"%(st,h,m,s))
 
 def main(argv=None):
     """
@@ -524,12 +525,12 @@ def main(argv=None):
         configfile = argv[1]
     except IndexError:          # then assume standard name
         configfile = "process.mscf"
-    print "using %s as configuration file"%configfile
+    print("using %s as configuration file"%configfile)
     
     #### get parameters from configuration file - store them in a parameter object
     cp = NPKConfigParser()
     cp.readfp(open(configfile))
-    print "reading config file"
+    print("reading config file")
     param = Proc_Parameters(cp)
     param.report()
     # get optionnal parameters
@@ -543,7 +544,7 @@ def main(argv=None):
     ### input file either raw to be imported or already imported
     imported = False
     if not os.path.exists(param.infile):
-        print "importing %s into %s"%(dir,param.infile)
+        print("importing %s into %s"%(dir,param.infile))
         d0 = Import_2D(param.apex, param.infile)
         imported = True
         if opt_param != {}: # if some parameters were overloaded in config file
@@ -555,16 +556,16 @@ def main(argv=None):
                 if item.startswith('F1_'):
                     fileitem = item[3:]
                     hf.axes_update(axis = 1, infos = {fileitem:opt_param[item]})
-                    print "Updating axis F1 %s to %f"%(fileitem, opt_param[item])
+                    print("Updating axis F1 %s to %f"%(fileitem, opt_param[item]))
                 elif item.startswith('F2_'):
                     fileitem = item[3:]
                     hf.axes_update(axis = 2, infos = {fileitem:opt_param[item]})
-                    print "Updating axis F2 %s to %f"%(fileitem, opt_param[item])
+                    print("Updating axis F2 %s to %f"%(fileitem, opt_param[item]))
                 else:
                     fileitem = item[3:]
                     hf.axes_update(axis = 1, infos = {item:opt_param[item]})
                     hf.axes_update(axis = 2, infos = {item:opt_param[item]})
-                    print "Updating all axes %s to %f"%(item, opt_param[item])
+                    print("Updating all axes %s to %f"%(item, opt_param[item]))
             hf.close()
             d0 = load_input(param.infile)
     else:
@@ -578,19 +579,19 @@ def main(argv=None):
     Set_Table_Param()
     if debug>0:
         Report_Table_Param()
-        print d0.report()
+        print(d0.report())
     
     ### compute final sizes
     allsizes = comp_sizes(d0, param.zflist, largest=param.largest)
-    print "allsizes ",allsizes
-    if debug>0: print allsizes
+    print("allsizes ",allsizes)
+    if debug>0: print(allsizes)
     
     (sizeF1, sizeF2) = allsizes.pop(0)   # this is the largest, to be processed by FT
     
     ### prepare intermediate file
     if param.interfile is None:     # We have to create one !
         interfile = os.path.join(param.tempdir,'tmpfile.msh5')
-        print "creating TEMPFILE:",interfile
+        print("creating TEMPFILE:",interfile)
     else:
         interfile = param.interfile
     
@@ -619,10 +620,10 @@ def main(argv=None):
         hfar.create_from_template(d1, group)
     else:
         d1 = None
-    print """
+    print("""
 =============================
 processing FT
-============================="""
+=============================""")
     t0 = time.time()
     if param.do_F1:
         hfar.axes_update(group = group,axis = 1, infos = {'specwidth':d1.axis1.specwidth, 'left_point':int(d1.axis1.left_point)})
@@ -631,38 +632,38 @@ processing FT
         temp.close()
         os.unlink(interfile)
     
-    print "==  FT Processing finished  =="
+    print("==  FT Processing finished  ==")
     print_time(time.time()-t0, "FT processing time")
     if param.do_F1:
         down = None
         t0 = time.time()
         for (i, (sizeF1, sizeF2)) in enumerate(allsizes):
-            print "d1.size1,sizeF1 ", d1.size1,sizeF1
-            print "d1.size2,sizeF2 ", d1.size2,sizeF2
+            print("d1.size1,sizeF1 ", d1.size1,sizeF1)
+            print("d1.size2,sizeF2 ", d1.size2,sizeF2)
             if (d1.size1%sizeF1) != 0 or  (d1.size2%sizeF2) != 0:
-                print "downsampling not available for level %d : %d x %d -> %d x %d"%(param.zflist[i+1], d1.size1, d1.size2, sizeF1, sizeF2)
+                print("downsampling not available for level %d : %d x %d -> %d x %d"%(param.zflist[i+1], d1.size1, d1.size2, sizeF1, sizeF2))
                 break
             try:
                 zflevel = "level %d"%param.zflist[i+1]
             except IndexError:
                 zflevel = "vignette"
-            print """
+            print("""
 ================
 downsampling %s
-================""" % zflevel
+================""" % zflevel)
             group = 'resol%d'%(i+2)     # +2 because we poped the first value
-            if debug>1: print "downsampling", group, (sizeF1, sizeF2)
+            if debug>1: print("downsampling", group, (sizeF1, sizeF2))
             down = FTICRData( dim=2 )   # create dummy 2D
             copyaxes(d1, down)        # copy axes from d0 to d1
             down.axis1.size = sizeF1
             down.axis2.size = sizeF2
             #create_branch(hfar, group, d1)
             hfar.create_from_template(down, group)
-            if debug>0: print down
+            if debug>0: print(down)
             downsample2D(d1, down, d1.size1/sizeF1, d1.size2/sizeF2)
             hfar.axes_update(group = group,axis = 1, infos = {'left_point':down.axis1.left_point})
         print_time(time.time()-t0, "Downsampling time")
-    print "== Processing finished  =="
+    print("== Processing finished  ==")
     print_time(time.time()-t00, "Total processing time")
 
 # default values

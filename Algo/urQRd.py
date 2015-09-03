@@ -46,6 +46,7 @@ version 2.0
 28/oct/2013
 """
 
+from __future__ import print_function
 import numpy as np
 import numpy.linalg as linalg
 from numpy.fft import fft, ifft
@@ -103,7 +104,7 @@ def urQRd(data, k, orda = None, iterations = 1, optk = False, trick = False, ktr
     if (2*orda > data.size):                                            # checks if orda not too large.
         raise(Exception('order is too large'))
     if (k >= orda):                                                     # checks if rank not too large
-        print 'type(k) ', type(k)
+        print('type(k) ', type(k))
         raise(Exception('rank is too large, or k has a wrong type'))
     N = len(data)-orda + 1
     dd = data.copy()
@@ -242,11 +243,11 @@ class OPTK(object):
         if self.fid.dtype == 'complex':
             self.spec = mfft(self.fid)
             if self.debug:
-                print "complex fid"
+                print("complex fid")
         elif self.fid.dtype == 'float':
             self.spec = mrfft(self.fid)
             if self.debug:
-                print "real fid"
+                print("real fid")
         self.spec_trunc = self.spec.copy()
         self.noiselev = findnoiselevel(self.spec, nbseg = 10)                           # finds noise level
         ###
@@ -256,13 +257,13 @@ class OPTK(object):
         mean_level = restpeaks.mean()
         self.noiselev += mean_level
         if self.debug:
-            print "noiseleve found is ", self.noiselev 
+            print("noiseleve found is ", self.noiselev) 
         self.spec_trunc[self.spec < self.above_noise*self.noiselev] = 0                 # truncates spectrum under noise level
         peaks = self.peaks1d(self.spec, threshold = self.above_noise*self.noiselev)
         self.estim_nbpeaks = len(peaks)
         if self.debug:
-            print "self.estim_nbpeaks ", self.estim_nbpeaks
-            print "self.above_noise*self.noiselev ", self.above_noise*self.noiselev
+            print("self.estim_nbpeaks ", self.estim_nbpeaks)
+            print("self.above_noise*self.noiselev ", self.above_noise*self.noiselev)
 
     def find_best_rank(self):
         '''
@@ -274,7 +275,7 @@ class OPTK(object):
         minval = (diff).min()
         optk = list(diff).index(minval)
         if self.debug:
-            print "optimal rank is ", optk
+            print("optimal rank is ", optk)
         return optk
 
     def peaks1d(self, fid, threshold = 0.1):
@@ -309,26 +310,26 @@ def test_urQRd_gene(
     nb_iterat = nb_iterat
 
     ###########
-    print "=== Running rQR algo ===",
-    print "lendata:", lendata,
-    print " orda:", orda,
-    print ' rank:', rank
+    print("=== Running rQR algo ===", end=' ')
+    print("lendata:", lendata, end=' ')
+    print(" orda:", orda, end=' ')
+    print(' rank:', rank)
     data = fid_signoise_type(nbpeaks,lendata, noise, noisetype)                 # noisy signal
     fdatanoise = mfft(data)
     noise = 0
     data0 = fid_signoise_type(nbpeaks,lendata, noise, noisetype)                # clean signal
     fdata = mfft(data0)
     iSNR = SNR_dB(data,data0)
-    print "Initial Noisy Data SNR: %.2f dB - noise type : %s"%(iSNR, noisetype)
+    print("Initial Noisy Data SNR: %.2f dB - noise type : %s"%(iSNR, noisetype))
     t0 = time.time()
     dataurqrd = urQRd(data, k = rank, orda = orda, optk = False, iterations = nb_iterat, trick = trick )                  # denoise signal with urQRd
     turQRd = time.time()-t0
     fdataurqrd  = mfft(dataurqrd )# FFT of urQRd denoised signal
-    print "=== Result ==="
+    print("=== Result ===")
     fSNR = SNR_dB(dataurqrd, data0)
-    print "Denoised SNR: %.2f dB  - processing gain : %.2f dB"%( fSNR, fSNR-iSNR )
-    print "processing time for urQRd : %f sec"%turQRd
-    print fSNR-iSNR
+    print("Denoised SNR: %.2f dB  - processing gain : %.2f dB"%( fSNR, fSNR-iSNR ))
+    print("processing time for urQRd : %f sec"%turQRd)
+    print(fSNR-iSNR)
     #####
     sub = subpl(2, plt)
     sub.next()
@@ -402,7 +403,7 @@ class urQRd_Tests(unittest.TestCase):
         orda = lengthfid/4
         optrk = OPTK(fid, orda = orda, debug = True)    # instantiate the class                    
         optk = optrk.find_best_rank()   # optimal rank estimation.                                          
-        print "optk", optk
+        print("optk", optk)
         self.assertAlmostEqual(optk, 66, 0)
         plt.show()
                            

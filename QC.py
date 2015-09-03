@@ -8,6 +8,7 @@ Copyright (c) 2011 IGBMC. All rights reserved.
 """
 
 from subprocess import Popen, PIPE
+from __future__ import print_function
 import sys
 import re
 #import glob
@@ -17,9 +18,9 @@ ARGS = ["--rcfile=rcpylint"]
 
 def msg(string, sep='='):
     "print string in a box"
-    print sep*(len(string)+4)
-    print '|', string, '|'
-    print sep*(len(string)+4)
+    print(sep*(len(string)+4))
+    print('|', string, '|')
+    print(sep*(len(string)+4))
 
 def tracked_files(excluded=('none',)):
     """return list of hg tracked files in folder as a tuple : (all,modified) 
@@ -40,7 +41,7 @@ def tracked_files(excluded=('none',)):
         fname = sp[1]
         for pat in excluded:
             if fnmatch.fnmatch(fname, pat): # find pattern
-                print "excluding", fname
+                print("excluding", fname)
                 cont = True
         if cont:
             continue
@@ -76,9 +77,9 @@ def find_depedencies(reader):
             break
         m = re.search(r"^\s*(\w+)", l)
         if m:
-            print m.group(1)
+            print(m.group(1))
             dep.add(m.group(1))
-    print dep
+    print(dep)
     return dep
 
 def run_pylint(fich):
@@ -124,11 +125,11 @@ def process(files):
     stats = {}
     for f in files:
         if f.endswith('.py'):
-            print "checking %s"%f
+            print("checking %s"%f)
             res = run_pylint(f)
             stats[f] = res
         else:
-            print "excluding", f
+            print("excluding", f)
     return stats
 def processmp(files):
     "apply pylint to files in a multiprocessing manner"
@@ -198,16 +199,16 @@ def report(stats, modif):
 
 def message():
     "print pylint command"
-    print "    to run pylint, type :"
-    print CMD, 
+    print("    to run pylint, type :")
+    print(CMD, end=' ') 
     for a in ARGS:
-        print a,
-    print "filename.py"
-    print "    to check only errors, type :"
-    print CMD, "-E",
+        print(a, end=' ')
+    print("filename.py")
+    print("    to check only errors, type :")
+    print(CMD, "-E", end=' ')
     for a in ARGS:
-        print a,
-    print "filename.py"
+        print(a, end=' ')
+    print("filename.py")
     
 def main(excluded = ['.hgignore',], files = 'hg'):
     """does the work
@@ -223,10 +224,10 @@ def main(excluded = ['.hgignore',], files = 'hg'):
     if modif:
         msg("Warning, the following files are modified but not commited", sep="*")
         for i in modif:
-            print i
+            print(i)
     stats = process(hg)
     t = report(stats, modif)
-    print t
+    print(t)
     F = open("QC.txt","w")
     F.write(t)
     F.close()
