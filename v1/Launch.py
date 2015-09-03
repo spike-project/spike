@@ -1,3 +1,4 @@
+from __future__ import print_function
 """
 Processing of NMR data-sets
 
@@ -159,7 +160,7 @@ __author__ = "Marc A. Delsuc <delsuc@igbmc.fr>"
 __date__ = "Oct 2009"
 
 
-from __future__ import print_function
+
 import sys
 import time
 import re

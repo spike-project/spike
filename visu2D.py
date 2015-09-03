@@ -1,3 +1,4 @@
+from __future__ import print_function
 # encoding: utf-8
 """
 Created by Marc Andre Delsuc & Lionel Chiron on 2011-05-19.
@@ -5,7 +6,7 @@ Copyright (c) 2011 IGBMC. All rights reserved.
 ###
 Program for visualizing FTICR2D data. 
 """
-from __future__ import print_function
+
 import sys, os
 
 from .Visu.Load import LOAD #

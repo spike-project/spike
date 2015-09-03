@@ -1,10 +1,11 @@
+from __future__ import print_function
 """
 set of function for the baseline correction
 
 Very Sloppy - Not finsihed !
 """
 
-from __future__ import print_function
+
 import numpy as np
 from scipy import interpolate
 from scipy.optimize import leastsq

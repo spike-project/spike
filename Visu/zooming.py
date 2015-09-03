@@ -1,5 +1,6 @@
-from .. util.debug_tools import*
 from __future__ import print_function
+from .. util.debug_tools import*
+
 import json, io
 import numpy as np
 import scipy.interpolate as spinterp

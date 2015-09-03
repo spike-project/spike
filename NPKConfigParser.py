@@ -1,3 +1,4 @@
+from __future__ import print_function
 #!/usr/bin/env python
 # encoding: utf-8
 """
@@ -20,7 +21,7 @@ Copyright (c) 2011 IGBMC. All rights reserved.
 modif on 21 - may 2012 - added getword and removing trailing comments
 """
 
-from __future__ import print_function
+
 import sys
 import os
 import unittest

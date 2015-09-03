@@ -1,3 +1,4 @@
+from __future__ import print_function
 
 # encoding: utf-8
 """
@@ -8,7 +9,7 @@ Created by Marc-André Delsuc, Marie-Aude Coutouly on 2011-07-13.
 API dealing with HDF5File. For now it is non surclassing tables, you have to use *.hf. to access all tables functionalities
 """
 
-from __future__ import print_function
+
 import sys
 import os
 import unittest

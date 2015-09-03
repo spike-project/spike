@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+
 def nearfactor(num, thresh):
     '''
     find the product of prime factors of num the nearest from thresh 

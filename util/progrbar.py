@@ -1,8 +1,9 @@
+from __future__ import print_function
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore  import SIGNAL 
 from PyQt4.QtCore import QObject as Qobj
 from progrbarUi import Ui_MainWindow as Ui
-from __future__ import print_function
+
 import sys
 
 

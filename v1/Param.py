@@ -1,3 +1,4 @@
+from __future__ import print_function
 """
 This class extend the standard dictionnary behaviour.
 It is used to read and store all the parameters used by the NPK program.
@@ -16,7 +17,7 @@ __author__ = "Marc A. Delsuc <delsuc@igbmc.fr>"
 __date__ = "Oct 2009"
 
 # UserDict is used for 2.1 compatibility required by jython
-from __future__ import print_function
+
 import UserDict
 import os
 

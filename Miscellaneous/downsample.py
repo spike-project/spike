@@ -1,3 +1,4 @@
+from __future__ import print_function
 #!/usr/bin/env python
 # encoding: utf-8
 """
@@ -6,7 +7,7 @@ downsample2D.py
 Created by MAD on 2011-04-14.
 """
 
-from __future__ import print_function
+
 import sys
 import os
 import numpy as np

@@ -1,3 +1,4 @@
+from __future__ import print_function
 """
 The library of processing functions to be used with the NPK program.
 
@@ -8,7 +9,7 @@ Most of these functions require that the NPK mathematical kernel is loaded.
 __author__ = "Marc A. Delsuc <delsuc@igbmc.fr>"
 __date__ = "Oct 2009"
 
-from __future__ import print_function
+
 import os.path
 import sys
 import tempfile

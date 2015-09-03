@@ -1,3 +1,4 @@
+from __future__ import print_function
 #!/usr/bin/env python
 # encoding: utf-8
 """
@@ -8,7 +9,7 @@ This program makes the processing of an 2D-FTICR dataset
 Created by Marc-Andre on 2011-09-23.
 Copyright (c) 2011 IGBMC. All rights reserved.
 """
-from __future__ import print_function
+
 import sys, os, time
 import unittest
 import numpy as np

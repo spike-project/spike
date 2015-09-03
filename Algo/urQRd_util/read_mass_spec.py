@@ -1,5 +1,6 @@
-from util.debug_tools import*  
 from __future__ import print_function
+from util.debug_tools import*  
+
 import File.Apex as Apex
 import numpy as np
 from NPKData import NPKData, as_cpx

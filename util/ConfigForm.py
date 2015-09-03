@@ -1,3 +1,4 @@
+from __future__ import print_function
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
@@ -70,7 +71,7 @@ improvments
 - use flash message for validation
 """
 
-from __future__ import print_function
+
 import sys
 import os
 import unittest

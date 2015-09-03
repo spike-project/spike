@@ -1,3 +1,4 @@
+from __future__ import print_function
 #!/usr/bin/env python
 # encoding: utf-8
 
@@ -5,7 +6,7 @@
 quelques examples de traitements, en utilisant la base du nouveau NPK v2
 
 """
-from __future__ import print_function
+
 import NPKData as npkd
 import Cadzow
 import numpy as np                  # pour faire des calculs supplémentaie  - pas utilisé ici

@@ -1,3 +1,4 @@
+from __future__ import print_function
 #!/usr/bin/env python
 # encoding: utf-8
 """
@@ -8,7 +9,7 @@ Implement the basic mechanisms for spectral data-sets
 Created by Marc-André and Marie-Aude on 2010-03-17.
 """
 
-from __future__ import print_function
+
 import numpy as np
 import numpy.fft as npfft
 import copy

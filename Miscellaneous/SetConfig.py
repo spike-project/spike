@@ -1,3 +1,4 @@
+from __future__ import print_function
 #!/usr/bin/env python
 # encoding: utf-8
 """
@@ -7,7 +8,7 @@ Created by mac on 2012-02-27.
 Copyright (c) 2012 __NMRTEC__. All rights reserved.
 """
 
-from __future__ import print_function
+
 import os
 from os import path
 import sys

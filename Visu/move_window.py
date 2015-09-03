@@ -1,5 +1,6 @@
-from .. util.debug_tools import* 
 from __future__ import print_function
+from .. util.debug_tools import* 
+
 import numpy as np 
 import matplotlib.pyplot as plt
 from matplotlib.path import Path

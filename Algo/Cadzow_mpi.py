@@ -1,3 +1,4 @@
+from __future__ import print_function
 #!/usr/bin/env python
 # encoding: utf-8
 """
@@ -13,7 +14,7 @@ Thresholding to make Cadzow on the main relevant columns.
 note that the cadzow algo is multithreaded if running over the MKL library.
 So if MKL is installed, run only on instance per node, as all cores from the node will be solicited.
 """
-from __future__ import print_function
+
 import Cadzow
 from spike.NPKData import NPKData
 import sys

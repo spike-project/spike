@@ -1,3 +1,4 @@
+from __future__ import print_function
 #!/usr/bin/env python
 # encoding: utf-8
 """
@@ -8,7 +9,7 @@ Copyright (c) 2011 IGBMC. All rights reserved.
 """
 
 from subprocess import Popen, PIPE
-from __future__ import print_function
+
 import sys
 import re
 #import glob

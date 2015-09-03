@@ -1,3 +1,4 @@
+from __future__ import print_function
 
 # encoding: utf-8
 """
@@ -10,7 +11,7 @@ Copyright (c) 2011 IGBMC. All rights reserved.
 
 """
  
-from __future__ import print_function
+
 import Apex as ap
 import FTICR
 import tables

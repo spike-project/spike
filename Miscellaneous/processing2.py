@@ -1,3 +1,4 @@
+from __future__ import print_function
 # encoding: utf-8
 """
 Processing.py
@@ -7,7 +8,7 @@ This program realises the processing of an FTICR data
 Created by Marc-André on 2011-09-23.
 Copyright (c) 2011 IGBMC. All rights reserved.
 """
-from __future__ import print_function
+
 import sys
 import os
 import unittest

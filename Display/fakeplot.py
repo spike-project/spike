@@ -1,3 +1,4 @@
+from __future__ import print_function
 #!/usr/bin/env python
 # encoding: utf-8
 """
@@ -11,7 +12,7 @@ Copyright (c) 2010 IGBMC. All rights reserved.
 
 __version__ = "0.2.1"
 
-from __future__ import print_function
+
 import sys
 import os
 

@@ -1,3 +1,4 @@
+from __future__ import print_function
 #Toggle line numbers
 def peaks2d(data, threshold=0.1):
     '''

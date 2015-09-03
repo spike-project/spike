@@ -1,3 +1,4 @@
+from __future__ import print_function
 """
     This module contains all the routines needed to process 2D NMR spectra
     
@@ -44,7 +45,7 @@ __author__ = "Marc A. Delsuc <delsuc@igbmc.fr> and Vincent Catherinot <v.catheri
 __date__ = "Oct 2009"
 
 
-from __future__ import print_function
+
 import math
 import os
 import os.path

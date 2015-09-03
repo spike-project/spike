@@ -1,3 +1,4 @@
+from __future__ import print_function
 """
     Utility to Handle NMR Bruker files
 
@@ -7,7 +8,7 @@ partitly based on NPK v1 code
 __author__ = "Marc Andre' Delsuc"
 __date__ = "november 2014"
 
-from __future__ import print_function
+
 import os
 import os.path as op
 import glob

@@ -1,3 +1,4 @@
+from __future__ import print_function
 # encoding: utf-8
 """
     Utility to Handle Thermofisher files
@@ -8,7 +9,7 @@
 __author__ = "Marc André Delsuc"
 __date__ = "april 2014"
 
-from __future__ import print_function
+
 import os
 import unittest
 import numpy as np

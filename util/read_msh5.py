@@ -1,3 +1,4 @@
+from __future__ import print_function
 
 # encoding: utf-8
 """
@@ -8,7 +9,7 @@ Created by mac on 2012-03-29.
 Copyright (c) 2012 __NMRTEC__. All rights reserved.
 """
 
-from __future__ import print_function
+
 import sys
 import os
 import unittest

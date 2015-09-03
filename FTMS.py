@@ -1,3 +1,4 @@
+from __future__ import print_function
 
 # encoding: utf-8
 """
@@ -11,7 +12,7 @@ Created by Marc-André on 2014-08
 Copyright (c) 2014 IGBMC. All rights reserved.
 """
 
-from __future__ import print_function
+
 import math
 import unittest
 import numpy as np

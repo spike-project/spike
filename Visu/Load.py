@@ -1,7 +1,8 @@
+from __future__ import print_function
 from .. NPKConfigParser import NPKConfigParser 
 from .. File.HDF5File import HDF5File
 from .. util.debug_tools import*
-from __future__ import print_function
+
 import os
 
 @dec_class_pr

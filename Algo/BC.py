@@ -1,3 +1,4 @@
+from __future__ import print_function
 #!/usr/bin/env python
 # encoding: utf-8
 """
@@ -9,7 +10,7 @@ Created by Marc-Andre on 2015-03-26.
 """
 
 from scipy.optimize import minimize
-from __future__ import print_function
+
 import numpy as np
 #from numpy.polynomial.legendre import legval as poly
 import unittest

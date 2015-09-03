@@ -1,5 +1,6 @@
-from os.path import *
 from __future__ import print_function
+from os.path import *
+
 import os
 import shutil
 import Tkinter

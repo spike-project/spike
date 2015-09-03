@@ -1,3 +1,4 @@
+from __future__ import print_function
 """
 This script computes the speed of the processing in MFlops.
 It is adapted from the FFTW page (see http://www.fftw.org/speed/ )
@@ -10,7 +11,7 @@ As NPK does not directly implement regular complex FT, a fake hypercomplex FT is
 """
 
 
-from __future__ import print_function
+
 import time
 import math
 from v1 import *
