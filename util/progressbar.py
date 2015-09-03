@@ -45,7 +45,7 @@ __date__ = "2006-05-07"
 __version__ = "2.2"
 
 # Changelog
-#
+# 2015-03     added days in ETA (needed )
 # 2006-05-07: v2.2 fixed bug in windows
 # 2005-12-04: v2.1 autodetect terminal width, added start method
 # 2005-12-04: v2.0 everything is now a widget (wow!)
