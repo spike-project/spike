@@ -2,7 +2,7 @@
 set of function Savitski-Golay smoothing
 
 """
-
+from __future__ import print_function
 from spike import NPKError
 from spike.NPKData import NPKData_plugin
 from spike.util.signal_tools import findnoiselevel

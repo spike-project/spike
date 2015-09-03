@@ -7,6 +7,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
+from __future__ import print_function
 from PyQt4 import QtCore, QtGui
 
 try:

@@ -2,7 +2,7 @@
 A utility to set to zero all points below a ratio
 
 """
-
+from __future__ import print_function
 from spike import NPKError
 from spike.NPKData import NPKData_plugin
 from spike.util.signal_tools import findnoiselevel

@@ -2,7 +2,7 @@
 This file implements all the tools for handling Orbitrap data-sets
 
 To use it :
-from __future__ import print_function
+
 import Orbitrap
 d = Orbitrap.OrbiData(...)    # There are several possible initialisation : empty, from file
 play with d
@@ -17,7 +17,7 @@ d = Import_1D("filename)")
 Created by Marc-Andre' on 2014-09
 Copyright (c) 2014 IGBMC. All rights reserved.
 """
-
+from __future__ import print_function
 import math
 import unittest
 import numpy as np
