@@ -576,19 +576,19 @@ class GifaFile(object):
 class GifaFileTests(unittest.TestCase):
     "  - Testing GifaFile on various 1D and 2D files - "
     # basic files
-    import tempfile
-    from ..Tests import filename, directory
-    name1D = filename("proj.gs1")
-    name2D = filename("dosy-cluster2.gs2")       # Byteorder = big_endian
-    name2D_little_endian = filename("dosy-cluster2-corr.gs2")   # Byteorder = little_endian
+
     verbose = 1    # verbose > 0 switches messages on
     def announce(self):
         if self.verbose >0:
             print("\n========",self.shortDescription(),'===============')
     def test_read(self):
         """ - testing read capacities - """
+        import tempfile
+        from ..Tests import filename, directory
         self.announce()
         # 1D
+        name1D = filename("proj.gs1")
+        name2D_little_endian = filename("dosy-cluster2-corr.gs2")   # Byteorder = little_endian
         G = GifaFile(self.name1D,"r")
         # show header
         G.load_header() # load header
@@ -667,6 +667,7 @@ class GifaFileTests(unittest.TestCase):
         """ - testing 2D read/write capacities - """
         import tempfile
         from ..Tests import filename
+        name2D = filename("dosy-cluster2.gs2")       # Byteorder = big_endian
         self.announce()
         # first read
         #G = GifaFile(self.name2D,"r")
