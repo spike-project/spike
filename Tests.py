@@ -8,6 +8,9 @@ Created by Marc-André  on 2010-07-20.
 Runs tests on selected modules using the integrated unittests in the different SPIKE modules.
 
 most default values can be overloaded with run time arguments
+
+Example on a module : python -m spike.Tests -D DATA_test -t File.Apex
+
 """
 
 #added arguments on 2015-09-03
