@@ -588,8 +588,9 @@ class GifaFileTests(unittest.TestCase):
         self.announce()
         # 1D
         name1D = filename("proj.gs1")
+        name2D = filename("dosy-cluster2.gs2")       # Byteorder = big_endian
         name2D_little_endian = filename("dosy-cluster2-corr.gs2")   # Byteorder = little_endian
-        G = GifaFile(self.name1D,"r")
+        G = GifaFile(name1D,"r")
         # show header
         G.load_header() # load header
         self.assertEqual(G.dim,1)
@@ -600,7 +601,7 @@ class GifaFileTests(unittest.TestCase):
         self.assertAlmostEqual(B.buffer.max(), 603306.75)
         G.close()
         # 2D
-        G = GifaFile(self.name2D,"r")
+        G = GifaFile(name2D,"r")
         # show header
         G.load_header() # load header
         self.assertEqual(G.dim,2)
@@ -615,7 +616,7 @@ class GifaFileTests(unittest.TestCase):
         self.assertAlmostEqual(B.buffer[133,1101], 5164615.5)
         self.assertAlmostEqual(B.buffer.max(), 6831767.0)
         # 2D little_endian
-        G = GifaFile(self.name2D_little_endian,"r")
+        G = GifaFile(name2D_little_endian,"r")
         # show header
         G.load_header() # load header
         self.assertEqual(G.dim,2)
@@ -667,7 +668,6 @@ class GifaFileTests(unittest.TestCase):
         """ - testing 2D read/write capacities - """
         import tempfile
         from ..Tests import filename
-        name2D = filename("dosy-cluster2.gs2")       # Byteorder = big_endian
         self.announce()
         # first read
         #G = GifaFile(self.name2D,"r")
