@@ -433,10 +433,10 @@ def copyaxes(inp,out):
     internal use
     """
     for ii in range(inp.dim):
-        i = ii +1       # 1 2 3
+        i = ii + 1       # 1 2 3
         setattr(out, "axis%1d"%(i), copy.deepcopy(inp.axes(i)) )
 ########################################################################
-def NPKData_plugin(name, method):
+def NPKData_plugin(name, method, verbose=False):
     """
     This function allows to register a new method inside the NPKData class.
     
@@ -459,6 +459,8 @@ def NPKData_plugin(name, method):
     if not isinstance(name, str):
         raise Exception("method name should be a string")
     setattr(NPKData, name, method)
+    if verbose:
+        print("   - successfully added .%s() method to NPKData"%name)
 
 class NPKData(object):
     """

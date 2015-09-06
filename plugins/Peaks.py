@@ -4,7 +4,7 @@
 """
 set of function for Peak detections and display
 
-Very First functionnal - Not finsihed !
+Very First functionnal - Not finished !
 
 Sept 2015 M-A Delsuc
 """
@@ -16,6 +16,7 @@ import unittest
 from spike import NPKError
 from spike.NPKData import NPKData_plugin, NPKData
 from spike.util.counter import timeit
+#from spike.util.signal_tools import findnoiselevel, findnoiselevel_2D
 
 def _identity(x):
     "the null function - used as default function argument"
@@ -57,7 +58,7 @@ class Peak1DList(object):
     def __getitem__(self,i):
         return Peak1D(Id = self.id[i],
                 label = self.label[i],
-                intens = self.intns[i], 
+                intens = self.intens[i], 
                 pos = self.pos[i])
     def export(self, f=_identity):
         """
@@ -91,7 +92,7 @@ class Peak2DList(object):
     def __getitem__(self,i):
         return Peak2D(Id = self.id[i],
                 label = self.label[i],
-                intens = self.intns[i], 
+                intens = self.intens[i], 
                 posF1 = self.posF1[i],
                 posF2 = self.posF2[i] )
     def export(self, f1=_identity, f2=_identity):
@@ -125,14 +126,13 @@ def peakpick(npkd, threshold = None, zoom = None):
     """
     performs a peak picking of the current experiment
     threshold is the level above which peaks are picked
-        None (default) means that 3*(standard deviation) of dataset will be used
+        None (default) means that 3*(noise level of dataset) will be used - using d.std() as proxy for noise-level
     zoom defines the region on which detection is made (same syntax as in display)
         None (default) means whole data
     """
-    if threshold is None:
-        threshold = 3*npkd.std()
     if npkd.dim == 1:
-        print("Not implemented yet")
+        if threshold is None:
+            threshold = 3*npkd.std()
         listpkF1, listint = peaks1d(npkd, threshold=threshold, zoom=zoom)
         pp = Peak1DList()
         pp.id = range(len(listpkF1))
@@ -141,6 +141,8 @@ def peakpick(npkd, threshold = None, zoom = None):
         pp.label = ["%d"%i for i in pp.id]
         npkd.peaks = pp
     elif npkd.dim == 2:
+        if threshold is None:
+            threshold = 3*npkd.std()
         listpkF1, listpkF2, listint = peaks2d(npkd, threshold=threshold, zoom=zoom)
         pp = Peak2DList()
         pp.id = range(len(listpkF1))
@@ -154,7 +156,7 @@ def peakpick(npkd, threshold = None, zoom = None):
     return npkd
         
 #----------------------------------------------------------
-@timeit
+#@timeit
 def peaks2d(npkd, threshold, zoom):
     '''
     code for NPKData 2D peak picker
@@ -166,6 +168,8 @@ def peaks2d(npkd, threshold, zoom):
         z1up=zoom[0][1]
         z2lo=zoom[1][0]
         z2up=zoom[1][1]
+        if z1up < 0 : z1up = npkd.size1 + z1up
+        if z2up < 0 : z2up = npkd.size2 + z2up
     else:
         z1lo=0
         z1up=npkd.size1-1
@@ -192,6 +196,7 @@ def peaks2d(npkd, threshold, zoom):
                     (tbuff > buff[1:-1 , 2:])))
     listpkF1 = int(z1lo) + listpk[0] +1
     listpkF2 = int(z2lo) + listpk[1] +1        # absolute coordinates
+
     listint = npkd.buffer[listpkF1, listpkF2]
     return listpkF1, listpkF2, listint
 def peaks1d(npkd, threshold, zoom):
@@ -202,6 +207,7 @@ def peaks1d(npkd, threshold, zoom):
     if zoom:        # should (left,right)
         z1lo=zoom[0]
         z1up=zoom[1]
+        if z1up < 0 : z1up = npkd.size1 + z1up
     else:
         z1lo=0
         z1up=npkd.size1-1
@@ -255,32 +261,29 @@ def display_peaks(npkd, axis = None, peak_label = False, zoom = None, show = Fal
     elif npkd.dim == 2:
         return display_peaks2D(npkd, axis=axis, peak_label=peak_label, zoom=zoom, show=show)
     else:
-        raise EXception("to be done")
+        raise Exception("to be done")
 
 def display_peaks1D(npkd, axis = None, peak_label = False, zoom = None, show = False):
     """displays 1D peaks"""
     import spike.Display.testplot as testplot
     plot = testplot.plot()
-    
+    pl = npkd.peaks
     if zoom:
         z0=zoom[0]
         z1=zoom[1]
-        if z1 == -1 : z1=npkd.size1
-        pk = npkd.peaks[np.where(np.logical_and(npkd.peaks>=z0,npkd.peaks<=z1))]
+        if z1 < 0 : z1 = npkd.size1 + z1
+        pk = [i for i,p in enumerate(pl) if p.pos>=z0 and p.pos<=z1]
     else:
         z0 = 0
         z1 = npkd.size1
-        pk = npkd.peaks
+        pk = xrange(pl.len())
     if axis is None:
-        plot.plot(pk-z0,npkd.buffer[pk], "o")
+        plot.plot(pl.pos[pk], pl.intens[pk], "x")
         if peak_label:
             for p in pk:
-                plot.text(1.05*npkd.buffer[p], "%.2f"%axis[p])
+                plot.text(pl.pos[p], 1.05*pl.intens[p], pl.label[p])
     else:
-        plot.plot(axis[pk], npkd.buffer[pk], "o")
-        if peak_label:
-            for p in pk:
-                plot.text(axis[p], 1.05*npkd.buffer[p], "%.2f"%axis[p])
+        raise Exception("to be done")
     if show: plot.show()
     return npkd
 def display_peaks2D(npkd, axis = None, peak_label = False, zoom = None, show = False):
@@ -308,7 +311,7 @@ def display_peaks2D(npkd, axis = None, peak_label = False, zoom = None, show = F
         plot.plot(pl.posF2[pk], pl.posF1[pk], "x")
         if peak_label:
             for p in pk:
-                plot.text(1.05*pl.posF2[p], 1.05*pl.posF1[p], pl.label[p])
+                plot.text(1.01*pl.posF2[p], 1.01*pl.posF1[p], pl.label[p])
     else:
         raise Exception("to be done")
     if show: plot.show()
