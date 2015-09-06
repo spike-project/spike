@@ -25,30 +25,46 @@ then, any NPKData will inherit the myname() method
 For the moment, only NPKData plugins are handled.
 
 """
+from __future__ import print_function
 import imp
 import traceback
 import unittest
 
 plugins = []  # contains plugin modules loaded so far
+import glob, os
+from ..NPKData import NPKData_plugin
 
 def load():
     "the load() function is called at initialization, and loads all files found in the plugins folder"
-    import glob, os
-    from ..NPKData import NPKData_plugin
-    global plugins
 # import all python code found here ( __path__[0] ) except me !
     for pgfile in glob.glob( os.path.join(__path__[0],"*.py") ):
         b = os.path.basename(pgfile)    # code.py
         pgmod = os.path.splitext(b)[0]  # code
         if not pgfile.endswith('__init__.py'):
-            print("Importing plugin << %s >>"%pgmod)
-            try:
-                m = imp.load_source(pgmod, pgfile)
-                plugins.append(pgmod)
-            except:
-                print("*** Failed ***")
-                traceback.print_exc()
-                print("*** Continuing ***")
+            loadone(pgmod, pgfile)
+                
+def loadone(pluginname, pgfile=None):
+    """
+    loads the plugin "pluginname" found in file pgfile
+    if pgfile is None, the file is found in the plugins folder (without the .py extension)
+    """
+    global plugins
+    direc = __path__[0] # plugins folder
+    if pgfile is None:
+        pgfile = os.path.join(direc, pluginname + ".py")
+    print("Importing plugin << %s >>"%pluginname)
+    try:
+        plugins.remove(pluginname)
+        print("WARNING existing plugin %s is overwritten"%pluginname)
+    except    ValueError:
+        pass
+    try:
+        m = imp.load_source(pluginname, pgfile)
+        plugins.append(pluginname)
+    except:
+        print("*** Failed ***")
+        traceback.print_exc()
+        print("*** Continuing ***")
 
 class PluginTests(unittest.TestCase):
     def test_plugin(self):
