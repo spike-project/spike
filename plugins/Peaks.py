@@ -4,7 +4,9 @@
 """
 set of function for Peak detections and display
 
-Very Sloppy - Not finsihed !
+Very First functionnal - Not finsihed !
+
+Sept 2015 M-A Delsuc
 """
 
 from __future__ import print_function
@@ -13,13 +15,149 @@ import unittest
 
 from spike import NPKError
 from spike.NPKData import NPKData_plugin, NPKData
+from spike.util.counter import timeit
 
+def _identity(x):
+    "the null function - used as default function argument"
+    return x
+class Peak(object):
+    """ a generic class to store peaks"""
+    def __init__(self, Id, label, intens):
+        self.Id = Id
+        self.label = label
+        self.intens = intens
 
-#----------------------------------------------------------
-def peaks2d(npkd, threshold = 0.1, zoom = None, value = False):
+class Peak1D(Peak):
+    """a class to store a single 1D peak"""
+    def __init__(self, Id, label, intens, pos):
+        super(Peak1D, self).__init__(Id, label, intens)
+        self.pos = pos
+class Peak2D(Peak):
+    """a class to store a single 2D peak"""
+    def __init__(self, Id, label, intens, posF1, posF2 ):
+        super(Peak2D, self).__init__(Id, label, intens)
+        self.posF1 = posF1
+        self.posF2 = posF2
+        
+class Peak1DList(object):
+    """
+    store a list of peaks
+    contains the array version of the Peak1D object :
+    self.pos is the numpy array of the position of all the peaks
+    and self[k] is the kth Peak1D object of the list
+    """
+    def __init__(self):
+        self.id = None
+        self.pos = None
+        self.intens = None
+    def len(self):
+        return len(self.id)
+    def __len__(self):
+        return len(self.id)
+    def __getitem__(self,i):
+        return Peak1D(Id = self.id[i],
+                label = self.label[i],
+                intens = self.intns[i], 
+                pos = self.pos[i])
+    def export(self, f=_identity):
+        """
+        print the peak list
+        f is a function used to transform respectively the coordinates
+        indentity function is default,
+        for instance you can use something like
+        d.peaks.export(f=s.axis1.itop)    to get ppm values on a NMR dataset
+        """
+        print ("# Peak list")
+        print( "id, label, position, intensity")
+        for i in range(len(self)):
+            print("%d, %s, %.5f, %.5f" % \
+                (self.id[i], self.label[i], f(self.pos[i]), self.intens[i]) )
+class Peak2DList(object):
+    """
+    store a list of peaks
+    contains the array version of the Peak2D object :
+    self.posF1 is the numpy array of the position of all the peaks
+    and self[k] is the kth Peak2D object of the list
+    """
+    def __init__(self):
+        self.id = None
+        self.posF1 = None
+        self.posF2 = None
+        self.intens = None
+    def len(self):
+        return len(self.id)
+    def __len__(self):
+        return len(self.id)
+    def __getitem__(self,i):
+        return Peak2D(Id = self.id[i],
+                label = self.label[i],
+                intens = self.intns[i], 
+                posF1 = self.posF1[i],
+                posF2 = self.posF2[i] )
+    def export(self, f1=_identity, f2=_identity):
+        """
+        print the peak list
+        f1, f2 are two functions used to transform respectively the coordinates in F1 and F2
+        indentity function is default,
+        for instance you can use something like
+        d.peaks.export(f1=s.axis1.itop, f2=s.axis2.itop)    to get ppm values on a NMR dataset
+        """
+        print ("# Peak list")
+        print( "id, label, posF1, posF2, intensity")
+        for i in range(len(self)):
+            print("%d, %s, %.5f, %.5f, %.5f" % \
+                (self.id[i], self.label[i], f1(self.posF1[i]), f2(self.posF2[i]), self.intens[i]) )
+#     npkd.peaks_ordered = npkd.peaks[np.argsort(a_buf[npkd.peaks])[::-1]]        # list from maximum to             
+def _peaks2d(npkd, threshold = 0.1, zoom = None, value = False, zones=0):
     '''
     Extract peaks from 2d Array dataset
     if value is True, return the magnitude at position (x,y)
+    '''
+    if not zones == 0:
+        _peaks2d(npkd, threshold = threshold, zoom = zoom, value = value)
+    else:
+        print("** assuming no zoom predefined **")
+        for z in range(zones):
+            print (z)
+
+#----------------------------------------------------------
+def peakpick(npkd, threshold = None, zoom = None):
+    """
+    performs a peak picking of the current experiment
+    threshold is the level above which peaks are picked
+        None (default) means that 3*(standard deviation) of dataset will be used
+    zoom defines the region on which detection is made (same syntax as in display)
+        None (default) means whole data
+    """
+    if threshold is None:
+        threshold = 3*npkd.std()
+    if npkd.dim == 1:
+        print("Not implemented yet")
+        listpkF1, listint = peaks1d(npkd, threshold=threshold, zoom=zoom)
+        pp = Peak1DList()
+        pp.id = range(len(listpkF1))
+        pp.pos = listpkF1
+        pp.intens = listint
+        pp.label = ["%d"%i for i in pp.id]
+        npkd.peaks = pp
+    elif npkd.dim == 2:
+        listpkF1, listpkF2, listint = peaks2d(npkd, threshold=threshold, zoom=zoom)
+        pp = Peak2DList()
+        pp.id = range(len(listpkF1))
+        pp.posF1 = listpkF1
+        pp.posF2 = listpkF2
+        pp.intens = listint
+        pp.label = ["%d"%i for i in pp.id]
+        npkd.peaks = pp
+    else:
+        raise NPKError("Not implemented of %sD experiment"%npkd.dim)
+    return npkd
+        
+#----------------------------------------------------------
+@timeit
+def peaks2d(npkd, threshold, zoom):
+    '''
+    code for NPKData 2D peak picker
     '''
     npkd.check2D()
     #print threshold
@@ -33,48 +171,51 @@ def peaks2d(npkd, threshold = 0.1, zoom = None, value = False):
         z1up=npkd.size1-1
         z2lo=0
         z2up=npkd.size2-1
-    buff = npkd.buffer[z1lo:z1up, z2lo:z2up]            # take the zoom window
-    listpk=np.where(((buff > threshold*np.ones(buff.shape))&            # thresholding
-                    (buff > np.roll(buff,  1, 0)) &         # laplacian - kind of
-                    (buff > np.roll(buff, -1, 0)) &
-                    (buff > np.roll(buff,  1, 1)) &
-                    (buff > np.roll(buff, -1, 1))))
-    listpk = [int(z1lo) + listpk[0], int(z2lo) + listpk[1]]         # absolute coordinates
-    if value: 
-        return listpk[0], listpk[1], npkd.buffer[listpk[0], listpk[1]]
-    else:
-        return listpk[0], listpk[1] # list f1, f2
+    buff = npkd.get_buffer()[z1lo:z1up, z2lo:z2up]            # take the zoom window
+    if npkd.itype != 0:
+        buff = abs(buff)
+    
+    # listpk=np.where(((buff > threshold*np.ones(buff.shape))&            # thresholding
+    #                 (buff > np.roll(buff,  1, 0)) &         # laplacian - kind of
+    #                 (buff > np.roll(buff, -1, 0)) &
+    #                 (buff > np.roll(buff,  1, 1)) &
+    #                 (buff > np.roll(buff, -1, 1))))
+    # listpkF1 = int(z1lo) + listpk[0]
+    # listpkF2 = int(z2lo) + listpk[1]        # absolute coordinates
 
-def peak(npkd, pos_neg = 1, threshold = 0.1, offset = None):
+    # this second version is about 2x faster on my machine
+    tbuff = buff[1:-1,1:-1]  # truncated version for shifting
+    listpk=np.where(((tbuff > threshold*np.ones(tbuff.shape))&            # thresholding
+                    (tbuff > buff[:-2 , 1:-1]) &         # laplacian - kind of
+                    (tbuff > buff[2: , 1:-1]) &
+                    (tbuff > buff[1:-1 , :-2]) &
+                    (tbuff > buff[1:-1 , 2:])))
+    listpkF1 = int(z1lo) + listpk[0] +1
+    listpkF2 = int(z2lo) + listpk[1] +1        # absolute coordinates
+    listint = npkd.buffer[listpkF1, listpkF2]
+    return listpkF1, listpkF2, listint
+def peaks1d(npkd, threshold, zoom):
     """
-    first trial for peakpicker
-    1D only
-    pos_neg = 1 / -1 / 0   :  type of peaks positive / negative / 
-    threshold = minimum level, as absolute value
-    npkd.peaks : index of the peaks
-    npkd.peaks_ordered : index of the ordered peaks from maximum to minimum.
+    code for NPKData 2D peak picker
     """
     npkd.check1D()
-    a_buf = npkd.get_buffer()
+    if zoom:        # should (left,right)
+        z1lo=zoom[0]
+        z1up=zoom[1]
+    else:
+        z1lo=0
+        z1up=npkd.size1-1
+    buff = npkd.get_buffer()[z1lo:z1up]            # take the zoom window
     if npkd.itype == 1:
-        a_buf = abs(a_buf)
-    a_rest = a_buf[1:-1]
-    #valmin = threshold*np.max(np.abs(a_rest))            # minimumvalue to be a peak
-    valmin = threshold
-    diff = (a_rest-a_buf[:-2])*(a_rest-a_buf[2:])       # positive at extremum
-    peaks = diff > 0                              # true at extremum
-    if pos_neg == 1:
-        peaks = np.logical_and(peaks , (a_rest-a_buf[:-2])>0)       # true at positive extremum
-        peaks = np.logical_and(peaks, (a_rest>=valmin))
-    elif pos_neg == -1:
-        peaks = np.logical_and(peaks , (a_rest-a_buf[:-2])<0)       # true at negative extremum
-        peaks = np.logical_and(peaks, (a_rest<=valmin))
-    elif pos_neg == 0:
-        peaks = np.logical_and(peaks, np.abs(a_rest)>=valmin)
-    (ipeaks,) = np.where(peaks)     # returns index list
-    npkd.peaks = ipeaks+1   # +1 because to compensate initial shifts
-    npkd.peaks_ordered = npkd.peaks[np.argsort(a_buf[npkd.peaks])[::-1]]        # list from maximum to minimum
-    return npkd.peaks
+        buff = abs(buff)
+    tbuff = buff[1:-1]
+    listpk = np.where(((tbuff > threshold*np.ones(tbuff.shape))&# thresholding
+                    (tbuff > buff[:-2]) &     
+                    (tbuff > buff[2:]) )) # roll 1 and -1 on axis 0
+#    return listpk[0]
+    listpkF1 = int(z1lo) + listpk[0] +1
+    listint = npkd.buffer[listpkF1]
+    return listpkF1, listint
 #-------------------------------------------------------
 def centroid1d(npkd, npoints=3):
     """
@@ -109,7 +250,15 @@ def centroid1d(npkd, npoints=3):
     npkd.width_peaks = np.array(npkd.width_peaks)
 #-------------------------------------------------------
 def display_peaks(npkd, axis = None, peak_label = False, zoom = None, show = False):
-    """displays peaks generated with peak()"""
+    if npkd.dim == 1:
+        return display_peaks1D(npkd, axis=axis, peak_label=peak_label, zoom=zoom, show=show)
+    elif npkd.dim == 2:
+        return display_peaks2D(npkd, axis=axis, peak_label=peak_label, zoom=zoom, show=show)
+    else:
+        raise EXception("to be done")
+
+def display_peaks1D(npkd, axis = None, peak_label = False, zoom = None, show = False):
+    """displays 1D peaks"""
     import spike.Display.testplot as testplot
     plot = testplot.plot()
     
@@ -134,6 +283,36 @@ def display_peaks(npkd, axis = None, peak_label = False, zoom = None, show = Fal
                 plot.text(axis[p], 1.05*npkd.buffer[p], "%.2f"%axis[p])
     if show: plot.show()
     return npkd
+def display_peaks2D(npkd, axis = None, peak_label = False, zoom = None, show = False):
+    """displays 2D peaks"""
+    import spike.Display.testplot as testplot
+    plot = testplot.plot()
+    pl = npkd.peaks
+    if zoom:        # should be ((F1_limits),(F2_limits))
+        z1lo=zoom[0][0]
+        z1up=zoom[0][1]
+        z2lo=zoom[1][0]
+        z2up=zoom[1][1]
+        pk = []
+        for p in xrange(pl.len()):
+            plp = pl[p]
+            if plp.posF1>=z1lo and plp.posF1<=z1up and plp.posF2>=z2lo and plp.posF2<=z2up:
+                pk.append(p)
+    else:
+        z1lo=0
+        z1up=npkd.size1-1
+        z2lo=0
+        z2up=npkd.size2-1
+        pk = xrange(pl.len())
+    if axis is None:
+        plot.plot(pl.posF2[pk], pl.posF1[pk], "x")
+        if peak_label:
+            for p in pk:
+                plot.text(1.05*pl.posF2[p], 1.05*pl.posF1[p], pl.label[p])
+    else:
+        raise Exception("to be done")
+    if show: plot.show()
+    return npkd
 
 class PeakTests(unittest.TestCase):
     def test_peaks2d(self):
@@ -143,11 +322,10 @@ class PeakTests(unittest.TestCase):
         M[5,7] = 20
         M[10,12] = 20
         d = NPKData(buffer = M)
-        thresh = 10
-        x,y = d.peaks2d(threshold = thresh)
-        print("hou 2D",list(x),list(y))
-        self.assertEqual(list(x) , [ 5, 10])
-        self.assertEqual(list(y) , [ 7, 12])
+        d.pp() #threshold = 10)  3*d.std is just right
+        self.assertEqual(list(d.peaks.posF1) , [ 5, 10])
+        self.assertEqual(list(d.peaks.posF2) , [ 7, 12])
+        self.assertEqual(list(d.peaks.intens) , [ 20.0, 20.0])
         
     def test_peaks1d(self):
         "test 1D peak picker"
@@ -158,13 +336,10 @@ class PeakTests(unittest.TestCase):
         M[15] = 11
         M[10] = 20
         d = NPKData(buffer = M)
-        thresh = 10
-        x = d.peak(threshold = thresh)
-        self.assertEqual(list(x) , [ 5, 10, 15])
-        #self.assertEqual(list(y) , [ 20, 20, 11])
+        d.pp(threshold=3)
+        self.assertEqual(list(d.peaks.pos) , [ 5, 7, 10, 15])
+        self.assertEqual(list(d.peaks.intens) , [ 20.0, 8.0, 20.0, 11.0])
 
 NPKData_plugin("display_peaks", display_peaks)
-NPKData_plugin("peak", peak)
-NPKData_plugin("centroid1d", centroid1d)
-NPKData_plugin("peaks2d", peaks2d)
+NPKData_plugin("pp", peakpick)
 
