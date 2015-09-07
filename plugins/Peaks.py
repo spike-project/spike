@@ -22,23 +22,55 @@ def _identity(x):
     "the null function - used as default function argument"
     return x
 class Peak(object):
-    """ a generic class to store peaks"""
+    """ a generic class to store peaks
+    defines :
+    Id          a unique integer
+    label       a string - str(Id) by default
+    intens      The intensity (the height of the largest point)
+    area        The area/volume of the peak
+    intens_err  The uncertainty of the previous values
+    area_err    ..
+    
+    """
     def __init__(self, Id, label, intens):
         self.Id = Id
         self.label = label
-        self.intens = intens
+        self.intens = intens    # intensity
+        self.area = 0.0         # area under the curve
+        self.intens_err = 0.0      # uncertainty on intensity
+        self.area_err = 0.0     # uncertainty on area
+        
 
 class Peak1D(Peak):
-    """a class to store a single 1D peak"""
+    """a class to store a single 1D peak
+    defines in addition to Peak
+    pos         position of the peak in index
+    width       width of the peak in index
+    pos_err     uncertainty of the previous values
+    width_err   ...
+    """
     def __init__(self, Id, label, intens, pos):
         super(Peak1D, self).__init__(Id, label, intens)
         self.pos = pos
+        self.pos_err = 0.0
+        self.width = 0.0
+        self.width_err = 0.0
 class Peak2D(Peak):
-    """a class to store a single 2D peak"""
+    """a class to store a single 2D peak
+    defines in addition to Peak
+    posF1 posF2         positions in F1 and F2 of the peak in index
+    widthF1 ...F2       widthes of the peak in index
+    posF1_err ...       uncertainty of the previous values
+    widthF1_err   ...
+    """
     def __init__(self, Id, label, intens, posF1, posF2 ):
         super(Peak2D, self).__init__(Id, label, intens)
         self.posF1 = posF1
         self.posF2 = posF2
+        self.widthF1 = 0.0
+        self.widthF2 = 0.0
+        self.posF1_err = 0.0
+        self.posF2_err = 0.0
         
 class Peak1DList(object):
     """
@@ -152,7 +184,7 @@ def peakpick(npkd, threshold = None, zoom = None):
         pp.label = ["%d"%i for i in pp.id]
         npkd.peaks = pp
     else:
-        raise NPKError("Not implemented of %sD experiment"%npkd.dim)
+        raise NPKError("Not implemented of %sD experiment"%npkd.dim, data=npkd)
     return npkd
         
 #----------------------------------------------------------
@@ -235,13 +267,12 @@ def centroid1d(npkd, npoints=3):
         ah-hoc structure, waiting for a real PEAK object
     """
     from scipy import polyfit
+    npkd.check1D()
     noff = (int(npoints)-1)/2
-    npkd.centered_peaks = []
-    npkd.width_peaks = []
     if (2*noff+1 != npoints) or (npoints<3):
         raise NPKError("npoints must odd and >2 ",data=npkd)
     for i, pk in enumerate(npkd.peaks):
-        xdata = np.arange(pk-noff, pk+noff+1)
+        xdata = np.arange(pk.pos-noff, pkpk.pos+noff+1)
         ydata = npkd.get_buffer()[xdata]
         coeffs = polyfit(xdata, ydata, 2)
         pospeak = -coeffs[1]/(2*coeffs[0])#/factexp# position of maximum of parabola in m/z
