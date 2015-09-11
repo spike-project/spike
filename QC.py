@@ -147,7 +147,7 @@ def processmp(files):
 def report(stats, modif):
     "print a tabular report"
     text = []
-    title = "  Note/10   File                      Error Warning"
+    title = "  Note/10   File                          Error Warning"
     nchar = len(title)
     text.append("\n"+"-"*nchar)
     text.append( title )
@@ -158,7 +158,8 @@ def report(stats, modif):
     pmed = 0
     plow = 0
     errtot = 0
-    for k in reversed(sorted(stats.keys(), key = lambda x: stats[x][0])):
+    kstats = sorted(stats.keys(), key = lambda x: stats[x][0])
+    for k in reversed(kstats):
         note = stats[k][0]
         err = stats[k][1]
         errtot += err
@@ -167,14 +168,17 @@ def report(stats, modif):
             head = 'M'
         else:
             head = ' '
+
         if err != 10000:    # means crash
             mean += note
-        if note >= 5.0:     # cound program per class
+
+        if note >= 5.0:     # count program per class
             ptop += 1
         elif note >= 0.0:
             pmed += 1
         else:
             plow += 1
+
         if top == 1:    # draw separators
             if note < 5.0:
                 text.append( "-"*nchar )
@@ -183,19 +187,25 @@ def report(stats, modif):
             if note < 0.01:
                 text.append( "*"*nchar )
                 top = -1
+
         if err == 10000:
-            text.append( "{} ******  {:25s} HAS SYNTAX ERRORS".format(head, k) )
+            text.append( "{} ******  {:35s} HAS SYNTAX ERRORS".format(head, k) )
         elif err > 0:
-            text.append( "{} {:5.2f}  {:30s} {:3d}   {:3d} ".format(head, note, k, err, warn) )
+            text.append( "{} {:5.2f}  {:35s} {:3d}   {:3d} ".format(head, note, k, err, warn) )
         else:
-            text.append( "{}{:6.2f}  {:30s}       {:3d}".format(head, note, k, warn) )
+            text.append( "{}{:6.2f}  {:35s}       {:3d}".format(head, note, k, warn) )
+    ncode = ptop+pmed+plow
+#    assert(len(stats)==ncode)
     text.append( "-"*nchar )
-    mnote = mean/len(stats)
-    aggreg = 0.5*mnote + 0.5*(10*ptop + 5*pmed)/(ptop+pmed+plow)
-    text.append( "\nOverall aggreagted note value is : {:5.2f}/10\n".format(aggreg) )
+    mnote = mean/ncode
+    median = stats[kstats[ncode/2]][0]
+    aggreg = 0.5*mnote + 0.5*(10*ptop + 5*pmed)/ncode
+    text.append( "\nOverall aggregated note value is : {:5.2f}/10\n".format(aggreg) )
     text.append( "score is {} / {} / {}  (top / med / low)".format(ptop, pmed, plow ))
-    text.append( "Mean note value is : {:5.2f}/10".format(mnote) )
-    text.append( "Total number of errors : {:d}".format(errtot) )
+    text.append( "Mean - Median note values are : {:5.2f}/10 - {:5.2f}/10".format(mnote, median ))
+    if median <5.0:
+        text.append( "  Median is below 5.0 - let's try to improve it")
+    text.append( "Total number of errors : {:d} on a total of {:d} files".format(errtot, ncode) )
     text.append( "-"*nchar )
     return "\n".join(text)
 
@@ -227,7 +237,7 @@ def main(excluded = ['.hgignore',], files = 'hg'):
         msg("Warning, the following files are modified but not commited", sep="*")
         for i in modif:
             print(i)
-    stats = process(hg)
+    stats = processmp(hg)
     t = report(stats, modif)
     print(t)
     F = open("QC.txt","w")

@@ -4,10 +4,9 @@
 """
 Processing.py
 
-This program makes the processing of an 2D-FTICR dataset
+This program makes the processing of a 2D-FTICR dataset
 
-Created by Marc-Andre on 2011-09-23.
-Copyright (c) 2011 IGBMC. All rights reserved.
+First version by Marc-Andre on 2011-09-23.
 """
 
 from __future__ import print_function
@@ -21,21 +20,21 @@ import itertools
 import multiprocessing as mp
 import pickle
 
-from spike.NPKConfigParser import NPKConfigParser
-from spike.FTICR import *
-from spike.File.Apex import Import_2D as Import_2D_Apex
-from spike.File.Solarix import Import_2D as Import_2D_Solarix
+from .NPKConfigParser import NPKConfigParser
+from .FTICR import *
+from .File.Apex import Import_2D as Import_2D_Apex
+from .File.Solarix import Import_2D as Import_2D_Solarix
 Import_2D = {'Apex': Import_2D_Apex,'Solarix': Import_2D_Solarix }
-from spike.NPKData import copyaxes
-from spike.File.HDF5File import HDF5File, determine_chunkshape
-import spike.util.progressbar as pg
-import spike.util.mpiutil as mpiutil
-from spike.util.signal_tools import findnoiselevel_offset  as findnoiselevel
-from spike.NPKData import as_cpx
-from spike.util.simple_logger2 import TeeLogger
+from .NPKData import copyaxes
+from .File.HDF5File import HDF5File, determine_chunkshape
+from .util import progressbar as pg
+from .util import mpiutil as mpiutil
+from .util.signal_tools import findnoiselevel_offset  as findnoiselevel
+from .NPKData import as_cpx
+from .util.simple_logger2 import TeeLogger
 #from spike.util.rem_ridge import rem_ridge
 
-debug = 1   # 0 means no debugging
+debug = 1   # debugging level, 0 means no debugging
 interfproc = False
 
 
@@ -136,8 +135,8 @@ def comp_sizes(d0,  zflist=None, szmlist=None, largest = LARGESTDATA, sizemin = 
         sm1,sm2 = szmlist
         while True:
             (si1,si2) = pred_sizes(d0, (sm1,sm2))
-            print((sm1, sm2))
-            print((si1, si2))
+            if debug > 0: print((sm1, sm2))
+            if debug > 0: print((si1, si2))
             if si1*si2 <= 1.5*SIZEMIN*SIZEMIN:
                 break
             szres.append( (si1,si2))
@@ -299,7 +298,7 @@ def do_proc_F1_flip_modu(dinp, doutp, parameter):
         cdinp = dinp.col(0)
         cdinp.zf()
         rot = cdinp.axis1.mztoi( dinp.axis1.highmass )
-        print("11111111", shift, rot)
+        if debug > 1: print("11111111", shift, rot)
         del(cdinp)
     else:                                                   # plain mode
         rot = dinp.axis1.mztoi( dinp.axis1.highmass )       # rot correction is applied in the starting space
@@ -346,7 +345,7 @@ def do_process2D(dinp, datatemp, doutp, parameter):
     dinp and doutp should have been created before, size of doutp will determine the processing
     will use a temporay file if needed
     """
-    if debug>0:
+    if debug>1:
         for f,d in ((parameter.infile, dinp), (parameter.interfile, datatemp), (parameter.outfile, doutp)):
             print("----------", f)
             print(d)
@@ -527,7 +526,7 @@ class Test(unittest.TestCase):
 
 ########################################################################################
 def Report_Table_Param():
-    print("---------------SETTINGS---------------------")
+    print("---------------PyTables/HDF5 SETTINGS---------------------")
     print("| MAX_COLUMNS ", tables.parameters.MAX_COLUMNS)
     print("| MAX_NODE_ATTRS " , tables.parameters.MAX_NODE_ATTRS)
     print("| MAX_GROUP_WIDTH ", tables.parameters.MAX_GROUP_WIDTH)
@@ -543,7 +542,7 @@ def Report_Table_Param():
     print("| EXPECTED_ROWS_TABLE ", tables.parameters.EXPECTED_ROWS_TABLE)
     print("| PYTABLES_SYS_ATTRS ", tables.parameters.PYTABLES_SYS_ATTRS)
     #print "| MAX_THREADS ",tables.parameters.MAX_THREADS 
-    print("---------------SETTINGS---------------------")
+    print("---------------PyTables/HDF5 SETTINGS---------------------")
 
 def Set_Table_Param():
 #    if debug>0: return
