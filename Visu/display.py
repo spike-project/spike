@@ -169,10 +169,12 @@ class DISPLAY():# class regrouping tools to change resolution with zoom
         '''
         maximum from local view
         '''
+        from ..plugins.Peaks import peaks2d
         d = self.res2dd()
         c = self.paramz.zoom_coord
         zc = self.paramz.zoom_coord
-        x, y, z = d.peaks2d(zoom = [[zc[1], zc[3]], [zc[0], zc[2]]], value = True)
+        x, y, z = peaks2d(d, threshold=0.1, zoom = [[zc[1], zc[3]], [zc[0], zc[2]]])
+#        x, y, z = d.peaks2d(zoom = [[zc[1], zc[3]], [zc[0], zc[2]]], value = True)
         if debug(self):
             print("maxi intensity is ", z.max())
         self.interface.ui.label.setText("{0:.2e}".format(int(z.max()))) # shows absmax in the interface 

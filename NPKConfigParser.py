@@ -22,8 +22,6 @@ modif on 21 - may 2012 - added getword and removing trailing comments
 """
 
 from __future__ import print_function
-import sys
-import os
 import unittest
 from ConfigParser import SafeConfigParser
 import re
@@ -34,26 +32,27 @@ class NPKConfigParser(SafeConfigParser):
     this is a subclass of ConfigParser.SafeConfigParser, providing default value for values
     will never raise an error on missing values
     """
-    def get(self, section, option, default = None, raw = 0, vars = None):
+    def get(self, section, option, default = None, raw = 0, vars = None, verbose=False):
         """read a value from the configuration, with a default value"""
         if self.has_option(section, option):
             vv = SafeConfigParser.get(self, section, option, raw = raw, vars = vars) # returns the string after "option = "
             vl = re.split('\s*#',vv)        # this removes trailing comments
             return vl[0]
         else:
-            print("Using default value for {} : {}".format(option,default)) # send message if option not in configfile
+            if verbose:
+                print("Using default value for {} : {}".format(option,default)) # send message if option not in configfile
             return default
-    def getword(self, section, option, default = None, raw = 0, vars = None):
+    def getword(self, section, option, default = None, raw = 0, vars = None, verbose=False):
         "read a value from the configuration, with a default value - takes the first word of the string"
-        vv = self.get(section, option, default = str(default), raw = raw, vars = vars)
+        vv = self.get(section, option, default = str(default), raw = raw, vars = vars, verbose=verbose)
         v = vv.split()[0]
         return v
-    def getint(self, section, option, default = 0, raw = 0, vars = None):
+    def getint(self, section, option, default = 0, raw = 0, vars = None, verbose=False):
         """
         read a int value from the configuration, with a default value
-        understands 123 16k 32M 4G 2T ...
+        understands 123 16k 32M 4G 2T ... (units in power of 2, not power of 10 !!)
         """
-        v = self.getword(section, option, default = str(default), raw = raw, vars = vars).lower()
+        v = self.getword(section, option, default = str(default), raw = raw, vars = vars, verbose=verbose).lower()
         if v.endswith('k'):
             val = 1024*int(v[:-1])
         elif v.endswith('m'):
@@ -65,12 +64,12 @@ class NPKConfigParser(SafeConfigParser):
         else:
             val = int(v)
         return val
-    def getfloat(self, section, option, default=0.0, raw=0, vars=None):
+    def getfloat(self, section, option, default=0.0, raw=0, vars=None, verbose=False):
         """read a float value from the configuration, with a default value"""
-        return float(self.getword(section, option, default=str(default), raw=raw, vars=vars))
-    def getboolean(self, section, option, default="OFF", raw=0, vars=None):
+        return float(self.getword(section, option, default=str(default), raw=raw, vars=vars, verbose=verbose))
+    def getboolean(self, section, option, default="OFF", raw=0, vars=None, verbose=False):
         """read a boolean value from the configuration, with a default value"""
-        v = self.getword(section, option, default=str(default), raw=raw, vars=vars)
+        v = self.getword(section, option, default=str(default), raw=raw, vars=vars, verbose=verbose)
         if v.lower() not in self._boolean_states:
             raise ValueError, 'Not a boolean: %s' % v
 #        print self._boolean_states

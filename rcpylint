@@ -43,7 +43,7 @@ output-format=colorized
 
 # Include message's id in output
 # MAD
-include-ids=yes
+# include-ids=yes
 
 # Put messages in a separate file for each module / package specified on the
 # command line instead of printing them on stdout. Reports (if any) will be
