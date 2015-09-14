@@ -111,7 +111,7 @@ class Peak1DList(list):
     @property
     def label(self):
         return [pk.label for pk in self]
-    def report(self, f=_identity):
+    def report(self, f=_identity, file=None):
         """
         print the peak list
         f is a function used to transform respectively the coordinates
@@ -122,7 +122,7 @@ class Peak1DList(list):
         print ("# Peak list")
         print( "id, label, position, intensity")
         for pk in self:
-            print(pk.report(f=f))
+            print(pk.report(f=f), file=file)
 class Peak2DList(list):
     """
     store a list of peaks
@@ -148,18 +148,19 @@ class Peak2DList(list):
     #             intens = self.intens[i], 
     #             posF1 = self.posF1[i],
     #             posF2 = self.posF2[i] )
-    def report(self, f1=_identity, f2=_identity):
+    def report(self, f1=_identity, f2=_identity, file=None):
         """
         print the peak list
         f1, f2 are two functions used to transform respectively the coordinates in F1 and F2
         indentity function is default,
         for instance you can use something like
         d.peaks.export(f1=s.axis1.itop, f2=s.axis2.itop)    to get ppm values on a NMR dataset
+        the file keyword allows to redirect the output to a file object 
         """
-        print ("# Peak list")
-        print( "id, label, posF1, posF2, intensity")
+        print ("# Peak list", file=file)
+        print( "id, label, posF1, posF2, intensity", file=file)
         for pk in self:
-            print(pk.report(f1=f1, f2=f2))
+            print(pk.report(f1=f1, f2=f2), file=file)
 #     npkd.peaks_ordered = npkd.peaks[np.argsort(a_buf[npkd.peaks])[::-1]]        # list from maximum to             
 def _peaks2d(npkd, threshold = 0.1, zoom = None, value = False, zones=0):
     '''
@@ -388,14 +389,14 @@ def centroid(npkd, *arg, **kwarg):
         raise Exception("to be done")
     return npkd
 #-------------------------------------------------------
-def display_peaks(npkd, axis = None, peak_label = False, zoom = None, show = False):
+def display_peaks(npkd, axis = None, peak_label = False, zoom = None, show = False, f=_identity, f1=_identity, f2=_identity):
     if npkd.dim == 1:
-        return display_peaks1D(npkd, axis=axis, peak_label=peak_label, zoom=zoom, show=show)
+        return display_peaks1D(npkd, axis=axis, peak_label=peak_label, zoom=zoom, show=show, f=f)
     elif npkd.dim == 2:
-        return display_peaks2D(npkd, axis=axis, peak_label=peak_label, zoom=zoom, show=show)
+        return display_peaks2D(npkd, axis=axis, peak_label=peak_label, zoom=zoom, show=show, f1=f1, f2=f2)
     else:
         raise Exception("to be done")
-def display_peaks1D(npkd, axis = None, peak_label = False, zoom = None, show = False):
+def display_peaks1D(npkd, axis = None, peak_label = False, zoom = None, show = False, f=_identity):
     """displays 1D peaks"""
     import spike.Display.testplot as testplot
     plot = testplot.plot()
@@ -410,15 +411,15 @@ def display_peaks1D(npkd, axis = None, peak_label = False, zoom = None, show = F
         z1 = npkd.size1
         pk = range(len(pl))
     if axis is None:
-        plot.plot(pl.pos[pk], pl.intens[pk], "x")
+        plot.plot(f(pl.pos[pk]), pl.intens[pk], "x")
         if peak_label:
             for p in pk:
-                plot.text(pl.pos[p], 1.05*pl.intens[p], pl.label[p])
+                plot.text(f(pl.pos[p]), 1.05*pl.intens[p], pl.label[p])
     else:
         raise Exception("to be done")
     if show: plot.show()
     return npkd
-def display_peaks2D(npkd, axis = None, peak_label = False, zoom = None, show = False):
+def display_peaks2D(npkd, axis = None, peak_label = False, zoom = None, show = False, f1=_identity, f2=_identity):
     """displays 2D peaks"""
     import spike.Display.testplot as testplot
     plot = testplot.plot()
@@ -439,10 +440,11 @@ def display_peaks2D(npkd, axis = None, peak_label = False, zoom = None, show = F
         z2lo=0
         z2up=npkd.size2-1
         pk = range(len(pl))
+    if npkd.debug>0:  print("plotting %d peaks"%len(pk))
     if axis is None:
         plF1 = pl.posF1 # these are ndarray !
         plF2 = pl.posF2
-        plot.plot(plF2[pk], plF1[pk], "x")
+        plot.plot(f2(plF2[pk]), f1(plF1[pk]), "x")
         if peak_label:
             for p in pk:
                 plp = pl[p]
