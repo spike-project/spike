@@ -6,6 +6,18 @@ set of function for Peak detections and display
 
 Very First functionnal - Not finished !
 
+
+Peak1D and Peak2D or simple objects
+    with attributes like Id, label, intens(ity), pos(ition), or width
+    the only added method is report() (returns a string)
+
+Peak1DList and Peak2DList are list, with a few added methods
+    - report (to stdio or to a file)
+    - largest sort in decreasing order of intensity
+        other sorts can simply done by peaklist.sort(key = lambda p: p.XXX)
+            where XXX is any peak attribute  (see largest code)
+     
+
 Sept 2015 M-A Delsuc
 """
 
@@ -95,22 +107,34 @@ class Peak2D(Peak):
         return "%d, %s, %.5f, %.5f, %.5f" % \
                 (self.Id, self.label, f1(self.posF1), f2(self.posF2), self.intens)
         
-class Peak1DList(list):
+class PeakList(list):
     """
-    store a list of peaks
+    the class generic to all peak lists
+    """
+    @property
+    def intens(self):
+        "returns a numpy array of the intensities"
+        return np.array( [pk.intens for pk in self] )
+    @property
+    def label(self):
+        "returns an array of the labels"
+        return [pk.label for pk in self]
+    def len(self):
+        return len(self)
+    def largest(self):
+        "sort the peaklist in decresing order of intensities"
+        self.sort(reverse = True, key = lambda p:p.intens)
+class Peak1DList(PeakList):
+    """
+    store a list of 1D peaks
     contains the array version of the Peak1D object :
     self.pos is the numpy array of the position of all the peaks
     and self[k] is the kth Peak1D object of the list
     """
     @property
     def pos(self):
+        "returns a numpy array of the positions in index"
         return np.array( [pk.pos for pk in self] )
-    @property
-    def intens(self):
-        return np.array( [pk.intens for pk in self] )
-    @property
-    def label(self):
-        return [pk.label for pk in self]
     def report(self, f=_identity, file=None):
         """
         print the peak list
@@ -123,31 +147,21 @@ class Peak1DList(list):
         print( "id, label, position, intensity")
         for pk in self:
             print(pk.report(f=f), file=file)
-class Peak2DList(list):
+class Peak2DList(PeakList):
     """
-    store a list of peaks
+    store a list of 2D peaks
     contains the array version of the Peak2D object :
     self.posF1 is the numpy array of the position of all the peaks
     and self[k] is the kth Peak2D object of the list
     """
     @property
     def posF1(self):
+        "returns a numpy array of the F1 positions in index"
         return np.array( [pk.posF1 for pk in self] )
     @property
     def posF2(self):
+        "returns a numpy array of the F2 positions in index"
         return np.array( [pk.posF2 for pk in self] )
-    @property
-    def intens(self):
-        return np.array( [pk.intens for pk in self] )
-    @property
-    def label(self):
-        return [pk.label for pk in self]
-    # def __getitem__(self,i):
-    #     return Peak2D(Id = self.id[i],
-    #             label = self.label[i],
-    #             intens = self.intens[i], 
-    #             posF1 = self.posF1[i],
-    #             posF2 = self.posF2[i] )
     def report(self, f1=_identity, f2=_identity, file=None):
         """
         print the peak list
@@ -161,7 +175,6 @@ class Peak2DList(list):
         print( "id, label, posF1, posF2, intensity", file=file)
         for pk in self:
             print(pk.report(f1=f1, f2=f2), file=file)
-#     npkd.peaks_ordered = npkd.peaks[np.argsort(a_buf[npkd.peaks])[::-1]]        # list from maximum to             
 def _peaks2d(npkd, threshold = 0.1, zoom = None, value = False, zones=0):
     '''
     Extract peaks from 2d Array dataset
