@@ -87,7 +87,7 @@ def baseline(npkd, degree=4, smooth=True):
     bl = BC.baseline(npkd.get_buffer(), degree=degree)
     if smooth:
         bl = sgm.savitzky_golay( bl, 205, 7)
-    self.set_buffer( npkd.get_buffer() - bl)
+    npkd.set_buffer( npkd.get_buffer() - bl)
     return npkd
 
 NPKData_plugin("bcorr_lin", linear_interpolate)
