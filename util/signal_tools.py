@@ -56,7 +56,7 @@ class SIGNAL_NOISE(object):
         nbpeaks : nb of frequencies
         amplitude : reference amplitude for signal
         noise : noise amplitude
-        shape : shape of the spectrum
+        shape : shape of the spectrum. Available : triangular, list. 
         noisetype : kind of noise
         shift : shift of the frequencies
         trunc : truncaton ratio for the Fid. 
@@ -65,6 +65,12 @@ class SIGNAL_NOISE(object):
         Signal without noise :  self.fid0
         Noisy spectrum : self.spec
         Spectrum without noise :  self.spec0
+    
+    eg1: sig = SIGNAL_NOISE( lenfid= 1000, nbpeaks = 20, amplitude = 27, noise = 5)
+    eg2:
+        lamplit = list(np.random.randn(20)*10)
+        sig = st.SIGNAL_NOISE( lenfid= 10000, nbpeaks = 20,  amplitude = lamplit, noise = 4, shape = "list")
+    
     '''
     
     def __init__(self, lenfid, nbpeaks, amplitude, noise, LB = 1.11,\

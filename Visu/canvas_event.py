@@ -214,7 +214,6 @@ class CANVAS_EVENT(object):
     def on_release_C_event(self, dx, dy):  
         '''
         Release C event
-        
         '''
         if debug(self):   
            print("in zooming.on_release_C_event")                                                    # if len(self.paramz.zoom_coord) >=  4 : #if nb of points too high                                                                                   #     self.paramz.zoom_coord = []  # reinitialize the zoom window zoom_coord
