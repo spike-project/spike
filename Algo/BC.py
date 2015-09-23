@@ -25,20 +25,21 @@ def poly(x,coeff):
         y += lcoeff.pop()
     return y
 
-def fitpolyL1(x, y, degree=2):
+def fitpolyL1(x, y, degree=2, power=1):
     "fit with L1 norm a polynome to a function y over x, returns coefficients"
     coeff0 = [0]*(degree+1)
-    pmin = lambda c, x, y: np.sum(np.abs(y-poly(x,c)) )
+    #pmin = lambda c, x, y: np.sum(np.abs(y-poly(x,c)) )
+    pmin = lambda c, x, y: np.sum(np.power(np.abs(y-poly(x,c)), power) )
     res = minimize(pmin, coeff0, args=(x,y), method="Powell")
     return res.x
 
-def bcL1(y, degree=2):
+def bcL1(y, degree=2, power=1):
     "compute a baseline on y using fitpolyL1"
     x = np.arange(1.0*y.size)
-    coeff = fitpolyL1(x, y, degree=degree)
+    coeff = fitpolyL1(x, y, degree=degree, power=power)
     return poly(x,coeff)
 
-def baseline(y, degree=2, chunksize=2000):
+def baseline(y, degree=2, power=1, chunksize=2000):
     """
     compute a piece-wise baseline on y using fitpolyL1
     degree is the degree of the underlying polynome
@@ -49,7 +50,7 @@ def baseline(y, degree=2, chunksize=2000):
     """
     nchunk = y.size/chunksize
     if nchunk <2:
-        bl = bcL1(y, degree=degree)
+        bl = bcL1(y, degree=degree, power=power)
     else:
         lsize = y.size/nchunk
         recov = lsize/10  # recovering parts
@@ -57,10 +58,10 @@ def baseline(y, degree=2, chunksize=2000):
         corr = np.sin( np.linspace(0,np.pi/2,2*recov) )**2  # cosine roll-off
         corrm1 = 1.0-corr
         bl = np.zeros_like(y)
-        bl[0:lsize+recov] = bcL1(y[0:lsize+recov], degree=degree)
+        bl[0:lsize+recov] = bcL1(y[0:lsize+recov], degree=degree, power=power)
         i = 0 # if nchunk == 2 !
         for i in range(1,nchunk-1):
-            tbl = bcL1(y[i*lsize-recov:(i+1)*lsize+recov], degree=degree)
+            tbl = bcL1(y[i*lsize-recov:(i+1)*lsize+recov], degree=degree, power=power)
             bl[i*lsize-recov:i*lsize+recov] = bl[i*lsize-recov:i*lsize+recov]*corrm1 + tbl[:2*recov]*corr
             bl[i*lsize+recov:(i+1)*lsize+recov] = tbl[2*recov:]
         i = i+1

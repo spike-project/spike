@@ -20,7 +20,7 @@ def fastclean(npkd, nsigma=2.0, nbseg=20, axis=0):
     nsigma: float
         the ratio used, typically 1.0 to 3.0 (higher compression)
     nbseg: int
-        the number of segment used for noise evaluation, see util.signal_tools.findnoiselevel
+        the number of segments used for noise evaluation, see util.signal_tools.findnoiselevel
     axis: int
         the axis on which the noise is evaluated, default is fastest varying dimension
     """
