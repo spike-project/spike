@@ -31,6 +31,7 @@ from spike.util.counter import timeit
 from scipy.optimize import curve_fit
 #from spike.util.signal_tools import findnoiselevel, findnoiselevel_2D
 
+debug = 0
 def _identity(x):
     "the null function - used as default function argument"
     return x
@@ -106,11 +107,32 @@ class Peak2D(Peak):
         """
         return "%d, %s, %.5f, %.5f, %.5f" % \
                 (self.Id, self.label, f1(self.posF1), f2(self.posF2), self.intens)
-        
+
 class PeakList(list):
     """
     the class generic to all peak lists
     """
+    def __init__(self, *arg, **kwds): #threshold=None, source=None):
+        super(PeakList, self).__init__(*arg)
+        # I can't figure out how to explictly specify a keyword arg with *args:
+        #   def __init__(self, *arg, threshold=None, source=None): ...
+        # so I use **kwds and sqauwk if something unexpected is passed in.
+        # code taken from   lib/python2.7/pstats.py
+        if "threshold" in kwds:
+            self.threshold = kwds["threshold"]
+            del kwds["threshold"]
+        else:
+            self.threshold = None
+        if "source" in kwds:
+            self.source = kwds["source"]
+            del kwds["source"]
+        else:
+            self.source = None
+        if kwds:
+            keys = kwds.keys()
+            keys.sort()
+            extras = ", ".join(["%s=%s" % (k, kwds[k]) for k in keys])
+            raise ValueError, "unrecognized keyword args: %s" % extras
     @property
     def intens(self):
         "returns a numpy array of the intensities"
@@ -124,6 +146,7 @@ class PeakList(list):
     def largest(self):
         "sort the peaklist in decresing order of intensities"
         self.sort(reverse = True, key = lambda p:p.intens)
+    
 class Peak1DList(PeakList):
     """
     store a list of 1D peaks
@@ -147,6 +170,25 @@ class Peak1DList(PeakList):
         print( "id, label, position, intensity")
         for pk in self:
             print(pk.report(f=f), file=file)
+    def display(self, axis = None, peak_label = False, zoom = None, show = False, f=_identity):
+        """displays 1D peaks"""
+        import spike.Display.testplot as testplot
+        plot = testplot.plot()
+        if zoom:
+            z0=zoom[0]
+            z1=zoom[1]
+            pk = [i for i,p in enumerate(self) if p.pos>=z0 and p.pos<=z1]
+        else:
+            pk = range(len(self))
+        if axis is None:
+            plot.plot(f(self.pos[pk]), self.intens[pk], "x")
+            if peak_label:
+                for p in pk:
+                    plot.text(f(self.pos[p]), 1.05*self.intens[p], self.label[p])
+        else:
+            raise Exception("to be done")
+        if show: plot.show()
+
 class Peak2DList(PeakList):
     """
     store a list of 2D peaks
@@ -175,6 +217,35 @@ class Peak2DList(PeakList):
         print( "id, label, posF1, posF2, intensity", file=file)
         for pk in self:
             print(pk.report(f1=f1, f2=f2), file=file)
+    def display(self, axis = None, peak_label = False, zoom = None, show = False, f1=_identity, f2=_identity):
+        """displays 2D peak list"""
+        import spike.Display.testplot as testplot
+        plot = testplot.plot()
+        if zoom:        # should be ((F1_limits),(F2_limits))
+            z1lo=zoom[0][0]
+            z1up=zoom[0][1]
+            z2lo=zoom[1][0]
+            z2up=zoom[1][1]
+            pk = []
+            for p in range(len(self)):
+                plp = self[p]
+                if plp.posF1>=z1lo and plp.posF1<=z1up and plp.posF2>=z2lo and plp.posF2<=z2up:
+                    pk.append(p)
+        else:
+            pk = range(len(self))
+        if debug>0:  print("plotting %d peaks"%len(pk))
+        if axis is None:
+            plF1 = self.posF1 # these are ndarray !
+            plF2 = self.posF2
+            plot.plot(f2(plF2[pk]), f1(plF1[pk]), "x")
+            if peak_label:
+                for p in pk:
+                    plp = self[p]
+                    plot.text(1.01*plp.posF2, 1.01*plp.posF1, plp.label)
+        else:
+            raise Exception("to be done")
+        if show: plot.show()
+
 def _peaks2d(npkd, threshold = 0.1, zoom = None, value = False, zones=0):
     '''
     Extract peaks from 2d Array dataset
@@ -201,19 +272,22 @@ def peakpick(npkd, threshold = None, zoom = None):
             threshold = 3*npkd.std()
         listpkF1, listint = peaks1d(npkd, threshold=threshold, zoom=zoom)
                             #     Id, label, intens, pos        
-        pkl = Peak1DList( [ Peak1D(i, str(i), intens, pos) \
-            for i, pos, intens in zip( range(len(listint)), list(listpkF1), list(listint) ) ] )
+        pkl = Peak1DList( ( Peak1D(i, str(i), intens, pos) \
+            for i, pos, intens in zip( range(len(listint)), list(listpkF1), list(listint) ) ), \
+                        threshold=threshold, source=npkd )
         npkd.peaks = pkl
     elif npkd.dim == 2:
         if threshold is None:
             threshold = 3*npkd.std()
         listpkF1, listpkF2, listint = peaks2d(npkd, threshold=threshold, zoom=zoom)
                             #     Id, label, intens, posF1, posF2 
-        pkl = Peak2DList( [ Peak2D(i, str(i), intens, posF1, posF2) \
-            for i, posF1, posF2, intens in zip( range(len(listpkF1)), listpkF1, listpkF2, listint ) ] )
+        pkl = Peak2DList( ( Peak2D(i, str(i), intens, posF1, posF2) \
+            for i, posF1, posF2, intens in zip( range(len(listpkF1)), listpkF1, listpkF2, listint ) ), \
+                                    threshold=threshold, source=npkd )
         npkd.peaks = pkl
     else:
         raise NPKError("Not implemented of %sD experiment"%npkd.dim, data=npkd)
+    print (threshold)
     return npkd
         
 #----------------------------------------------------------
@@ -404,68 +478,11 @@ def centroid(npkd, *arg, **kwarg):
 #-------------------------------------------------------
 def display_peaks(npkd, axis = None, peak_label = False, zoom = None, show = False, f=_identity, f1=_identity, f2=_identity):
     if npkd.dim == 1:
-        return display_peaks1D(npkd, axis=axis, peak_label=peak_label, zoom=zoom, show=show, f=f)
+        return npkd.peaks.display( axis=axis, peak_label=peak_label, zoom=zoom, show=show, f=f)
     elif npkd.dim == 2:
-        return display_peaks2D(npkd, axis=axis, peak_label=peak_label, zoom=zoom, show=show, f1=f1, f2=f2)
+        return npkd.peaks.display( axis=axis, peak_label=peak_label, zoom=zoom, show=show, f1=f1, f2=f2)
     else:
         raise Exception("to be done")
-def display_peaks1D(npkd, axis = None, peak_label = False, zoom = None, show = False, f=_identity):
-    """displays 1D peaks"""
-    import spike.Display.testplot as testplot
-    plot = testplot.plot()
-    pl = npkd.peaks
-    if zoom:
-        z0=zoom[0]
-        z1=zoom[1]
-        if z1 < 0 : z1 = npkd.size1 + z1
-        pk = [i for i,p in enumerate(pl) if p.pos>=z0 and p.pos<=z1]
-    else:
-        z0 = 0
-        z1 = npkd.size1
-        pk = range(len(pl))
-    if axis is None:
-        plot.plot(f(pl.pos[pk]), pl.intens[pk], "x")
-        if peak_label:
-            for p in pk:
-                plot.text(f(pl.pos[p]), 1.05*pl.intens[p], pl.label[p])
-    else:
-        raise Exception("to be done")
-    if show: plot.show()
-    return npkd
-def display_peaks2D(npkd, axis = None, peak_label = False, zoom = None, show = False, f1=_identity, f2=_identity):
-    """displays 2D peaks"""
-    import spike.Display.testplot as testplot
-    plot = testplot.plot()
-    pl = npkd.peaks
-    if zoom:        # should be ((F1_limits),(F2_limits))
-        z1lo=zoom[0][0]
-        z1up=zoom[0][1]
-        z2lo=zoom[1][0]
-        z2up=zoom[1][1]
-        pk = []
-        for p in xrange(pl.len()):
-            plp = pl[p]
-            if plp.posF1>=z1lo and plp.posF1<=z1up and plp.posF2>=z2lo and plp.posF2<=z2up:
-                pk.append(p)
-    else:
-        z1lo=0
-        z1up=npkd.size1-1
-        z2lo=0
-        z2up=npkd.size2-1
-        pk = range(len(pl))
-    if npkd.debug>0:  print("plotting %d peaks"%len(pk))
-    if axis is None:
-        plF1 = pl.posF1 # these are ndarray !
-        plF2 = pl.posF2
-        plot.plot(f2(plF2[pk]), f1(plF1[pk]), "x")
-        if peak_label:
-            for p in pk:
-                plp = pl[p]
-                plot.text(1.01*plp.posF2, 1.01*plp.posF1, plp.label)
-    else:
-        raise Exception("to be done")
-    if show: plot.show()
-    return npkd
 
 class PeakTests(unittest.TestCase):
     def test_peaks2d(self):
