@@ -83,13 +83,14 @@ def ft_phase_modu(data, axis = "F1" ):
     if data.dim != 2 :
         raise NPKError("implemented only in 2D",data=data)
     data.flip().revf("F1").fft("F1").flop().reverse("F1")
+    return data
 NPKData_plugin("ft_phase_modu", ft_phase_modu)
 
 #---------------------------------------------------------------------------
 def ft_n_p(data, axis ="F1"):
     """F1-Fourier transform for N+P (echo/antiecho) 2D"""
     data.conv_n_p().ft_sh()
-
+    return data
 NPKData_plugin("ft_n_p", ft_n_p)
 
 class Bruker_NMR_FT(unittest.TestCase):
