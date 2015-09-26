@@ -981,10 +981,10 @@ class NPKData(object):
 
         """
         if self.itype != 0 : 
-            NPKError("Data should be real")
+            raise NPKError("Data should be real")
         else:
             if self.dim == 1:
-                NPKError( "Can not extract diagonal from a 1D buffer")
+                raise NPKError( "Can not extract diagonal from a 1D buffer")
             elif self.dim == 2:
                 c = self.diag2D()
             elif self.dim == 3:
@@ -1011,7 +1011,7 @@ class NPKData(object):
         return c
     #--------------------------------------------------------------------------
     def diag3D(self,direc):
-        NPKError("Not implemented yet")
+        raise NPKError("Not implemented yet")
         # self.check3D()
         # print int(direc[1])-1
         # print int(direc[2])-1
