@@ -1934,9 +1934,10 @@ class NPKData(object):
             a = self.row(i)
             b = self.row(i+1)
             self.set_row(i,a.copy().add(b) )    # put sum
-            a.buffer += -2*b.buffer             # compute diff
+            a.buffer += -b.buffer             # compute diff
             a.buffer = as_float( 1j*as_cpx(a.buffer) )  # dephase by 90°
             self.set_row(i+1,a)                 # and put back
+        self.axis1.itype = 1
         return self
 
     #-------------------------------------------------------------------------------
