@@ -107,11 +107,22 @@ class Bruker_NMR_FT(unittest.TestCase):
         d1 = NPKData(dim=2)
         d1.axis2.itype = 0
         d1.ft_seq()
+
         d1.axis2.itype = 1
         d1.ft_sim()
+
         d1.axis1.itype = 0
         d1.ft_tppi()
+
         d1.axis1.itype = 1
         d1.ft_sh()
+
         d1.axis1.itype = 1
         d1.ft_sh_tppi()
+
+        d1.axis1.itype = 1
+        d1.ft_n_p()
+        
+        d1.axis2.itype = 1
+        d1.axis1.itype = 0
+        d1.ft_phase_modu()
