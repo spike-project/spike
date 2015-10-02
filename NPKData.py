@@ -1171,7 +1171,7 @@ class NPKData(object):
             test = self.axis1.check_zoom(zoom[0]) and self.axis2.check_zoom(zoom[1])        
         return test
     def display(self, scale = 1.0, absmax = None, show = False, label = None, new_fig = True, axis = None,
-                mode3D = False, zoom = None, xlabel="_def_", ylabel = "_def_", figure = None):
+                mode3D = False, zoom = None, xlabel="_def_", ylabel = "_def_", title = None, figure = None):
         """
         not so quick and dirty display using matplotlib or mlab - still a first try
         
@@ -1290,6 +1290,8 @@ class NPKData(object):
             fig.set_xlabel(xlabel)
         if ylabel is not None:
             fig.set_ylabel(ylabel)
+        if title:
+            fig.set_title(title)
         if label: fig.legend()
         if show and not figure: plot.show()
         return self

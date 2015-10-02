@@ -69,8 +69,10 @@ def baseline(y, degree=2, power=1, chunksize=2000):
         bl[i*lsize-recov:i*lsize+recov] = bl[i*lsize-recov:i*lsize+recov]*corrm1 + tbl[:2*recov]*corr
         bl[i*lsize+recov:] = tbl[2*recov-1:]
     return bl
+
+
     
-def minbl(bl,y):
+def minbl(bl, y):
     '''
     Used in correctbaseline for making the fusion of the intermediate baseline with the points under the baseline. 
     '''
@@ -78,16 +80,27 @@ def minbl(bl,y):
     blmin[bl-y>0]=y[bl-y>0]
     return blmin
 
-def correctbaseline(y, iterations = 1, chunksize=100):
+def correctbaseline(y, iterations=1, chunksize=100, firstpower=0.3, secondpower=7, degree=2,  chunkratio=1.0, debug = False):
     '''
     Find baseline by using low norm value and then high norm value to attract the baseline on the small values.
+    iterations : number of iterations for convergence toward the small values. 
+    chunksize : size of each chunk on which is done the minimization.
+    firstdeg : degree used for the first minimization 
+    degree : degree of the polynome used for approaching each signal chunk. 
+    chunkratio : ratio for changing the chunksize inside main loop
+
     '''
-    bl = baseline(y, degree=1, power=0.3, chunksize = chunksize)
-    blmin = []
-    for i in range(iterations): # Iterating for making converge toward the smallest values. 
+    bl = baseline(y, degree=degree, power=firstpower, chunksize = chunksize)
+    bls = {'bl':[], 'blmin':[]}
+    for i in range(iterations):
         blmin = minbl(bl, y)
-        bl = baseline(blmin, degree=2, power=7, chunksize = chunksize)
-    return bl
+        bl = baseline(blmin, degree=degree, power=secondpower, chunksize = int(chunksize*chunkratio))
+        bls['bl'] += bl
+        bls['blmin'] += blmin
+    if debug:
+        return bl, bls
+    else:
+        return bl
 
 class BC_Tests(unittest.TestCase):
     def test_poly(self):
@@ -100,6 +113,13 @@ class BC_Tests(unittest.TestCase):
         x = np.linspace(0,10,N)
         y = np.sin(x/2) + 0.2*np.random.randn(N)
         b = baseline(y,chunksize=N/20)
+        corr = y-b
+        self.assertTrue(np.std(corr) < 0.21)
+    def test_correctbaseline(self):
+        N = 100000
+        x = np.linspace(0,10,N)
+        y = np.sin(x/2) + 0.2*np.random.randn(N)
+        b = correctbaseline(y, iterations=10, chunksize=N/20)
         corr = y-b
         self.assertTrue(np.std(corr) < 0.21)
         
