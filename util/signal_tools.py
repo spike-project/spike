@@ -22,6 +22,7 @@ from ..NPKData import NPKData
 def filtering(sig, window = None):
     '''
     Filter for real signal
+    window : list [f1, f2], eg: [0.1, 0.3], 0 < f < 1
     '''
     def FIR_filter(sig, nbpoles = 80, window = None ):
         filt = firwin(nbpoles, window, pass_zero = False) 
