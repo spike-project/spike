@@ -69,6 +69,25 @@ def baseline(y, degree=2, power=1, chunksize=2000):
         bl[i*lsize-recov:i*lsize+recov] = bl[i*lsize-recov:i*lsize+recov]*corrm1 + tbl[:2*recov]*corr
         bl[i*lsize+recov:] = tbl[2*recov-1:]
     return bl
+    
+def minbl(bl,y):
+    '''
+    Used in correctbaseline for making the fusion of the intermediate baseline with the points under the baseline. 
+    '''
+    blmin = bl.copy()
+    blmin[bl-y>0]=y[bl-y>0]
+    return blmin
+
+def correctbaseline(y, iterations = 1, chunksize=100):
+    '''
+    Find baseline by using low norm value and then high norm value to attract the baseline on the small values.
+    '''
+    bl = baseline(y, degree=1, power=0.3, chunksize = chunksize)
+    blmin = []
+    for i in range(iterations): # Iterating for making converge toward the smallest values. 
+        blmin = minbl(bl, y)
+        bl = baseline(blmin, degree=2, power=7, chunksize = chunksize)
+    return bl
 
 class BC_Tests(unittest.TestCase):
     def test_poly(self):
