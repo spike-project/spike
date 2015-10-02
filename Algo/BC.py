@@ -25,21 +25,21 @@ def poly(x,coeff):
         y += lcoeff.pop()
     return y
 
-def fitpolyL1(x, y, degree=2, power=1):
+def fitpolyL1(x, y, degree=2, power=1, method="Powell"):
     "fit with L1 norm a polynome to a function y over x, returns coefficients"
     coeff0 = [0]*(degree+1)
     #pmin = lambda c, x, y: np.sum(np.abs(y-poly(x,c)) )
     pmin = lambda c, x, y: np.sum(np.power(np.abs(y-poly(x,c)), power) )
-    res = minimize(pmin, coeff0, args=(x,y), method="Powell")
+    res = minimize(pmin, coeff0, args=(x,y), method=method)
     return res.x
 
-def bcL1(y, degree=2, power=1):
+def bcL1(y, degree=2, power=1, method="Powell"):
     "compute a baseline on y using fitpolyL1"
     x = np.arange(1.0*y.size)
-    coeff = fitpolyL1(x, y, degree=degree, power=power)
+    coeff = fitpolyL1(x, y, degree=degree, power=power, method=method)
     return poly(x,coeff)
 
-def baseline(y, degree=2, power=1, chunksize=2000):
+def baseline(y, degree=2, power=1, method="Powell", chunksize=2000):
     """
     compute a piece-wise baseline on y using fitpolyL1
     degree is the degree of the underlying polynome
@@ -50,7 +50,7 @@ def baseline(y, degree=2, power=1, chunksize=2000):
     """
     nchunk = y.size/chunksize
     if nchunk <2:
-        bl = bcL1(y, degree=degree, power=power)
+        bl = bcL1(y, degree=degree, power=power, method=method)
     else:
         lsize = y.size/nchunk
         recov = lsize/10  # recovering parts
@@ -80,7 +80,7 @@ def minbl(bl, y):
     blmin[bl-y>0]=y[bl-y>0]
     return blmin
 
-def correctbaseline(y, iterations=1, chunksize=100, firstpower=0.3, secondpower=7, degree=2,  chunkratio=1.0, debug = False):
+def correctbaseline(y, iterations=1, chunksize=100, firstpower=0.3, secondpower=7, degree=2,  chunkratio=1.0, method="Powell", debug = False):
     '''
     Find baseline by using low norm value and then high norm value to attract the baseline on the small values.
     iterations : number of iterations for convergence toward the small values. 
@@ -90,13 +90,13 @@ def correctbaseline(y, iterations=1, chunksize=100, firstpower=0.3, secondpower=
     chunkratio : ratio for changing the chunksize inside main loop
 
     '''
-    bl = baseline(y, degree=degree, power=firstpower, chunksize = chunksize)
+    bl = baseline(y, degree=degree, power=firstpower, chunksize = chunksize, method="Powell")
     bls = {'bl':[], 'blmin':[]}
     for i in range(iterations):
         blmin = minbl(bl, y)
-        bl = baseline(blmin, degree=degree, power=secondpower, chunksize = int(chunksize*chunkratio))
-        bls['bl'] += bl
-        bls['blmin'] += blmin
+        bl = baseline(blmin, degree=degree, power=secondpower, chunksize = int(chunksize*chunkratio), method=method)
+        bls['bl'].append(bl)
+        bls['blmin'].append(blmin)
     if debug:
         return bl, bls
     else:
