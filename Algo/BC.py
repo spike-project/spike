@@ -121,7 +121,7 @@ class BC_Tests(unittest.TestCase):
         y = np.sin(x/2) + 0.2*np.random.randn(N)
         b = correctbaseline(y, iterations=10, chunksize=N/20)
         corr = y-b
-        self.assertTrue(np.std(corr) < 0.21)
+        self.assertTrue(np.std(corr) < 0.25)
         
 if __name__ == '__main__':
     unittest.main()
