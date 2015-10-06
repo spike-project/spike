@@ -71,15 +71,7 @@ def baseline(y, degree=2, power=1, method="Powell", chunksize=2000):
     return bl
 
 
-def minbl(bl, y):
-    '''
-    Used in correctbaseline for making the fusion of the intermediate baseline with the points under the baseline. 
-    '''
-    blmin = bl.copy()
-    blmin[bl-y>0]=y[bl-y>0]
-    return blmin
-
-def correctbaseline(y, iterations=1, chunksize=100, firstpower=0.3, secondpower=7, degree=2,  chunkratio=1.0, ymaxratio = 1.0, method="Powell", debug = False):
+def correctbaseline(y, iterations=1, chunksize=100, firstpower=0.3, secondpower=7, degree=2,  chunkratio=1.0, interv_ignore = None, method="Powell", debug = False):
     '''
     Find baseline by using low norm value and then high norm value to attract the baseline on the small values.
     iterations : number of iterations for convergence toward the small values. 
@@ -87,15 +79,18 @@ def correctbaseline(y, iterations=1, chunksize=100, firstpower=0.3, secondpower=
     firstdeg : degree used for the first minimization 
     degree : degree of the polynome used for approaching each signal chunk. 
     chunkratio : ratio for changing the chunksize inside main loop
-    ymaxratio : ratio for cutting the spectrum to a maximal values (avoids issues with water pick)
+    interv_ignore : ignore a given intervall in the spectrum (eg : avoids issues with water pick)
     '''
-    ylim = y.max()*ymaxratio
-    z = np.ones(y.size)*ylim
-    y[y>ylim] = z[y>ylim]
+    
+    if interv_ignore:
+        ii = interv_ignore
+        delta = ii[1]-ii[0]
+        y[ii[0]:ii[1]] = y[ii[0]] + np.arange(delta)/float(delta)*(y[ii[1]]-y[ii[0]]) # linear interpolation on the intervall.
+    
     bl = baseline(y, degree=degree, power=firstpower, chunksize = chunksize, method="Powell")
     bls = {'bl':[], 'blmin':[]}
     for i in range(iterations):
-        blmin = minbl(bl, y)
+        blmin = np.minimum.reduce([bl,y])
         bl = baseline(blmin, degree=degree, power=secondpower, chunksize = int(chunksize*chunkratio), method=method)
         bls['bl'].append(bl)
         bls['blmin'].append(blmin)
