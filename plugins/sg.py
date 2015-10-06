@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 """
-set of function Savitski-Golay smoothing
+set of function Savitsky-Golay smoothing
 
 """
 
@@ -13,7 +13,7 @@ from spike.util.signal_tools import findnoiselevel
 
 ########################################################################
 def sg(npkd, window_size, order, deriv=0, axis=0):
-    """applies saviski-golay of order filter to data
+    """applies Savitzky-Golay of order filter to data
     window_size : int
         the length of the window. Must be an odd integer number.
     order : int
@@ -42,7 +42,7 @@ def sg(npkd, window_size, order, deriv=0, axis=0):
     
 ########################################################################
 def sg2D(npkd, window_size, order, deriv=None):
-    """applies a 2D saviski-golay of order filter to data
+    """applies a 2D Savitzky-Golay of order filter to data
     window_size : int
         the length of the square window. Must be an odd integer number.
     order : int
