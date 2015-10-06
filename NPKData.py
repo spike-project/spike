@@ -1246,6 +1246,20 @@ class NPKData(object):
                 z1up=self.size1-1
                 z2lo=0
                 z2up=self.size2-1
+            if axis is None:
+                axis = [None,None]
+                if self.axis1.units == "Hz":
+                    axis[0] = self.axis1.freq_axis()
+                elif self.axis1.units == "ppm":
+                    axis[0] = self.axis1.ppm_axis()
+                else:
+                    axis[0] = self.axis1.points_axis()
+                if self.axis2.units == "Hz":
+                    axis[1] = self.axis2.freq_axis()
+                elif self.axis1.units == "ppm":
+                    axis[1] = self.axis2.ppm_axis()
+                else:
+                    axis[1] = self.axis2.points_axis()
             if not absmax:  # absmax is the largest point on spectrum, either given from call, or handled internally
                 if not self.absmax:     # compute it if absent  - but do it on zoom window ! as this is a killer for large onfile datasets
                     absmax = np.nanmax( np.abs(self.buffer[z1lo:z1up:step1,z2lo:z2up:step2]) )
