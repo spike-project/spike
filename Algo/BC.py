@@ -4,16 +4,18 @@
 """
 This module contains several utilities for baseline correction of spectra
 
-
 Created by Marc-Andre on 2015-03-26.
+
+Modification by Lionel 2015-07-10
 
 """
 
 from __future__ import print_function
 from scipy.optimize import minimize
 import numpy as np
-#from numpy.polynomial.legendre import legval as poly
 import unittest
+import multiprocessing as mp
+from scipy import interpolate
 
 def poly(x,coeff):
     "computes the polynomial over x with coeff"
@@ -33,13 +35,22 @@ def fitpolyL1(x, y, degree=2, power=1, method="Powell"):
     res = minimize(pmin, coeff0, args=(x,y), method=method)
     return res.x
 
-def bcL1(y, degree=2, power=1, method="Powell"):
+def bcL1(args): #y, degree=2, power=1, method="Powell"
+    # print(args)
+    y, degree, power, method  = args
     "compute a baseline on y using fitpolyL1"
     x = np.arange(1.0*y.size)
     coeff = fitpolyL1(x, y, degree=degree, power=power, method=method)
     return poly(x,coeff)
 
-def baseline(y, degree=2, power=1, method="Powell", chunksize=2000):
+def interp_bl(bl, lsize, nbseg = 11, kind = "linear"):
+    bl_reduced = np.concatenate((bl[::lsize/nbseg], bl[-1:]))
+    x_reduced = np.concatenate((np.arange(bl.size)[::lsize/nbseg], np.array([bl.size-1]))) 
+    bl_interp = interpolate.interp1d(x_reduced, bl_reduced, kind=kind) # interpolate.splrep(x_reduced, bl_reduced, s=0)
+    bl_final = bl_interp(np.arange(bl.size))
+    return bl_final
+
+def baseline(y, degree=2, power=1, method="Powell", chunksize=2000, nbcores= 10):
     """
     compute a piece-wise baseline on y using fitpolyL1
     degree is the degree of the underlying polynome
@@ -53,25 +64,23 @@ def baseline(y, degree=2, power=1, method="Powell", chunksize=2000):
         bl = bcL1(y, degree=degree, power=power, method=method)
     else:
         lsize = y.size/nchunk
-        recov = lsize/10  # recovering parts
-        corr = np.linspace(0.0,1.0,2*recov)
-        corr = np.sin( np.linspace(0,np.pi/2,2*recov) )**2  # cosine roll-off
-        corrm1 = 1.0-corr
         bl = np.zeros_like(y)
-        bl[0:lsize+recov] = bcL1(y[0:lsize+recov], degree=degree, power=power)
-        i = 0 # if nchunk == 2 !
-        for i in range(1,nchunk-1):
-            tbl = bcL1(y[i*lsize-recov:(i+1)*lsize+recov], degree=degree, power=power)
-            bl[i*lsize-recov:i*lsize+recov] = bl[i*lsize-recov:i*lsize+recov]*corrm1 + tbl[:2*recov]*corr
-            bl[i*lsize+recov:(i+1)*lsize+recov] = tbl[2*recov:]
-        i = i+1
-        tbl = bcL1(y[i*lsize-recov:-1], degree=degree)
-        bl[i*lsize-recov:i*lsize+recov] = bl[i*lsize-recov:i*lsize+recov]*corrm1 + tbl[:2*recov]*corr
-        bl[i*lsize+recov:] = tbl[2*recov-1:]
-    return bl
+        p = mp.Pool(nbcores) # Multiprocessing
+        
+        args = iter([[y[i*lsize:(i+1)*lsize], degree, power, method] for i in range(nchunk)])
+        res = p.imap(bcL1, args)
+        for i, estimate in enumerate(res):
+            bl[i*lsize:(i+1)*lsize] = estimate
+        p.close()
+    bl_final = interp_bl(bl, lsize, kind = "linear") # Smoothing to avoid segmentation of the baseline.
+    
+    return bl_final
 
-
-def correctbaseline(y, iterations=1, chunksize=100, firstpower=0.3, secondpower=7, degree=2,  chunkratio=1.0, interv_ignore = None, method="Powell", debug = False):
+def correctbaseline(y, iterations=1, chunksize=100, firstpower=0.3,
+                        secondpower=7, degree=2,  chunkratio=1.0,
+                        interv_ignore = None, method="Powell",
+                        nbcores= 10,
+                        debug = False):
     '''
     Find baseline by using low norm value and then high norm value to attract the baseline on the small values.
     iterations : number of iterations for convergence toward the small values. 
@@ -87,11 +96,11 @@ def correctbaseline(y, iterations=1, chunksize=100, firstpower=0.3, secondpower=
         delta = ii[1]-ii[0]
         y[ii[0]:ii[1]] = y[ii[0]] + np.arange(delta)/float(delta)*(y[ii[1]]-y[ii[0]]) # linear interpolation on the intervall.
     
-    bl = baseline(y, degree=degree, power=firstpower, chunksize = chunksize, method="Powell")
+    bl = baseline(y, degree=degree, power=firstpower, chunksize = chunksize, nbcores=nbcores, method="Powell")
     bls = {'bl':[], 'blmin':[]}
     for i in range(iterations):
-        blmin = np.minimum.reduce([bl,y])
-        bl = baseline(blmin, degree=degree, power=secondpower, chunksize = int(chunksize*chunkratio), method=method)
+        blmin = np.minimum.reduce([bl, y])
+        bl = baseline(blmin, degree=degree, power=secondpower, chunksize = int(chunksize*chunkratio), nbcores=nbcores, method=method)
         bls['bl'].append(bl)
         bls['blmin'].append(blmin)
     if debug:
