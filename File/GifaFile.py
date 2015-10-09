@@ -63,10 +63,20 @@ class GifaFile(object):
     def __init__(self, fname, access="r", debug = 0):
         self.debug = debug
 #        self.buffer = []
-        self.fname = fname
-        if access not in ("w","r"):
-            raise Exception(access + " : acces key not valid")
-        self.file = open(fname, access) # open file at once  - CR change file to open Python 2.6
+        if isinstance(fname, str):  # check if we have a string
+            self.fname = fname
+            if access not in ("w","r"):
+                raise Exception(access + " : acces key not valid")
+            self.file = open(fname, access) # open file at once  - CR change file to open Python 2.6
+            if access == "r":
+                self.fileB = open(fname, "rb") # CR "b" for Windows
+        else:       # if not string, assume a File object
+            try:
+                self.fname = fname.name
+            except AttributeError:
+                self.fname = "internal_buffer"
+            self.file = fname
+            self.fileB = fname
         if access == "r":     # check if it is a real one
             l = self.file.readline()
             hsz = re.match('HeaderSize\s*=\s*(\d+)', l)
@@ -75,7 +85,6 @@ class GifaFile(object):
                 raise Exception("file %s not valid"%fname)
             self.headersize = int(hsz.group(1))
             self.file.seek(0)   # and rewind.
-            self.fileB = open(fname, "rb") # CR for Windows
         if access == "w":
             self.headersize = HEADERSIZE
         self.header = None

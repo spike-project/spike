@@ -35,13 +35,13 @@ if eg == 2:
     # FFT with zerofilling
     f = Import_1D("../DATA_test/angio_ms_000005.d")
     f.report()
-    f.units = 'm/z'
+    f.currentunit = 'm/z'
     f.apod_sin(maxi = 0.5).chsize(f.buffer.size*2).rfft().modulus().display(label = "zerofill x2", show = True)
 
 if eg == 2.1:
     # FFT with zerofilling, processing cutting the pipes.
     f = Import_1D("../DATA_test/angio_ms_000005.d")
-    f.units = 'm/z'
+    f.currentunit = 'm/z'
     f.apod_sin(maxi = 0.5)
     f.chsize(f.buffer.size*2).rfft()
     f.modulus().display(label = "zerofill x2", show = True)
@@ -57,7 +57,7 @@ if eg == 2.1:
 if eg == 3:
     # RECITAL
     f = Import_1D("../DATA_test/angio_ms_000005.d")
-    f.units = 'm/z'
+    f.currentunit = 'm/z'
     f.recital(f.buffer.size*4).modulus().display(label = "RECITAL x4", show = True)
 
 if eg == 4:

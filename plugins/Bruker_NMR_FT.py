@@ -3,17 +3,17 @@
 
 """
 This plugins implement the set of Fourier Transform used for NMR
+and some other related utilities
 
 MAD September 2015
 
-NOT FULLY TESTED !!!
 """
 
 from __future__ import print_function
 import unittest
 
 from spike import NPKError
-from spike.NPKData import NPKData_plugin
+from spike.NPKData import NPKData_plugin, as_float, as_cpx
 
 ########################################################################
 def check_real(data, axis):
@@ -93,6 +93,35 @@ def ft_n_p(data, axis ="F1"):
     return data
 NPKData_plugin("ft_n_p", ft_n_p)
 
+
+#-------------------------------------------------------------------------------
+def bruker_corr(self):
+    """
+    applies a correction on the spectrum for the time offset in the FID.
+    time offset is stored in the axis property zerotime
+    """
+    delay = self.axes(self.dim).zerotime
+    self.phase(0, -360.0*delay, axis=0) # apply phase correction
+    return self
+NPKData_plugin("bruker_corr", bruker_corr)
+#-------------------------------------------------------------------------------
+def conv_n_p(self):
+    """
+    realises the n+p to SH conversion
+    """
+    self.check2D()
+    for i in xrange(0,self.size1,2):
+        a = self.row(i)
+        b = self.row(i+1)
+        self.set_row(i,a.copy().add(b) )    # put sum
+        a.buffer += -b.buffer             # compute diff
+        a.buffer = as_float( 1j*as_cpx(a.buffer) )  # dephase by 90°
+        self.set_row(i+1,a)                 # and put back
+    self.axis1.itype = 1
+    return self
+NPKData_plugin("conv_n_p", conv_n_p)
+
+#########################################################
 class Bruker_NMR_FT(unittest.TestCase):
     def test_1D(self):
         '''Test mostly syntax'''
@@ -101,7 +130,7 @@ class Bruker_NMR_FT(unittest.TestCase):
         d1.axis1.itype = 0
         d1.ft_seq()
         d1.axis1.itype = 1
-        d1.ft_sim()
+        d1.ft_sim().bruker_corr()
     def test_2D(self):
         '''Test mostly syntax'''
         from ..NPKData import NPKData

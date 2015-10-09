@@ -34,13 +34,13 @@ if eg == 2:
     # FFT with zerofilling
     o = Import_1D("../DATA_test/ubiquitin_5_scan_res_30000_1.dat")
     o.report()
-    o.units = 'm/z'
+    o.currentunit = 'm/z'
     o.apod_sin(maxi = 0.5).chsize(o.buffer.size*2).rfft().modulus().display(label = "zerofill x2", show = True)
 
 if eg == 2.1:
     # FFT with zerofilling, processing cutting the pipes.
     o = Import_1D("../DATA_test/angio_ms_000005.d")
-    o.units = 'm/z'
+    o.currentunit = 'm/z'
     o.apod_sin(maxi = 0.5)
     o.chsize(o.buffer.size*2).rfft()
     o.modulus().display(label = "zerofill x2", show = True)
@@ -49,14 +49,14 @@ if eg == 3:
     # RECITAL
     o = Import_1D("../DATA_test/ubiquitin_5_scan_res_30000_1.dat")
     o.report()
-    o.units = 'm/z'
+    o.currentunit = 'm/z'
     o.recital(o.buffer.size*4).modulus().display(label = "RECITAL x4", show = True)
 
 if eg == 4:
     # urQRd
     o = Import_1D("../DATA_test/ubiquitin_5_scan_res_30000_1.dat")
     o.report()
-    o.units = 'm/z'
+    o.currentunit = 'm/z'
     o.urqrd(k = 300).rfft().modulus().display(label = "urQRd, rank = 300", show = True)
 
 plt.show()

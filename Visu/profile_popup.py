@@ -65,7 +65,7 @@ class NavigToolbar(NavigationToolbar):
         if action.find('save') == 0:
             kind_saved = action[4:]
             print("kind_saved ", kind_saved)
-            if self.data_profile.axis1.units == 'm/z':
+            if self.data_profile.axis1.currentunit == 'm/z':
                 act.triggered.connect(partial(self.dial.open_file_dialog, kind_saved))                 # Opens window dialog box
             else:
                 print("can be saved only in m/z mode.")
@@ -152,7 +152,7 @@ class PROFILE(QMainWindow):
         Plots the profile in the window
         '''
         if debug(self):
-            print("self.data_profile.units ", self.data_profile.units)
+            print("self.data_profile.currentunit ", self.data_profile.currentunit)
         print("self.data_profile.along  ", self.data_profile.along)
         if 'diag' in self.data_profile.along :
             if self.data_profile.along[-1] == 'x':
@@ -163,11 +163,11 @@ class PROFILE(QMainWindow):
             axis_profile = self.axes_mz(self.data_profile.axes(1))                                          # m/z axis x values
         elif self.data_profile.along == 'y':
             axis_profile = self.axes_mz(self.data_profile.axes(2))                                          # m/z axis y values
-        if self.data_profile.axis1.units == 'm/z':
+        if self.data_profile.axis1.currentunit == 'm/z':
             print("makes plot for m/z format ")
             self.axes.set_xlabel('m/z')
             self.axes.plot(axis_profile, self.data_profile.buffer, self.kind_line)                          # Plots the data in m/z in the popup window
-        elif self.data_profile.axis1.units == 'points':
+        elif self.data_profile.axis1.currentunit == 'points':
             self.axes.set_xlabel('points')
             self.axes.plot(self.data_profile.buffer, self.kind_line)                                        # Plots the data in points in the popup window
         self.canvas.draw()                                                                          # print in the canvas.
@@ -216,5 +216,5 @@ if __name__ == "__main__":
     data.ref_mass = 344.0974
     data.ref_freq = 419620.0
     data.highmass = 1000.0
-    data.units = "m/z"
+    data.currentunit = "m/z"
     profile_popup(data)

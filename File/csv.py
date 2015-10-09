@@ -36,7 +36,7 @@ def load(filename, column=0, delimiter=','):
     attribute are in pseuo-coments startin with #$
     value are in columns, separated by delimiter - only the columun given in arg will be loaded
     column = 0 is fine for text files
-    column = 1 is fine for csv files with units
+    column = 1 is fine for csv files with currentunit
     returns a numpy buffer and an attribute dictionary
     """
     buf = []
@@ -118,7 +118,7 @@ class csvTests(unittest.TestCase):
         A.ref_mass = 344.0974
         A.ref_freq = 419620.0
         A.highmass = 1000.0
-        A.units="m/z"
+        A.currentunit="m/z"
         A.save_txt(filename("1D_test.txt"))
         B = FTICRData(dim=2)
         B.load_txt(filename("1D_test.txt"))
@@ -127,11 +127,11 @@ class csvTests(unittest.TestCase):
         
         d = NPKData(name=name2D)
         r = d.row(133)
-        r.units = "ppm"
+        r.currentunit = "ppm"
         r.save_csv(filename("test2.csv.gz"))
         rr = Import_1D(filename("test2.csv.gz"),column=1)
         self.assertAlmostEqual((r-rr).get_buffer().max(), 0.0)
-        self.assertEqual(r.axis1.units, rr.axis1.units)
+        self.assertEqual(r.axis1.currentunit, rr.axis1.currentunit)
         os.unlink(filename("test2.csv.gz"))
 if __name__ == '__main__':
     unittest.main()
