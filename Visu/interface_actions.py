@@ -230,8 +230,8 @@ class INTERACT(object):
         self.interface.ui.pushButton_4.setText("go to pt")
         for dd in self.data.d:
             if debug(self):   
-                print("dd.units = m/z")
-            dd.units = "m/z"
+                print("dd.currentunit = m/z")
+            dd.currentunit = "m/z"
     
     def swap_from_mz(self):
         '''
@@ -241,8 +241,8 @@ class INTERACT(object):
         self.data.mode_point = True
         self.interface.ui.pushButton_4.setText("go to m/z")
         for dd in self.data.d:  # change the mode in all the resolutions
-            if debug(self): print("dd.units = pt")
-            dd.units = "points"
+            if debug(self): print("dd.currentunit = pt")
+            dd.currentunit = "points"
 
     def swap_pt_mz(self):                                                                         
         '''

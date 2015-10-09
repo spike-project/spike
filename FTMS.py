@@ -27,7 +27,7 @@ class FTMSAxis(NPKData.Axis):
     hold information for one FT-MS axis
     used internally
     """
-    def __init__(self, size=1024, specwidth=2000.0*math.pi, itype=0, units="point", ref_mass=344.0974, ref_freq=419620.0, highmass=10000.0, left_point = 0.0):
+    def __init__(self, size=1024, specwidth=2000.0*math.pi, itype=0, currentunit="points", ref_mass=344.0974, ref_freq=419620.0, highmass=10000.0, left_point = 0.0):
         """
         all parameters from Axis, plus
         specwidth   highest frequency,
@@ -40,7 +40,7 @@ class FTMSAxis(NPKData.Axis):
 
         conversion methods should work on numpy arrays as well
         """
-        super(FTMSAxis, self).__init__(size=size, itype=itype, units=units)
+        super(FTMSAxis, self).__init__(size=size, itype=itype)
         self.specwidth = specwidth
         self.ref_mass = ref_mass
         self.ref_freq = ref_freq
@@ -48,12 +48,17 @@ class FTMSAxis(NPKData.Axis):
         self.left_point = left_point
         self.unit_types.append("m/z")
         self.unit_types.append("Hz")
+        self.currentunit = currentunit
+        self.unit_converters["Hz"] = self.itoh  # set-up converters
+        self.unit_bconverters["Hz"] = self.htoi
+        self.unit_converters["m/z"] = self.itomz  # set-up converters
+        self.unit_bconverters["m/z"] = self.mztoi
         for i in ("specwidth", "ref_mass", "ref_freq", "highmass", "left_point"):  # updates storable attributes
             self.attributes.insert(0,i)
     #-------------------------------------------------------------------------------
     def _report(self):
         "low level report"
-        return "size : %d   sw %f  ref_mass %f ref_freq %f  left_point %f  highmass %f  itype %d units %s"%(self.size, self.specwidth, self.ref_mass, self.ref_freq, self.left_point, self.highmass,self.itype, self.units)
+        return "size : %d   sw %f  ref_mass %f ref_freq %f  left_point %f  highmass %f  itype %d currentunit %s"%(self.size, self.specwidth, self.ref_mass, self.ref_freq, self.left_point, self.highmass,self.itype, self.currentunit)
     def report(self):
         "high level reporting - to be redifined by subclasser"
         self._report()
@@ -64,18 +69,21 @@ class FTMSAxis(NPKData.Axis):
         """highest mass of interest - defined by the Nyquist frequency limit"""
         return self.itomz(self.size-1)
     #-------------------------------------------------------------------------------
-    def extract(self, (start, end)):
-        """redefines the axis parameters so that the new axe is extracted for the points [start:end]"""
+    def extract(self, zoom):
+        """
+        redefines the axis parameters so that the new axe is extracted for the points [start:end]
+        zoom is defined in current axis unit
+        """
         #   before      left----------------------------size
         #   before      -------------------------------SW
         #   after             start---------------end
         #                     left'---------------SW'
-        if end <0: end = self.size+end+1
-        if start<0 or end>self.size or start>=end:
-            raise NPKError("The current axis contains %d points, it cannot be extracted from %d to %d"%(self.size, start, end))
+        start, end = self.getslice(zoom)
         self.specwidth = self.itoh(end-1)
         self.left_point += int(start)
         self.size = int(end)-int(start)
+        return start, end
+
     # The 2 htomz() and mztoh() are used to build all other transfoms
     # they are different in Orbitrap and FTICR and should be redefined there
     def htomz(self, value):
@@ -211,15 +219,6 @@ class FTMSData(NPKData.NPKData):
             ax.highmass = highmass
     highmass = property(_ghm, _shm)
     #------------------------------------------------
-    def _gunits(self):
-        "copy units to all the axes"
-        return [self.axes(i+1).units for i in range(self.dim)]
-    def _sunits(self,units):
-        for i in range(self.dim):
-            ax = self.axes(i+1)
-            ax.units = units
-    units = property(_gunits, _sunits)
-    #------------------------------------------------
     def trimz(self, axis=0):
         """
         extract the data so as to keep only lowmass-highmass range
@@ -252,7 +251,7 @@ class FTMSData(NPKData.NPKData):
         show    will call plot.show() at the end, allowing every declared display to be shown on-screen
                 useless in ipython
         label   add a label text to plot
-        xlabel, ylabel : axes label (default is self.units - use None to remove)
+        xlabel, ylabel : axes label (default is self.currentunit - use None to remove)
         axis    used as axis if present, axis length should match experiment length
                 in 2D, should be a pair (xaxis,yaxis)
         new_fig will create a new window if set to True (default) (active only is figure==None)
@@ -272,12 +271,6 @@ class FTMSData(NPKData.NPKData):
                 zm = list(zoom)     # zoom can be passed as a tuple
             if not self.check_zoom(zm):
                 raise NPKError("wrong zoom window : %s "%(str(zm)), data=self)
-            if self.axis1.units == "m/z" :
-                # if using m/z units, we have to build a zoom window and an axis
-                axis = self.axis1.mass_axis()
-                zm[0] = int(max(zm[0], self.axis1.mztoi(self.axis1.highmass)))    # restrict to highmass
-                if not self.check_zoom(zm):
-                    raise NPKError("zoom window is below high-mass limit: %s "%(str(zm)), data=self)
         elif self.dim == 2:
             if zoom is None:
                 zm = [ [0,self.size1], [0,self.size2] ]
@@ -286,13 +279,13 @@ class FTMSData(NPKData.NPKData):
             #print "liste zoom", zm
             if not self.check_zoom(zm):
                 raise NPKError("wrong zoom window : %s "%(str(zm)), data=self)
-            if self.axis1.units == "m/z" or  self.axis2.units == "m/z":
+            if self.axis1.currentunit == "m/z" or  self.axis2.currentunit == "m/z":
 
-                # if using m/z units, we have to build a zoom window and an axis
+                # if using m/z currentunit, we have to build a zoom window and an axis
                 if axis is None:
                     axis = [0,1]
                 for (i,ax) in ( (0,self.axis1), (1,self.axis2) ):
-                    if ax.units == "m/z":
+                    if ax.currentunit == "m/z":
                         axis[i] = ax.mass_axis()
                         left = int(max(zm[i][0], ax.mztoi(ax.highmass)))    # restrict to highmass
                         #print "truncated to high-mass :",left

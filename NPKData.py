@@ -212,25 +212,30 @@ class Axis(object):
     hold information for one spectral axis
     used internally
     """
-    def __init__(self, size = 64, itype = 0, units = "point"):
+    def __init__(self, size = 64, itype = 0, currentunit = "points"):
         """
         size        number of points along axis
         itype       0 == real, 1 == complex
-        units       string which hold the unit name (defaut is "points")
-        
+        currentunit       string which hold the unit name (defaut is "points", also called index)
+                                    
         """
+        def ident(v):
+            "a identity function used by default converter"
+            return v
         self.size = size            # number of ponts along axis
         self.itype = itype          # 0 == real, 1 == complex
-        self.units = units          #
         self.unit_types = ["points"]    # holds possible unit. each unit is associated with a xxx_axis() where xxx is the unit, which returns a axis values
+        self.currentunit = currentunit
+        self.unit_converters = {"points" : ident}  # holds converter functions to convert from points to different possible units
+        self.unit_bconverters = {"points" : ident}  # holds converter functions to convert to points from different possible units
         self.sampling = None        # index list of sampled points if instantiated
         self.sampling_info = {}
-        self.attributes = ["itype", "units", "sampling"]    # storable attributes
+        self.attributes = ["itype", "currentunit", "sampling"]    # storable attributes
     def report(self):
         if self.sampling:
-            return "size : %d   sampled from %d   itype %d   units %s"%(self.size, max(self.sampling), self.itype, self.units)
+            return "size : %d   sampled from %d   itype %d   unit %s"%(self.size, max(self.sampling), self.itype, self.currentunit)
         else:
-            return "size : %d   itype %d   units %s"%(self.size, self.itype, self.units)
+            return "size : %d   itype %d   currentunit %s"%(self.size, self.itype, self.currentunit)
     def typestr(self):
         " returns its type (real or complex) as a string"
         if self.itype == 1:
@@ -240,11 +245,36 @@ class Axis(object):
         return tt
     def copy(self):
         return copy.copy(self)
+    def getslice(self, zoom):
+        """
+        given a zoom window (or any slice), given as (low,high) in CURRENT UNIT,
+        
+        returns the value pair in index, as (star,end)                
+        which insures that
+        -  low<high and within axis size
+        -  that it starts on a real index if itype is complex
+        raise error if not possible
+        """
+        if len(zoom) != 2:
+            raise NPKError("slice should be defined as coordinate pair (left,right) in axis' current unit %s"%self.currentunit)
+        if self.itype == 1:     # complex axis
+            a = int( 2*round( (self.ctoi(zoom[0])-0.5)/2 ) )     # insure real (a%2==0)
+            b = int( 2*round( (self.ctoi(zoom[1])-0.5)/2 ) )
+        else:
+            a = int( round( self.ctoi(zoom[0]) ) )
+            b = int( round( self.ctoi(zoom[1]) ) )
+        left, right = min(a,b), max(a,b)
+        if self.itype == 1:     # complex axis
+            right += 1  # insure imaginary
+        if not self.check_zoom( (left,right) ):
+            raise NPKError("slice probably outside current axis")
+        return (left,right)
+            
     def check_zoom(self, zoom):
         """
-        check whether a zoom window, given as (low,high) is valid
+        check whether a zoom window (or any slice), given as (low,high) is valid
         - check low<high and within axis size
-        - check that it starts on a real index in itype is complex
+        - check that it starts on a real index if itype is complex
         return a boolean
         """
         test =  zoom[0] >= 0 and zoom[0] <= (self.size)
@@ -253,6 +283,15 @@ class Axis(object):
         if self.itype == 1:
             test = test and zoom[0]%2 == 0 and zoom[1]%2 == 1
         return test
+    def extract(self, zoom):
+        """
+        redefines the axis parameters so that the new axis is extracted for the points [start:end] 
+        
+        zoom is given in current unit - does not modify the Data, only the axis definition
+        """
+        start, end = self.getslice(zoom)
+        self.size = end-start
+        return (start, end)
     def load_sampling(self, filename):
         """
         loads the sampling scheme contained in an external file
@@ -273,25 +312,49 @@ class Axis(object):
         """sets the sampling scheme contained in current axis"""
         self.sampling = sampling
         return self.sampling
+    #--------------------------------
     @property
     def sampled(self):
         """true is sampled axis"""
         return self.sampling is not None
+    #---------------------------------
+    def _gcurunits(self):
+        "get the current unit for this axis, to be chosen in axis.unit_types"
+        return self._currentunit
+    def _scurunits(self, currentunit):
+        "set the current unit for this axis, to be chosen in axis.unit_types"
+        if currentunit not in self.unit_types:
+            raise NPKError("Wrong unit type: %s - valid units are : %s" % (currentunit, str(self.unit_types)))
+        self._currentunit = currentunit
+    currentunit = property(_gcurunits, _scurunits)
+    #-----------------------------------
     def points_axis(self):
-        """return axis in points units, actually 0..size-1"""
+        """return axis in points currentunit, actually 0..size-1"""
         return np.arange(self.size)
     def unit_axis(self):
-        """returns an axis in the unit defined in self.units"""
-        u = self.units
-        uu = "".join(re.findall("[\w]*",u))
-        return getattr(self, uu+"_axis")()
-        
+        """returns an axis in the unit defined in self.currentunit"""
+        # u = self.currentunit
+        # uu = "".join(re.findall("[\w]*",u))
+        # return getattr(self, uu+"_axis")()
+        return self.itoc( self.points_axis() )
+    def itoc(self,val):
+        """
+        converts point value (i) to currentunit (c)
+        """
+        f = self.unit_converters[self.currentunit]
+        return f(val)
+    def ctoi(self,val):
+        """
+        converts into point value (i) from currentunit (c)
+        """
+        f = self.unit_bconverters[self.currentunit]
+        return f(val)
 class NMRAxis(Axis):
     """
     hold information for one NMR axis
     used internally
     """
-    def __init__(self,size = 64, specwidth = 2000.0*math.pi, offset = 0.0, frequency = 400.0, itype = 0, units = "points"):
+    def __init__(self,size = 64, specwidth = 2000.0*math.pi, offset = 0.0, frequency = 400.0, itype = 0, currentunit = "points"):
         """
         all parameters from Axis, plus
         specwidth   spectral width, in Hz
@@ -300,7 +363,7 @@ class NMRAxis(Axis):
         zerotime    position (in points) on the time zero
         
         """
-        super(NMRAxis, self).__init__(size = size, itype = itype, units = units)
+        super(NMRAxis, self).__init__(size = size, itype = itype, currentunit = currentunit)
         self.specwidth = specwidth  # spectral width, in Hz
         self.offset = offset        # position in Hz of the rightmost point
         self.frequency = frequency  # carrier frequency, in MHz
@@ -310,9 +373,14 @@ class NMRAxis(Axis):
         self.unit_types.append("Hz")
         for i in ("specwidth", "offset", "frequency", "NMR"):  # updates storable attributes
             self.attributes.insert(0, i)
+        self.unit_converters["ppm"] = self.itop  # set-up converters
+        self.unit_bconverters["ppm"] = self.ptoi
+        self.unit_converters["Hz"] = self.itoh
+        self.unit_bconverters["Hz"] = self.htoi
+        
     def _report(self):
         "low level reporting"
-        return "size : %d   freq %f    sw %f   off %f   itype %d units %s"%(self.size, self.frequency, self.specwidth, self.offset, self.itype, self.units)
+        return "size : %d   freq %f    sw %f   off %f   itype %d currentunit %s"%(self.size, self.frequency, self.specwidth, self.offset, self.itype, self.currentunit)
     def report(self):
         "high level reporting"
         if self.itype == 0:
@@ -323,14 +391,17 @@ class NMRAxis(Axis):
             (self.frequency, self.size/2, self.itop(self.size-1), self.itoh(self.size-1), self.itop(0), self.itoh(0))
 
     #-------------------------------------------------------------------------------
-    def extract(self, (start, end)):
-        """redefines the axis parameters so that the new axe is extracted for the points [start:end]"""
-        if end <0: end = self.size+end+1
-        if start<0 or end>self.size or start>=end:
-            raise NPKError("The current axis contains %d points, it cannot be extracted from %d to %d"%(self.size, start, end))
+    def extract(self, zoom):
+        """
+        redefines the axis parameters so that the new axis is extracted for the points [start:end] 
+        
+        zoom is given in current unit - does not modify the Data, only the axis definition
+        """
+        start, end = self.getslice(zoom)
         self.specwidth = (self.specwidth * (end - start)) /self.size
         self.offset = self.offset + self.specwidth * (self.size - end)/self.size
         self.size = end-start
+        return (start, end)
     #-------------------------------------------------------------------------------
     def itop(self,value):
         """
@@ -351,14 +422,14 @@ class NMRAxis(Axis):
         """
         returns point value (i) from Hz value (h)
         """
-        pt_value = (self.size -1)*(self.offset - value)/self.specwidth + self.size
+        pt_value = (self.size -1)*(self.offset - value)/self.specwidth + self.size-1
         return pt_value
     #-------------------------------------------------------------------------------
     def ptoh(self,value):
         """
         returns Hz value (h) from ppm value (p)
         """
-        Hz_value = (value * self.frequency)/1e6 + self.frequency
+        Hz_value = value * self.frequency
         return Hz_value
     #-------------------------------------------------------------------------------
     def ptoi(self,value):
@@ -372,7 +443,7 @@ class NMRAxis(Axis):
         """
         returns Hz value (h) from point value (i)
         """        
-        hz_value =   (self.size-value)*self.specwidth / (self.size-1) + self.offset
+        hz_value =   (self.size-value-1)*self.specwidth / (self.size-1) + self.offset
         return hz_value
     def freq_axis(self):
         """return axis containing Hz values, can be used for display"""
@@ -388,12 +459,14 @@ class LaplaceAxis(Axis):
     used internally
     """
     
-    def __init__(self, size = 64, dmin = 1.0, dmax = 10.0, dfactor = 1.0, units = "points"):
-        super(LaplaceAxis, self).__init__(size = size, itype = 0, units = units)
+    def __init__(self, size = 64, dmin = 1.0, dmax = 10.0, dfactor = 1.0, currentunit = "points"):
+        super(LaplaceAxis, self).__init__(size = size, itype = 0, currentunit = currentunit)
         self.dmin = dmin
         self.dmax = dmax
         self.dfactor = dfactor
         self.unit_types.append("damping")
+        self.unit_converters["damping"] = self.itod
+        self.unit_bconverters["damping"] = self.dtoi
         for i in ("dmin", "dmax", "dfactor", "Laplace"):  # updates storable attributes
             self.attributes.append(i)
         
@@ -672,13 +745,13 @@ class NPKData(object):
         return self.buffer.__setitem__(key, value)
     #----------------------------------------------
     def _gunits(self):
-        "copy units to all the axes"
-        return (self.axes(i+1).units for i in range(self.dim) )
-    def _sunits(self, units):
+        "copy currentunit to all the axes"
+        return [ self.axes(i+1).currentunit for i in range(self.dim) ]
+    def _sunits(self, currentunit):
         for i in range(self.dim):
             ax = self.axes(i+1)
-            ax.units = units
-    units = property(_gunits, _sunits)
+            ax.currentunit = currentunit
+    unit = property(_gunits, _sunits)
     #------------------------------------------------
     def check(self, warn = False):
         """
@@ -771,8 +844,9 @@ class NPKData(object):
     #---------------------------------------------------------------------------
     def _chsize1d(self,sz1=-1):
         """
-        Change size of data, zero-fill or truncate. 
-        DO NOT change the value of OFFSET and SPECW, so EXTRACT should 
+        Change size of data, zero-fill or truncate.
+        Only designed for time domain data.
+        DO NOT change the value of spectroscopic units, so EXTRACT should 
         always be preferred on spectra (unless you know exactly what your are doing).
         """
         self.check1D()
@@ -902,10 +976,13 @@ class NPKData(object):
 
             * extract(x1,y1) for 1D datasets.
             * extract(x1, y1, x2, y2) for 2D datasets.
-
+        
+        coordinates are given in axis current unit.
+        
         see also : chsize
         """
         limits = flatten(args)
+        print ('extract',limits)
         if len(limits) != 2*self.dim:
             raise NPKError(msg="wrong arguments for extract :"+str(args), data=self)
         if self.dim == 1:
@@ -917,26 +994,27 @@ class NPKData(object):
         self.absmax = 0.0
         return self
     #---------------------------------------------------------------------------
-    def _extract1d(self, (x1, y1) ):
+    def _extract1d(self, zoom ):
         self.check1D()
-        self.axis1.extract([x1, y1])
+        x1, y1 = self.axis1.extract(zoom)
         self.buffer = self.buffer[x1:y1]
         self.adapt_size()
         return self
     #---------------------------------------------------------------------------
-    def _extract2d(self, (x1, y1, x2, y2)):
+    def _extract2d(self, zoom ):
         self.check2D()
-        self.axis1.extract([x1, y1])
-        self.axis2.extract([x2, y2])
+        print ('extract 2D', zoom)
+        x1, y1 = self.axis1.extract( (zoom[0], zoom[1]) )
+        x2, y2 = self.axis2.extract( (zoom[2], zoom[3]) )
         self.buffer = self.buffer[x1:y1, x2:y2]
         self.adapt_size()
         return self
     #---------------------------------------------------------------------------
-    def _extract3d(self, (x1, y1, x2, y2, x3, y3)):
+    def _extract3d(self, zoom):
         self.check3D()
-        self.axis1.extract([x1, y1])
-        self.axis2.extract([x2, y2])
-        self.axis3.extract([x3, y3])
+        x1, y1 = self.axis1.extract( (zoom[0], zoom[1]) )
+        x2, y2 = self.axis2.extract( (zoom[2], zoom[3]) )
+        x3, y3 = self.axis3.extract( (zoom[4], zoom[5]) )
         self.buffer = self.buffer[x1:y1,x2:y2,x3:y3]
         self.adapt_size()
         return self
@@ -1156,20 +1234,6 @@ class NPKData(object):
         for index in xrange(start, stop, step):
             yield self.plane(todo, index)
     #----------------------------------------------
-    def check_zoom(self, zoom):
-        """
-        check whether a zoom window, given as (low,high) or ((low1,high1),(low2,high2))  is valid
-        - check low<high and within axis size
-        - check that it starts on a real index in itype is complex
-        return a boolean
-        """
-        if not zoom:
-            return True
-        if self.dim == 1:
-            test = self.axis1.check_zoom(zoom)
-        elif self.dim == 2:
-            test = self.axis1.check_zoom(zoom[0]) and self.axis2.check_zoom(zoom[1])        
-        return test
     def display(self, scale = 1.0, absmax = None, show = False, label = None, new_fig = True, axis = None,
                 mode3D = False, zoom = None, xlabel="_def_", ylabel = "_def_", title = None, figure = None):
         """
@@ -1182,19 +1246,18 @@ class NPKData(object):
         show    will call plot.show() at the end, allowing every declared display to be shown on-screen
                 useless in ipython
         label   add a label text to plot
-        xlabel, ylabel : axes label (default is self.units - use None to remove)
+        xlabel, ylabel : axes label (default is self.currentunit - use None to remove)
         axis    used as axis if present, axis length should match experiment length
                 in 2D, should be a pair (xaxis,yaxis)
         new_fig will create a new window if set to True (default) (active only is figure==None)
         mode3D  use malb 3D display instead of matplotlib contour for 2D display
         zoom    is a tuple defining the zoom window (left,right) or   ((F1_limits),(F2_limits))
+                defined in the current axis unit (points, ppm, m/z etc ....)
         figure  if not None, will be used directly to display instead of using its own
  
         can actually be called without harm, even if no graphic is available, it will just do nothing.
         
         """
-        if not self.check_zoom(zoom):
-            raise NPKError("wrong zoom window : %s "%(str(zoom)), data=self)
         if not figure:
             from .Display import testplot
             plot = testplot.plot()
@@ -1213,34 +1276,27 @@ class NPKData(object):
             mmin = -self.absmax/scale
             mmax = self.absmax/scale
             step = self.axis1.itype+1
-            if zoom:
-                z1 = zoom[0]
-                z2 = zoom[1]
+
+            if zoom is not None:
+                z1, z2 = self.axis1.getslice(zoom)
             else:
                 z1 = 0
                 z2 = self.size1
             if axis is None:
-                if self.axis1.units == "Hz":
-                    ax = self.axis1.freq_axis()
-                elif self.axis1.units == "ppm":
-                    ax = self.axis1.ppm_axis()
-                else:
-                    ax = self.axis1.points_axis()
+                ax = self.axis1.unit_axis()
             else:
                 ax = axis
             fig.plot(ax[z1:z2:step], self.buffer[z1:z2:step].clip(mmin,mmax), label=label)
             if xlabel == "_def_":
-                xlabel = self.axis1.units
+                xlabel = self.axis1.currentunit
             if ylabel == "_def_":
                 ylabel = "a.u."
         if self.dim == 2:
             step2 = self.axis2.itype+1
             step1 = self.axis1.itype+1
-            if zoom:        # should ((F1_limits),(F2_limits))
-                z1lo=zoom[0][0]
-                z1up=zoom[0][1]
-                z2lo=zoom[1][0]
-                z2up=zoom[1][1]
+            if zoom is not None:        # should ((F1_limits),(F2_limits))
+                z1lo, z1up = self.axis1.getslice(zoom[0])
+                z2lo, z2up = self.axis2.getslice(zoom[1])
             else:
                 z1lo=0
                 z1up=self.size1-1
@@ -1277,15 +1333,15 @@ class NPKData(object):
                         fig.set_xticklabels('')
                         fig.set_yticklabels('')
                 if axis is None:
-                    fig.contour(np.arange(z2lo,z2up,step2),np.arange(z1lo,z1up,step1),self.buffer[z1lo:z1up:step1,z2lo:z2up:step2], level)
-                else:
-#                    for jj in (axis[1][z2lo:z2up:step2],axis[0][z1lo:z1up:step1],self.buffer[z1lo:z1up:step1,z2lo:z2up:step2]):
-#                        print jj.shape
-                    fig.contour(axis[1][z2lo:z2up:step2],axis[0][z1lo:z1up:step1],self.buffer[z1lo:z1up:step1,z2lo:z2up:step2], level )
+                    axis = ( self.axis1.unit_axis(), self.axis2.unit_axis() )
+                fig.contour(ax[1][z2lo:z2up:step2],
+                    ax[0][z1lo:z1up:step1],
+                    self.buffer[z1lo:z1up:step1,z2lo:z2up:step2],
+                    level )
             if xlabel == "_def_":
-                xlabel = self.axis2.units
+                xlabel = self.axis2.currentunit
             if ylabel == "_def_":
-                ylabel = self.axis1.units
+                ylabel = self.axis1.currentunit
         if xlabel is not None:
             fig.set_xlabel(xlabel)
         if ylabel is not None:
@@ -1349,7 +1405,7 @@ class NPKData(object):
     def save_csv(self, name):
         """save 1D data in csv,
         in 2 columns : 
-        x, y   x values are conditions by the .units attribute
+        x, y   x values are conditions by the .currentunit attribute
         data attributes are stored as pseudo comments
         
         data can be read back with File.csv.Import_1D()
@@ -1459,7 +1515,6 @@ class NPKData(object):
     def __add__(self, otherdata):
         import numbers
         # as add() but creates a new object
-        print('radd')
         if isinstance(otherdata, NPKData):
             return self.copy().add(otherdata)
         elif isinstance(otherdata,numbers.Number):
@@ -2506,7 +2561,6 @@ class NPKDataTests(unittest.TestCase):
     """ - Testing NPKData basic behaviour - """
     def test_fft(self):
         " - Testing FFT methods - "
-        print(self.test_fft.__doc__)
         x = np.arange(1024.0)
         E=NPKData(buffer=x)
         E.axis1.itype = 0
@@ -2526,14 +2580,13 @@ class NPKDataTests(unittest.TestCase):
     def test_load(self):
         " - Testing load methods"
         from .Tests import filename
-        print(self.test_load.__doc__)
         name1D = filename("proj.gs1")
         E = NPKData(name=name1D)
         self.assertAlmostEqual(E[0], 1869.4309082)
         self.assertAlmostEqual(E.get_buffer().max(), 603306.75)
 
     def test_math(self):
-        " - Testing math methods - "
+        " - Testing dataset arithmetics - "
         M=np.zeros((20,20))
         d = NPKData(buffer=M)
         d[5,7]=10
@@ -2560,6 +2613,17 @@ class NPKDataTests(unittest.TestCase):
         " test the flatten utility "
         self.assertEqual( [1,2,3,4,5,6,7], flatten( ( (1,2), 3, (4, (5,), (6,7) ) ) ))
 
+    def test_unitval(self):
+        "testing unit conversion functions"
+        F = NMRAxis(size=1000, specwidth=12345.0, frequency = 400.0, offset=321)
+        self.assertAlmostEqual(F.itoh(0), F.specwidth+F.offset)
+        self.assertAlmostEqual(F.itoh(F.size-1), F.offset)   # last point is size-1 !!!
+        for f,g in ((F.htoi,F.itoh), (F.ptoi,F.itop), (F.htop,F.ptoh)):
+            self.assertAlmostEqual( g(f(4321)), 4321)
+        for u in ("points", "Hz", "ppm"):
+            F.currentunit = u
+            self.assertAlmostEqual( F.ctoi( F.itoc(4321)), 4321)
+
     def test_dampingunit(self):
         "test itod and dtoi"
         print(self.test_dampingunit.__doc__)
@@ -2568,7 +2632,7 @@ class NPKDataTests(unittest.TestCase):
         point = LA.dtoi(damping)
         self.assertAlmostEqual(damping, 2154.43469003)
         self.assertAlmostEqual(point, 50)
-
+        
     def test_zf(self):
         for ty in range(2):  # check both real and complex cases, and 1D and 2D (in F1)
             d1 = NPKData(buffer = np.arange(6.0))

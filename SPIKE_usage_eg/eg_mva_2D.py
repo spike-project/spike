@@ -51,7 +51,7 @@ d.axis1.left_point = d.axis1.mztoi(d.axis1.highmass)
 
 d.axis1.specwidth = d.axis1.specwidth + d.axis1.specwidth*d.axis1.mztoi(d.axis1.highmass)/d.size1
 
-d.units = "m/z"
+d.currentunit = "m/z"
 
 ######### affichage
 

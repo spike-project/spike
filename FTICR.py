@@ -41,7 +41,7 @@ class FTICRAxis(FTMS.FTMSAxis):
     hold information for one FT-ICR axis
     used internally
     """
-    def __init__(self, size=1024, specwidth=FREQ0, itype=0, units="point", ref_mass=REF_MASS, ref_freq=REF_FREQ, highmass=10000.0, left_point = 0.0):
+    def __init__(self, size=1024, specwidth=FREQ0, itype=0, currentunit="points", ref_mass=REF_MASS, ref_freq=REF_FREQ, highmass=10000.0, left_point = 0.0):
         """
         all parameters from Axis, plus
         specwidth   highest frequency,
@@ -54,7 +54,7 @@ class FTICRAxis(FTMS.FTMSAxis):
         
         conversion methods work on numpy arrays as well
         """
-        super(FTICRAxis, self).__init__(size=size, specwidth=specwidth, itype=itype, units=units, ref_mass=ref_mass, ref_freq=ref_freq, highmass=highmass, left_point = left_point)
+        super(FTICRAxis, self).__init__(size=size, specwidth=specwidth, itype=itype, currentunit=currentunit, ref_mass=ref_mass, ref_freq=ref_freq, highmass=highmass, left_point = left_point)
         self.FTICR = "FTICR"
         self.attributes.insert(0,"FTICR") # updates storable attributes
     #-------------------------------------------------------------------------------
@@ -139,7 +139,7 @@ class FTICR_Tests(unittest.TestCase):
     def test_atob(self):
         "testing unit conversion functions"
         self.announce()
-        F = FTICRAxis(size=1000, specwidth=1667000, itype=0, units="point", ref_mass=344.0974, ref_freq=419620.0, highmass=2000.0)
+        F = FTICRAxis(size=1000, specwidth=1667000, itype=0, currentunit="points", ref_mass=344.0974, ref_freq=419620.0, highmass=2000.0)
         self.assertAlmostEqual(F.itoh(0), 0)
         self.assertAlmostEqual(F.itoh(F.size-1), F.specwidth)   # last point is size-1 !!!
         self.assertAlmostEqual(F.deltamz(F.itomz(1023))/F.itomz(1023), 1.0/1023)    # delta_m / m is 1/size at highest mass - before extraction
@@ -152,7 +152,7 @@ class FTICR_Tests(unittest.TestCase):
                 print("point at index %d is at freq %f, m/z %f"%(x, F.itoh(x), F.itomz(x)))
                 self.assertAlmostEqual(F.mztoi(F.itomz(x)), x)
                 self.assertAlmostEqual(F.itoh(F.htoi(x)), x)
-            F.extract([300,-20])
+            F.extract((300,F.size-20))
     def test_axis(self):
         "testing FTICRAxis object"
         self.announce()

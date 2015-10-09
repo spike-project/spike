@@ -40,7 +40,7 @@ class OrbiAxis(FTMS.FTMSAxis):
     hold information for one Orbitrap axis
     used internally
     """    
-    def __init__(self, size=1024, specwidth=FREQ0, itype=0, units="point", ref_mass=REF_MASS, ref_freq=REF_FREQ, highmass=10000.0, left_point = 0.0):
+    def __init__(self, size=1024, specwidth=FREQ0, itype=0, currentunit="points", ref_mass=REF_MASS, ref_freq=REF_FREQ, highmass=10000.0, left_point = 0.0):
         """
         all parameters from Axis, plus
         specwidth   highest frequency,
@@ -53,7 +53,7 @@ class OrbiAxis(FTMS.FTMSAxis):
         
         conversion methods work on numpy arrays as well
         """
-        super(OrbiAxis, self).__init__(size=size, specwidth=specwidth, itype=itype, units=units, ref_mass=ref_mass, ref_freq=ref_freq, highmass=highmass, left_point = left_point)
+        super(OrbiAxis, self).__init__(size=size, specwidth=specwidth, itype=itype, currentunit=currentunit, ref_mass=ref_mass, ref_freq=ref_freq, highmass=highmass, left_point = left_point)
         self.OrbiAxis = "OrbiAxis"
         self.calibA = 0.0
         self.calibB = ref_mass*(ref_freq**2)
@@ -131,7 +131,7 @@ class Orbi_Tests(unittest.TestCase):
     def test_atob(self):
         "testing unit conversion functions"
         self.announce()
-        Oaxis = OrbiAxis(size = 1000, specwidth = 1667000, itype = 0, units = "point", ref_mass = 344.0974, ref_freq = 419620.0, highmass = 2000.0)
+        Oaxis = OrbiAxis(size = 1000, specwidth = 1667000, itype = 0, currentunit = "points", ref_mass = 344.0974, ref_freq = 419620.0, highmass = 2000.0)
         self.assertAlmostEqual(Oaxis.itoh(0), 0)
         self.assertAlmostEqual(Oaxis.itoh(Oaxis.size-1), Oaxis.specwidth)   # last point is size-1 !!!
         self.assertAlmostEqual(Oaxis.itomz(1023)/Oaxis.deltamz(Oaxis.itomz(1023)), 1023./2, places = 2)    # delta_m / m is 1/size at highest mass - before extraction
@@ -144,7 +144,7 @@ class Orbi_Tests(unittest.TestCase):
                 print("point at index %d is at freq %f, m/z %f"%(x, Oaxis.itoh(x), Oaxis.itomz(x)))
                 self.assertAlmostEqual(Oaxis.mztoi(Oaxis.itomz(x)), x)
                 self.assertAlmostEqual(Oaxis.itoh(Oaxis.htoi(x)), x)
-            Oaxis.extract([300,-20])
+            Oaxis.extract([300,Oaxis.size-20])
             
     def test_trim(self):
         """
