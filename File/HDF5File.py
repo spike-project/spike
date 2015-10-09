@@ -372,7 +372,10 @@ python HDF5File.py update {0}
             dico = {}
             for j in range(len(values[i])):
                 dico[dtypes[j]] = values[i][j]
-            setattr(self.data, "axis%d"%(i+1), FTICR.FTICRAxis(highmass=dico["highmass"],left_point = dico["left_point"],size=dico["size"], specwidth=dico["specwidth"], itype=dico["itype"], ref_mass = dico["ref_mass"], ref_freq =dico["ref_freq"],currentunit=dico["units"]))
+            units = dico["units"]
+            if units not in ("points", "Hz", "m/z"):
+                units = "points"
+            setattr(self.data, "axis%d"%(i+1), FTICR.FTICRAxis(highmass=dico["highmass"],left_point = dico["left_point"],size=dico["size"], specwidth=dico["specwidth"], itype=dico["itype"], ref_mass = dico["ref_mass"], ref_freq =dico["ref_freq"],currentunit=units))
            
                 #self.axes_update(axis = i+1, infos = dico)
         return self.data
