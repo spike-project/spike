@@ -33,7 +33,7 @@ class CANVAS_EVENT(object):
 
     def recupxy(self, event):
         '''
-        Take the event coordinates and transform from "m/z" to "point" if necessary.
+        Take the event coordinates and transform from "m/z" to "points" if necessary.
         '''
         if debug(self):
             print("in zooming.recupxy")

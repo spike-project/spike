@@ -238,7 +238,7 @@ class FTMSData(NPKData.NPKData):
             self.extract(ext)
         return self
     #------------------------------------------------
-    def display(self, scale=1.0, absmax = 0.0, show=False, label=None, new_fig=True, axis=None, mode3D=False, zoom=None, xlabel="_def_", ylabel="_def_", figure=None):
+    def _display(self, scale=1.0, absmax = 0.0, show=False, label=None, new_fig=True, axis=None, mode3D=False, zoom=None, xlabel="_def_", ylabel="_def_", figure=None):
 
         """display the FTMS data using NPKDATA display method
         check parameters in NPKDATA
@@ -264,40 +264,44 @@ class FTMSData(NPKData.NPKData):
         """
 
         if self.debug>0: print("zoom at the beginning of display ",zoom,axis)
-        if self.dim == 1:
-            if zoom is None:
-                zm = [0,self.size1]
-            else:
-                zm = list(zoom)     # zoom can be passed as a tuple
-            if not self.check_zoom(zm):
-                raise NPKError("wrong zoom window : %s "%(str(zm)), data=self)
-        elif self.dim == 2:
-            if zoom is None:
-                zm = [ [0,self.size1], [0,self.size2] ]
-            else:
-                zm = list(zoom)     # zoom can be passed as a tuple
-            #print "liste zoom", zm
-            if not self.check_zoom(zm):
-                raise NPKError("wrong zoom window : %s "%(str(zm)), data=self)
-            if self.axis1.currentunit == "m/z" or  self.axis2.currentunit == "m/z":
-
-                # if using m/z currentunit, we have to build a zoom window and an axis
-                if axis is None:
-                    axis = [0,1]
-                for (i,ax) in ( (0,self.axis1), (1,self.axis2) ):
-                    if ax.currentunit == "m/z":
-                        axis[i] = ax.mass_axis()
-                        left = int(max(zm[i][0], ax.mztoi(ax.highmass)))    # restrict to highmass
-                        #print "truncated to high-mass :",left
-                        zm[i] = [left, zm[i][1]]
-                    else:
-                        ax[i] = np.arange(ax.size)
-            if not self.check_zoom(zm):
-                raise NPKError("zoom window is below high-mass limit: %s "%(str(zm)), data=self)
-        if self.debug>0: print("in FTICR zoom if m/z ",zoom, zm)
+    
+        # if self.dim == 1:
+        #     if zoom is None:
+        #         zm = [0,self.size1]
+        #     else:
+        #         zm = list(zoom)     # zoom can be passed as a tuple
+        #     if not self.check_zoom(zm):
+        #         raise NPKError("wrong zoom window : %s "%(str(zm)), data=self)
+        # elif self.dim == 2:
+        #     if zoom is None:
+        #         zm = [ [0,self.size1], [0,self.size2] ]
+        #     else:
+        #         zm = list(zoom)     # zoom can be passed as a tuple
+        #     #print "liste zoom", zm
+        #     if not self.check_zoom(zm):
+        #         raise NPKError("wrong zoom window : %s "%(str(zm)), data=self)
+        #     if self.axis1.currentunit == "m/z" or  self.axis2.currentunit == "m/z":
+        # 
+        #         # if using m/z currentunit, we have to build a zoom window and an axis
+        #         if axis is None:
+        #             axis = [0,1]
+        #         for (i,ax) in ( (0,self.axis1), (1,self.axis2) ):
+        #             if ax.currentunit == "m/z":
+        #                 axis[i] = ax.mass_axis()
+        #                 left = int(max(zm[i][0], ax.mztoi(ax.highmass)))    # restrict to highmass
+        #                 #print "truncated to high-mass :",left
+        #                 zm[i] = [left, zm[i][1]]
+        #             else:
+        #                 ax[i] = np.arange(ax.size)
+        #     if not self.check_zoom(zm):
+        #         raise NPKError("zoom window is below high-mass limit: %s "%(str(zm)), data=self)
+        # if self.debug>0: print("in FTICR zoom if m/z ",zoom, zm)
         # then super.display()
         #print "in FTICR zoom ",zoom
         
+        # for d in self.dim:  # cut above high-mass
+        #     if self.axes(d).currentunit == 'm/z':
+                
         super(FTMSData, self).display(scale=scale, absmax=absmax, axis=axis, zoom=zm, show=show, label=label, new_fig=new_fig, mode3D=mode3D, xlabel=xlabel, ylabel=ylabel, figure=figure)
         return self
 

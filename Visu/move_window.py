@@ -18,7 +18,7 @@ from .. Visu.zoom_plot import ZOOM_PLOT
 class MOVE_WINDOW():                                                                                    # class regrouping methods about drag function
     '''
     Drag the zoomed area or just makes the zooming area.
-    The coordinates are in "point" format at the root of the treatment
+    The coordinates are in "points" format at the root of the treatment
     so as to simplify all the procedures. 
     '''
     def __init__(self, display, interf, data, paramz, gtools, convert, stools):

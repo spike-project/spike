@@ -1234,6 +1234,21 @@ class NPKData(object):
         for index in xrange(start, stop, step):
             yield self.plane(todo, index)
     #----------------------------------------------
+    def check_zoom(self, zoom):
+        """
+        check whether a zoom window, given as (low,high) or ((low1,high1),(low2,high2))  is valid
+        - check low<high and within axis size
+        - check that it starts on a real index in itype is complex
+        return a boolean
+        """
+        if not zoom:
+            return True
+        z = flatten(zoom)
+        if self.dim == 1:
+            test = self.axis1.check_zoom(z)
+        elif self.dim == 2:
+            test = self.axis1.check_zoom(z[0:1]) and self.axis2.check_zoom(z[2:3])
+        return test
     def display(self, scale = 1.0, absmax = None, show = False, label = None, new_fig = True, axis = None,
                 mode3D = False, zoom = None, xlabel="_def_", ylabel = "_def_", title = None, figure = None):
         """
@@ -1334,8 +1349,8 @@ class NPKData(object):
                         fig.set_yticklabels('')
                 if axis is None:
                     axis = ( self.axis1.unit_axis(), self.axis2.unit_axis() )
-                fig.contour(ax[1][z2lo:z2up:step2],
-                    ax[0][z1lo:z1up:step1],
+                fig.contour(axis[1][z2lo:z2up:step2],
+                    axis[0][z1lo:z1up:step1],
                     self.buffer[z1lo:z1up:step1,z2lo:z2up:step2],
                     level )
             if xlabel == "_def_":
