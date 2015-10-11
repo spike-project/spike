@@ -207,6 +207,20 @@ def warning(msg):
     print("WARNING")
     print(msg)
 ########################################################################
+def ident(v):
+    "a identity function used by default converter"
+    return v
+class Unit(object):
+    """
+    a small class to hold parameters for units
+    """
+    def __init__(self, name="points", converter=ident, bconverter=ident, reverse=False):
+        "creates an 'points' methods - to be extended"
+        self.name = name
+        self.converter = converter
+        self.bconverter = bconverter
+        self.reverse = reverse
+########################################################################
 class Axis(object):
     """
     hold information for one spectral axis
@@ -219,15 +233,12 @@ class Axis(object):
         currentunit       string which hold the unit name (defaut is "points", also called index)
                                     
         """
-        def ident(v):
-            "a identity function used by default converter"
-            return v
         self.size = size            # number of ponts along axis
         self.itype = itype          # 0 == real, 1 == complex
+        self.units = {"points": Unit()}         # units dico contains possible units indexs by name,
+                                                # here create default units
         self.unit_types = ["points"]    # holds possible unit. each unit is associated with a xxx_axis() where xxx is the unit, which returns a axis values
         self.currentunit = currentunit
-        self.unit_converters = {"points" : ident}  # holds converter functions to convert from points to different possible units
-        self.unit_bconverters = {"points" : ident}  # holds converter functions to convert to points from different possible units
         self.sampling = None        # index list of sampled points if instantiated
         self.sampling_info = {}
         self.attributes = ["itype", "currentunit", "sampling"]    # storable attributes
@@ -341,13 +352,13 @@ class Axis(object):
         """
         converts point value (i) to currentunit (c)
         """
-        f = self.unit_converters[self.currentunit]
+        f = self.units[self.currentunit].converter
         return f(val)
     def ctoi(self,val):
         """
         converts into point value (i) from currentunit (c)
         """
-        f = self.unit_bconverters[self.currentunit]
+        f = self.units[self.currentunit].bconverter
         return f(val)
 class NMRAxis(Axis):
     """
@@ -363,20 +374,21 @@ class NMRAxis(Axis):
         zerotime    position (in points) on the time zero
         
         """
-        super(NMRAxis, self).__init__(size = size, itype = itype, currentunit = currentunit)
+        super(NMRAxis, self).__init__(size = size, itype = itype)
         self.specwidth = specwidth  # spectral width, in Hz
         self.offset = offset        # position in Hz of the rightmost point
         self.frequency = frequency  # carrier frequency, in MHz
         self.zerotime = 0.0         # position (in points) on the time zero
         self.NMR = "NMR"
+        self.units["ppm"] = Unit(name="ppm", converter=self.itop, bconverter=self.ptoi, reverse=True)
+        self.units["Hz"]= Unit(name="Hz", converter=self.itoh, bconverter=self.htoi, reverse=True)
+        self.units["sec"]= Unit(name="Hz", converter=self.itos, bconverter=self.stoi)  # for FID
         self.unit_types.append("ppm")
         self.unit_types.append("Hz")
+        self.unit_types.append("sec")
         for i in ("specwidth", "offset", "frequency", "NMR"):  # updates storable attributes
             self.attributes.insert(0, i)
-        self.unit_converters["ppm"] = self.itop  # set-up converters
-        self.unit_bconverters["ppm"] = self.ptoi
-        self.unit_converters["Hz"] = self.itoh
-        self.unit_bconverters["Hz"] = self.htoi
+        self.currentunit = currentunit
         
     def _report(self):
         "low level reporting"
@@ -402,6 +414,17 @@ class NMRAxis(Axis):
         self.offset = self.offset + self.specwidth * (self.size - end)/self.size
         self.size = end-start
         return (start, end)
+    #-------------------------------------------------------------------------------
+    def itos(self,value):
+        """
+        returns time value (s) from point value
+        """
+        return 0.5*value/self.specwidth
+    def stoi(self,value):
+        """
+        returns point value (i) from time value (s)
+        """
+        return 2.0*value*self.specwidth
     #-------------------------------------------------------------------------------
     def itop(self,value):
         """
@@ -459,16 +482,16 @@ class LaplaceAxis(Axis):
     used internally
     """
     
-    def __init__(self, size = 64, dmin = 1.0, dmax = 10.0, dfactor = 1.0, currentunit = "points"):
-        super(LaplaceAxis, self).__init__(size = size, itype = 0, currentunit = currentunit)
+    def __init__(self, size = 64, dmin = 1.0, dmax = 10.0, dfactor = 1.0, currentunit = "damping"):
+        super(LaplaceAxis, self).__init__(size = size, itype = 0)
         self.dmin = dmin
         self.dmax = dmax
         self.dfactor = dfactor
+        self.units["damping"] = Unit(name="damping", converter=self.itod, bconverter=self.dtoi)
         self.unit_types.append("damping")
-        self.unit_converters["damping"] = self.itod
-        self.unit_bconverters["damping"] = self.dtoi
         for i in ("dmin", "dmax", "dfactor", "Laplace"):  # updates storable attributes
             self.attributes.append(i)
+        self.currentunit = currentunit
         
     def itod(self, value):
         """
@@ -1301,6 +1324,8 @@ class NPKData(object):
                 ax = self.axis1.unit_axis()
             else:
                 ax = axis
+            if self.axis1.units[self.axis1.currentunit].reverse:
+                plot.gca().invert_xaxis()                
             fig.plot(ax[z1:z2:step], self.buffer[z1:z2:step].clip(mmin,mmax), label=label)
             if xlabel == "_def_":
                 xlabel = self.axis1.currentunit
@@ -1349,6 +1374,10 @@ class NPKData(object):
                         fig.set_yticklabels('')
                 if axis is None:
                     axis = ( self.axis1.unit_axis(), self.axis2.unit_axis() )
+                if self.axis1.units[self.axis1.currentunit].reverse:
+                        plot.gca().invert_yaxis()
+                if self.axis2.units[self.axis1.currentunit].reverse:
+                        plot.gca().invert_xaxis()
                 fig.contour(axis[1][z2lo:z2up:step2],
                     axis[0][z1lo:z1up:step1],
                     self.buffer[z1lo:z1up:step1,z2lo:z2up:step2],

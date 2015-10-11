@@ -46,13 +46,11 @@ class FTMSAxis(NPKData.Axis):
         self.ref_freq = ref_freq
         self.highmass = highmass
         self.left_point = left_point
+        self.units["m/z"] = NPKData.Unit(name="m/z", converter=self.itomz, bconverter=self.mztoi)
+        self.units["Hz"] = NPKData.Unit(name="Hz", converter=self.itoh, bconverter=self.htoi)
         self.unit_types.append("m/z")
         self.unit_types.append("Hz")
         self.currentunit = currentunit
-        self.unit_converters["Hz"] = self.itoh  # set-up converters
-        self.unit_bconverters["Hz"] = self.htoi
-        self.unit_converters["m/z"] = self.itomz  # set-up converters
-        self.unit_bconverters["m/z"] = self.mztoi
         for i in ("specwidth", "ref_mass", "ref_freq", "highmass", "left_point"):  # updates storable attributes
             self.attributes.insert(0,i)
     #-------------------------------------------------------------------------------
@@ -236,73 +234,6 @@ class FTMSData(NPKData.NPKData):
                     ext = ext + [0,self.axes(i+1).size]
             print("extracting :", ext)
             self.extract(ext)
-        return self
-    #------------------------------------------------
-    def _display(self, scale=1.0, absmax = 0.0, show=False, label=None, new_fig=True, axis=None, mode3D=False, zoom=None, xlabel="_def_", ylabel="_def_", figure=None):
-
-        """display the FTMS data using NPKDATA display method
-        check parameters in NPKDATA
-
-        - copied here - (might be out of date)
-        scale   allows to increase the vertical scale of display
-        absmax  overwrite the value for the largest point, which will not be computed
-            display is scaled so that the largest point is first computed (and stored in absmax),
-            and then the value at absmax/scale is set full screen 
-        show    will call plot.show() at the end, allowing every declared display to be shown on-screen
-                useless in ipython
-        label   add a label text to plot
-        xlabel, ylabel : axes label (default is self.currentunit - use None to remove)
-        axis    used as axis if present, axis length should match experiment length
-                in 2D, should be a pair (xaxis,yaxis)
-        new_fig will create a new window if set to True (default) (active only is figure==None)
-        mode3D  use malb 3D display instead of matplotlib contour for 2D display
-        zoom    is a tuple defining the zomm window (left,right) or   ((F1_limits),(F2_limits))
-        figure  if not None, will be used directly to display instead of using its own
-        
-        can actually be called without harm, even if no graphic is available, it will just do nothing.
-        
-        """
-
-        if self.debug>0: print("zoom at the beginning of display ",zoom,axis)
-    
-        # if self.dim == 1:
-        #     if zoom is None:
-        #         zm = [0,self.size1]
-        #     else:
-        #         zm = list(zoom)     # zoom can be passed as a tuple
-        #     if not self.check_zoom(zm):
-        #         raise NPKError("wrong zoom window : %s "%(str(zm)), data=self)
-        # elif self.dim == 2:
-        #     if zoom is None:
-        #         zm = [ [0,self.size1], [0,self.size2] ]
-        #     else:
-        #         zm = list(zoom)     # zoom can be passed as a tuple
-        #     #print "liste zoom", zm
-        #     if not self.check_zoom(zm):
-        #         raise NPKError("wrong zoom window : %s "%(str(zm)), data=self)
-        #     if self.axis1.currentunit == "m/z" or  self.axis2.currentunit == "m/z":
-        # 
-        #         # if using m/z currentunit, we have to build a zoom window and an axis
-        #         if axis is None:
-        #             axis = [0,1]
-        #         for (i,ax) in ( (0,self.axis1), (1,self.axis2) ):
-        #             if ax.currentunit == "m/z":
-        #                 axis[i] = ax.mass_axis()
-        #                 left = int(max(zm[i][0], ax.mztoi(ax.highmass)))    # restrict to highmass
-        #                 #print "truncated to high-mass :",left
-        #                 zm[i] = [left, zm[i][1]]
-        #             else:
-        #                 ax[i] = np.arange(ax.size)
-        #     if not self.check_zoom(zm):
-        #         raise NPKError("zoom window is below high-mass limit: %s "%(str(zm)), data=self)
-        # if self.debug>0: print("in FTICR zoom if m/z ",zoom, zm)
-        # then super.display()
-        #print "in FTICR zoom ",zoom
-        
-        # for d in self.dim:  # cut above high-mass
-        #     if self.axes(d).currentunit == 'm/z':
-                
-        super(FTMSData, self).display(scale=scale, absmax=absmax, axis=axis, zoom=zm, show=show, label=label, new_fig=new_fig, mode3D=mode3D, xlabel=xlabel, ylabel=ylabel, figure=figure)
         return self
 
     #----------------------------------------------
