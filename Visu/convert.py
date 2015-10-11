@@ -25,7 +25,7 @@ class CONVERT():
 
     def mztoi_all(self, d, llx, lly, urx, ury):
         '''
-        transforming from "m/z" coordinate to "point" coordinates of coorr (zoom window)
+        transforming from "m/z" coordinate to "points" coordinates of coorr (zoom window)
         '''
         llx, lly = d.axes(2).mztoi(llx), d.axes(1).mztoi(lly)
         urx, ury = d.axes(2).mztoi(urx), d.axes(1).mztoi(ury)
@@ -33,7 +33,7 @@ class CONVERT():
 
     def itomz_all(self, d, llx, lly, urx, ury):
         '''
-        transforming from "point" coordinates to "mz" coordinates.
+        transforming from "points" coordinates to "mz" coordinates.
         '''
         if debug(self):
             print("d.axes(2).itomz(llx) ", d.axes(2).itomz(llx))

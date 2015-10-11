@@ -58,7 +58,7 @@ class GRAPHTOOLS():
     
     def createpeaks(self):
         '''
-        Peak peaking routine working for "point" and "m/z" formats
+        Peak peaking routine working for "points" and "m/z" formats
         '''
         pp = PEAKPICK(self.data, self.display, self.convert, self.paramz) # , pat.data2D, range_axis = range_axis, ax = ax)
         if len(self.paramz.zoom_coord) == 0 :
@@ -87,11 +87,11 @@ class GRAPHTOOLS():
         mztoi2 = self.display.RESMAX.axes(2).mztoi
         mztoi1 = self.display.RESMAX.axes(1).mztoi
         ##
-        hlimx = np.int64(mztoi2(llx))                                                 # low bound in "point" format
-        llimx = np.int64(mztoi2(urx))                                                 # high bound in "point" format
+        hlimx = np.int64(mztoi2(llx))                                                 # low bound in "points" format
+        llimx = np.int64(mztoi2(urx))                                                 # high bound in "points" format
         ###
-        hlimy = np.int64(mztoi1(lly))                                                 # low bound in "point" format
-        llimy = np.int64(mztoi1(ury))                                                 # high bound in "point" format
+        hlimy = np.int64(mztoi1(lly))                                                 # low bound in "points" format
+        llimy = np.int64(mztoi1(ury))                                                 # high bound in "points" format
         
         if debug(self):
             print("hlimx, llimx, hlimy, llimy", hlimx, llimx, hlimy, llimy)
@@ -99,7 +99,7 @@ class GRAPHTOOLS():
             if debug(self):
                 print("case (hlimx - llimx) > (hlimy - llimy)")
                 print("wider than higher")
-            for i in range(llimx, hlimx):                                                           # moving in "point" space with self.canvolution taken on x
+            for i in range(llimx, hlimx):                                                           # moving in "points" space with self.canvolution taken on x
                 self.ptlx.append(i)  # makes the x coordinates
                 yval = int(self.display.RESMAX.axes(1).mztoi(a*self.display.RESMAX.axes(2).itomz(i) + b))
                 self.ptly.append(yval)
@@ -107,7 +107,7 @@ class GRAPHTOOLS():
             if debug(self):
                 print("case  (hlimx - llimx) < (hlimy - llimy)") 
                 print("higher than wider")
-            for i in range(llimy, hlimy):                                               # moving in "point" space with resolution taken on y
+            for i in range(llimy, hlimy):                                               # moving in "points" space with resolution taken on y
                 self.ptly.append(i) # makes the y coordinates
                 xval = int(self.display.RESMAX.axes(2).mztoi((self.display.RESMAX.axes(1).itomz(i) - b)/a))
                 self.ptlx.append(xval)
@@ -120,11 +120,11 @@ class GRAPHTOOLS():
         '''
         print("in point mode ")
         if (urx-llx) > (ury - lly): 
-            for i in range(int(llx), int(urx)):                                                                 # moving in "point" space with resolution taken on x
+            for i in range(int(llx), int(urx)):                                                                 # moving in "points" space with resolution taken on x
                 self.ptlx.append(i)
                 self.ptly.append(int(a*i + b))
         else :      
-            for i in range(int(lly), int(ury)):                                                                 # moving in "point" space with resolution taken on y
+            for i in range(int(lly), int(ury)):                                                                 # moving in "points" space with resolution taken on y
                 self.ptly.append(i)
                 self.ptlx.append(int((i - b)/a))
 
@@ -171,7 +171,7 @@ class GRAPHTOOLS():
         llx, lly, urx, ury = self.right_order_coord(llx, lly, urx, ury)
         a = float(lly - ury)/(llx - urx)  # 
         b = (llx*ury - lly*urx)/(llx - urx) #
-        self.ptlx, self.ptly = [], []                                                                           # coordinates line in "point"
+        self.ptlx, self.ptly = [], []                                                                           # coordinates line in "points"
         if self.data.mode_point: # 
             self.make_ptl_pt(llx, lly, urx, ury, a, b)                                                          # Makes the ptlx and ptly for point mode
         else:

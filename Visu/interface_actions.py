@@ -518,7 +518,7 @@ class INTERACT(object):
         if debug(self): print(area)
         if area < 1e9: #self.paramz.area3Dmax                                                                   # test if area is small enough
             if self.data.mode_point:
-                print("point")
+                print("points")
             else:
                 print("in m/z mode")
             d = self.display.data.d[len(self.display.data.d)-1]                                       # lowest resolution

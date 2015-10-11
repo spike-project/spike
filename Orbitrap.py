@@ -80,14 +80,16 @@ class OrbiAxis(FTMS.FTMSAxis):
         return m/z (mz) from Hertz value (h)
         """
         # m/z = A + B/f^2 + C/f^4
-        return self.calibA + self.calibB/(value**2) + self.calibC/(value**4)
+        v = np.maximum(value,0.1)   # protect from divide by 0
+        return self.calibA + self.calibB/(v**2) + self.calibC/(v**4)
  
     def mztoh(self, value):
         """
         return Hz value (h) from  m/z (mz) 
         """
-        Delta = self.calibB**2 - 4*self.calibC*(self.calibA - value)
-        f2 = (-self.calibB - np.sqrt(Delta)) / (2*(self.calibA - value))
+        v = np.maximum(value,0.1)   # protect from divide by 0
+        Delta = self.calibB**2 - 4*self.calibC*(self.calibA - v)
+        f2 = (-self.calibB - np.sqrt(Delta)) / (2*(self.calibA - v))
         return np.sqrt(f2)
 
 #-------------------------------------------------------------------------------

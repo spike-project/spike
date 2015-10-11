@@ -74,12 +74,12 @@ class FTICRAxis(FTMS.FTMSAxis):
         """
         return m/z (mz) from hertz value (h)
         """
-        return self.ref_mass*self.ref_freq/value
+        return self.ref_mass*self.ref_freq/np.maximum(value,0.1)       # protect from divide by 0
     def mztoh(self, value):
         """
         return Hz value (h) from  m/z (mz) 
         """
-        return self.ref_mass*self.ref_freq/value
+        return self.ref_mass*self.ref_freq/np.maximum(value,0.1)       # protect from divide by 0
 
 #-------------------------------------------------------------------------------
 def fticr_mass_axis(length, spectral_width, ref_mass, ref_freq):
