@@ -1376,7 +1376,7 @@ class NPKData(object):
                     axis = ( self.axis1.unit_axis(), self.axis2.unit_axis() )
                 if self.axis1.units[self.axis1.currentunit].reverse:
                         plot.gca().invert_yaxis()
-                if self.axis2.units[self.axis1.currentunit].reverse:
+                if self.axis2.units[self.axis2.currentunit].reverse:
                         plot.gca().invert_xaxis()
                 fig.contour(axis[1][z2lo:z2up:step2],
                     axis[0][z1lo:z1up:step1],
