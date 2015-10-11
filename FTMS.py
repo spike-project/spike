@@ -48,8 +48,10 @@ class FTMSAxis(NPKData.Axis):
         self.left_point = left_point
         self.units["m/z"] = NPKData.Unit(name="m/z", converter=self.itomz, bconverter=self.mztoi)
         self.units["Hz"] = NPKData.Unit(name="Hz", converter=self.itoh, bconverter=self.htoi)
+        self.units["sec"]= NPKData.Unit(name="sec", converter=self.itos, bconverter=self.stoi)  # for transients
         self.unit_types.append("m/z")
         self.unit_types.append("Hz")
+        self.unit_types.append("sec")
         self.currentunit = currentunit
         for i in ("specwidth", "ref_mass", "ref_freq", "highmass", "left_point"):  # updates storable attributes
             self.attributes.insert(0,i)
@@ -99,6 +101,17 @@ class FTMSAxis(NPKData.Axis):
         warn("mztoh must be overridden by subclasser")
         return value
     # the following are generic
+    #-------------------------------------------------------------------------------
+    def itos(self,value):
+        """
+        returns time value (s) from point value  - valid for transients
+        """
+        return 0.5*value/self.specwidth
+    def stoi(self,value):
+        """
+        returns point value (i) from time value (s)
+        """
+        return 2.0*value*self.specwidth
     #-------------------------------------------------------------------------------
     def htoi(self,value):
         """
