@@ -278,7 +278,7 @@ class Axis(object):
         if self.itype == 1:     # complex axis
             right += 1  # insure imaginary
         if not self.check_zoom( (left,right) ):
-            raise NPKError("slice probably outside current axis")
+            raise NPKError("%d-%d (points) slice probably outside current axis"%(left,right))
         return (left,right)
             
     def check_zoom(self, zoom):
@@ -2318,6 +2318,60 @@ class NPKData(object):
         else:
             raise NPKError("a faire")
         return self
+    ####### Apodisations ##########
+    #-------------------------------------------------------------------------------
+    def kaiser(self, beta, axis=0):
+        """
+        apply a Kaiser apodisation
+        beta is a positive number
+
+            beta 	Window shape
+            --------------------
+            0 	Rectangular
+            5 	Similar to a Hamming
+            6 	Similar to a Hanning
+            8.6 	Similar to a Blackman
+        """
+        todo = self.test_axis(axis)
+        it = self.axes(todo).itype
+        sw = self.axes(todo).specwidth
+        size = self.axes(todo).size
+        if it == 1: # means complex
+            size = size/2
+        e = np.kaiser(size, beta)
+        if it == 1:
+            e = as_float((1 + 1.0j)*e)
+        return self.apod_apply(axis,e)
+    #-------------------------------------------------------------------------------
+    def hamming(self, axis=0):
+        """
+        apply a Hamming apodisation
+        """
+        todo = self.test_axis(axis)
+        it = self.axes(todo).itype
+        sw = self.axes(todo).specwidth
+        size = self.axes(todo).size
+        if it == 1: # means complex
+            size = size/2
+        e = np.hamming(size)
+        if it == 1:
+            e = as_float((1 + 1.0j)*e)
+        return self.apod_apply(axis,e)
+    #-------------------------------------------------------------------------------
+    def hanning(self, axis=0):
+        """
+        apply a Hanning apodisation
+        """
+        todo = self.test_axis(axis)
+        it = self.axes(todo).itype
+        sw = self.axes(todo).specwidth
+        size = self.axes(todo).size
+        if it == 1: # means complex
+            size = size/2
+        e = np.hanning(size)
+        if it == 1:
+            e = as_float((1 + 1.0j)*e)
+        return self.apod_apply(axis,e)
     #-------------------------------------------------------------------------------
     def apod_gm(self, axis=0,gb=1.0):
         """
