@@ -170,7 +170,7 @@ class Peak1DList(PeakList):
         print( "id, label, position, intensity")
         for pk in self:
             print(pk.report(f=f), file=file)
-    def display(self, axis = None, peak_label = False, zoom = None, show = False, f=_identity):
+    def display(self, peak_label = False, zoom = None, show = False, f=_identity):
         """displays 1D peaks"""
         import spike.Display.testplot as testplot
         plot = testplot.plot()
@@ -180,13 +180,10 @@ class Peak1DList(PeakList):
             pk = [i for i,p in enumerate(self) if p.pos>=z0 and p.pos<=z1]
         else:
             pk = range(len(self))
-        if axis is None:
-            plot.plot(f(self.pos[pk]), self.intens[pk], "x")
-            if peak_label:
-                for p in pk:
-                    plot.text(f(self.pos[p]), 1.05*self.intens[p], self.label[p])
-        else:
-            raise Exception("to be done")
+        plot.plot(f(self.pos[pk]), self.intens[pk], "x")
+        if peak_label:
+            for p in pk:
+                plot.text(f(self.pos[p]), 1.05*self.intens[p], self.label[p])
         if show: plot.show()
 
 class Peak2DList(PeakList):
@@ -221,11 +218,8 @@ class Peak2DList(PeakList):
         """displays 2D peak list"""
         import spike.Display.testplot as testplot
         plot = testplot.plot()
-        if zoom:        # should be ((F1_limits),(F2_limits))
-            z1lo=zoom[0][0]
-            z1up=zoom[0][1]
-            z2lo=zoom[1][0]
-            z2up=zoom[1][1]
+        if zoom is not None:
+            z1, z2 = self.axis1.getslice(zoom)
             pk = []
             for p in range(len(self)):
                 plp = self[p]
@@ -476,9 +470,14 @@ def centroid(npkd, *arg, **kwarg):
         raise Exception("to be done")
     return npkd
 #-------------------------------------------------------
-def display_peaks(npkd, axis = None, peak_label = False, zoom = None, show = False, f=_identity, f1=_identity, f2=_identity):
+def display_peaks(npkd, peak_label = False, zoom = None, show = False):
     if npkd.dim == 1:
-        return npkd.peaks.display( axis=axis, peak_label=peak_label, zoom=zoom, show=show, f=f)
+        if zoom is not None:
+            z1, z2 = npkd.axis1.getslice(zoom)
+        else:
+            z1 = 0
+            z2 = npkd.size1
+        return npkd.peaks.display( peak_label=peak_label, zoom=(z1,z2), show=show, f=npkd.axis1.itoc)
     elif npkd.dim == 2:
         return npkd.peaks.display( axis=axis, peak_label=peak_label, zoom=zoom, show=show, f1=f1, f2=f2)
     else:
