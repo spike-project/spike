@@ -353,6 +353,8 @@ def Import_1D(filename="fid", outfile=None):
     d.axis1.zerotime = zerotime(acqu)
     if outfile is not None:
         raise Exception("Not implemented yet")
+    pardic = {"acqu": acqu, "proc": proc} # create ad-hoc parameters
+    d.params = pardic   # add the parameters to the data-set
     return d
     
 ################################################################
@@ -419,6 +421,11 @@ def Import_2D(filename="ser", outfile=None):
     if outfile is not None:
         raise Exception("Not implemented yet")
 
+    pardic = {"acqu": acqu, \
+        "acqu2": acqu2, \
+        "proc": proc, \
+        "proc2": proc2} # create ad-hoc parameters
+    d.params = pardic   # add the parameters to the data-set
     return d
 
 ################################################################
@@ -463,7 +470,15 @@ def Import_3D(filename="ser",outfile=""):
         param={}
         param['axisf3_zerotimeposition'] = zerotimeposition
         NPK.Generic.dict_dump(param,outfile+'.gtb')
-    return (get_si1_3d(),get_si2_3d(),get_si3_3d())
+
+    pardic = {"acqu": acqu, \
+        "acqu2": acqu2, \
+        "acqu3": acqu3, \
+        "proc": proc, \
+        "proc2": proc2, \
+        "proc3": proc3} # create ad-hoc parameters
+    d.params = pardic   # add the parameters to the data-set
+    return d
 
 ################################################################
 class Exporter(object):

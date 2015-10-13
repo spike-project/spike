@@ -141,6 +141,7 @@ def Import_1D(folder,outfile = ""):
         tbuf = f.read(4*sizeF1)
         abuf = np.array(array.array(flag,tbuf))
         data.buffer[:] = abuf[:]
+    data.params = params   # add the parameters to the data-set
     return data
 #-----------------------------------------
 
@@ -207,6 +208,7 @@ def Import_2D(folder, outfile = "",F1specwidth = None):
             data.buffer[i1,:] = abuf[:]
     # if (outfile):
     #     HF.close()
+    data.params = params   # add the parameters to the data-set
     return data
 #-----------------------------------------
 def Ser2D_to_FTICRFile(sizeF1, sizeF2, filename = "ser",outfile = "H5f.h5",chunks = None):

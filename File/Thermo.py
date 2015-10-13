@@ -83,6 +83,7 @@ def Import_1D(filename):
     It returns an Orbitrap data
     """
     param, data = read_thermo(filename)
+    data.params = param
     return data
 #----------------------------------------------
 class Thermo_Tests(unittest.TestCase):
