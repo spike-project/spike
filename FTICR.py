@@ -56,7 +56,15 @@ class FTICRAxis(FTMS.FTMSAxis):
         """
         super(FTICRAxis, self).__init__(size=size, specwidth=specwidth, itype=itype, currentunit=currentunit, ref_mass=ref_mass, ref_freq=ref_freq, highmass=highmass, left_point = left_point)
         self.FTICR = "FTICR"
+        self.calibA = self.ref_mass*self.ref_freq
+        self.calibB = 0.0
+        self.calibC = 0.0
+        
         self.attributes.insert(0,"FTICR") # updates storable attributes
+        self.attributes.insert(0,"calibA") # ML1
+        self.attributes.insert(0,"calibB") # ML2
+        self.attributes.insert(0,"calibC") # ML3
+        
     #-------------------------------------------------------------------------------
     def report(self):
         "high level reporting"
@@ -70,16 +78,34 @@ class FTICRAxis(FTMS.FTMSAxis):
 
 
     #-------------------------------------------------------------------------------
+# these are Bruker equations:
+#
+#    mzaxis = ml1/(ml2+faxis)
+#    faxis = ml1/mzaxis - ml2
+# or
+# f = (ML1 / m) + (ML3 / m^2) - ML2
+# m^2 F = -m^2*ML2 + m*ML1 +ML3
+# m^2*(F+ML2) - m*ML1 - ML3 = 0
+# delta = ML1^2 + 4*(ML2+F)ML3
+# m = ML1 + sqrt(delta) / (2 * (ML2 + f))
+
     def htomz(self, value):
         """
         return m/z (mz) from hertz value (h)
         """
-        return self.ref_mass*self.ref_freq/np.maximum(value,0.1)       # protect from divide by 0
+        h = np.maximum(value,0.1)       # protect from divide by 0
+        if self.calibC == 0.0:
+            m = self.calibA/(self.calibB + h)
+        else:
+            delta = self.calibA**2 + 4*self.calibC*(self.calibB + h)
+            m = self.calibA + np.sqrt(delta) / (2 * (self.calibB + h))
+        return m
     def mztoh(self, value):
         """
         return Hz value (h) from  m/z (mz) 
         """
-        return self.ref_mass*self.ref_freq/np.maximum(value,0.1)       # protect from divide by 0
+        m = np.maximum(value,0.1)             # protect from divide by 0
+        return self.calibA/m + self.calibC/(m**2)  - self.calibB
 
 #-------------------------------------------------------------------------------
 def fticr_mass_axis(length, spectral_width, ref_mass, ref_freq):
@@ -140,19 +166,25 @@ class FTICR_Tests(unittest.TestCase):
         "testing unit conversion functions"
         self.announce()
         F = FTICRAxis(size=1000, specwidth=1667000, itype=0, currentunit="points", ref_mass=344.0974, ref_freq=419620.0, highmass=2000.0)
-        self.assertAlmostEqual(F.itoh(0), 0)
-        self.assertAlmostEqual(F.itoh(F.size-1), F.specwidth)   # last point is size-1 !!!
         self.assertAlmostEqual(F.deltamz(F.itomz(1023))/F.itomz(1023), 1.0/1023)    # delta_m / m is 1/size at highest mass - before extraction
         self.assertAlmostEqual(123*F.itomz(123), 321*F.itomz(321))    # verify that f*m/z is constant !
         self.assertAlmostEqual(123*F.mztoi(123), 321*F.mztoi(321))    # verify that f*m/z is constant !
-        for i in (1,2):
-            print(F.report())
-            print(F._report())   # low level report
-            for x in (1.0, 301.0, F.size-20.0, F.size-1.0):    # last point is size-1 !!!
-                print("point at index %d is at freq %f, m/z %f"%(x, F.itoh(x), F.itomz(x)))
-                self.assertAlmostEqual(F.mztoi(F.itomz(x)), x)
-                self.assertAlmostEqual(F.itoh(F.htoi(x)), x)
-            F.extract((300,F.size-20))
+        self.assertAlmostEqual(F.itoh(0), 0)
+        self.assertAlmostEqual(F.itoh(F.size-1), F.specwidth)   # last point is size-1 !!!
+        for twice in range(2):
+            F = FTICRAxis(size=1000, specwidth=1667000, itype=0, currentunit="points", ref_mass=344.0974, ref_freq=419620.0, highmass=2000.0)
+            if twice == 1:  # second time tests 2nd order calibration
+                print ("TWICE") 
+                F.calibB = 55.0
+                F.calibC = 0.0
+            for i in (1,2):
+                print(F.report())
+                print(F._report())   # low level report
+                for x in (301.0, 1.0, F.size-20.0, F.size-1.0):    # last point is size-1 !!!
+                    print("point at index %d is at freq %f, m/z %f"%(x, F.itoh(x), F.itomz(x)))
+                    self.assertAlmostEqual(F.itoh(F.htoi(x)), x)
+                    self.assertAlmostEqual(F.mztoi(F.itomz(x)), x)
+                F.extract((300,F.size-20))
     def test_axis(self):
         "testing FTICRAxis object"
         self.announce()
