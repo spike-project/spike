@@ -174,11 +174,11 @@ class BC_Tests(unittest.TestCase):
         p = poly(np.arange(10.0),(.1,.2,.3,.4))
         self.assertEqual(p[6], 98.5)
         self.assertAlmostEqual(sum(p), 905.5)
-    def test_baseline(self):
+    def test_baseline0(self):
         N = 100000
         x = np.linspace(0,10,N)
         y = np.sin(x/2) + 0.2*np.random.randn(N)
-        b = baseline(y,chunksize=N/20)
+        b = baseline0(y,chunksize=N/20)
         corr = y-b
         self.assertTrue(np.std(corr) < 0.21)
     def test_correctbaseline(self):
