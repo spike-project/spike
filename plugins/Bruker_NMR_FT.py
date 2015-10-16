@@ -92,8 +92,6 @@ def ft_n_p(data, axis ="F1"):
     data.conv_n_p().ft_sh()
     return data
 NPKData_plugin("ft_n_p", ft_n_p)
-
-
 #-------------------------------------------------------------------------------
 def bruker_corr(self):
     """
@@ -105,6 +103,15 @@ def bruker_corr(self):
     return self
 NPKData_plugin("bruker_corr", bruker_corr)
 #-------------------------------------------------------------------------------
+def bruker_proc_phase(self):
+    """
+    applies a correction on the spectrum for the time offset in the FID and from proc file parameters.
+    """
+    delay = self.axes(self.dim).zerotime
+    self.phase(-float(self.params['proc']['$PHC0']),-360*delay-float(self.params['proc']['$PHC1'])*2) #Performs the phase correction from proc file
+    return self
+NPKData_plugin("bruker_proc_phase", bruker_proc_phase)
+#-------------------------------------------------------------------------------  
 def conv_n_p(self):
     """
     realises the n+p to SH conversion
@@ -131,6 +138,7 @@ class Bruker_NMR_FT(unittest.TestCase):
         d1.ft_seq()
         d1.axis1.itype = 1
         d1.ft_sim().bruker_corr()
+        #d1.bruker_proc_phase()
     def test_2D(self):
         '''Test mostly syntax'''
         from ..NPKData import NPKData
