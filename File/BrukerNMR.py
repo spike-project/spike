@@ -215,7 +215,6 @@ def read_2D(sizeF1, sizeF2, filename="ser", bytorda=1):
                 buf = F.read(256)
                 data = struct.unpack(fmt, buf)
                 bufsz = min(64, sizeF2-i2)
-                print (i2, bufsz)
                 npkbuf[i1,i2:i2+bufsz] = data[:bufsz]
                 # for i3 in range(bufsz):
                 #     setval(i1+1,i2+i3+1,ibuf[i3])      # copy to 2D buffer
