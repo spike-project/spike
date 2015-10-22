@@ -1273,7 +1273,7 @@ class NPKData(object):
             test = self.axis1.check_zoom(z[0:1]) and self.axis2.check_zoom(z[2:3])
         return test
     def display(self, scale = 1.0, absmax = None, show = False, label = None, new_fig = True, axis = None,
-                mode3D = False, zoom = None, xlabel="_def_", ylabel = "_def_", title = None, figure = None):
+                mode3D = False, zoom = None, xlabel="_def_", ylabel = "_def_", title = None, figure = None, linewidth=1):
         """
         not so quick and dirty display using matplotlib or mlab - still a first try
         
@@ -1292,6 +1292,7 @@ class NPKData(object):
         zoom    is a tuple defining the zoom window (left,right) or   ((F1_limits),(F2_limits))
                 defined in the current axis unit (points, ppm, m/z etc ....)
         figure  if not None, will be used directly to display instead of using its own
+        linewidth : linewidth for the plots (useful for example when using seaborn)
  
         can actually be called without harm, even if no graphic is available, it will just do nothing.
         
@@ -1326,7 +1327,7 @@ class NPKData(object):
                 ax = axis
             if self.axis1.units[self.axis1.currentunit].reverse:
                 plot.gca().invert_xaxis()                
-            fig.plot(ax[z1:z2:step], self.buffer[z1:z2:step].clip(mmin,mmax), label=label)
+            fig.plot(ax[z1:z2:step], self.buffer[z1:z2:step].clip(mmin,mmax), label=label, linewidth=linewidth)
             if xlabel == "_def_":
                 xlabel = self.axis1.currentunit
             if ylabel == "_def_":
