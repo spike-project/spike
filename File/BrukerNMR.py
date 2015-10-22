@@ -273,7 +273,7 @@ def zerotime(acqu):
        2, 3,  4,  6,   8,  12,  16,  24,  32,  48,  64,   96,   128,  192,  256,  384, 512,   768,  1024,  1536,  2048 ]
 
     try:
-        decim = int(acqu['$DECIM'])
+        decim = int(float(acqu['$DECIM']))
 #        print "DECIM=",decim
     except:
         decim=1
