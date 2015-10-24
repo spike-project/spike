@@ -1954,6 +1954,7 @@ class NPKData(object):
             #     elif projtype == "m":
         else :
             print("Dim should be at least 2")
+        c.adapt_size()
         return c
 
     #-------------------------------------------------------------------------------
