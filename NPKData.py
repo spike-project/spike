@@ -530,7 +530,7 @@ def copyaxes(inp,out):
     """
     for ii in range(inp.dim):
         i = ii + 1       # 1 2 3
-        setattr(out, "axis%1d"%(i), inp.axes(i).copy()) )
+        setattr(out, "axis%1d"%(i), inp.axes(i).copy() ) 
 ########################################################################
 def NPKData_plugin(name, method, verbose=False):
     """
