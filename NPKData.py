@@ -255,7 +255,7 @@ class Axis(object):
             tt =  "real"
         return tt
     def copy(self):
-        return copy.copy(self)
+        return copy.deepcopy(self)
     def getslice(self, zoom):
         """
         given a zoom window (or any slice), given as (low,high) in CURRENT UNIT,
@@ -530,7 +530,7 @@ def copyaxes(inp,out):
     """
     for ii in range(inp.dim):
         i = ii + 1       # 1 2 3
-        setattr(out, "axis%1d"%(i), copy.deepcopy(inp.axes(i)) )
+        setattr(out, "axis%1d"%(i), inp.axes(i).copy()) )
 ########################################################################
 def NPKData_plugin(name, method, verbose=False):
     """
@@ -664,7 +664,7 @@ class NPKData(object):
         self.adapt_size()
         self.check()
     #----------------------------------------------
-    def get_buffer(self,copy = False):
+    def get_buffer(self, copy=False):
         """
         returns a view or a copy of the numpy buffer containing the NPKData values
         dtype is either real or complex if axis is complex.
@@ -1101,14 +1101,14 @@ class NPKData(object):
             for i in range(1,self.size2):
                 for j in range(0,int(z)):
                     c.buffer [(i-1)*z+j] = self.buffer[i][float(i)/z]
-            c.axis1 = copy.copy(self.axis1)
+            c.axis1 = self.axis1.copy()
         else:
             z = float(self.size2)/self.size1
             c = Data(shape = (self.size2,))
             for i in range (1,self.size1):
                 for j in range(0,int(z)):
                     c.buffer [(i-1)*z+j] = self.buffer[i-1][(i-1)*z+j]
-            c.axis1 = copy.copy(self.axis2)
+            c.axis1 = self.axis2.copy()
         return c
     #--------------------------------------------------------------------------
     def diag3D(self,direc):
@@ -1124,7 +1124,7 @@ class NPKData(object):
         self.check2D()
         Data = type(self)   # NPKData get subclassed, so subclass creator is to be used
         c = Data(buffer = self.buffer[:,i].copy())
-        c.axis1 = copy.copy(self.axis1)
+        c.axis1 = self.axis1.copy()
         return c
     #----------------------------------------------
     def set_col(self, i, d1D):
@@ -1163,7 +1163,7 @@ class NPKData(object):
         self.check2D()
         Data = type(self)   # NPKData get subclassed, so subclass creator is to be used
         r = Data(buffer = self.buffer[i,:].copy())
-        r.axis1 = copy.copy(self.axis2)
+        r.axis1 = self.axis2.copy()
         return r
     #----------------------------------------------
     def set_row(self, i, d1D):
@@ -1203,18 +1203,18 @@ class NPKData(object):
         Data = type(self)   # NPKData get subclassed, so subclass creator is to be used        
         if todo == 1 :
             r = Data(buffer = self.buffer[i,:,:].copy())
-            r.axis1 = copy.copy(self.axis2)
-            r.axis2 = copy.copy(self.axis3)
+            r.axis1 = self.axis2.copy()
+            r.axis2 = self.axis3.copy()
             return r
         elif todo == 2:
             r = Data(buffer = self.buffer[:,i,:].copy())
-            r.axis1 = copy.copy(self.axis1)
-            r.axis2 = copy.copy(self.axis3)
+            r.axis1 = self.axis1.copy()
+            r.axis2 = self.axis3.copy()
             return r
         elif todo == 3:
             r = Data(buffer = self.buffer[:,:,i].copy())
-            r.axis1 = copy.copy(self.axis1)
-            r.axis2 = copy.copy(self.axis2)
+            r.axis1 = self.axis1.copy()
+            r.axis2 = self.axis2.copy()
             return r
         else:
             raise NPKError("problem with plane")
@@ -1934,13 +1934,13 @@ class NPKData(object):
                     c = Data(buffer =self.buffer.max(1))
                 elif ptype == "m":
                     c = Data(buffer =self.buffer.mean(axis = 1))      # mean of each line
-                c.axis1 = copy.deepcopy(self.axis1)
+                c.axis1 = self.axis1.copy()
             elif todo == 2:
                 if ptype == "s":
                     c = Data(buffer =self.buffer.max(0))
                 elif ptype == "m":
                     c = Data(buffer =self.buffer.mean(axis = 0))     # mean of each column
-                c.axis1 = copy.deepcopy(self.axis2)
+                c.axis1 = self.axis1.copy()
         elif self.dim == 3 :
             print("3D")
             # if todo == 1:
