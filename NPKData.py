@@ -1934,11 +1934,13 @@ class NPKData(object):
                     c = Data(buffer =self.buffer.max(1))
                 elif ptype == "m":
                     c = Data(buffer =self.buffer.mean(axis = 1))      # mean of each line
+                c.axis1 = copy.deepcopy(self.axis1)
             elif todo == 2:
                 if ptype == "s":
                     c = Data(buffer =self.buffer.max(0))
                 elif ptype == "m":
                     c = Data(buffer =self.buffer.mean(axis = 0))     # mean of each column
+                c.axis1 = copy.deepcopy(self.axis2)
         elif self.dim == 3 :
             print("3D")
             # if todo == 1:
