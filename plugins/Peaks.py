@@ -63,6 +63,7 @@ class Peak1D(Peak):
     pos_err     uncertainty of the previous values
     width_err   ...
     """
+    report_format = "{}, {}, {:.2f}, {:.2f}"
     def __init__(self, Id, label, intens, pos):
         super(Peak1D, self).__init__(Id, label, intens)
         self.pos = float(pos)
@@ -71,15 +72,25 @@ class Peak1D(Peak):
         self.width_err = 0.0
     def report(self, f=_identity):
         """
-        return a string with the peak description
+        print the peak list
         f is a function used to transform the coordinate
         indentity function is default,
         for instance you can use something like
-        peaks.report(f=d.axis1.itop)    to get ppm values on a NMR dataset
+        peaks.report(f=s.axis1.itop)    to get ppm values on a NMR dataset
         order is "id, label, position, intensity"
+
+        printed parameters are : 
+        Id label positions intens width
+        and default format used is "{}, {}, {:.2f}, {:.2f}"   (so width is not shown)
+        if pk is a peak, setting
+            pk.report_format to some other format will change the format for this peak
+            pk.__class__.report_format  to some other format will change the format for all peaks in the peak list
+        
+        you can use any formating syntax. So for instance the following format
+        "{1} :   {3:.2f}  F1: {1:.7f} +/- {4:.2f}"
+        will remove the Id, show position with 7 digits after the comma, and will show width
         """
-        return  "%d, %s, %.5f, %.5f, %.2f" % \
-            (self.Id, self.label, f(self.pos), self.intens, self.width) 
+        return self.report_format.format( self.Id, self.label, f(self.pos), self.intens, self.width )
 class Peak2D(Peak):
     """a class to store a single 2D peak
     defines in addition to Peak
@@ -88,6 +99,7 @@ class Peak2D(Peak):
     posF1_err ...       uncertainty of the previous values
     widthF1_err   ...
     """
+    report_format = "{}, {}, {:.2f}, {:.2f}, {:.2f}"
     def __init__(self, Id, label, intens, posF1, posF2 ):
         super(Peak2D, self).__init__(Id, label, intens)
         self.posF1 = posF1
@@ -104,9 +116,19 @@ class Peak2D(Peak):
         for instance you can use something like
         peaks.report(f1=s.axis1.itop, f2=s.axis2.itop)    to get ppm values on a NMR dataset
         order is "id, label, posF1, posF2, intensity"
+
+        printed parameters are : 
+        Id label posF1 posF2 intens widthF1 widthF2
+        and default format used is "{}, {}, {:.2f}, {:.2f}, {:.2f}"   (so widthes are not shown)
+        if pk is a peak, setting
+            pk.report_format to some other format will change the format for this peak
+            pk.__class__.report_format  to some other format will change the format for all peaks in the peak list
+        
+        you can use any formating syntax. So for instance the following format
+        "{1} :   {4:.2f}  F1: {2:.7f} +/- {5:.2f}  X  F2: {3:.7f} +/- {6:.2f}"
+        will remove the Id, show position with 7 digits after the comma, and will show widthes
         """
-        return "%d, %s, %.5f, %.5f, %.5f" % \
-                (self.Id, self.label, f1(self.posF1), f2(self.posF2), self.intens)
+        return self.report_format.format( self.Id, self.label, f1(self.posF1), f2(self.posF2), self.intens, self.widthF1, self.widthF2 )
 
 class PeakList(list):
     """
@@ -165,9 +187,11 @@ class Peak1DList(PeakList):
         indentity function is default,
         for instance you can use something like
         d.peaks.export(f=s.axis1.itop)    to get ppm values on a NMR dataset
+
+        check documentation for Peak1D.report() for details on output format
         """
-        print ("# Peak list")
-        print( "id, label, position, intensity")
+        print ("# %d in Peak list"%len(self), file=file)
+        print ("# "+Peak1D.report_format, file=file)
         for pk in self:
             print(pk.report(f=f), file=file)
     def display(self, peak_label = False, zoom = None, show = False, f=_identity):
@@ -209,9 +233,11 @@ class Peak2DList(PeakList):
         for instance you can use something like
         d.peaks.export(f1=s.axis1.itop, f2=s.axis2.itop)    to get ppm values on a NMR dataset
         the file keyword allows to redirect the output to a file object 
+        
+        check documentation for Peak2D.report() for details on output format
         """
-        print ("# Peak list", file=file)
-        print( "id, label, posF1, posF2, intensity", file=file)
+        print ("# %d in Peak list"%len(self), file=file)
+        print ("# "+Peak2D.report_format, file=file)
         for pk in self:
             print(pk.report(f1=f1, f2=f2), file=file)
     def display(self, axis = None, peak_label = False, zoom = None, show = False, f1=_identity, f2=_identity):
@@ -292,13 +318,9 @@ def peaks2d(npkd, threshold, zoom):
     '''
     npkd.check2D()
     #print threshold
-    if zoom:        # should ((F1_limits),(F2_limits))
-        z1lo=zoom[0][0]
-        z1up=zoom[0][1]
-        z2lo=zoom[1][0]
-        z2up=zoom[1][1]
-        if z1up < 0 : z1up = npkd.size1 + z1up
-        if z2up < 0 : z2up = npkd.size2 + z2up
+    if zoom is not None:        # should ((F1_limits),(F2_limits))
+        z1lo, z1up = npkd.axis1.getslice(zoom[0])
+        z2lo, z2up = npkd.axis2.getslice(zoom[1])
     else:
         z1lo=0
         z1up=npkd.size1-1
@@ -328,19 +350,17 @@ def peaks2d(npkd, threshold, zoom):
 
     listint = npkd.buffer[listpkF1, listpkF2]
     return listpkF1, listpkF2, listint
-def peaks1d(npkd, threshold, zoom):
+def peaks1d(npkd, threshold, zoom=None):
     """
     code for NPKData 2D peak picker
     """
     npkd.check1D()
-    if zoom:        # should (left,right)
-        z1lo=zoom[0]
-        z1up=zoom[1]
-        if z1up < 0 : z1up = npkd.size1 + z1up
+    if zoom is not None:
+        z1, z2 = npkd.axis1.getslice(zoom)
     else:
-        z1lo=0
-        z1up=npkd.size1-1
-    buff = npkd.get_buffer()[z1lo:z1up]            # take the zoom window
+        z1 = 0
+        z2 = npkd.size1
+    buff = npkd.get_buffer()[z1:z2]            # take the zoom window
     if npkd.itype == 1:
         buff = abs(buff)
     tbuff = buff[1:-1]
@@ -348,7 +368,7 @@ def peaks1d(npkd, threshold, zoom):
                     (tbuff > buff[:-2]) &     
                     (tbuff > buff[2:]) )) # roll 1 and -1 on axis 0
 #    return listpk[0]
-    listpkF1 = int(z1lo) + listpk[0] +1
+    listpkF1 = int(z1) + listpk[0] +1
     listint = npkd.buffer[listpkF1]
     return listpkF1, listint
 #-------------------------------------------------------
@@ -369,41 +389,11 @@ def center2d(yx, yo, xo, intens, widthy, widthx):
     y = yx[::2]
     x = yx[1::2]
     return intens*(1 - ((x-xo)/widthx)**2)*(1 - ((y-yo)/widthy)**2)
-## previous version - based on polyfit - different API
-def _centroid1d(npkd, npoints=3):
-    """
-    from peak lists determined with peak()
-    realize a centroid fit of the peak summit and width,
-    computes Full width at half maximum
-    creates lists npkd.centered_peaks and npkd.width_peaks
-    
-    Temporary  so far,
-        only based on regular sampling, not unit axis.
-        ah-hoc structure, waiting for a real PEAK object
-    """
-    from scipy import polyfit
-    npkd.check1D()
-    noff = (int(npoints)-1)/2
-    if (2*noff+1 != npoints) or (npoints<3):
-        raise NPKError("npoints must odd and >2 ",data=npkd)
-    for i, pk in enumerate(npkd.peaks):
-        xdata = np.arange(pk.pos-noff, pkpk.pos+noff+1)
-        ydata = npkd.get_buffer()[xdata]
-        coeffs = polyfit(xdata, ydata, 2)
-        pospeak = -coeffs[1]/(2*coeffs[0])#/factexp# position of maximum of parabola in m/z
-        c = coeffs[2]/2 + coeffs[1]**2/(8*coeffs[0]) #half height 
-        b = coeffs[1]
-        a = coeffs[0]
-        delt = b**2-4*a*c
-        width =  np.sqrt(delt)/abs(a) # width at half height
-        npkd.centered_peaks.append(pospeak)
-        npkd.width_peaks.append(width)
-    npkd.centered_peaks = np.array(npkd.centered_peaks)
-    npkd.width_peaks = np.array(npkd.width_peaks)
 def centroid1d(npkd, npoints=3):
     """
     from peak lists determined with peak()
     realize a centroid fit of the peak summit and width,
+    will use npoints values around center  (npoints has to be odd)
     computes Full width at half maximum
     updates in data peak list
     
@@ -420,7 +410,7 @@ def centroid1d(npkd, npoints=3):
         try:
             popt, pcov = curve_fit(center, xdata, ydata, p0=[pk.pos, pk.intens, 1.0] ) # fit
         except RuntimeError:
-            print (pk.label, "centroid could not be fitted")
+            print ( "peak %s (id %d) centroid could not be fitted"%(pk.Id, pk.label) )
         pk.pos = popt[0]
         pk.intens = popt[1]
         pk.width = popt[2]
@@ -467,10 +457,14 @@ def centroid(npkd, *arg, **kwarg):
     elif npkd.dim == 2:
         centroid2d(npkd, *arg, **kwarg)
     else:
-        raise Exception("to be done")
+        raise Exception("Centroid yet to be done")
     return npkd
 #-------------------------------------------------------
 def display_peaks(npkd, peak_label = False, zoom = None, show = False):
+    """
+    display the content of the peak list, 
+    zoom is in current unit.
+    """
     if npkd.dim == 1:
         if zoom is not None:
             z1, z2 = npkd.axis1.getslice(zoom)
@@ -479,7 +473,23 @@ def display_peaks(npkd, peak_label = False, zoom = None, show = False):
             z2 = npkd.size1
         return npkd.peaks.display( peak_label=peak_label, zoom=(z1,z2), show=show, f=npkd.axis1.itoc)
     elif npkd.dim == 2:
-        return npkd.peaks.display( axis=axis, peak_label=peak_label, zoom=zoom, show=show, f1=f1, f2=f2)
+        return npkd.peaks.display( peak_label=peak_label, zoom=zoom, show=show, f1=npkd.axis1.itoc, f2=npkd.axis2.itoc)
+    else:
+        raise Exception("to be done")
+#-------------------------------------------------------
+def report_peaks(npkd, file=None):
+    """
+    print the content of the peak list, using the current unit
+    
+    if file should be an already opened writable file stream. 
+    if None, output will go to stdout
+    
+    for documentation, check Peak1D.report() and Peak2D.report()
+    """
+    if npkd.dim == 1:
+        return npkd.peaks.report(f=npkd.axis1.itoc, file=file)
+    elif npkd.dim == 2:
+        return npkd.peaks.report( f1=npkd.axis1.itoc, f2=npkd.axis2.itoc, file=file)
     else:
         raise Exception("to be done")
 
@@ -540,7 +550,7 @@ class PeakTests(unittest.TestCase):
         self.assertAlmostEqual(d.peaks[0].widthF1,5.0)
         self.assertAlmostEqual(d.peaks[0].widthF2,1.3)
 
-NPKData_plugin("display_peaks", display_peaks)
 NPKData_plugin("pp", peakpick)
 NPKData_plugin("centroid", centroid)
-
+NPKData_plugin("report_peaks", report_peaks)
+NPKData_plugin("display_peaks", display_peaks)
