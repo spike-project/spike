@@ -26,7 +26,7 @@ import numpy as np
 import unittest
 
 from spike import NPKError
-from spike.NPKData import NPKData_plugin, NPKData
+from spike.NPKData import NPKData_plugin, NPKData, flatten, parsezoom
 from spike.util.counter import timeit
 from scipy.optimize import curve_fit
 #from spike.util.signal_tools import findnoiselevel, findnoiselevel_2D
@@ -194,8 +194,11 @@ class Peak1DList(PeakList):
         print ("# "+Peak1D.report_format, file=file)
         for pk in self:
             print(pk.report(f=f), file=file)
-    def display(self, peak_label = False, zoom = None, show = False, f=_identity):
-        """displays 1D peaks"""
+    def display(self, peak_label=False, zoom=None, show=False, f=_identity):
+        """
+        displays 1D peaks
+        zoom is in index
+        """
         import spike.Display.testplot as testplot
         plot = testplot.plot()
         if zoom:
@@ -240,12 +243,15 @@ class Peak2DList(PeakList):
         print ("# "+Peak2D.report_format, file=file)
         for pk in self:
             print(pk.report(f1=f1, f2=f2), file=file)
-    def display(self, axis = None, peak_label = False, zoom = None, show = False, f1=_identity, f2=_identity):
-        """displays 2D peak list"""
+    def display(self, axis = None, peak_label=False, zoom=None, show=False, f1=_identity, f2=_identity):
+        """
+        displays 2D peak list
+        zoom is in index
+        """
         import spike.Display.testplot as testplot
         plot = testplot.plot()
         if zoom is not None:
-            z1, z2 = self.axis1.getslice(zoom)
+            (z1lo, z1up, z2lo, z2up) = flatten(zoom)
             pk = []
             for p in range(len(self)):
                 plp = self[p]
@@ -284,8 +290,9 @@ def peakpick(npkd, threshold = None, zoom = None):
     performs a peak picking of the current experiment
     threshold is the level above which peaks are picked
         None (default) means that 3*(noise level of dataset) will be used - using d.std() as proxy for noise-level
-    zoom defines the region on which detection is made (same syntax as in display)
-        None (default) means whole data
+    zoom defines the region on which detection is made
+        zoom is in currentunit (same syntax as in display)
+        None means the whole data
     """
     if npkd.dim == 1:
         if threshold is None:
@@ -310,22 +317,14 @@ def peakpick(npkd, threshold = None, zoom = None):
     print (threshold)
     return npkd
         
-#----------------------------------------------------------
-#@timeit
+    
 def peaks2d(npkd, threshold, zoom):
     '''
     code for NPKData 2D peak picker
     '''
     npkd.check2D()
     #print threshold
-    if zoom is not None:        # should ((F1_limits),(F2_limits))
-        z1lo, z1up = npkd.axis1.getslice(zoom[0])
-        z2lo, z2up = npkd.axis2.getslice(zoom[1])
-    else:
-        z1lo=0
-        z1up=npkd.size1-1
-        z2lo=0
-        z2up=npkd.size2-1
+    z1lo, z1up, z2lo, z2up = parsezoom(npkd, zoom)
     buff = npkd.get_buffer()[z1lo:z1up, z2lo:z2up]            # take the zoom window
     if npkd.itype != 0:
         buff = abs(buff)
@@ -355,11 +354,7 @@ def peaks1d(npkd, threshold, zoom=None):
     code for NPKData 2D peak picker
     """
     npkd.check1D()
-    if zoom is not None:
-        z1, z2 = npkd.axis1.getslice(zoom)
-    else:
-        z1 = 0
-        z2 = npkd.size1
+    z1, z2 = parsezoom(npkd, zoom)
     buff = npkd.get_buffer()[z1:z2]            # take the zoom window
     if npkd.itype == 1:
         buff = abs(buff)
@@ -460,20 +455,17 @@ def centroid(npkd, *arg, **kwarg):
         raise Exception("Centroid yet to be done")
     return npkd
 #-------------------------------------------------------
-def display_peaks(npkd, peak_label = False, zoom = None, show = False):
+def display_peaks(npkd, peak_label=False, zoom=None, show=False):
     """
     display the content of the peak list, 
     zoom is in current unit.
     """
     if npkd.dim == 1:
-        if zoom is not None:
-            z1, z2 = npkd.axis1.getslice(zoom)
-        else:
-            z1 = 0
-            z2 = npkd.size1
+        z1, z2 = parsezoom(npkd, zoom)
         return npkd.peaks.display( peak_label=peak_label, zoom=(z1,z2), show=show, f=npkd.axis1.itoc)
     elif npkd.dim == 2:
-        return npkd.peaks.display( peak_label=peak_label, zoom=zoom, show=show, f1=npkd.axis1.itoc, f2=npkd.axis2.itoc)
+        z1lo, z1up, z2lo, z2up = parsezoom(npkd, zoom)
+        return npkd.peaks.display( peak_label=peak_label, zoom=((z1lo,z1up),(z2lo,z2up)), show=show, f1=npkd.axis1.itoc, f2=npkd.axis2.itoc)
     else:
         raise Exception("to be done")
 #-------------------------------------------------------

@@ -21,7 +21,7 @@ def _spline_interpolate(buff, xpoints, kind = 3):
         we are using splrep and splev instead of interp1d because interp1d needs to have 0 and last point
         it doesn't extend.
     """
-    y = buff[point]
+    y = buff[xpoint]
     if len(xpoints) > 2:
         tck = interpolate.splrep(xpoints, y, k=kind)
     elif len(xpoints) == 2 :
@@ -35,7 +35,7 @@ def _linear_interpolate(buff, xpoints):
     """computes and returns a linear interpolation"""
     xdata = np.array(xpoints)
     ydata = buff[xdata]
-    coeffs = polyfit(xdata, ydata, 1)
+    coeffs = np.polyfit(xdata, ydata, 1)
     return np.poly1d(coeffs)
 #-------------------------------------------------------------------------------
 def _interpolate(func, npkd, xpoints, axis = 'F2'):
