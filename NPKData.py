@@ -531,6 +531,36 @@ def copyaxes(inp,out):
     for ii in range(inp.dim):
         i = ii + 1       # 1 2 3
         setattr(out, "axis%1d"%(i), inp.axes(i).copy() ) 
+#----------------------------------------------------------
+def parsezoom(npkd, zoom):
+    """
+    takes zoom (in currentunit) for NPKData npkd, and return either
+    in 1D : zlo, zup    
+    in 2D : z1lo, z1up, z2lo, z2up
+    if zoom is None, it returns the full zone
+    """
+    if npkd.dim == 1:
+        if zoom is not None:
+            z1lo, z1up = npkd.axis1.getslice(zoom)
+        else:
+            z1lo = 0
+            z1up = npkd.size1-1
+        return (z1lo, z1up)
+    elif npkd.dim == 2:
+        if zoom is not None:        # should ((F1_limits),(F2_limits))
+            zz = flatten(zoom)
+            z1lo, z1up = npkd.axis1.getslice((zz[0],zz[1]))
+            z2lo, z2up = npkd.axis2.getslice((zz[2],zz[3]))
+        else:
+            z1lo=0
+            z1up=npkd.size1-1
+            z2lo=0
+            z2up=npkd.size2-1
+        print(z1lo, z1up, z2lo, z2up)
+        return (z1lo, z1up, z2lo, z2up)
+    else:
+        raise Exception("this code is not done yet")
+
 ########################################################################
 def NPKData_plugin(name, method, verbose=False):
     """
@@ -1026,7 +1056,7 @@ class NPKData(object):
     #---------------------------------------------------------------------------
     def _extract2d(self, zoom ):
         self.check2D()
-        print ('extract 2D', zoom)
+        zoom = flatten(zoom)
         x1, y1 = self.axis1.extract( (zoom[0], zoom[1]) )
         x2, y2 = self.axis2.extract( (zoom[2], zoom[3]) )
         self.buffer = self.buffer[x1:y1, x2:y2]
@@ -1035,6 +1065,7 @@ class NPKData(object):
     #---------------------------------------------------------------------------
     def _extract3d(self, zoom):
         self.check3D()
+        zoom = flatten(zoom)
         x1, y1 = self.axis1.extract( (zoom[0], zoom[1]) )
         x2, y2 = self.axis2.extract( (zoom[2], zoom[3]) )
         x3, y3 = self.axis3.extract( (zoom[4], zoom[5]) )
@@ -1316,11 +1347,7 @@ class NPKData(object):
             mmax = self.absmax/scale
             step = self.axis1.itype+1
 
-            if zoom is not None:
-                z1, z2 = self.axis1.getslice(zoom)
-            else:
-                z1 = 0
-                z2 = self.size1
+            z1, z2 = parsezoom(self,zoom)
             if axis is None:
                 ax = self.axis1.unit_axis()
             else:
@@ -1335,14 +1362,8 @@ class NPKData(object):
         if self.dim == 2:
             step2 = self.axis2.itype+1
             step1 = self.axis1.itype+1
-            if zoom is not None:        # should ((F1_limits),(F2_limits))
-                z1lo, z1up = self.axis1.getslice(zoom[0])
-                z2lo, z2up = self.axis2.getslice(zoom[1])
-            else:
-                z1lo=0
-                z1up=self.size1-1
-                z2lo=0
-                z2up=self.size2-1
+            z1lo, z1up, z2lo, z2up  = parsezoom(self,zoom)
+            
             if not absmax:  # absmax is the largest point on spectrum, either given from call, or handled internally
                 if not self.absmax:     # compute it if absent  - but do it on zoom window ! as this is a killer for large onfile datasets
                     absmax = np.nanmax( np.abs(self.buffer[z1lo:z1up:step1,z2lo:z2up:step2]) )

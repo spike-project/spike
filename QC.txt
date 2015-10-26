@@ -27,7 +27,7 @@
    6.00  Algo/urQRd_util/versions.py                 1
    6.00  Visu/__init__.py                            0
    6.00  Algo/__init__.py                            0
-   5.93  plugins/bcorr.py                      2     1 
+M  5.93  plugins/bcorr.py                      2     1 
    5.88  Algo/CS_transformations.py                  1
    5.73  FTICR.py                                    6
    5.24  util/simple_logger2.py                      3
@@ -35,7 +35,7 @@
    5.00  util/debug/MPI_test_attr.py                 5
 -------------------------------------------------------
    4.64  Visu/paramzoom.py                           0
-   4.58  NPKData.py                            4    45 
+M  4.57  NPKData.py                            4    47 
    4.51  Algo/Cadzow_mpi2.py                         4
    4.44  plugins/sg.py                               2
    4.39  File/HDF5File.py                      2    36 
@@ -58,9 +58,9 @@
    3.33  NPKConfigParser.py                         10
    3.02  Algo/urQRd_util/Config.py                   2
    3.01  Visu/interface_actions.py             5    43 
-   2.91  Algo/BC.py                            2     1 
    2.55  Visu/Load.py                               12
    2.50  __init__.py                                 7
+M  2.44  plugins/Peaks.py                      6    15 
    2.42  util/log_stderr.py                          4
    2.35  util/ValErr.py                              3
    2.23  Visu/zooming.py                       2    38 
@@ -68,14 +68,14 @@
    2.22  version.py                                  0
    2.17  Algo/Cadzow_mpi.py                    3    16 
    2.09  util/readwrite_tools.py               2     1 
+   2.03  Algo/BC.py                            5     3 
    1.94  Algo/Laplace.py                       1     5 
    1.92  Algo/SL0.py                           2     3 
    1.88  plugins/urQRd.py                           11
    1.78  Visu/label_2D.py                      2    30 
+   1.70  plugins/Bruker_NMR_FT.py              9     2 
    1.65  plugins/Bucketing.py                  2     5 
-   1.58  plugins/Bruker_NMR_FT.py              9     2 
    1.48  Algo/Linpredic.py                     2     9 
-   1.26  plugins/Peaks.py                     16    12 
    1.25  Algo/SL0_test.py                     15     4 
    1.11  Display/fakeplot.py                        22
    1.11  SPIKE_usage_eg/eg_cadzow.py                 2
@@ -123,7 +123,7 @@
 Overall aggregated note value is :  3.23/10
 
 score is 31 / 54 / 29  (top / med / low)
-Mean - Median note values are :  1.38/10 -  2.55/10
+Mean - Median note values are :  1.38/10 -  2.50/10
   Median is below 5.0 - let's try to improve it
-Total number of errors : 519 on a total of 114 files
+Total number of errors : 512 on a total of 114 files
 -------------------------------------------------------
