@@ -70,7 +70,7 @@ class Peak1D(Peak):
         self.pos_err = 0.0
         self.width = 0.0
         self.width_err = 0.0
-    def report(self, f=_identity):
+    def report(self, f=_identity, format=None):
         """
         print the peak list
         f is a function used to transform the coordinate
@@ -82,15 +82,14 @@ class Peak1D(Peak):
         printed parameters are : 
         Id label positions intens width
         and default format used is "{}, {}, {:.2f}, {:.2f}"   (so width is not shown)
-        if pk is a peak, setting
-            pk.report_format to some other format will change the format for this peak
-            pk.__class__.report_format  to some other format will change the format for all peaks in the peak list
-        
-        you can use any formating syntax. So for instance the following format
-        "{1} :   {3:.2f}  F1: {1:.7f} +/- {4:.2f}"
-        will remove the Id, show position with 7 digits after the comma, and will show width
+        format field can enforce another format:
+            you can use any formating syntax. So for instance the following format
+            "{1} :   {3:.2f}  F1: {1:.7f} +/- {4:.2f}"
+            will remove the Id, show position with 7 digits after the comma, and will show width
         """
-        return self.report_format.format( self.Id, self.label, f(self.pos), self.intens, self.width )
+        if format is None:
+            format = self.report_format
+        return format.format( self.Id, self.label, f(self.pos), self.intens, self.width )
 class Peak2D(Peak):
     """a class to store a single 2D peak
     defines in addition to Peak
@@ -108,7 +107,7 @@ class Peak2D(Peak):
         self.widthF2 = 0.0
         self.posF1_err = 0.0
         self.posF2_err = 0.0
-    def report(self, f1=_identity, f2=_identity):
+    def report(self, f1=_identity, f2=_identity, format=None):
         """
         print the peak list
         f1, f2 are two functions used to transform respectively the coordinates in F1 and F2
@@ -128,7 +127,9 @@ class Peak2D(Peak):
         "{1} :   {4:.2f}  F1: {2:.7f} +/- {5:.2f}  X  F2: {3:.7f} +/- {6:.2f}"
         will remove the Id, show position with 7 digits after the comma, and will show widthes
         """
-        return self.report_format.format( self.Id, self.label, f1(self.posF1), f2(self.posF2), self.intens, self.widthF1, self.widthF2 )
+        if format is None:
+            format = self.report_format
+        return format.format( self.Id, self.label, f1(self.posF1), f2(self.posF2), self.intens, self.widthF1, self.widthF2 )
 
 class PeakList(list):
     """
@@ -180,7 +181,7 @@ class Peak1DList(PeakList):
     def pos(self):
         "returns a numpy array of the positions in index"
         return np.array( [pk.pos for pk in self] )
-    def report(self, f=_identity, file=None):
+    def report(self, f=_identity, file=None, format=None):
         """
         print the peak list
         f is a function used to transform respectively the coordinates
@@ -191,9 +192,8 @@ class Peak1DList(PeakList):
         check documentation for Peak1D.report() for details on output format
         """
         print ("# %d in Peak list"%len(self), file=file)
-        print ("# "+Peak1D.report_format, file=file)
         for pk in self:
-            print(pk.report(f=f), file=file)
+            print(pk.report(f=f, format=format), file=file)
     def display(self, peak_label=False, zoom=None, show=False, f=_identity):
         """
         displays 1D peaks
@@ -228,7 +228,7 @@ class Peak2DList(PeakList):
     def posF2(self):
         "returns a numpy array of the F2 positions in index"
         return np.array( [pk.posF2 for pk in self] )
-    def report(self, f1=_identity, f2=_identity, file=None):
+    def report(self, f1=_identity, f2=_identity, file=None, format=None):
         """
         print the peak list
         f1, f2 are two functions used to transform respectively the coordinates in F1 and F2
@@ -240,9 +240,8 @@ class Peak2DList(PeakList):
         check documentation for Peak2D.report() for details on output format
         """
         print ("# %d in Peak list"%len(self), file=file)
-        print ("# "+Peak2D.report_format, file=file)
         for pk in self:
-            print(pk.report(f1=f1, f2=f2), file=file)
+            print(pk.report(f1=f1, f2=f2, format=format), file=file)
     def display(self, axis = None, peak_label=False, zoom=None, show=False, f1=_identity, f2=_identity):
         """
         displays 2D peak list
@@ -439,7 +438,7 @@ def centroid2d(npkd, npoints_F1=3, npoints_F2=3):
                                             # yx,           yo, xo, intens, widthy, widthx
             popt, pcov = curve_fit(center2d, yxdata, zdata, p0=[pk.posF1, pk.posF2, pk.intens, 1.0, 1.0] ) # fit
         except RuntimeError:
-            print (pk.label, "centroid could not be fitted")
+            print ( "peak %d (label %s) centroid could not be fitted"%(pk.Id, pk.label) )
         pk.posF1 = popt[0]
         pk.posF2 = popt[1]
         pk.intens = popt[2]
@@ -469,7 +468,7 @@ def display_peaks(npkd, peak_label=False, zoom=None, show=False):
     else:
         raise Exception("to be done")
 #-------------------------------------------------------
-def report_peaks(npkd, file=None):
+def report_peaks(npkd, file=None, format=None):
     """
     print the content of the peak list, using the current unit
     
@@ -479,9 +478,9 @@ def report_peaks(npkd, file=None):
     for documentation, check Peak1D.report() and Peak2D.report()
     """
     if npkd.dim == 1:
-        return npkd.peaks.report(f=npkd.axis1.itoc, file=file)
+        return npkd.peaks.report(f=npkd.axis1.itoc, file=file, format=format)
     elif npkd.dim == 2:
-        return npkd.peaks.report( f1=npkd.axis1.itoc, f2=npkd.axis2.itoc, file=file)
+        return npkd.peaks.report( f1=npkd.axis1.itoc, f2=npkd.axis2.itoc, file=file, format=format)
     else:
         raise Exception("to be done")
 
