@@ -124,13 +124,14 @@ class FTICRData(FTMS.FTMSData):
     allows 1D and 2D data-sets
     
     """
-    def __init__(self, dim=1, shape=None, mode="memory", buffer=None, name=None, debug=0):
+    def __init__(self, dim=1, shape=None, mode="memory", group="resol1", buffer=None, name=None, debug=0):
         """
         dim : dimension of dataset
         shape : shape of the buffer (size1,size2)
         mode : memory : data-set is kept in-memory    /  onfile : data-set is read from file when needed
         buffer : if is not None; used as data
         name : if is not None, data is read from file
+            group : when reading a hdf5 file, default group name used
         """
         self.axis1 = FTICRAxis()    # this creates an FTMSAxis so that pylint does not complain - will be overwritten
         if dim == 2:
@@ -139,7 +140,7 @@ class FTICRData(FTMS.FTMSData):
             if name.endswith(".msh5"):  # try loading .msh5 file
                 if debug>0: print("reading msh5")
                 H = File.HDF5File.HDF5File(name,"r")
-                H.load(mode=mode)      # load into memory by default !
+                H.load(mode=mode, group=group)      # load into memory by default !
                 super(FTICRData, self).__init__(buffer=H.data.buffer, debug=debug)
                 NPKData.copyaxes(H.data, self)  # and deep copy all axes from file
                 self.name = name
