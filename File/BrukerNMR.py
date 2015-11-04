@@ -414,8 +414,8 @@ def Import_2D(filename="ser", outfile=None):
     else:                       # complex mode
         d.axis2.itype = 1
     d.axis1.itype = FnMODE(acqu2, proc2)
-    d.axis1.offset = offset(acqu, proc)
-    d.axis2.offset = offset(acqu2, proc2)
+    d.axis1.offset = offset(acqu2, proc2)
+    d.axis2.offset = offset(acqu, proc)
 
     d.axis2.zerotime = zerotime(acqu)
     if outfile is not None:
