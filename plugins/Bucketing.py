@@ -38,9 +38,9 @@ def bucket1d(data, zoom=(0.5, 9.5), bsize=0.04, file=None):
     if  ((end-start)/bsize < 10):        NPKError( "Integration zone too small or Bucket too large")
     ppm_per_point = (data.axis1.specwidth/data.axis1.frequency/data.size1)
     if (bsize < 2*ppm_per_point):        NPKError( "Bucket size smaller than digital resolution !")
-    buf = data.get_buffer()
-    if data.itype != 0:
-        buf = real(buf)
+
+    dcopy = data.copy()   # work now on a real version of the data
+    dcopy.real(axis=1)
 
     s = "# %i buckets with a mean size of %.2f data points\n" % \
         ( round((end-start+bsize)/bsize), bsize/ppm_per_point)
@@ -52,10 +52,10 @@ def bucket1d(data, zoom=(0.5, 9.5), bsize=0.04, file=None):
     here2 = (here-bsize/2)
     there = max(start,end)
     while (here2 < there):
-        ih = round(data.axis1.ptoi(here2))
+        ih = round(dcopy.axis1.ptoi(here2))
         next = (here2+bsize)
-        inext = (round(data.axis1.ptoi(next)))
-        integ = buf[inext:ih].sum()
+        inext = (round(dcopy.axis1.ptoi(next)))
+        integ = dcopy.buffer[inext:ih].sum()
         print("%.3f, %.5f, %d"%(here, integ/((ih-inext)*bsize), (ih-inext) ), file=file)
         here2 = next
         here = (here+bsize)
@@ -91,9 +91,11 @@ def bucket2d(data, zoom=((0.5, 9.5),(0.5, 9.5)), bsize=(0.1, 0.1), file=None):
     ppm_per_point2 = (data.axis2.specwidth/data.axis2.frequency/data.size2)
     if (bsize1 < 2*ppm_per_point1):        NPKError( "Bucket size smaller than digital resolution !")
     if (bsize2 < 2*ppm_per_point2):        NPKError( "Bucket size smaller than digital resolution !")
-    buf = data.get_buffer()
-    if data.itype != 0:
-        buf = real(buf)
+
+    dcopy = data.copy()   # work now on a real version of the data
+    dcopy.real(axis=2)
+    dcopy.real(axis=1)
+
     s = "# %i rectangular buckets with a mean size of %.2f x %.2f data points\n" % \
         ( round((end1-start1+bsize1)/bsize1)*round((end2-start2+bsize2)/bsize2), \
         bsize1/ppm_per_point1, bsize2/ppm_per_point2)
@@ -105,18 +107,18 @@ def bucket2d(data, zoom=((0.5, 9.5),(0.5, 9.5)), bsize=(0.1, 0.1), file=None):
     here1_2 = (here1-bsize1/2)
     there1 = max(start1, end1)
     while (here1_2 < there1):
-        ih1 = round(data.axis1.ptoi(here1_2))
+        ih1 = round(dcopy.axis1.ptoi(here1_2))
         next1 = (here1_2+bsize1)
-        inext1 = (round(data.axis1.ptoi(next1)))
+        inext1 = (round(dcopy.axis1.ptoi(next1)))
         
         here2 = min(start2, end2)
         here2_2 = (here2-bsize2/2)
         there2 = max(start2, end2)
         while (here2_2 < there2):
-            ih2 = round(data.axis2.ptoi(here2_2))
+            ih2 = round(dcopy.axis2.ptoi(here2_2))
             next2 = (here2_2+bsize2)
-            inext2 = (round(data.axis2.ptoi(next2)))
-            integ = buf[inext1:ih1, inext2:ih2].sum()
+            inext2 = (round(dcopy.axis2.ptoi(next2)))
+            integ = dcopy.buffer[inext1:ih1, inext2:ih2].sum()
             area = ((ih1-inext1)*bsize1) * ((ih2-inext2)*bsize2)
             print("%.3f, %.3f, %.5f, %d, %d"%(here1, here2, integ/area, (ih1-inext1), (ih2-inext2) ), file=file)
 
