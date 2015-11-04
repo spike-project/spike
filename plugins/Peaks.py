@@ -58,7 +58,7 @@ class Peak(object):
 class Peak1D(Peak):
     """a class to store a single 1D peak
     defines in addition to Peak
-    pos         position of the peak in index
+    pos         position of the peak in index relative to the typed (real/complex) buffer
     width       width of the peak in index
     pos_err     uncertainty of the previous values
     width_err   ...
@@ -93,7 +93,7 @@ class Peak1D(Peak):
 class Peak2D(Peak):
     """a class to store a single 2D peak
     defines in addition to Peak
-    posF1 posF2         positions in F1 and F2 of the peak in index
+    posF1 posF2         positions in F1 and F2 of the peak in index relative to the typed (real/complex) axis
     widthF1 ...F2       widthes of the peak in index
     posF1_err ...       uncertainty of the previous values
     widthF1_err   ...
@@ -356,14 +356,14 @@ def peaks1d(npkd, threshold, zoom=None):
     z1, z2 = parsezoom(npkd, zoom)
     buff = npkd.get_buffer()[z1:z2]            # take the zoom window
     if npkd.itype == 1:
-        buff = abs(buff)
+        buff = buff.real
     tbuff = buff[1:-1]
     listpk = np.where(((tbuff > threshold*np.ones(tbuff.shape))&# thresholding
                     (tbuff > buff[:-2]) &     
                     (tbuff > buff[2:]) )) # roll 1 and -1 on axis 0
 #    return listpk[0]
     listpkF1 = int(z1) + listpk[0] +1
-    listint = npkd.buffer[listpkF1]
+    listint = npkd.get_buffer()[listpkF1]
     return listpkF1, listint
 #-------------------------------------------------------
 # centroid measure
@@ -461,10 +461,22 @@ def display_peaks(npkd, peak_label=False, zoom=None, show=False):
     """
     if npkd.dim == 1:
         z1, z2 = parsezoom(npkd, zoom)
-        return npkd.peaks.display( peak_label=peak_label, zoom=(z1,z2), show=show, f=npkd.axis1.itoc)
+        if npkd.axis1.itype == 0:  # if real
+            ff1 = npkd.axis1.itoc
+        else:
+            ff1 = lambda x : npkd.axis1.itoc(2*x)
+        return npkd.peaks.display( peak_label=peak_label, zoom=(z1,z2), show=show, f=ff1)
     elif npkd.dim == 2:
         z1lo, z1up, z2lo, z2up = parsezoom(npkd, zoom)
-        return npkd.peaks.display( peak_label=peak_label, zoom=((z1lo,z1up),(z2lo,z2up)), show=show, f1=npkd.axis1.itoc, f2=npkd.axis2.itoc)
+        if npkd.axis1.itype == 0:  # if real
+            ff1 = npkd.axis1.itoc
+        else:
+            ff1 = lambda x : npkd.axis1.itoc(2*x)
+        if npkd.axis2.itype == 0:  # if real
+            ff2 = npkd.axis2.itoc
+        else:
+            ff2 = lambda x : npkd.axis2.itoc(2*x)
+        return npkd.peaks.display( peak_label=peak_label, zoom=((z1lo,z1up),(z2lo,z2up)), show=show, f1=ff1, f2=ff2)
     else:
         raise Exception("to be done")
 #-------------------------------------------------------
@@ -478,9 +490,21 @@ def report_peaks(npkd, file=None, format=None):
     for documentation, check Peak1D.report() and Peak2D.report()
     """
     if npkd.dim == 1:
-        return npkd.peaks.report(f=npkd.axis1.itoc, file=file, format=format)
+        if npkd.axis1.itype == 0:  # if real
+            ff1 = npkd.axis1.itoc
+        else:
+            ff1 = lambda x : npkd.axis1.itoc(2*x)
+        return npkd.peaks.report(f=ff1, file=file, format=format)
     elif npkd.dim == 2:
-        return npkd.peaks.report( f1=npkd.axis1.itoc, f2=npkd.axis2.itoc, file=file, format=format)
+        if npkd.axis1.itype == 0:  # if real
+            ff1 = npkd.axis1.itoc
+        else:
+            ff1 = lambda x : npkd.axis1.itoc(2*x)
+        if npkd.axis2.itype == 0:  # if real
+            ff2 = npkd.axis2.itoc
+        else:
+            ff2 = lambda x : npkd.axis2.itoc(2*x)
+        return npkd.peaks.report( f1=ff1, f2=ff2, file=file, format=format)
     else:
         raise Exception("to be done")
 
