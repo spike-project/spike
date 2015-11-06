@@ -107,8 +107,10 @@ def bruker_proc_phase(self):
     """
     applies a correction on the spectrum for the time offset in the FID and from proc file parameters.
     """
-    delay = self.axes(self.dim).zerotime
-    self.phase(-float(self.params['proc']['$PHC0']),-360*delay-float(self.params['proc']['$PHC1'])*2) #Performs the phase correction from proc file
+    ph1 = -float(self.params['proc']['$PHC1'])
+    ph0 = -float(self.params['proc']['$PHC0'])+ph1/2
+    zero = -360*self.axes(self.dim).zerotime
+    self.phase(ph0, ph1+zero) #Performs the phase correction from proc file
     return self
 NPKData_plugin("bruker_proc_phase", bruker_proc_phase)
 #-------------------------------------------------------------------------------  

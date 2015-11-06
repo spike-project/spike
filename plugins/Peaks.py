@@ -404,7 +404,7 @@ def centroid1d(npkd, npoints=3):
         try:
             popt, pcov = curve_fit(center, xdata, ydata, p0=[pk.pos, pk.intens, 1.0] ) # fit
         except RuntimeError:
-            print ( "peak %s (id %d) centroid could not be fitted"%(pk.Id, pk.label) )
+            print ( "peak %d (id %s) centroid could not be fitted"%(pk.Id, pk.label) )
         pk.pos = popt[0]
         pk.intens = popt[1]
         pk.width = popt[2]
