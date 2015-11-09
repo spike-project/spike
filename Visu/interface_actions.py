@@ -230,8 +230,9 @@ class INTERACT(object):
         self.interface.ui.pushButton_4.setText("go to pt")
         for dd in self.data.d:
             if debug(self):   
-                print("dd.currentunit = m/z")
-            dd.currentunit = "m/z"
+                print("dd.units = m/z")
+            dd.axis1.currentunit = "m/z"
+            dd.axis2.currentunit = "m/z"
     
     def swap_from_mz(self):
         '''
@@ -241,8 +242,9 @@ class INTERACT(object):
         self.data.mode_point = True
         self.interface.ui.pushButton_4.setText("go to m/z")
         for dd in self.data.d:  # change the mode in all the resolutions
-            if debug(self): print("dd.currentunit = pt")
-            dd.currentunit = "points"
+            print("dd.units = pt")
+            dd.axis1.currentunit = "points"
+            dd.axis2.currentunit = "points"
 
     def swap_pt_mz(self):                                                                         
         '''
@@ -259,7 +261,7 @@ class INTERACT(object):
         if debug(self):
             print("after swap_from_mz,  self.paramz.zoom_coord ", self.paramz.zoom_coord)
         self.display.affd(self.display.currentd, self.data.resmin,\
-            self.zoom.layoutC, self.zoom.layoutD, zoom = not(self.paramz.zoomready) ) #not(self.paramz.zoomready)
+            self.zoom.layoutC, self.zoom.layoutD, make_zoom = not(self.paramz.zoomready) ) #not(self.paramz.zoomready)
         self.select_tools.change_to('zoom')
         self.canv_event.interact_with_canvasC()
         self.canv_event.aff_param()
@@ -518,7 +520,7 @@ class INTERACT(object):
         if debug(self): print(area)
         if area < 1e9: #self.paramz.area3Dmax                                                                   # test if area is small enough
             if self.data.mode_point:
-                print("points")
+                print("point")
             else:
                 print("in m/z mode")
             d = self.display.data.d[len(self.display.data.d)-1]                                       # lowest resolution
@@ -530,5 +532,5 @@ class INTERACT(object):
             message = " the zoom area is too large"
             print(message)
             self.display.affd(self.display.currentd, self.data.resmin,\
-             self.interface.ui.layoutC, zoom = False, message = message)
+             self.interface.ui.layoutC, make_zoom = False, message = message)
         self.select_tools.change_to('zoom')

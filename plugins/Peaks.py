@@ -323,7 +323,11 @@ def peaks2d(npkd, threshold, zoom):
     '''
     npkd.check2D()
     #print threshold
+    print("########## in peaks2d ")
+    print("zoom ", zoom)
     z1lo, z1up, z2lo, z2up = parsezoom(npkd, zoom)
+    
+    print("z1lo, z1up, z2lo, z2up ", z1lo, z1up, z2lo, z2up)
     buff = npkd.get_buffer()[z1lo:z1up, z2lo:z2up]            # take the zoom window
     if npkd.itype != 0:
         buff = abs(buff)

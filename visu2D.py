@@ -79,6 +79,8 @@ def debugs_activate(*args):
     interact.selectL_debug = False
     interact.afffile_debug = False
     interact.take_lineEdit_xy_format_debug = False
+    interact.swap_from_mz_debug = True
+    interact.swap_pt_mz_debug = True
 
 def main(argv = None):
     """ creates and runs """
