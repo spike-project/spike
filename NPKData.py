@@ -556,7 +556,7 @@ def parsezoom(npkd, zoom):
             z1up=npkd.size1-1
             z2lo=0
             z2up=npkd.size2-1
-        print(z1lo, z1up, z2lo, z2up)
+        #print("z1lo, z1up, z2lo, z2up in parsezoom",  z1lo, z1up, z2lo, z2up)
         return (z1lo, z1up, z2lo, z2up)
     else:
         raise Exception("this code is not done yet")
@@ -1363,7 +1363,6 @@ class NPKData(object):
             step2 = self.axis2.itype+1
             step1 = self.axis1.itype+1
             z1lo, z1up, z2lo, z2up  = parsezoom(self,zoom)
-            
             if not absmax:  # absmax is the largest point on spectrum, either given from call, or handled internally
                 if not self.absmax:     # compute it if absent  - but do it on zoom window ! as this is a killer for large onfile datasets
                     absmax = np.nanmax( np.abs(self.buffer[z1lo:z1up:step1,z2lo:z2up:step2]) )
@@ -1395,7 +1394,7 @@ class NPKData(object):
                         fig.set_xticklabels('')
                         fig.set_yticklabels('')
                 if axis is None:
-                    axis = ( self.axis1.unit_axis(), self.axis2.unit_axis() )
+                    axis = (self.axis1.unit_axis(), self.axis2.unit_axis())
                 if self.axis1.units[self.axis1.currentunit].reverse:
                         plot.gca().invert_yaxis()
                 if self.axis2.units[self.axis2.currentunit].reverse:

@@ -13,7 +13,7 @@ from .. Visu.Pyside_PyQt4 import*
 @decclassdebugging
 class CANVAS_EVENT(object):
     '''
-    Gestion of the events with the interface Canvas.
+    Events handling within the interface Canvas.
     '''
     def __init__(self, display, interf, data, paramz, gtools, convert, stools, mwind, zoom):
         self.display = display 
@@ -33,7 +33,7 @@ class CANVAS_EVENT(object):
 
     def recupxy(self, event):
         '''
-        Take the event coordinates and transform from "m/z" to "points" if necessary.
+        Takes the event coordinates and transform from "m/z" to "point" if necessary.
         '''
         if debug(self):
             print("in zooming.recupxy")
@@ -48,14 +48,13 @@ class CANVAS_EVENT(object):
     
     def on_motion(self, event):
         '''
-        Activate on mouse motion.
+        Activated on mouse motion.
         '''
         zc = self.paramz.zoom_coord
         dx, dy, dxcurr, dycurr = self.recupxy(event)                      # retrieves dx, dy (point) and dxcurr dycurr (current mode)
         if dx is not None and  dy is not None:
             self.lastdx, self.lastdy = dx, dy
-        if debug(self):
-            print("self.select_tools.zoom ", self.select_tools.zoom)
+        if debug(self): print("self.select_tools.zoom ", self.select_tools.zoom)
         if dx is not None and dy is not None and len(zc) == 2 :
             if self.zplot.rectc is None and self.select_tools.zoom :                         # if no rectangle in C window and no line tool
                 self.zplot.drawrect(zc[0], zc[1], dx, dy, self.layoutC, self.layoutD)
@@ -76,8 +75,7 @@ class CANVAS_EVENT(object):
         '''
         Permits to interact with the zoom in window D. 
         '''
-        if debug(self):   
-            print("in zooming.on_press_D_event")
+        if debug(self): print("in zooming.on_press_D_event")
         if len(self.paramz.zoom_coord) == 0 :
             self.paramz.zoom_coord = self.paramz.zoom_coord_old
         if event.inaxes:                                                                            # when inside window D
@@ -102,28 +100,21 @@ class CANVAS_EVENT(object):
         Makes the drawing of the zoom window in the layout C.
         If a click is produced again in the window, it makes the zoom.
         '''
-        if debug(self):
-            print("in zooming.on_press_C_event")
+        if debug(self): print("in zooming.on_press_C_event")
         if event.inaxes  :                                                    # if left button:# when in window C
             self.paramz.zoom_coord_old = self.paramz.zoom_coord                                     # keep in memory the window
-            if debug(self):
-                print("in on_press_C_event keeping old coord self.paramz.zoom_coord_old ", self.paramz.zoom_coord_old)
+            if debug(self): print("in on_press_C_event keeping old coord self.paramz.zoom_coord_old ", self.paramz.zoom_coord_old)
             if len(self.paramz.zoom_coord) >  2:                                                    # if there is yet one corner the new press eliminates it.
-                if debug(self):
-                    print("in zooming.on_press_C_event, len(self.paramz.zoom_coord) >  2 ")
+                if debug(self): print("in zooming.on_press_C_event, len(self.paramz.zoom_coord) >  2 ")
                 self.zoom.press_zoom(xpress, ypress)
-                if debug(self):
-                    print("in zooming.on_press_C_event ", xpress, ypress)
+                if debug(self): print("in zooming.on_press_C_event ", xpress, ypress)
             if not self.paramz.zoomready :                                                          # if zoom window is not here.. add a point and connect to motion
-                if debug(self):
-                    print("zoom not ready ")
+                if debug(self): print("zoom not ready ")
                 self.paramz.zoom_coord += [xpress, ypress]              # add a new point to the zoom window
-                if debug(self):                                         
-                    print("in on_press_C_event, self.paramz.zoom_coord ", self.paramz.zoom_coord)
+                if debug(self): print("in on_press_C_event, self.paramz.zoom_coord ", self.paramz.zoom_coord)
                 self.paramz.mouse_motion = self.display.connect('motion_notify_event', self.on_motion)                                      # 
             self.paramz.zoomready = False
-            if debug(self):
-                print("self.paramz.zoomready = False ")
+            if debug(self): print("self.paramz.zoomready = False ")
 
     def on_press(self, event):                                                                      # 
         '''
@@ -131,14 +122,12 @@ class CANVAS_EVENT(object):
         Waits for the mouse button's release to make the zoom. 
         Calls self.on_press_D_event and self.on_press_C_event
         '''
-        if debug(self):   
-            print("in zooming.on_press")
+        if debug(self): print("in zooming.on_press")
         dx, dy, dxcurr, dycurr = self.recupxy(event)                                                        # gets the x and y coords in mode point.
         if event.canvas == self.display.qmd.fig.canvas and event.button == 1 :                      # if canvas D selected and click left
            self.on_press_D_event(event, dx, dy)  
         if event.canvas == self.display.qmc.fig.canvas and event.button == 1 :                      # if canvas C selected and click left
-           if debug(self):
-               print("pressed in canvas C ", dx, dy)
+           if debug(self): print("pressed in canvas C ", dx, dy)
            self.on_press_C_event(event, dx, dy)
            if debug(self):
                print("in on_press ")
@@ -150,11 +139,9 @@ class CANVAS_EVENT(object):
         When mouse is released, refreshes layout C.
         '''
         self.display.disconnect(self.paramz.mouse_motion)                             # sets free the mouse from C window
-        if debug(self):   
-           print("in zooming.release_refrechC")
+        if debug(self): print("in zooming.release_refrechC")
         zc = self.paramz.zoom_coord
-        if debug(self):
-            print("self.paramz.zoom_coord ", self.paramz.zoom_coord)
+        if debug(self): print("self.paramz.zoom_coord ", self.paramz.zoom_coord)
         if not self.select_tools.drag:
             self.convert.set(zc[0], zc[1], zc[2], zc[3])
         self.zoom.zoom_check_size()
@@ -163,21 +150,19 @@ class CANVAS_EVENT(object):
            self.zoom.profile_type = None                                                            # reinitializes profile type
            self.select_tools.change_to('zoom')                                                      # changes from profile to zoom.
         if self.select_tools.drag  and not self.paramz.zoomready :                                  # if zoom not ready and drag mode
-           print("in release_refrechC self.paramz.zoom_coord ", self.paramz.zoom_coord)
+           if debug(self): print("in release_refrechC self.paramz.zoom_coord ", self.paramz.zoom_coord)
            self.move_wind.moverect([1,1], "C")
            self.zoom.change_view()     
-           print("self.paramz.zoom_coord ", self.paramz.zoom_coord)                                                                  # 
+           if debug(self): print("self.paramz.zoom_coord ", self.paramz.zoom_coord)                                                                  # 
         if not self.select_tools.drag:
             self.paramz.zoomready = True # ready for performing a zoom by clicking inside.
-        if debug(self):
-            print("####### end of release_refrechC")
+        if debug(self): print("####### end of release_refrechC")
 
     def on_release_D_event(self): 
         '''
         Release D event
         '''
-        if debug(self):   
-           print("in zooming.on_release_D_event")
+        if debug(self): print("in zooming.on_release_D_event")
         self.stretch = False
         self.display.disconnect(self.paramz.mouse_motion, 'D')                                # sets free the mouse from D window
         if self.select_tools.zoom:
@@ -187,7 +172,7 @@ class CANVAS_EVENT(object):
 
     def aff_param(self):
         '''
-        Show resolution and print coordinates in lineEdit.
+        Shows the resolution and print coordinates in lineEdit.
         '''
         self.display.aff_resolution()
         self.make_coord_manual()
@@ -196,36 +181,31 @@ class CANVAS_EVENT(object):
         '''
         Mouse coordinates are automatically written in the interface for manual interaction.
         '''
-        if debug(self):   
-           print("in zooming.make_coord_manual")
-           print("in make_coord_manual self.paramz.zoom_coord", self.paramz.zoom_coord)
-        llx, lly, urx, ury = self.gtools.convert.pass_to_curr_mode(*self.paramz.zoom_coord)                 # pass from zoom.coord to current format pt or m/z                                                                                         #     llx, lly, urx, ury = conv.mztoi_all(self, d, llx, lly, urx, ury)
-        if debug(self): 
-            print("llx, lly, urx, ury ", llx, lly, urx, ury)
-        if self.data.mode_point:
-            strzoom_coord = str(map(int, [llx, lly, urx, ury]))                                         # transform to intergers 
-        else:
-            strzoom_coord = str(map(int, [urx, ury, llx, lly]))                  
+        dd = self.display.res2dd()
+        coord = self.paramz.zoom_coord[:4]
+        llx, urx, lly, ury = list(dd.axis2.itoc(coord[0::2])) + list(dd.axis1.itoc(coord[1::2]))   
+        if self.data.mode_point: 
+            strzoom_coord = str(map(int, [llx, lly, urx, ury])) # points                                    # transform to intergers 
+        else: 
+            strzoom_coord = str(map(int, [urx, ury, llx, lly]))  # m/z                 
         zmcoord = re.findall('(\d*[,].*[^]]\d*)', strzoom_coord)[0]                                 # filters the string 
-        if debug(self):
-            print("in canvas_event zmcoord ", zmcoord)
+        if debug(self): print("in canvas_event zmcoord ", zmcoord)
         self.interface.ui.lineEdit_2.setText(zmcoord)                                               # Edits coordinates in LineEdit.
         
     def on_release_C_event(self, dx, dy):  
         '''
         Release C event
         '''
-        if debug(self):   
-           print("in zooming.on_release_C_event")                                                    # if len(self.paramz.zoom_coord) >=  4 : #if nb of points too high                                                                                   #     self.paramz.zoom_coord = []  # reinitialize the zoom window zoom_coord
+        if debug(self): print("in zooming.on_release_C_event")                                                    # if len(self.paramz.zoom_coord) >=  4 : #if nb of points too high                                                                                   #     self.paramz.zoom_coord = []  # reinitialize the zoom window zoom_coord
         if self.zoom.newrectcready :                                         # ready to draw new rectangle and not dragging.
-           print("add new point to self.paramz.zoom_coord ")
+           if debug(self): print("add new point to self.paramz.zoom_coord ")
            self.paramz.zoom_coord += [dx, dy]                                                       # add a new point to zoom_coord
         if len(self.paramz.zoom_coord) == 2 :
-           print("self.zoom.newrectcready ", self.zoom.newrectcready)
+           if debug(self): print("self.zoom.newrectcready ", self.zoom.newrectcready)
            self.paramz.zoom_coord = []                                                              # reinitialize zoom_coord if rectangle has a too small size.
            self.display.disconnect(self.paramz.mouse_motion)
         if len(self.paramz.zoom_coord) == 4 :   
-           print("four coordinates so refreshes ")                                                    
+           if debug(self): print("four coordinates so refreshes ")                                                    
            self.release_refrechC()                                                                  # Refreshes layout C
            self.aff_param()                                                                         # writes zoom coordinates and resolution                                                                 
 
@@ -235,8 +215,7 @@ class CANVAS_EVENT(object):
         on_released is used to make lines .
         self.paramz.listview, list of all the zooms. 
         '''
-        if debug(self):   
-           print("in zooming.on_release")
+        if debug(self): print("in zooming.on_release")
         dx, dy, dxcurr, dycurr = self.recupxy(event)                                                 # retrieves x and y when event is detected.
         if event.canvas == self.display.qmd.fig.canvas :
             if event.inaxes:                                                                           # when in window D
@@ -269,8 +248,7 @@ class CANVAS_EVENT(object):
         '''
         Connects event to canvas C. Press, release, corner detection.
         '''
-        if debug(self):
-           print("in zooming.interact_with_canvasC")
+        if debug(self): print("in zooming.interact_with_canvasC")
         self.display.connect('button_press_event', self.on_press)                # connecting the press event 
         self.display.connect('button_release_event', self.on_release)            # connecting the release event
         self.display.connect('motion_notify_event', self.detect_corner) 

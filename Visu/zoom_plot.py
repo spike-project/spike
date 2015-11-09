@@ -105,7 +105,11 @@ class ZOOM_PLOT(object):                                                        
         if debug(self):
             print("in zooming.drawrectC")
         verticesC = []
-        llx, lly, urx, ury = self.gtools.convert.pass_to_curr_mode(llx, lly, urx, ury)                      # if mode m/z restablish mz coordinates
+        ## Converts
+        dd = self.display.res2dd()
+        llx, urx, lly, ury = list(dd.axis2.itoc([llx, urx])) + list(dd.axis1.itoc([lly, ury]))    # converting to the current unit.
+        # print("########## in drawwrectC llx, urx, lly, ury ", llx, urx, lly, ury)
+        ### Makes vertices.
         codes, pt0, pt1, pt2, pt3, pt4 = self._makes_poly(llx, lly, urx, ury)                                                                                        # make vertices
         verticesC +=  [pt0, pt1, pt2, pt3, pt4]                                                     # for window C
         verticesC = np.array(verticesC, float)

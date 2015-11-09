@@ -18,7 +18,7 @@ from .. Visu.canvas_event import CANVAS_EVENT
 class ZOOMING():                                                                                    # class regrouping methods about zoom
     '''
     Zoom and draw a rectangle around the zooming area
-    The coordinates are in "points" format at the root of the treatment
+    The coordinates are in "point" format at the root of the treatment
     so as to simplify all the procedure. 
     '''
     def __init__(self, display, interf, data, paramz, gtools, convert, stools, mwind):
@@ -58,8 +58,7 @@ class ZOOMING():                                                                
         '''
         Changes views.
         '''
-        if debug(self):
-            print("in zooming.change_view")
+        if debug(self): print("in zooming.change_view")
         if not change_layoutD:
             self.display.change_resolution(layout1 = self.layoutC)                                              # 
         else: 
@@ -70,9 +69,8 @@ class ZOOMING():                                                                
         '''
         Refreshes views from history.
         '''
-        if debug(self):
-            print("in zooming.change_view_from_list")
-        self.display.afflistco()                                                                    # 
+        if debug(self): print("in zooming.change_view_from_list")
+        self.display.aff_listview_index()                                                                    # 
         self.canv_event.interact_with_canvasC()                                                     # restablishes interaction with canvas.
      
     def clearprofile(self):

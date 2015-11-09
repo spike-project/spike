@@ -25,7 +25,7 @@ class CONVERT():
 
     def mztoi_all(self, d, llx, lly, urx, ury):
         '''
-        transforming from "m/z" coordinate to "points" coordinates of coorr (zoom window)
+        Transforming from "m/z" coordinate to "point" coordinates of coorr (zoom window)
         '''
         llx, lly = d.axes(2).mztoi(llx), d.axes(1).mztoi(lly)
         urx, ury = d.axes(2).mztoi(urx), d.axes(1).mztoi(ury)
@@ -33,7 +33,7 @@ class CONVERT():
 
     def itomz_all(self, d, llx, lly, urx, ury):
         '''
-        transforming from "points" coordinates to "mz" coordinates.
+        Transforming from "point" coordinates to "mz" coordinates.
         '''
         if debug(self):
             print("d.axes(2).itomz(llx) ", d.axes(2).itomz(llx))
@@ -44,7 +44,7 @@ class CONVERT():
 
     def pass_to_pt(self, llx, lly, urx, ury):
         '''
-        transforming from point coordinate to m/z coordinates with mode point or m/z conditon
+        Transforming from point coordinate to m/z coordinates with mode point or m/z conditon
         '''
         if debug(self):
             print("in convert.pass_to_pt ")
@@ -83,7 +83,7 @@ class CONVERT():
         "return npk formated zoom"
         zc = self.paramz.zoom_coord
         self.set(zc[0], zc[1], zc[2], zc[3])
-        zc = self.paramz.zoom_coord
+        zc = self.paramz.zoom_coord[:4]
         zz = [[zc[1], zc[3]], [zc[0], zc[2]]]
         return zz
     
