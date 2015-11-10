@@ -517,10 +517,10 @@ class Exporter(object):
         """
         save data as a 1d spectrum in self.dir
         """
-        fname = op.join(self.dir, 'pdata', proco, '1r')
+        fname = op.join(self.dir, 'pdata', procno, '1r')
         self.write_file(real(data), fname)
         if isinstance(data[0] , complex):
-            fname = op.join(self.dir, 'pdata', proco, '1i')
+            fname = op.join(self.dir, 'pdata', procno, '1i')
             self.write_file(data, fname.imag)
 
 #### not debugged further down !
