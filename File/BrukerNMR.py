@@ -521,7 +521,7 @@ class Exporter(object):
         self.write_file(data.real, fname)
         if isinstance(data[0] , complex):
             fname = op.join(self.dir, 'pdata', procno, '1i')
-            self.write_file(data, fname.imag)
+            self.write_file(data.imag, fname)
 
 #### not debugged further down !
     def reorder_bck_subm(self,data):
