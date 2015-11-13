@@ -213,13 +213,20 @@ def ident(v):
 class Unit(object):
     """
     a small class to hold parameters for units
+    name: the name of the "unit"
+    converter: a function converting from points to "unit"
+    bconverter: a function converting from "unit" to points
+    reverse: direction in which axis are displayed (True means right to left)
+    scale: scale along this axis, possible values are 'linear' or 'log'
+    
     """
-    def __init__(self, name="points", converter=ident, bconverter=ident, reverse=False):
+    def __init__(self, name="points", converter=ident, bconverter=ident, reverse=False, scale='linear'):
         "creates an 'points' methods - to be extended"
         self.name = name
         self.converter = converter
         self.bconverter = bconverter
         self.reverse = reverse
+        self.scale = scale
 ########################################################################
 class Axis(object):
     """
@@ -237,7 +244,6 @@ class Axis(object):
         self.itype = itype          # 0 == real, 1 == complex
         self.units = {"points": Unit()}         # units dico contains possible units indexs by name,
                                                 # here create default units
-        self.unit_types = ["points"]    # holds possible unit. each unit is associated with a xxx_axis() where xxx is the unit, which returns a axis values
         self.currentunit = currentunit
         self.sampling = None        # index list of sampled points if instantiated
         self.sampling_info = {}
@@ -330,12 +336,12 @@ class Axis(object):
         return self.sampling is not None
     #---------------------------------
     def _gcurunits(self):
-        "get the current unit for this axis, to be chosen in axis.unit_types"
+        "get the current unit for this axis, to be chosen in axis.units.keys()"
         return self._currentunit
     def _scurunits(self, currentunit):
-        "set the current unit for this axis, to be chosen in axis.unit_types"
-        if currentunit not in self.unit_types:
-            raise NPKError("Wrong unit type: %s - valid units are : %s" % (currentunit, str(self.unit_types)))
+        "set the current unit for this axis, to be chosen in axis.units.keys()"
+        if currentunit not in self.units.keys():
+            raise NPKError("Wrong unit type: %s - valid units are : %s" % (currentunit, str(self.units.keys())))
         self._currentunit = currentunit
     currentunit = property(_gcurunits, _scurunits)
     #-----------------------------------
@@ -383,9 +389,6 @@ class NMRAxis(Axis):
         self.units["ppm"] = Unit(name="ppm", converter=self.itop, bconverter=self.ptoi, reverse=True)
         self.units["Hz"]= Unit(name="Hz", converter=self.itoh, bconverter=self.htoi, reverse=True)
         self.units["sec"]= Unit(name="Hz", converter=self.itos, bconverter=self.stoi)  # for FID
-        self.unit_types.append("ppm")
-        self.unit_types.append("Hz")
-        self.unit_types.append("sec")
         for i in ("specwidth", "offset", "frequency", "NMR"):  # updates storable attributes
             self.attributes.insert(0, i)
         self.currentunit = currentunit
@@ -487,8 +490,8 @@ class LaplaceAxis(Axis):
         self.dmin = dmin
         self.dmax = dmax
         self.dfactor = dfactor
-        self.units["damping"] = Unit(name="damping", converter=self.itod, bconverter=self.dtoi)
-        self.unit_types.append("damping")
+        self.units["damping"] = Unit(name="damping", converter=self.itod, bconverter=self.dtoi, scale='log')
+        self.units["Diff"] = self.units["damping"]
         for i in ("dmin", "dmax", "dfactor", "Laplace"):  # updates storable attributes
             self.attributes.append(i)
         self.currentunit = currentunit
@@ -497,7 +500,7 @@ class LaplaceAxis(Axis):
         """
         returns damping value (d) from point value (i)
         """
-        print("itod might have to be checked")
+#        print("itod might have to be checked")
         cst = (math.log(self.dmax)-math.log(self.dmin)) / (float(self.size)-1)
         d = (self.dmin )* np.exp(cst*(value -1.0))
         return d
@@ -505,7 +508,7 @@ class LaplaceAxis(Axis):
         """
         returns point value (i) from damping value (d)
         """
-        print("dtoi might have to be checked")
+#        print("dtoi might have to be checked")
         cst = (math.log(self.dmax)-math.log(self.dmin)) / (float(self.size)-1)
 
         i = 1.0 + (np.log(value) - np.log(self.dmin)) / cst
@@ -1352,8 +1355,9 @@ class NPKData(object):
                 ax = self.axis1.unit_axis()
             else:
                 ax = axis
-            if self.axis1.units[self.axis1.currentunit].reverse:
-                plot.gca().invert_xaxis()                
+            fig.set_xscale(self.axis1.units[self.axis1.currentunit].scale)  # set unit scale (log / linear)
+            if self.axis1.units[self.axis1.currentunit].reverse:           # set reverse mode
+                fig.invert_xaxis()
             fig.plot(ax[z1:z2:step], self.buffer[z1:z2:step].clip(mmin,mmax), label=label, linewidth=linewidth)
             if xlabel == "_def_":
                 xlabel = self.axis1.currentunit
@@ -1395,10 +1399,12 @@ class NPKData(object):
                         fig.set_yticklabels('')
                 if axis is None:
                     axis = (self.axis1.unit_axis(), self.axis2.unit_axis())
+                fig.set_yscale(self.axis1.units[self.axis1.currentunit].scale)  # set unit scale (log / linear)
                 if self.axis1.units[self.axis1.currentunit].reverse:
-                        plot.gca().invert_yaxis()
+                        fig.invert_yaxis()
+                fig.set_xscale(self.axis2.units[self.axis2.currentunit].scale)  # set unit scale (log / linear)
                 if self.axis2.units[self.axis2.currentunit].reverse:
-                        plot.gca().invert_xaxis()
+                        fig.invert_xaxis()
                 fig.contour(axis[1][z2lo:z2up:step2],
                     axis[0][z1lo:z1up:step1],
                     self.buffer[z1lo:z1up:step1,z2lo:z2up:step2],
