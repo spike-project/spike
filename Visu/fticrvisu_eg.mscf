@@ -5,7 +5,7 @@
 [fticrvisu]
 # Here directory where the browser will look first.
 # the multiresolution file. 
-multresfile = ../DATA_test/ubiquitine_2D_000002_mr.msh5
+multresfile = ../DATA_test/file_fticr
 # interfbib = PySide or interfbib = PyQt4
 interfbib = PySide 
 

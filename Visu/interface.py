@@ -12,6 +12,7 @@ from .. util.debug_tools import*
 from .. Visu.init.fticrvisuUi import Ui_MainWindow as Ui
 from .. Visu.init.fticrvisupopUi import Ui_Form as Pop
 from .. Visu.Pyside_PyQt4 import*
+import unittest
 
 @dec_class_pr
 @decclassdebugging
@@ -74,3 +75,13 @@ class INTERFACE(): #interface
         self.window.show()
         sys.exit(self.app.exec_()) # Correction for Canopy
         
+class interfaceTests(unittest.TestCase):
+
+    def test_interface(self):
+        "Testing interface module"
+        interf = INTERFACE()
+        interf.clearlayout(interf.ui.layoutC)
+        interf.clearlayout(interf.ui.layoutD)
+      
+if __name__ == '__main__':
+    unittest.main()

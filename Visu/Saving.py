@@ -4,6 +4,7 @@
 from __future__ import print_function
 import os, time
 from .. util.debug_tools import* 
+import unittest
 
 @dec_class_pr
 @decclassdebugging
@@ -36,5 +37,14 @@ class SAVE(object):
         print("data saved at ", path_save)                                                       # tells where it is saved.
         return path_save
      
+class SavingTests(unittest.TestCase):
+    
+    def test_prep_path_save(self):
+        "Testing Saving module"
+        from .. Visu.Load import LOAD
+        data = LOAD(configfile = 'spike/Visu/visu2d_eg.mscf')
+        path_save = SAVE(data)
+        print("path_save is ", path_save)
+
 if __name__ == '__main__':
-    pass
+    unittest.main()

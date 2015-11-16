@@ -2,6 +2,7 @@
 # encoding: utf-8
 
 from __future__ import print_function
+import unittest
 
 class PARAM_ZOOM(object):
     '''
@@ -38,3 +39,15 @@ class PARAM_ZOOM(object):
                 if not hasattr(getattr(self, elem), '__call__') :
                     print(elem, getattr(self, elem))
         print("############ ")
+        
+class paramzoomTests(unittest.TestCase):
+
+    def test_paramzoom_with_report(self):
+        "Testing paramzoom module"
+        from .. Visu.Load import LOAD
+        data = LOAD(configfile = 'spike/Visu/visu2d_eg.mscf')
+        paramz = PARAM_ZOOM(data)
+        paramz.report()
+
+if __name__ == '__main__':
+    unittest.main()
