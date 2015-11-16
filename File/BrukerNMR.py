@@ -274,7 +274,7 @@ def zerotime(acqu):
 
     try:
         decim = int(float(acqu['$DECIM']))
-#        print "DECIM=",decim
+#        print("DECIM=",decim)
     except:
         decim=1
     if (decim!=1):
