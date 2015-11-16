@@ -5,6 +5,7 @@ from __future__ import print_function
 from .. util.debug_tools import* 
 from .. Visu.Matplotlib_generictools import*
 from .. Visu.Pyside_PyQt4 import*
+import unittest
 
 @dec_class_pr
 @decclassdebugging
@@ -255,5 +256,22 @@ class DISPLAY():# class regrouping tools to change resolution with zoom
                         xytext = (posy, posx), textcoords = 'offset points', size = 10,# va="center", #xytext=(posx, posy), 
                         bbox = dict(boxstyle = "round", fc = color, ec = "none"),)
                  
+class SavingTests(unittest.TestCase):
+
+    def test_display(self):
+        "Testing display module"
+        from .. Visu.canvas import Qt4MplCanvas as QtMplCv     # class for using matplotlib in Qt canvas.
+        from .. Visu.Load import LOAD
+        from .. Visu.interface import INTERFACE
+        from .. Visu.paramzoom import PARAM_ZOOM
+        data = LOAD(configfile = 'spike/Visu/visu2d_eg.mscf')
+        interf = INTERFACE()
+        paramz = PARAM_ZOOM(data)
+        display = DISPLAY(QtMplCv, data, interf, paramz)  
+        print(display.zoom_area())
+        print(type(display.res2dd()))
+        
+
 if __name__ == '__main__':
-    print("hello")
+    unittest.main()
+         

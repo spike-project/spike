@@ -6,6 +6,7 @@ import os
 from .. NPKConfigParser import NPKConfigParser 
 from .. File.HDF5File import HDF5File
 from .. util.debug_tools import*
+import unittest
 
 @dec_class_pr
 @decclassdebugging
@@ -89,7 +90,14 @@ class LOAD(object):
         self.resmin = self.d_interm[len(self.d_interm)-1]           # resolution for D window
         print("all the resolutions are loaded for both windows")
 
+
+class LoadTests(unittest.TestCase):
+
+    def test_load(self):
+        " - Testing load module"
+        l = LOAD(configfile = 'spike/Visu/visu2d_eg.mscf')
+        print("type(l.d[0])", type(l.d[0]))
+        print(dir(l))
+
 if __name__ == '__main__':
-    l = LOAD()
-    print("type(l.d[0])", type(l.d[0]))
-    print(dir(l))
+    unittest.main()

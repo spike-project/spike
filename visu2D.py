@@ -25,6 +25,7 @@ from .Visu.interface import INTERFACE    # class for completing the interface.
 from .Visu.convert import CONVERT            # Class for conversion operations between mz and point
 from .Visu.single.select_tools import SELECT_TOOLS # class to handle the selected tool used in the interface.
 #from util.log_all import Logger # Logger for saving stdoud and sterr in a log file. 
+import unittest
 
 def debugs_activate(*args):
     '''
@@ -101,7 +102,7 @@ def main(argv = None):
         elif ext == '.msh5': 
             msh5file = argv[1]
     except IndexError:          # then assume standard name
-        configfile = "spike/Visu/visu2D.mscf"
+        configfile = "spike/Visu/visu2d_eg.mscf"
     if msh5file:
         data = LOAD(msh5file = msh5file)  
     else:
