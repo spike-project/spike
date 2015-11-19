@@ -11,7 +11,7 @@ sane(data, rank)
 data : the series to be denoised
 rank : the rank of the analysis
 
-Copyright (c) 2013 IGBMC. All rights reserved.
+Copyright (c) 2015 IGBMC. All rights reserved.
 Marc-Andr\'e Delsuc <madelsuc@unistra.fr>
 Lionel Chiron <lionel.chiron@gmail.com>
 
@@ -43,10 +43,10 @@ same conditions as regards security.
 The fact that you are presently reading this means that you have had
 knowledge of the CeCILL license and that you accept its terms.
 
-Created by Lionel Chiron and Marc-Andr\'e on 2013-10-13.
+Created by Lionel Chiron and Marc-Andr\'e on september 2015.
 
-version 2.0 
-28/oct/2013
+version 1.0 
+15/nov/2015
 """
 
 from __future__ import print_function
@@ -72,7 +72,7 @@ def sane(data, k, orda = None, iterations = 1, trick = True, optk = False, ktric
         if None (default) orda = (len(data)+1)/2
     iterations : the number of time the operation should be repeated
     optk : if set to True will calculate the rank giving the best recovery for an automatic estimated noise level. 
-    trick : permits to enhanced the denoising by using a cleaned signal as the projective space.
+    trick : permits to enhanced the denoising by using a cleaned signal as the projective space. "Support Selection"
     ktrick : if a value is given, it permits to change the rank on the second pass.
              The idea is that for the first pass a rank large enough as to be used to compensate for the noise while
              for the second pass a lower rank can be used. 
@@ -84,12 +84,13 @@ def sane(data, k, orda = None, iterations = 1, trick = True, optk = False, ktric
     N = len(data)-orda+1
     Omega is (N x k)
     
-    Sane is based on the same idea than urQRd, however, there is a much clever selection of the basis on which the random projection is performed?
+    Sane is based on the same idea than urQRd, however, there is a much clever selection of the basis on which the random projection is performed.
     This allows a much better recovery of small signals buried into the noise, compared to urQRd.
     
     the flags trick, optk, ktrick control the program
     when all are false, sane folds back to urQRd algorithm.
-    
+    Optimal is certainly trick = True, optk = True, ktrick = True  but not fully tested yet.
+
     ##########
     BECAREFUL datasize must be different from a product of primes !!!!!!..
     a processing with a datasize of 120022 for example will be 50 times longer than
