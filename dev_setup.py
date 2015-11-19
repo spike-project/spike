@@ -13,7 +13,7 @@ from __future__ import print_function
 
 ProgramName = "SPIKE"
 VersionName = "Development version - beta"
-VersionInfo = ["0", "6", "4"]   # Major - Minor - Micro
+VersionInfo = ["0", "7", "0"]   # Major - Minor - Micro
 
 # Major.minor.micro (int) + name eg SPIKE_2_19_5
 # N.M.L
@@ -24,6 +24,23 @@ VersionInfo = ["0", "6", "4"]   # Major - Minor - Micro
 # bug fixes L+1
 
 """
+0.7.0 - November 2015
+    This is a major upgrade
+    - a plugin mechanism has been created which allows to add very simply new features to the program
+        - most new features are implemented through this mechanism
+    - the organisation of the spectral axes has been complete modified, with the introduction of a Unit class
+        - each axis holds its own series of possible units (called .units)
+        - and the current unit used for display and selection
+        - many commands now have a zoom= ketword that works in the current unit
+        - additionnaly, there are itoc and ctoi unit converters
+    - Thanks to this, NMR data-sets are now correctly handled, DOSY are still in progress and should come soon
+        - addtionnaly a plugin for Bruker NMR processing is now implemented
+    - A complete 1D and 2D peak-picker is now implemented, with many controls and features
+    - New baseline correction algo have been implemented
+    - the sane algorithm, which is an evolution from urQrd has been separated from urQRd, so both algo can now be used independently
+    - Tests have been reorganized and improved
+    - Importers have been extended - parameters are now brought back to the user
+    - many others
 0.6.4 - march 2015
     - added Bruker NMR import
     - clean-up of the module, still going on

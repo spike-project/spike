@@ -2,12 +2,12 @@
 # encoding: utf-8
 
 """
-urQRd.py
+sane.py
 #########
-Algorithm for denoising time series, named urQRd (standing for "uncoiled random QR denoising")
+Algorithm for denoising time series, named sane (standing for "Support Selection for Noise Elimination")
 
 main function is 
-urQRd(data, rank)
+sane(data, rank)
 data : the series to be denoised
 rank : the rank of the analysis
 
@@ -15,7 +15,7 @@ Copyright (c) 2013 IGBMC. All rights reserved.
 Marc-Andr\'e Delsuc <madelsuc@unistra.fr>
 Lionel Chiron <lionel.chiron@gmail.com>
 
-This software is a computer program whose purpose is to compute urQRd denoising.
+This software is a computer program whose purpose is to compute sane denoising.
 
 This software is governed by the CeCILL  license under French law and
 abiding by the rules of distribution of free software.  You can  use, 
@@ -61,9 +61,9 @@ from ..util.signal_tools import findnoiselevel, mfft, mrfft
 
 debug = 0 # put to 1 for debuging message
 
-def urQRd(data, k, orda = None, iterations = 1, optk = False, trick = False, ktrick = False):
+def sane(data, k, orda = None, iterations = 1, trick = True, optk = False, ktrick = False):
     """ 
-    urQRd algorithm. Name stands for uncoiled random QR denoising.
+    sane algorithm. Name stands for Support Selection for Noise Elimination.
     From a data series return a denoised series denoised
     data : the series to be denoised - a (normally complex) numpy buffer
     k : the rank of the analysis
@@ -83,12 +83,19 @@ def urQRd(data, k, orda = None, iterations = 1, optk = False, trick = False, ktr
     k < orda
     N = len(data)-orda+1
     Omega is (N x k)
+    
+    Sane is based on the same idea than urQRd, however, there is a much clever selection of the basis on which the random projection is performed?
+    This allows a much better recovery of small signals buried into the noise, compared to urQRd.
+    
+    the flags trick, optk, ktrick control the program
+    when all are false, sane folds back to urQRd algorithm.
+    
     ##########
     BECAREFUL datasize must be different from a product of primes !!!!!!..
     a processing with a datasize of 120022 for example will be 50 times longer than
     a procesing of a datasize of 120000.
     ###
-    urQRd uses a new trick for performing a better denoising.
+    sane uses a new trick for performing a better denoising.
     A rank a little above the number of peaks as to be given. 
     this permit to make a filtering matrix containing the signal quasi only after a first pass.
     On a second pass the full signal is projected on a new filtering subspace done from preceding denoising.
@@ -119,21 +126,21 @@ def urQRd(data, k, orda = None, iterations = 1, optk = False, trick = False, ktr
         if i == 1 and trick:
             dataproj = data.copy()          # will project orignal dataset "data.copy()" on denoised basis "dd"
         else:    
-            dataproj = dd.copy()            # Makes normal urQRd iterations, for urQrd_trick, it is the first passage.
+            dataproj = dd.copy()            # Makes normal urQRd iterations, for sane_trick, it is the first passage.
         if trick:
-            Q, QstarH = urQRdCore(dd, dataproj, Omega)                                # Projection :  H = QQ*H   
+            Q, QstarH = saneCore(dd, dataproj, Omega)                                # Projection :  H = QQ*H   
             dd = Fast_Hankel2dt(Q, QstarH)
         elif i != 1 and not trick:  # eliminate from classical urQrd the case i == 1.
-            Q, QstarH = urQRdCore(dd, dataproj, Omega)                                # Projection :  H = QQ*H   
+            Q, QstarH = saneCore(dd, dataproj, Omega)                                # Projection :  H = QQ*H   
             dd = Fast_Hankel2dt(Q, QstarH)
     denoised = dd
     if data.dtype == "float":                                           # this is a kludge, as a complex data-set is to be passed - use the analytic signal if your data are real
         denoised = np.real(denoised)
     return denoised
 
-def urQRdCore(dd, data, Omega):
+def saneCore(dd, data, Omega):
     '''
-    Core of urQRd algorithm
+    Core of sane algorithm
     '''
     Y =  FastHankel_prod_mat_mat(dd, Omega)
     Q, r = linalg.qr(Y)                                                  # QR decompsition of Y
@@ -200,7 +207,7 @@ def Fast_Hankel2dt(Q,QH):
 
 class OPTK(object):
     '''
-    Class for finding the best rank for classical urQRd.
+    Class for finding the best rank for classical sane.
     The rank is calculated so as to permit the retrieving of the signal power at high enough level.
     Passed parameters are the Fid "fid", the estimated number of lines "estim_nbpeaks" and the order "orda"
     '''
@@ -216,7 +223,7 @@ class OPTK(object):
         self.xin = 0                            # initial noise dimension retrieved
         self.above_noise = 4                    # correction for noise level.. threshold = noiselevel*above_noise
         self.step_k = 20                        # rank step for calculating the norm
-        self.list_urqrd_norm = []               # list of norm values with urQRd.
+        self.list_sane_norm = []               # list of norm values with sane.
         self.estim_nbpeaks = None               # estimation of the number of lines.
         self.orda =  orda
         self.prec = prec
@@ -292,7 +299,7 @@ class OPTK(object):
         return listpk[0]
 
 
-def test_urQRd_gene(
+def test_sane_gene(
                 lendata = 10000,
                 rank = 4,
                 orda = 4000,
@@ -302,7 +309,7 @@ def test_urQRd_gene(
                 nb_iterat = 1,
                 trick = False ):
     """
-    ============== example of use of urQRd on a synthetic data-set ===============
+    ============== example of use of sane on a synthetic data-set ===============
     """
     from ..Display import testplot
 #    testplot.PLOT = True
@@ -325,13 +332,13 @@ def test_urQRd_gene(
     iSNR = SNR_dB(data,data0)
     print("Initial Noisy Data SNR: %.2f dB - noise type : %s"%(iSNR, noisetype))
     t0 = time.time()
-    dataurqrd = urQRd(data, k = rank, orda = orda, optk = False, iterations = nb_iterat, trick = trick )                  # denoise signal with urQRd
-    turQRd = time.time()-t0
-    fdataurqrd  = mfft(dataurqrd )# FFT of urQRd denoised signal
+    datasane = sane(data, k = rank, orda = orda, optk = False, iterations = nb_iterat, trick = trick )                  # denoise signal with sane
+    tsane = time.time()-t0
+    fdatasane  = mfft(datasane )# FFT of sane denoised signal
     print("=== Result ===")
-    fSNR = SNR_dB(dataurqrd, data0)
+    fSNR = SNR_dB(datasane, data0)
     print("Denoised SNR: %.2f dB  - processing gain : %.2f dB"%( fSNR, fSNR-iSNR ))
-    print("processing time for urQRd : %f sec"%turQRd)
+    print("processing time for sane : %f sec"%tsane)
     print(fSNR-iSNR)
     #####
     sub = subpl(2, plt)
@@ -347,24 +354,24 @@ def test_urQRd_gene(
     sub.plot(data,'k', label = "noisy signal")                                  # plot the noisy fid
     sub.next()
     if superimpose:
-        sub.plot(fdataurqrd ,'r', label = 'urQRd {} iteration(s)'.format(nb_iterat))
+        sub.plot(fdatasane ,'r', label = 'sane {} iteration(s)'.format(nb_iterat))
     sub.plot(fdatanoise,'k', label = "noisy spectrum")                          # plot the noisy spectrum
     #######################
     sub.next()
-    sub.plot(dataurqrd ,'r', label = 'urQRd filtered signal')                   # plot the fid denoised with urQRd
+    sub.plot(datasane ,'r', label = 'sane filtered signal')                   # plot the fid denoised with sane
     sub.next()
-    sub.plot(fdataurqrd ,'r', label = 'urQRd filtered spectrum')                # plot the spectrum denoised with urQRd
+    sub.plot(fdatasane ,'r', label = 'sane filtered spectrum')                # plot the spectrum denoised with sane
     sub.title("Noise type : " + noisetype)
     ############################
     sub.show()
-    return (iSNR, fSNR) #dataurqrd
+    return (iSNR, fSNR) #datasane
 
-class urQRd_Tests(unittest.TestCase):
-    def test_urQRd(self):
+class sane_Tests(unittest.TestCase):
+    def test_sane(self):
         '''
-        Makes urQrd without trick and 1 iteration.
+        Makes sane without trick and 1 iteration.
         '''
-        iSNR, fSNR = test_urQRd_gene(lendata = 10000,
+        iSNR, fSNR = test_sane_gene(lendata = 10000,
                         rank = 30,
                         orda = 4000,
                         nbpeaks = 2,
@@ -373,12 +380,12 @@ class urQRd_Tests(unittest.TestCase):
                         nb_iterat = 1 )
         self.assertAlmostEqual(iSNR, 6, 0)
         self.assertTrue(fSNR > 30)
-    def _test_urQRd_iter_trick(self):
+    def _test_sane_iter_trick(self):
         '''
-        Makes urQrd with trick and varying the number of iterations.
+        Makes sane with trick and varying the number of iterations.
         '''
         for it in range(1,4):
-            test_urQRd_gene(lendata = 10000,
+            test_sane_gene(lendata = 10000,
                             rank = 4,
                             orda = 4000,
                             nbpeaks = 2,

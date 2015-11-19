@@ -9,7 +9,8 @@ Runs tests on selected modules using the integrated unittests in the different S
 
 most default values can be overloaded with run time arguments
 
-Example on a module : python -m spike.Tests -D DATA_test -t File.Apex
+Example on a module :
+    python -m spike.Tests -D DATA_test -t File.Apex
 
 """
 
@@ -46,7 +47,7 @@ RUN = True
 
 # Add your module here
 mod_util = ("plugins", 'util.dynsubplot', 'util.debug_tools')  #'util.read_msh5', 
-mod_algo = ('Algo.Cadzow', 'Algo.Linpredic', 'Algo.urQRd', 'Algo.SL0', 'Algo.maxent', 'Algo.BC') 
+mod_algo = ('Algo.Cadzow', 'Algo.Linpredic', 'Algo.sane', 'Algo.urQRd', 'Algo.SL0', 'Algo.maxent', 'Algo.BC') 
 mod_plugins = ("plugins.Peaks", "plugins.Bruker_NMR_FT")
 
 mod_file = ("File.BrukerNMR", "File.GifaFile", 'File.HDF5File', 'File.Apex', 'File.csv', 'File.Solarix')
