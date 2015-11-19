@@ -24,10 +24,6 @@ compress_outfile = True
 # the highest compress_level, the better the compression, but expect some distortions
 compress_level = 3.0
 
-# if samplingfile is defined, means we have a NUS acquisition
-# NUS requires either do_urQRd or do_recital
-# samplingfile =  ../DATA_test/ubiquitine_2D_000002_Sampling_2k.list
-# samplingfile_fake = True
 #zerofilling = -1 -3
 sizemultipliers = 0.5 0.5
 
@@ -50,16 +46,6 @@ do_urqrd = False
 # rank used for urqrd - 2 to 3 times the number of lines expected in columns
 # urQRd processing time is proportionnal to this
 urqrd_rank = 100
-# do_recital : if True, uses Recital instead of FT
-do_recital = False
-# recital_miniterations is the maximum number of itereation of the algorithm
-recital_miniterations = 100
-# recital_iterations is the number of time a new lambda (threshold) will be tried
-recital_iterations = 2
-# recital_scale_noise is a scaling factor for the automatic noise estimator <1 means extracting more from the signal
-recital_scale_noise = 1.0
-#samplingfile
-#samplingfile_fake
 
 # do_flip : if True, the F1 offset correction will be applied
 do_flip = True

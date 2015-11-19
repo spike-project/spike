@@ -256,22 +256,9 @@ def _do_proc_F1_flip_modu(data):
     d.set_col(1,  c1 )
     d.axis1.itype = 0
     d.axis2.itype = 1
-    if parameter.samplingfile is not None:      # NUS ?
-        d.axis1.load_sampling(parameter.samplingfile)   # load it
-        samp = d.axis1.get_sampling() # and store it aside
-        if parameter.samplingfile_fake:    # samplingfile_fake allows to fake NUS on complete data-sets
-            d.set_buffer(d.get_buffer()[samp])     # throw points
-        d.zf()                          # add missing points by padding with zeros
     d.flipphase(0.0, 180*shift) # equivalent to  d.flip()  d.phase()  d.flop()
     if parameter.do_urqrd:
         d.urqrd(k = parameter.urqrd_rank, axis = 1)#
-    if parameter.samplingfile is not None:      # NUS ?
-        if not parameter.do_urqrd:
-            d.axis1.set_sampling(samp)
-            d.set_buffer( d.get_buffer()[samp])     # throw points created before after fliphase is done
-        else:    # if NUS but not urQRd, put zeros on unmeasured points
-            d.zf()
-
     apod(d, size, axis = 1)
     d.rfft(axis = 1)        # this rfft() is different from npfft.rfft() one !
     d.modulus()
@@ -293,15 +280,7 @@ def do_proc_F1_flip_modu(dinp, doutp, parameter):
     pbar= pg.ProgressBar(widgets = widgets, maxval = scan) #, fd=sys.stdout)
     shift = doutp.axis1.mztoi( doutp.axis1.highmass )   # frequency shift in points, computed from location of highmass
     hshift = doutp.axis1.itoh(shift)                    # the same in Hz
-    if parameter.samplingfile is not None:                      #    NUS 
-        dinp.axis1.load_sampling(parameter.samplingfile)       # load sampling file, and compute rot in non-NUS space
-        cdinp = dinp.col(0)
-        cdinp.zf()
-        rot = cdinp.axis1.mztoi( dinp.axis1.highmass )
-        if debug > 1: print("11111111", shift, rot)
-        del(cdinp)
-    else:                                                   # plain mode
-        rot = dinp.axis1.mztoi( dinp.axis1.highmass )       # rot correction is applied in the starting space
+    rot = dinp.axis1.mztoi( dinp.axis1.highmass )       # rot correction is applied in the starting space
     if debug>0: print("LEFT_POINT", shift)
     doutp.axis1.left_point = shift      
     doutp.axis1.specwidth += hshift    # correction of specwidth
@@ -425,8 +404,6 @@ class Proc_Parameters(object):
         self.outfile = None
         self.compress_outfile = True
         self.compress_level = 1.0
-        self.samplingfile = None
-        self.samplingfile_fake = False
         self.tempdir = "/tmp"
         self.largest = LARGESTDATA
         if configfile:
@@ -441,8 +418,6 @@ class Proc_Parameters(object):
         self.compress_outfile = cp.getboolean( "processing", "compress_outfile", str(self.compress_outfile))
         self.compress_level = cp.getfloat( "processing", "compress_level", self.compress_level)
         self.tempdir = cp.get( "processing", "tempdir", ".")                            # dir for temporary file
-        self.samplingfile = cp.get( "processing", "samplingfile")
-        self.samplingfile_fake = cp.getboolean( "processing", "samplingfile_fake", str(self.samplingfile_fake))
         self.largest = cp.getint( "processing", "largest_file", 8*LARGESTDATA)            # largest allowed file
         self.largest = self.largest/8                                                   # in byte in the configfile, internally in word
         self.do_modulus = cp.getboolean( "processing", "do_modulus", str(self.do_modulus))   # do_modulus
@@ -480,8 +455,6 @@ class Proc_Parameters(object):
         for f1, f2 in ((self.infile, self.interfile), (self.interfile,self.outfile), (self.infile, self.outfile)):
             if f1 == f2:
                 raise Exception("input and output files have the same name : %s - this is not possible"%f1)
-        if self.samplingfile and self.do_urqrd:
-            raise Exception("urQRd cannot be applied on NUS a data-set")
         if (self.zflist!=None) and (self.szmlist!=None):
             raise Exception("Please define only one value : zerofilling or sizes multipliers")
         if self.mp and mpiutil.MPI_size > 1:
@@ -634,8 +607,6 @@ def main(argv = None):
     else:
         d0 = load_input(param.infile)
     d0.check2D()    # raise error if not a 2D
-    # if param.samplingfile is not None:
-    #     d0.axis1.load_sampling()
     if imported:
         print_time( time.time()-t0, "Import")
     else:
