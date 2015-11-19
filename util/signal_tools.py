@@ -434,7 +434,6 @@ class Test_Units(unittest.TestCase):
     test_noiselevel
     test_multitests_urQRdtrick
     test_multitests_urQRd_npk
-    test_multitests_Recital_npk
     '''      
     def ttest_signoise(self):
         '''
@@ -502,22 +501,6 @@ class Test_Units(unittest.TestCase):
         algo_param = 'k = 2*self.nbpeaks, orda = self.lenfid/2'
         mt.run(algo_param)
         
-    def ttest_multitests_Recital_npk_superresol(self):
-        '''
-        Multitests on Recital npk for superresolution.
-        '''
-        mt = MULTITESTS(algo = 'recital', ampl_sig = 50, ampl_noise = 40.0, nbpeaks = 10,\
-                nb_tries = 1, npk = True, plot_fft = False)
-        algo_param = 'self.lenfid*10, miniteration = 300, iterations = 5, scale_noise = 1.5'
-        mt.run(algo_param)
-    
-    def test_multitests_Recital_npk_undersampling(self):
-        '''
-        Multitests on Recital npk and undersampling.
-        '''
-        mt = MULTITESTS(algo = 'recital', lenfid = 30000, ampl_sig = 50, ampl_noise = 40.0, nbpeaks = 30,\
-                nb_tries = 1, npk = True, plot_fft = False, trunc = 50)
-        algo_param = 'self.lenfid, miniteration = 600, iterations = 5, scale_noise = 1.0'
         mt.run(algo_param)
         
 if __name__ == '__main__':

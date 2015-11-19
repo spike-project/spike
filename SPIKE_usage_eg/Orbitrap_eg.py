@@ -46,13 +46,6 @@ if eg == 2.1:
     o.modulus().display(label = "zerofill x2", show = True)
 
 if eg == 3:
-    # RECITAL
-    o = Import_1D("../DATA_test/ubiquitin_5_scan_res_30000_1.dat")
-    o.report()
-    o.currentunit = 'm/z'
-    o.recital(o.buffer.size*4).modulus().display(label = "RECITAL x4", show = True)
-
-if eg == 4:
     # urQRd
     o = Import_1D("../DATA_test/ubiquitin_5_scan_res_30000_1.dat")
     o.report()
