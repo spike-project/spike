@@ -15,19 +15,75 @@ Many features are missing, and many other while present, are not fully fixed.
 However, considering the amount of efforts already present in this code, we decided to make it available.
 We believe that even in this partial development stage, this program might prove useful for certain usages.
 
-* For the moment, SPIKE handles the following Spectroscopies
-    * **NMR** - 1D and 2D are fully supported
-    * **FT-ICR** - 1D and 2D are fully supported
-    * **Orbitrap** - 1D only (!)
-    * _other spectroscopies are being considered_
-    * Files can be imported from
-        * NMR : Bruker Topspin / NPK (NMRNoteBook) program
-        * FT-ICR : Bruker Apex
-        * Orbitrap : Thermofisher raw data
+## SPIKE proposes the following features
+####FT analysis of 1D data-sets
+        * apodisation, phasing, modulus, ...
+#### Analysis of 2D data-sets
+        * phase or amplitude modulation
+        * complex or hyper-complex algebra
+####Robust processing
+        * no limit in data-set size
+        * parallel processing of the heaviest processing
+            * on multi-core desktop using standard python ressources
+            * on large clusters, using **MPI** library
+####High-Level features
+        * noise reduction (filtering, Linear-Prediction, Cadzow, urQRd, sane, ...)
+        * automatic or manual baseline correction
+        * 1D and 2D Peak-Picker
+        
+####Plugin architecture
+    * allow easy extension of the core program
+    * reduces cross dependances
+####Complete spectral display using matplotlib
+        * zoom, available in several units (depending on the spectroscopy : seconds, Hz, ppm, m/z, etc...)
+        * store to png or pdf
+
+##For the moment, SPIKE handles the following Spectroscopies
+#### **NMR** 
+    - 1D and 2D are fully supported
+#### **FT-ICR** 
+    - 1D and 2D are fully supported
+#### **Orbitrap** 
+    - 1D only (!)
+#### _other spectroscopies are being considered_
+
+##Files can be imported from
+        * NMR:
+            * Bruker Topspin
+            * NMRNoteBook
+            * NPK - *Gifa*
+        * FT-ICR:
+            * Bruker Apex 
+            * Bruker Solarix
+        * Orbitrap:
+            * Thermofisher raw data
         * any data in memory in a `Numpy` buffer.
 
 
-SPIKE allows to process datasets interactively from an IPython prompt, and is perfectly working in `IPython Notebook` .
+#Usage
+
+####As a processing library
+SPIKE is primary meant for being used as a library, code can as simple as :
+```python
+import spike
+from spike.File import Solarix
+
+dd = Solarix.Import_1D('FTICR-Files/ESI_pos_Ubiquitin_000006.d')  # Import create a basic SPIKE object
+
+dd.hamming().zf(2).rfft().modulus()    # we have a simple piped processing scheme
+
+dd.unit = "m/z"
+dd.display(zoom=(500,2000))     # display the spectrum for m/z ranging from 500 to 2000
+
+dd.pp(threshold=1E7)         # peak-pick the spectrum in this range
+dd.centroid()                # compute centroids
+
+dd.display(zoom=(856.5, 858.5))    # and zoom on the isotopic peak
+dd.display_peaks(zoom=(856.5, 858.5), peak_label=True)
+```
+
+####interactive mode
+SPIKE allows to process datasets interactively from an IPython prompt, and is perfectly working in `IPython Notebook` 
 
 * Look at the examples files ( `eg_*.py` ) for examples and some documentation.
 * display is performed using the `Matplotlib` library.
@@ -35,7 +91,7 @@ SPIKE allows to process datasets interactively from an IPython prompt, and is pe
 * The batch mode supports multiprocessing, both with MPI and natively on multi-core machines (still in-progress)
 * large 2D-FT-ICR are stored in a hierarchical format, easyly displayed with an interactive program.
 * data-sets are handled in the HDF5 standard file-format, which allows virtually unlimited file size ( _tested up to 200 Gb_ ).
-* Version : this is 0.6 beta version
+* Version : this is 0.7 beta version
 
 A more complete documentation is available [here](https://spikedoc.bitbucket.org).  
 
@@ -154,10 +210,13 @@ a small description of the files:
     - Release.txt  
 
 ### Authors and Licence ###
-Active authors for SPIKE are :
+Current Active authors for SPIKE are:
 
 - Marc-André Delsuc  .  `madelsuc -at- unistra.fr`
 - Lionel Chiron      .  `Lionel.Chiron -at- casc4de.eu`
+- Petar Markov          `petar.markov -at- igbmc.fr`
+
+Previous authors:
 - Marie-Aude Coutouly . `Marie-Aude.Coutouly -at- nmrtec.com`
 
 Covered code is provided under this license on an "as is" basis, without warranty of any kind, either expressed or implied, including, without limitation, warranties that the covered code is free of defects. The entire risk as to the quality and performance of the covered code is with you. Should any covered code prove defective in any respect, you (not the initial developer or any other contributor) assume the cost of any necessary servicing, repair or correction.
