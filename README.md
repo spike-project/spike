@@ -16,49 +16,67 @@ However, considering the amount of efforts already present in this code, we deci
 We believe that even in this partial development stage, this program might prove useful for certain usages.
 
 ## SPIKE proposes the following features
+
 ####FT analysis of 1D data-sets
-        * apodisation, phasing, modulus, ...
+
+* apodisation, phasing, modulus, ...
+
 #### Analysis of 2D data-sets
-        * phase or amplitude modulation
-        * complex or hyper-complex algebra
+
+* phase or amplitude modulation
+* complex or hyper-complex algebra
+
 ####Robust processing
-        * no limit in data-set size
-        * parallel processing of the heaviest processing
-            * on multi-core desktop using standard python ressources
-            * on large clusters, using **MPI** library
+
+* no limit in data-set size
+* parallel processing of the heaviest processing
+    * on multi-core desktop using standard python ressources
+    * on large clusters, using **MPI** library
+
 ####High-Level features
-        * noise reduction (filtering, Linear-Prediction, Cadzow, urQRd, sane, ...)
-        * automatic or manual baseline correction
-        * 1D and 2D Peak-Picker
+
+* noise reduction (filtering, Linear-Prediction, Cadzow, urQRd, sane, ...)
+* automatic or manual baseline correction
+* 1D and 2D Peak-Picker
         
 ####Plugin architecture
-    * allow easy extension of the core program
-    * reduces cross dependances
+
+* allow easy extension of the core program
+* reduces cross dependances
+
 ####Complete spectral display using matplotlib
-        * zoom, available in several units (depending on the spectroscopy : seconds, Hz, ppm, m/z, etc...)
-        * store to png or pdf
+
+* zoom, available in several units (depending on the spectroscopy : seconds, Hz, ppm, m/z, etc...)
+* store to png or pdf
 
 ##For the moment, SPIKE handles the following Spectroscopies
+
 #### **NMR** 
-    - 1D and 2D are fully supported
+
+- 1D and 2D are fully supported
+
 #### **FT-ICR** 
-    - 1D and 2D are fully supported
+
+- 1D and 2D are fully supported
+
 #### **Orbitrap** 
-    - 1D only (!)
+
+- 1D only (!)
+
 #### _other spectroscopies are being considered_
 
 ##Files can be imported from
-        * NMR:
-            * Bruker Topspin
-            * NMRNoteBook
-            * NPK - *Gifa*
-        * FT-ICR:
-            * Bruker Apex 
-            * Bruker Solarix
-        * Orbitrap:
-            * Thermofisher raw data
-        * any data in memory in a `Numpy` buffer.
 
+* NMR:
+    * Bruker Topspin
+    * NMRNoteBook
+    * NPK - *Gifa*
+* FT-ICR:
+    * Bruker Apex 
+    * Bruker Solarix
+* Orbitrap:
+    * Thermofisher raw data
+* any data in memory in a `Numpy` buffer.
 
 #Usage
 
