@@ -11,7 +11,7 @@ from spike.NPKData import NPKData_plugin,  as_cpx, as_float, _base_fft,\
 from spike.Algo.sane import sane
 from spike.util.signal_tools import filtering
 
-def sane(npkd, k, orda = None, trick = True, iterations = 1, axis=0):
+def sane_pg(npkd, k, orda = None, trick = True, iterations = 1, axis=0):
     """
     Apply sane denoising to data
     k is about 2 x number_of_expected_lines
@@ -43,7 +43,7 @@ def sane(npkd, k, orda = None, trick = True, iterations = 1, axis=0):
          raise Exception("not implemented yet")
     return npkd
 
-class saneTests(unittest.TestCase):
+class sane_pgTests(unittest.TestCase):
     pass
 
-NPKData_plugin("sane", sane)
+NPKData_plugin("sane", sane_pg)
