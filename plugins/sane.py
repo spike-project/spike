@@ -11,12 +11,27 @@ from spike.NPKData import NPKData_plugin,  as_cpx, as_float, _base_fft,\
 from spike.Algo.sane import sane
 from spike.util.signal_tools import filtering
 
-def sane_pg(npkd, k, orda = None, trick = True, iterations = 1, axis=0):
+def sane_pg(npkd, k, orda = None, iterations = 1, axis=0, trick = True, optk = False, ktrick = False):
     """
     Apply sane denoising to data
     k is about 2 x number_of_expected_lines
     Manages real and complex cases.
     Handles the case of hypercomplex for denoising of 2D FTICR for example.
+    
+    sane algorithm. Name stands for Support Selection for Noise Elimination.
+    From a data series return a denoised series denoised
+    data : the series to be denoised - a (normally complex) numpy buffer
+    k : the rank of the analysis
+    orda : is the order of the analysis
+        internally, a Hankel matrix (M,N) is constructed, with M = orda and N = len(data)-orda+1
+        if None (default) orda = (len(data)+1)/2
+    iterations : the number of time the operation should be repeated
+    optk : if set to True will calculate the rank giving the best recovery for an automatic estimated noise level. 
+    trick : permits to enhanced the denoising by using a cleaned signal as the projective space. "Support Selection"
+    ktrick : if a value is given, it permits to change the rank on the second pass.
+             The idea is that for the first pass a rank large enough as to be used to compensate for the noise while
+             for the second pass a lower rank can be used. 
+    
     """
     if npkd.dim == 1:
         if npkd.axis1.itype == 0:   # real

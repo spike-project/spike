@@ -305,6 +305,9 @@ class Axis(object):
         redefines the axis parameters so that the new axis is extracted for the points [start:end] 
         
         zoom is given in current unit - does not modify the Data, only the axis definition
+        
+        This definition should be overloaded for each new axis, as the calibration system, associated to unit should be updated.
+        
         """
         start, end = self.getslice(zoom)
         self.size = end-start
