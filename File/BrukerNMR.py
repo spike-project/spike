@@ -513,7 +513,7 @@ class Exporter(object):
         fname = op.join(self.dir, 'fid')
         self.write_file(data, fname)
 
-    def save_spec_1d(self, data, procno=1):
+    def save_spec_1d(self, data, procno='1'):
         """
         save data as a 1d spectrum in self.dir
         """
