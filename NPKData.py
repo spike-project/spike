@@ -1310,7 +1310,8 @@ class NPKData(object):
             test = self.axis1.check_zoom(z[0:1]) and self.axis2.check_zoom(z[2:3])
         return test
     def display(self, scale = 1.0, absmax = None, show = False, label = None, new_fig = True, axis = None,
-                mode3D = False, zoom = None, xlabel="_def_", ylabel = "_def_", title = None, figure = None, linewidth=1):
+                mode3D = False, zoom = None, xlabel="_def_", ylabel = "_def_", title = None, figure = None,
+                linewidth=1, reverse_accepted = True):
         """
         not so quick and dirty display using matplotlib or mlab - still a first try
         
@@ -1359,7 +1360,7 @@ class NPKData(object):
             else:
                 ax = axis
             fig.set_xscale(self.axis1.units[self.axis1.currentunit].scale)  # set unit scale (log / linear)
-            if self.axis1.units[self.axis1.currentunit].reverse:           # set reverse mode
+            if self.axis1.units[self.axis1.currentunit].reverse and reverse_accepted:           # set reverse mode
                 fig.invert_xaxis()
             fig.plot(ax[z1:z2:step], self.buffer[z1:z2:step].clip(mmin,mmax), label=label, linewidth=linewidth)
             if xlabel == "_def_":
@@ -1403,10 +1404,10 @@ class NPKData(object):
                 if axis is None:
                     axis = (self.axis1.unit_axis(), self.axis2.unit_axis())
                 fig.set_yscale(self.axis1.units[self.axis1.currentunit].scale)  # set unit scale (log / linear)
-                if self.axis1.units[self.axis1.currentunit].reverse:
+                if self.axis1.units[self.axis1.currentunit].reverse and reverse_accepted:
                         fig.invert_yaxis()
                 fig.set_xscale(self.axis2.units[self.axis2.currentunit].scale)  # set unit scale (log / linear)
-                if self.axis2.units[self.axis2.currentunit].reverse:
+                if self.axis2.units[self.axis2.currentunit].reverse and reverse_accepted:
                         fig.invert_xaxis()
                 fig.contour(axis[1][z2lo:z2up:step2],
                     axis[0][z1lo:z1up:step1],
