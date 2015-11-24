@@ -1311,7 +1311,7 @@ class NPKData(object):
         return test
     def display(self, scale = 1.0, absmax = None, show = False, label = None, new_fig = True, axis = None,
                 mode3D = False, zoom = None, xlabel="_def_", ylabel = "_def_", title = None, figure = None,
-                linewidth=1, reverse_accepted = True):
+                linewidth=1, reverse_accepted = True, color = None):
         """
         not so quick and dirty display using matplotlib or mlab - still a first try
         
@@ -1331,7 +1331,8 @@ class NPKData(object):
                 defined in the current axis unit (points, ppm, m/z etc ....)
         figure  if not None, will be used directly to display instead of using its own
         linewidth : linewidth for the plots (useful for example when using seaborn)
- 
+        reverse_accepted : By default set to True if False keep the currrent direction of the axis.. 
+        
         can actually be called without harm, even if no graphic is available, it will just do nothing.
         
         """
@@ -1362,7 +1363,10 @@ class NPKData(object):
             fig.set_xscale(self.axis1.units[self.axis1.currentunit].scale)  # set unit scale (log / linear)
             if self.axis1.units[self.axis1.currentunit].reverse and reverse_accepted:           # set reverse mode
                 fig.invert_xaxis()
-            fig.plot(ax[z1:z2:step], self.buffer[z1:z2:step].clip(mmin,mmax), label=label, linewidth=linewidth)
+            if not color :
+                fig.plot(ax[z1:z2:step], self.buffer[z1:z2:step].clip(mmin,mmax), label=label, linewidth=linewidth)
+            else:
+                fig.plot(ax[z1:z2:step], self.buffer[z1:z2:step].clip(mmin,mmax), label=label, linewidth=linewidth, color=color)
             if xlabel == "_def_":
                 xlabel = self.axis1.currentunit
             if ylabel == "_def_":
