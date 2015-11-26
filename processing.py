@@ -58,8 +58,8 @@ def intelliround(x):
     lx = int(log(x)/log(2))   # say 3
     err = 2*x
     r = 0
-    for t in (2**lx, 2**(lx+1), 3*2**(lx-1), 5*2**(lx-2), 3*3*2**(lx-3),  7*2**(lx-2)):
-        #      8      16          12          10           9            14  - increassing complexity
+    for t in (2**lx, 2**(lx+1), 3*2**(lx-1), 5*2**(lx-2), 3*3*2**(lx-3),  3*5*2**(lx-3)):
+        #      8      16          12          10           9               15  - increassing complexity
         if abs(t-x)<err:
             err = abs(t-x)
             r = t
