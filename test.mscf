@@ -1,7 +1,8 @@
 # configuration file used for testing
 
 [import]
-apex = ../DATA_test/ubiquitine_2D_000002.d
+# __DATA_test__ is a symlink created by the test procedure, pointing to the real dir.
+apex = __DATA_test__/ubiquitine_2D_000002.d
 format = Apex
 F1_specwidth = 500000
 F2_specwidth = 500000
@@ -9,14 +10,14 @@ highmass = 2500
 
 [processing]
 # input file, if not present, will be created from apex above
-infile = ../DATA_test/ubiquitine_2D_000002.msh5
+infile = __DATA_test__/ubiquitine_2D_000002.msh5
 # optionnal intermediate file name
 # be careful, this one can be larger than both in and out files.
 # if interfile absent, the temporary file will created in the designed temp directory and deleted at the end
-#interfile = ../DATA_test/ubiquitine_temp.msh5
-tempdir = ../DATA_test
+#interfile = __DATA_test__/ubiquitine_temp.msh5
+tempdir = __DATA_test__
 # output file
-outfile =  ../DATA_test/ubiquitine_2D_000002_mr.msh5
+outfile =  __DATA_test__/ubiquitine_2D_000002_mr.msh5
 
 # file can be internally compressed by removing the weakest value lost in the noise
 compress_outfile = True
@@ -39,7 +40,7 @@ do_F1 = True
 # will deploy on nb_proc core. - seems to be buggy on certain dstribution of python
 # note that for large data-files   MPI   should be favored when available.
 # in which case, use_multiprocessing and nb_proc are ignored
-use_multiprocessing = True
+use_multiprocessing = False
 nb_proc = 4
 # do_urqrd : if True, the urQRd denoising is applied in F1
 do_urqrd = False
@@ -56,7 +57,7 @@ do_rem_ridge = True
 
 [visu2d]
 # file to display
-multresfile = ../DATA_test/ubiquitine_2D_000002_mr.msh5
-#multresfile = ../DATA_test/seq.msh5
+multresfile = __DATA_test__/ubiquitine_2D_000002_mr.msh5
+#multresfile = __DATA_test__/seq.msh5
 
 

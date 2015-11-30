@@ -63,5 +63,5 @@ do_flip = True
 # do_modulus : if True, a modulus will be applied at the end of the processing
 do_modulus = True
 # do_rem_ridge : if True, vertical ridges will be applied
-do_rem_ridge = False
+do_rem_ridge = True
 
