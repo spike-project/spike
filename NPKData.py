@@ -888,8 +888,10 @@ class NPKData(object):
         Data = type(self)   # NPKData get subclassed, so subclass creator is to be used
         c = Data(buffer = self.buffer.copy())
         copyaxes(self,c)
-        if self.params:
+        try:
             c.params = copy.deepcopy(self.params)
+        except AttributeError:
+            warning('params is missing')
         return c
     #---------------------------------------------------------------------------
     def adapt_size(self):
