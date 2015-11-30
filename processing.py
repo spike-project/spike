@@ -32,7 +32,6 @@ from .util import mpiutil as mpiutil
 from .util.signal_tools import findnoiselevel_offset  as findnoiselevel
 from .NPKData import as_cpx
 from .util.simple_logger2 import TeeLogger
-#from spike.util.rem_ridge import rem_ridge
 
 debug = 1   # debugging level, 0 means no debugging
 interfproc = False
@@ -277,10 +276,15 @@ def do_proc_F1_flip_modu(dinp, doutp, parameter):
     size = 2*doutp.axis1.size
     scan =  min(dinp.size2, doutp.size2)
     widgets = ['Processing F1 flip-modu: ', pg.Percentage(), ' ', pg.Bar(marker='-',left = '[',right = ']'), pg.ETA()]
-    pbar= pg.ProgressBar(widgets = widgets, maxval = scan) #, fd=sys.stdout)
-    shift = doutp.axis1.mztoi( doutp.axis1.highmass )   # frequency shift in points, computed from location of highmass
-    hshift = doutp.axis1.itoh(shift)                    # the same in Hz
-    rot = dinp.axis1.mztoi( dinp.axis1.highmass )       # rot correction is applied in the starting space
+    pbar= pg.ProgressBar(widgets = widgets, maxval = scan) #, fd=sys.stdout)    
+    if parameter.freq_highmass == 0:   # means not given in .mscf file -> compute from highmass
+        shift = doutp.axis1.mztoi( doutp.axis1.highmass )   # frequency shift in points, computed from location of highmass
+        hshift = doutp.axis1.itoh(shift)                    # the same in Hz
+        rot = dinp.axis1.mztoi( dinp.axis1.highmass )       # rot correction is applied in the starting space
+    else:
+        hshift = parameter.freq_highmass
+        shift = doutp.axis1.htoi(hshift)
+        rot = dinp.axis1.htoi( hshift )       # rot correction is applied in the starting space
     if debug>0: print("LEFT_POINT", shift)
     doutp.axis1.left_point = shift      
     doutp.axis1.specwidth += hshift    # correction of specwidth
@@ -345,7 +349,7 @@ def do_process2D(dinp, datatemp, doutp, parameter):
         print_time(time.time()-t0, "F1 processing time")
     # remove ridge computed on the last 10% rows
     if parameter.do_F1 and parameter.do_rem_ridge:      
-        rem_ridge(doutp)
+        doutp.rem_ridge()
     if parameter.compress_outfile :  # fastclean is the trick for compression
         doutp.fastclean(nsigma=parameter.compress_level, axis=1)
     print_time(time.time()-t00, "F1-F2 processing time")
@@ -422,6 +426,7 @@ class Proc_Parameters(object):
         self.largest = self.largest/8                                                   # in byte in the configfile, internally in word
         self.do_modulus = cp.getboolean( "processing", "do_modulus", str(self.do_modulus))   # do_modulus
         self.do_flip = cp.getboolean( "processing", "do_flip", str(self.do_flip))       # do_flip
+        self.freq_highmass = cp.getfloat( "processing", "freq_highmass")        # freq for do_flip
         self.do_urqrd = cp.getboolean( "processing", "do_urqrd", str(self.do_urqrd))    # do_urqrd
         self.urqrd_rank = cp.getint( "processing", "urqrd_rank", self.urqrd_rank)       # do_urqrd
         self.do_rem_ridge = cp.getboolean( "processing", "do_rem_ridge", str(self.do_rem_ridge))
@@ -478,7 +483,7 @@ class Test(unittest.TestCase):
         r = []
         for i in range(16,33):
             r.append(intelliround(i))
-        self.assertEqual(r, [16, 16, 18, 20, 20, 20, 24, 24, 24, 24, 24, 28, 28, 28, 32, 32, 32])
+        self.assertEqual(r, [16, 16, 18, 20, 20, 20, 24, 24, 24, 24, 24, 24, 30, 30, 30, 32, 32])
                         #   [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]
     def test_zf(self):
         "testing zerofilling computation"
@@ -491,11 +496,16 @@ class Test(unittest.TestCase):
             self.assertEqual( sizes, [(2048, 20480), (1024, 10240), (1024, 5120), (1024, 1280)])
         sizes = comp_sizes(d, szmlist=(3, 1.5) )
         if SIZEMIN == 1024:
-            self.assertEqual( sizes, [(3072, 14336), (1024, 3584), (1024, 1792)])
+            self.assertEqual( sizes, [(3072, 15360), (1024, 3840), (1024, 1920)])
     def test_proc(self):
         "apply a complete processing test"
-        main(["prgm", "test.mscf",])
-
+        # test is run from above spike
+        from .Tests import directory
+        if directory() != '__DATA_test__':
+            print('creating DATA_test symlink')
+            os.symlink(directory(),'__DATA_test__')
+        main(["prgm", "spike/test.mscf",])
+        os.unlink('__DATA_test__')
 
 ########################################################################################
 def Report_Table_Param():
