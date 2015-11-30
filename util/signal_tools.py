@@ -177,7 +177,8 @@ class SIGNAL_NOISE(object):
             nAmp = self.Amp[i]
             nFreq = self.Freq[i]
             if ampl:
-                nAmp *= self.mult_Anoise*np.random.randn(self.x.size)
+#                nAmp *= self.mult_Anoise*np.random.randn(self.x.size)
+                nAmp += self.mult_Anoise*np.random.randn(self.x.size)
             if freq:
                 nFreq += self.mult_Fnoise*np.random.randn(self.x.size) 
             self.fid +=  nAmp * np.exp(nFreq*self.x)

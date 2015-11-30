@@ -37,7 +37,7 @@ from ..NPKData import NPKData_plugin
 def load():
     "the load() function is called at initialization, and loads all files found in the plugins folder"
 # import all python code found here ( __path__[0] ) except me !
-    for pgfile in glob.glob( os.path.join(__path__[0],"*.py") ):
+    for pgfile in sorted( glob.glob( os.path.join(__path__[0],"*.py") ) ):
         b = os.path.basename(pgfile)    # code.py
         pgmod = os.path.splitext(b)[0]  # code
         if not pgfile.endswith('__init__.py'):
