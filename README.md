@@ -83,8 +83,8 @@ We believe that even in this partial development stage, this program might prove
 ####As a processing library
 SPIKE is primary meant for being used as a library, code can as simple as :
 ```python
-import spike
-from spike.File import Solarix
+import spike           # insure spike is in your PYTHONPATH
+from spike.File import Solarix 
 
 dd = Solarix.Import_1D('FTICR-Files/ESI_pos_Ubiquitin_000006.d')  # Import create a basic SPIKE object
 
@@ -100,6 +100,14 @@ dd.display(zoom=(856.5, 858.5))    # and zoom on the isotopic peak
 dd.display_peaks(zoom=(856.5, 858.5), peak_label=True)
 ```
 
+For the moment, SPIKE does not provide a installation script.
+If you downloaded spike in a given directory, insure this directory is in your PYTHONPATH.
+To do so, either modify the `$PYTHONPATH` environment variable, or add the following lines in the scripts that use SPIKE:
+```python
+import sys
+sys.path.append('the_dir_where_you_put_spike_distrib')
+```
+
 ####interactive mode
 SPIKE allows to process datasets interactively from an IPython prompt, and is perfectly working in `IPython Notebook` 
 
@@ -110,6 +118,32 @@ SPIKE allows to process datasets interactively from an IPython prompt, and is pe
 * large 2D-FT-ICR are stored in a hierarchical format, easyly displayed with an interactive program.
 * data-sets are handled in the HDF5 standard file-format, which allows virtually unlimited file size ( _tested up to 200 Gb_ ).
 * Version : this is 0.7 beta version
+
+####running stand-alone programs
+
+processing.py and visu2D.py are two stand alone programs, written on the top of SPIKE.
+ - processing.py allowing the efficient processing
+   of FT-ICR 2D datasets, with no limit on the size of the final file
+   Produces multi-resolution files
+ - visu2D.py
+   is an interactive tool for visualizing 2D FT-ICR multi-resolution files  
+   
+syntax :
+```
+python -m spike.processing param_file.mscf
+```
+or
+```
+python -m spike.visu2D param_file.mscf
+```
+
+typically, you want to add
+```python
+python
+import sys
+sys.path.append('the_dir_where_you_put_spike_distrib')
+```
+to the header of these scripts, and launch them from the directory which contains SPIKE the distribution.
 
 A more complete documentation is available [here](https://spikedoc.bitbucket.org).  
 
@@ -173,13 +207,15 @@ a small description of the files:
    Produces multi-resolution files
    syntax :   
    
-   ```python -m spike.processing.py param_file.mscf
+   ```
+   python -m spike.processing param_file.mscf
    ```
    
 - visu2D.py
    an interactive tool for visualizing 2D FT-ICR multi-resolution files  
    
-  ```python -m spike.visu2D.py param_file.mscf
+  ```
+  python -m spike.visu2D param_file.mscf
   ```
 
 ### Directories
