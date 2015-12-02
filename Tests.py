@@ -41,7 +41,8 @@ MAIL = False
 list_of_mails = []
 
 #DATA_dir defines where the DATA for tests are located
-DATA_dir = "/Volume/DATA_test"
+#DATA_dir = "/Volume/DATA_test"
+DATA_dir = "/Users/mad/NPKV2/DATA_test"
 
 RUN = True
 

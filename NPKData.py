@@ -891,7 +891,8 @@ class NPKData(object):
         try:
             c.params = copy.deepcopy(self.params)
         except AttributeError:
-            warning('params is missing')
+            pass
+            # warning('params is missing')
         return c
     #---------------------------------------------------------------------------
     def adapt_size(self):
