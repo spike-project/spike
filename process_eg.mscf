@@ -12,11 +12,11 @@ apex = ../DATA_test/ubiquitine_2D_000002.d
 # parameters  NOT FULLY IMPLEMENTED YET
 # only F1specwidth is implemented - and required !
 # the following parameters are optionnal,
-# they will overwrite the values found in the Apex file descriptor if present
+# they will overwrite the values found in the Apex/Solarix file descriptor if present
 # F1_specwidth & F2_specwidth are the sampling frequencies along F1 (vertical) and F2 (horizontal) axes
 F1_specwidth = 500000
 ## F2_specwidth = 1666666
-# highmas is the cutoff frequency of the excitation pulse
+# highmass is the cutoff frequency of the excitation pulse
 highmass = 2600
 
 format = Solarix

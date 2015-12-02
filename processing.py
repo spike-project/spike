@@ -276,7 +276,7 @@ def do_proc_F1_flip_modu(dinp, doutp, parameter):
     size = 2*doutp.axis1.size
     scan =  min(dinp.size2, doutp.size2)
     widgets = ['Processing F1 flip-modu: ', pg.Percentage(), ' ', pg.Bar(marker='-',left = '[',right = ']'), pg.ETA()]
-    pbar= pg.ProgressBar(widgets = widgets, maxval = scan) #, fd=sys.stdout)    
+    pbar= pg.ProgressBar(widgets = widgets, maxval = scan) #, fd=sys.stdout)
     if parameter.freq_highmass == 0:   # means not given in .mscf file -> compute from highmass
         shift = doutp.axis1.mztoi( doutp.axis1.highmass )   # frequency shift in points, computed from location of highmass
         hshift = doutp.axis1.itoh(shift)                    # the same in Hz
@@ -539,13 +539,16 @@ def Set_Table_Param():
     #tables.parameters.PYTABLES_SYS_ATTRS = False
 
 ########################################################################################
-def print_time(t,st="Processing time"):
-    "prints processing time"
-    h = int(t/3600)
-    m = int ((t-3600*h)/60)
-    s = int(t-3600*h - 60*m)
-    print(" %s : %d:%02d:%02d"%(st, h, m, s))
-
+def print_time(t, st="Processing time"):
+    "prints processing time, t is in seconds"
+    d = int( t/(24*3600) )
+    h = int( (t-24*3600*d)/3600 )
+    m = int( t-3600*(h+24*d)/60 )
+    s = int( t-3600*(h+24*d) - 60*m )
+    if d == 0:
+        print(" %s : %dh %02dm %02ds"%(st, h, m, s))
+    else:
+        print(" %s : %dd %dh %02dm %02ds"%(st, d, h, m, s))
 
 def main(argv = None):
     """
@@ -566,12 +569,12 @@ def main(argv = None):
         configfile = argv[1]
     except IndexError:          # then assume standard name
         configfile = "process.mscf"
+    print("using %s as configuration file" %configfile)
     if interfproc:
         output = open('InterfProc/progbar.pkl', 'wb')
         pb = ['F2', 0]
         pickle.dump(pb, output)
         output.close()
-        print("using %s as configuration file" %configfile)
     #### get parameters from configuration file - store them in a parameter object
     cp = NPKConfigParser()
     print('address configfile is ', configfile)

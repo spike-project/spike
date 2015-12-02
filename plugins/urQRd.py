@@ -11,7 +11,7 @@ from spike.NPKData import NPKData_plugin,  as_cpx, as_float, _base_fft,\
 from spike.Algo.urQRd import urQRd
 from spike.util.signal_tools import filtering
 
-def urqrd(npkd, k, orda = None, trick = False, iterations = 1, axis=0):
+def urqrd(npkd, k, orda = None, iterations = 1, axis=0):
     """
     Apply urQRd denoising to data
     k is about 2 x number_of_expected_lines
@@ -23,7 +23,7 @@ def urqrd(npkd, k, orda = None, trick = False, iterations = 1, axis=0):
             buff = as_cpx(_base_ifft(_base_rfft(npkd.buffer)))       # real case, go to analytical signal
         else:   #complex
             buff = npkd.get_buffer()                       # complex case, makes complex
-        urqrd_result = urQRd( buff, k, orda = orda, trick = trick, iterations = iterations) # performs denoising
+        urqrd_result = urQRd( buff, k, orda = orda, iterations = iterations) # performs denoising
         if npkd.axis1.itype == 0:   # real
             buff = _base_irfft(_base_fft(as_float(urqrd_result)))      # real case, comes back to real
             npkd.set_buffer(buff)
