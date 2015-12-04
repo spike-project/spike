@@ -1367,10 +1367,7 @@ class NPKData(object):
             fig.set_xscale(self.axis1.units[self.axis1.currentunit].scale)  # set unit scale (log / linear)
             if self.axis1.units[self.axis1.currentunit].reverse and new_fig:           # set reverse mode
                 fig.invert_xaxis()
-            if not color :
-                fig.plot(ax[z1:z2:step], self.buffer[z1:z2:step].clip(mmin,mmax), label=label, linewidth=linewidth)
-            else:
-                fig.plot(ax[z1:z2:step], self.buffer[z1:z2:step].clip(mmin,mmax), label=label, linewidth=linewidth, color=color)
+            fig.plot(ax[z1:z2:step], self.buffer[z1:z2:step].clip(mmin,mmax), label=label, linewidth=linewidth, color=color)
             if xlabel == "_def_":
                 xlabel = self.axis1.currentunit
             if ylabel == "_def_":

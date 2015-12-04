@@ -570,7 +570,6 @@ class Exporter(object):
         data = self.rdata
         return data
 
-
     def save_spec_2d(self, big = False):
         """ 
         Write Bruker binary data to file
