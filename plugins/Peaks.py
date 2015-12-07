@@ -16,7 +16,51 @@ Peak1DList and Peak2DList are list, with a few added methods
     - largest sort in decreasing order of intensity
         other sorts can simply done by peaklist.sort(key = lambda p: p.XXX)
             where XXX is any peak attribute  (see largest code)
-     
+
+Example of usage:
+
+# assuming d is a 2D NPKData / 1D will be just as simple
+d.pp()          # computes a peak picking over the whole spectrum using 3 x standard_deviation(d)
+                # This is just a detection of all local maxima
+
+# We can be more specific:
+d.pp(threshold=5E5, zoom=((700,1050),(300,350)) )     # zoom is always in the currently active unit, defined with d.unit
+
+# this attached the peak list to the dataset as d.peaks,
+# it is a list of Peaks1D objects, with some added properties
+print( "number of detected peaks: %d" % len(d.peaks))
+
+p0 = d.peaks[0]     # peaks have label, intensitiy and positions attributes
+
+print( p0.report() )        # and a report method
+                            # report has an additional format parameter which enables control on the output
+
+# we can call centroid to improve the accuracy and move the position to center of a fitted (2D) parabola
+d.centroid()     
+
+
+# The peak list can be displayed on screen as simple crosses
+d.display_peaks()
+
+# The label can be modififed for specific purposes:
+for p in d.peaks:
+    if 150 < p.posF2 < 1500 :
+        p.label = "%.2f x %.f"%(p.posF1,p.posF2)    # for instance changing to the coordinates for a certain zone
+    else:
+        p.label = ""                                # and removing elsewhere
+
+d.display_peaks(peak_label=True)
+
+# peak lists can also be reported
+d.report_peak()
+
+# but also as a formatted stream, and redirected to a file:
+output = open("my_peak_list.csv","w")      # open the file
+output.write("# LABEL, INTENSITY, F1, Width, F2, width")
+d.report_peak(file=output, format="{1}, {4:.2f}, {2:.7f}, {5:.2f}, {3:.7f}, {6:.2f}")
+        # arguments order order is   id, label, posF1, posF2, intensity, widthF1, widthF2
+output.close()
+
 
 Sept 2015 M-A Delsuc
 """
@@ -114,7 +158,7 @@ class Peak2D(Peak):
         indentity function is default,
         for instance you can use something like
         peaks.report(f1=s.axis1.itop, f2=s.axis2.itop)    to get ppm values on a NMR dataset
-        order is "id, label, posF1, posF2, intensity"
+        order is "id, label, posF1, posF2, intensity, widthF1, widthF2"
 
         printed parameters are : 
         Id label posF1 posF2 intens widthF1 widthF2
