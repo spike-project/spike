@@ -2,25 +2,19 @@
 # encoding: utf-8
 
 """
-Illustrate simple contour plotting, contours on an image with
-a colorbar for the contours, and labelled contours.
-
-See also contour_image.py.
+Module for peakpicking: peaks detection and labelling.
 """
 
 from __future__ import print_function
 import time
 import numpy as np
 import matplotlib
-from math import sqrt
-from itertools import cycle
 from scipy.linalg import norm
 from .. util.debug_tools import*  
 from .. Visu.Matplotlib_generictools import*
 
 matplotlib.rcParams['xtick.direction'] = 'out'
 matplotlib.rcParams['ytick.direction'] = 'out'
-colors = cycle(['bx', 'mx', 'kx', 'rx', 'gx']) # cycling iterator
 
 @dec_class_pr
 @decclassdebugging
@@ -38,7 +32,7 @@ class PEAKPICK(object):
         self.nb_wrong = {'label_label': 0, 'peak_label': 0}
         self.list_wrong = {'label_label': [], 'peak_label': []}
         self.colorlab = (1.0, 0.7, 0.7)         # label color
-        self.nbchsign = 4       # number of significant decimals for the m/z values
+        self.nbsigndec = 4       # number of significant decimals for the m/z values
 
     def test_correct(self, pt0, pt1, correct = False, kind = None):
         '''
@@ -72,6 +66,7 @@ class PEAKPICK(object):
         Correction between labels
         '''
         if debug(self):
+            print("in correc_label_label ")
             print("dist_min = ", dist_min)
         self.ptfar = self.test_correct(self.ptfar, self.ptfar, correct = correct, kind = 'label_label')
         
@@ -80,6 +75,7 @@ class PEAKPICK(object):
         Correction between peaks and labels
         '''
         if debug(self):
+            print("in correc_peak_label ")
             print("dist_min = ", dist_min)
         self.ptfar = self.test_correct(self.ptfar, self.peaks, correct = correct, kind = 'peak_label')
     
@@ -87,6 +83,8 @@ class PEAKPICK(object):
         '''
         Avoidance of arrow crossing.
         '''
+        if debug(self):
+            print("in decrossing ")
         for i in range(self.peaks.shape[1]):
             for j in range(i+1, self.peaks.shape[1]):
                 p0 = self.ptfar[:, i]
@@ -95,7 +93,7 @@ class PEAKPICK(object):
                 v1 = self.peaks[:, j] - p1
                 r = p1 - p0
                 mat = np.empty((2,2))
-                mat[:,0] = v0; mat[:, 1] = - v1
+                mat[:,0] = v0; mat[:,1] = - v1
                 mata = mat.copy(); mata[:, 0] = r
                 matb = mat.copy(); matb[:, 0] = r
                 detglob = np.linalg.det(mat)
@@ -103,9 +101,9 @@ class PEAKPICK(object):
                     a = np.linalg.det(mata)/detglob
                     b = np.linalg.det(matb)/detglob
                     if 0 < a < 1 and  0 < b < 1:
-                    
-                        print("crossing", i, j)
-                        print("inversing the labels ")
+                        if debug(self):
+                            print("crossing", i, j)
+                            print("inversing the labels ")
                         for p in [self.ptfar]: #
                             p[:, i], p[:, j] = p[:, j], p[:, i] # swapping the position of the labels
                     
@@ -114,6 +112,8 @@ class PEAKPICK(object):
         Makes the points far from the self.barycenter.
         self.lx, self.ly defined from a small division fo the window dimensions.
         '''
+        if debug(self):
+            print("in baryc far")
         for i in range(self.peaks.shape[1]):
             v = self.peaks[:,i] - self.barycenter
             vdir = v/norm(v) # vector director
@@ -122,6 +122,8 @@ class PEAKPICK(object):
             self.ptfar[0, i] = self.peaks[0, i] + self.lx*vdir[0]
             self.ptfar[1, i] = self.peaks[1, i] + self.ly*vdir[1]
         plt.plot(self.ptfar[0], self.ptfar[1], 'rx')
+        if debug(self):
+            print("coordinates for point are self.ptfar[0], self.ptfar[1]: ", self.ptfar[0], self.ptfar[1])
     
     def barycenter_method(self):
         '''
@@ -131,7 +133,8 @@ class PEAKPICK(object):
         2) Makes a correction on the labels ovelapping the peaks
         3) Makes a correction on the labels ovelapping each other.
         '''
-        print("barycenter method ")
+        if debug(self):
+            print("barycenter method ")
         self.baryc_far() # takes the points far from self.barycenter.
         
         for i in range(self.nbiter_getfar):
@@ -148,12 +151,15 @@ class PEAKPICK(object):
                 print("self.nb_wrong_label_label ", self.nb_wrong['label_label'])
                 print("self.list_wrong_peak_label", self.list_wrong['peak_label'])
                 print("self.list_wrong_label_label ", self.list_wrong['label_label'])
+                print("end of barycenter method ")
             
     def get_far(self, method = 'barycenter'):
         '''
         Take the labels far one from another and from peaks
         Two methods: barycenter 
         '''
+        if debug(self):
+            print("in get_far ")
         self.ptfar = np.empty(self.peaks.shape) # Initialize positoin of the labels on the peaks.
         if method == 'barycenter':
             self.barycenter_method()
@@ -163,8 +169,10 @@ class PEAKPICK(object):
         function to label the peaks.
         Plots the labels if the labels are not calculated outside the limited range.
         '''
-        absc = str(round(self.peaks[0,i], self.nbchsign ))
-        ordo = str(round(self.peaks[1,i], self.nbchsign ))
+        if debug(self):
+            print("in peaklabel ")
+        absc = str(round(self.peaks[0,i], self.nbsigndec ))
+        ordo = str(round(self.peaks[1,i], self.nbsigndec ))
         labeltxt = str(i) + ': ' + absc + ', ' + ordo
         cnd1 =   self.xmin < self.ptfar[0, i] < self.xmax
         cnd2 =  self.ymin < self.ptfar[1, i] < self.ymax
@@ -179,15 +187,19 @@ class PEAKPICK(object):
         Find the peaks in the 2D dataset.
         '''
         if debug(self):
-            print("find peaks ")
+            print("in find peaks ")
             print("zoom is ", zoom)
             print("self.paramz.zoom_coord ", self.paramz.zoom_coord) 
-        y, x, z = self.display.currentd.peaks2d(threshold = thresh, zoom = zoom, value = True)       # 
+            print("zoom is : ", zoom)
+        itomz2 = self.display.currentd.axes(2).itomz
+        itomz1 = self.display.currentd.axes(1).itomz
+        zoom = [[itomz1(zoom[0][0]), itomz1(zoom[0][1])], [itomz2(zoom[1][0]), itomz2(zoom[1][1])]]
+        y, x, z = self.display.currentd.peaks2d(threshold = thresh, zoom = zoom)       # 
         if not self.data.mode_point :                                               # if in m/z view pass to m/z coordinates
             x = self.display.currentd.axes(2).itomz(x)
             y = self.display.currentd.axes(1).itomz(y)
         if debug(self):
-            print("x, y ", x, y)
+            print("x, y, z", x, y, z)
         ind = np.lexsort((x,z))[::-1]
         x, y = x[ind][:maxpeaks], y[ind][:maxpeaks]     # take only a maximum number of labels self.maxnblabels
         self.peaks = np.array([x, y])           #self.convert_array(self.peaks_raw)              
@@ -200,7 +212,7 @@ class PEAKPICK(object):
         self.lx, self.ly defined from dimension of the window.
         '''
         if debug(self):
-            print("##### make labels ")
+            print("##### in make labels ")
         ########
         self.xmax, self.ymax, self.xmin, self.ymin  =  self.convert.itomz_all(self.display.currentd, *self.paramz.zoom_coord)
         self.lx, self.ly  = (self.xmax - self.xmin )/self.divdir,   (self.ymax - self.ymin )/self.divdir
@@ -212,7 +224,7 @@ class PEAKPICK(object):
         plt.plot(self.barycenter[0], self.barycenter[1], 'yo')                  # plots self.barycenter as a yellow point
         self.get_far(method = method)                              # go far from barycenter and makes correction to avoid ovelaps (label-label and peak-label)
         for i in range(self.peaks.shape[1]):
-            self.display.qmc.axes.plot(self.peaks[0, i], self.peaks[1, i],'r+') 
+            self.display.qmc.axes.plot(self.peaks[0, i], self.peaks[1, i], 'r+') 
             self.peaklabel(i)                                   # plots the labels
         t1 = time.time()
         if debug(self):

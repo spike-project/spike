@@ -5,7 +5,7 @@
 Created by Marc Andre Delsuc & Lionel Chiron on 2011-05-19.
 Copyright (c) 2011 IGBMC. All rights reserved.
 ###
-Program for visualizing FTICR2D data. 
+Program for visualizing 2D-FTICR msh5 datasets. 
 """
 
 from __future__ import print_function
@@ -13,18 +13,18 @@ import sys, os
 
 from .Visu.Load import LOAD #
 from .Visu.Saving import SAVE
-from .Visu.graphic_tools import GRAPHTOOLS       # class contiaining the graphic tools for doing profiles etc
-from .Visu.display import DISPLAY            # class to handle diplay of the dataset.
-from .Visu.interface_actions import INTERACT     # class for to handle interaction with the interface.
+from .Visu.graphic_tools import GRAPHTOOLS           # class contiaining the graphic tools for doing profiles etc
+from .Visu.display import DISPLAY                    # class to handle diplay of the dataset.
+from .Visu.interface_actions import INTERACT         # class for to handle interaction with the interface.
 from .Visu.canvas import Qt4MplCanvas as QtMplCv     # class for using matplotlib in Qt canvas.
 from .Visu.paramzoom import PARAM_ZOOM               # class object for the zoom parameters
-from .Visu.zooming import ZOOMING            # class for taking care of the zooms
-from .Visu.move_window import MOVE_WINDOW    # class to handle the zoom windows positions
-from .Visu.zooming import ZOOM3D             # class for viewing peaks in 3D
-from .Visu.interface import INTERFACE    # class for completing the interface. 
-from .Visu.convert import CONVERT            # Class for conversion operations between mz and point
-from .Visu.single.select_tools import SELECT_TOOLS # class to handle the selected tool used in the interface.
-#from util.log_all import Logger # Logger for saving stdoud and sterr in a log file. 
+from .Visu.zooming import ZOOMING                    # class for taking care of the zooms
+from .Visu.move_window import MOVE_WINDOW            # class to handle the zoom windows positions
+from .Visu.zooming import ZOOM3D                     # class for viewing peaks in 3D
+from .Visu.interface import INTERFACE                # class for completing the interface. 
+from .Visu.convert import CONVERT                    # Class for conversion operations between mz and point
+from .Visu.single.select_tools import SELECT_TOOLS   # class to handle the selected tool used in the interface.
+
 import unittest
 
 def debugs_activate(*args):
@@ -85,12 +85,7 @@ def debugs_activate(*args):
 
 def main(argv = None):
     """ creates and runs """
-    #####################
     ######### read arguments
-    # logger_activated = False
-    # if logger_activated:
-    #     sys.stderr = Logger(erase = True)
-    #     sys.stdout = Logger()
     configfile = None
     msh5file = None
     if not argv:
@@ -108,21 +103,21 @@ def main(argv = None):
     else:
         if configfile:
             print("using %s as configuration file" %configfile)
-        data = LOAD(configfile = configfile)                                                                  # loads msh5 file
+        data = LOAD(configfile = configfile)                                                        # loads msh5 file
     save = SAVE(data)                                                                               # saves 2D, 3D, profiles.
     paramz = PARAM_ZOOM(data)                                                                       # takes the parameters for zoom. 
     interf = INTERFACE()                                                                            # instantiate the interface 
     display = DISPLAY(QtMplCv, data, interf, paramz)                                                # control the display, zoom/resolution. etc
-    convert = CONVERT(display, data, paramz)                                                                # conversion mz/point
-    gtools = GRAPHTOOLS(paramz, display, data, save, convert)                                                # graphic tools
-    stools = SELECT_TOOLS(display, paramz, interf)                                                          # orthogonally select tools 
-    mwind = MOVE_WINDOW(display, interf, data, paramz, gtools, convert, stools)   # moving zoom window, drag etc
-    zoom = ZOOMING(display, interf, data, paramz, gtools, convert, stools, mwind)                          # zooming tools.
+    convert = CONVERT(display, data, paramz)                                                        # conversion mz/point
+    gtools = GRAPHTOOLS(paramz, display, data, save, convert)                                       # graphic tools
+    stools = SELECT_TOOLS(display, paramz, interf)                                                  # orthogonally select tools 
+    mwind = MOVE_WINDOW(display, interf, data, paramz, gtools, convert, stools)                     # moving zoom window, drag etc
+    zoom = ZOOMING(display, interf, data, paramz, gtools, convert, stools, mwind)                   # zooming tools.
     
-    zoom3d = ZOOM3D()                                                                       # zoom 3D on localalized area.
+    zoom3d = ZOOM3D()                                                                               # zoom 3D on localalized area.
     interact = INTERACT(zoom, mwind, data, display, interf, paramz,\
         gtools, zoom3d, stools, convert, save)                                                      # interactions with the interface.
-    debugs_activate(interf, display, convert, gtools, zoom, mwind, interact)                               # activates all the debugs.
+    debugs_activate(interf, display, convert, gtools, zoom, mwind, interact)                        # activates all the debugs.
     interact.interfGraph()                                                                          #executing Main loop. 
     interf.run()
 
