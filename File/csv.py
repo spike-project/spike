@@ -77,7 +77,7 @@ def save_unit(data, filename, delimiter=','):
         F.write("# %s \n"%data.axis1.report())
         for att in data.axis1.attributes:       # then attributes
             F.write("#$%s%s%s\n"%(att, delimiter, getattr(data.axis1,att)))
-        np.savetxt(F, np.c_[ax,y], fmt='%.9g', delimiter=delimiter)
+        np.savetxt(F, np.c_[ax,y], fmt='%.4f', delimiter=delimiter)
     
 def Import_1D(filename, column=0, delimiter=','):
     """
