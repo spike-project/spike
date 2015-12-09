@@ -98,7 +98,6 @@ class Peak(object):
         self.intens_err = 0.0      # uncertainty on intensity
         self.area_err = 0.0     # uncertainty on area
         
-
 class Peak1D(Peak):
     """a class to store a single 1D peak
     defines in addition to Peak

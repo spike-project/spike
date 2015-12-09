@@ -66,7 +66,8 @@ def save_unit(data, filename, delimiter=','):
     """save 1D data in csv,
     in 2 columns, with attributes as pseudo comments
     """
-    ax = data.axis1.unit_axis()
+    step = data.axis1.itype+1
+    ax = data.axis1.unit_axis()[::step]
     y = data.get_buffer()
     if filename.endswith('.gz'):
         do_open = gzip.open
@@ -76,8 +77,8 @@ def save_unit(data, filename, delimiter=','):
         F.write("# %s \n"%data.axis1.report())
         for att in data.axis1.attributes:       # then attributes
             F.write("#$%s%s%s\n"%(att, delimiter, getattr(data.axis1,att)))
-        np.savetxt(F, np.c_[ax,y], delimiter=delimiter)
-
+        np.savetxt(F, np.c_[ax,y], fmt='%.9g', delimiter=delimiter)
+    
 def Import_1D(filename, column=0, delimiter=','):
     """
     import a 1D file stored as csv
