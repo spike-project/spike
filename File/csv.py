@@ -18,7 +18,7 @@ import unittest
 import os
 import gzip
 
-def save(data,filename, delimiter=','):
+def save(data,filename, delimiter=',', fmt='%.9g'):
     "save 1D data in txt, single column, no unit - with attributes as pseudo comments "
     if filename.endswith('.gz'):
         do_open = gzip.open
@@ -28,7 +28,7 @@ def save(data,filename, delimiter=','):
         F.write("# %s \n"%data.axis1.report())  # first description
         for att in data.axis1.attributes:       # then attributes
             F.write("#$%s%s%s\n"%(att, delimiter, getattr(data.axis1,att)))
-        np.savetxt(F, data.get_buffer(), delimiter=delimiter)
+        np.savetxt(F, data.get_buffer(), delimiter=delimiter, fmt=fmt)
 
 def load(filename, column=0, delimiter=','):
     """
@@ -62,7 +62,7 @@ def load(filename, column=0, delimiter=','):
                 buf.append( float( fields[column] ) )
     return np.array(buf), att
 
-def save_unit(data, filename, delimiter=','):
+def save_unit(data, filename, delimiter=',', fmt='%.9g'):
     """save 1D data in csv,
     in 2 columns, with attributes as pseudo comments
     """
@@ -77,7 +77,7 @@ def save_unit(data, filename, delimiter=','):
         F.write("# %s \n"%data.axis1.report())
         for att in data.axis1.attributes:       # then attributes
             F.write("#$%s%s%s\n"%(att, delimiter, getattr(data.axis1,att)))
-        np.savetxt(F, np.c_[ax,y], fmt='%.4f', delimiter=delimiter)
+        np.savetxt(F, np.c_[ax,y], fmt=fmt, delimiter=delimiter)
     
 def Import_1D(filename, column=0, delimiter=','):
     """
@@ -129,10 +129,10 @@ class csvTests(unittest.TestCase):
         d = NPKData(name=name2D)
         r = d.row(133)
         r.currentunit = "ppm"
-        r.save_csv(filename("test2.csv.gz"))
+        r.save_csv(filename("test2.csv.gz"), fmt="%.14g")
         rr = Import_1D(filename("test2.csv.gz"),column=1)
         self.assertAlmostEqual((r-rr).get_buffer().max(), 0.0)
         self.assertEqual(r.axis1.currentunit, rr.axis1.currentunit)
-        os.unlink(filename("test2.csv.gz"))
+#        os.unlink(filename("test2.csv.gz"))
 if __name__ == '__main__':
     unittest.main()

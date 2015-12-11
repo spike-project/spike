@@ -1482,7 +1482,7 @@ class NPKData(object):
         self.adapt_size()
         return self
     #----------------------------------------------
-    def save_csv(self, name):
+    def save_csv(self, name, fmt="%.9g"):
         """save 1D data in csv,
         in 2 columns : 
         x, y   x values are conditions by the .currentunit attribute
@@ -1493,7 +1493,7 @@ class NPKData(object):
         from .File import csv
         if self.dim>1:
             raise NPKError("csv only possible on 1D", data=self)
-        csv.save_unit(self, name)
+        csv.save_unit(self, name, fmt=fmt)
         return self
     #----------------------------------------------
     def report(self):
