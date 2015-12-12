@@ -320,7 +320,7 @@ class Axis(object):
         
         sampling is loaded into self.sampling  and self.sampling_info is a dictionnary with information
         """
-        from ..Algo import CS_transformations as cstr
+        from .Algo import CS_transformations as cstr
         S = cstr.sampling_load(filename)
         self.sampling = S[0]
         #print 'self.sampling ', self.sampling

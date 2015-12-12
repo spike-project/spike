@@ -358,7 +358,7 @@ def downsample2D(data, outp, n1, n2):
     """
     takes data (a 2D) and generate a smaller dataset downsampled by factor (n1,n2) on each axis
     then returned data-set is n1*n2 times smaller
-    - simply takes the mean
+    - use scipy.signal.decimate() along F2, just takes the mean along F1
     ** Not fully tested on non powers of 2 **
     """
     for i in xrange(0, data.size1, n1):
