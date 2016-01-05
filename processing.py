@@ -543,7 +543,7 @@ def print_time(t, st="Processing time"):
     "prints processing time, t is in seconds"
     d = int( t/(24*3600) )
     h = int( (t-24*3600*d)/3600 )
-    m = int( t-3600*(h+24*d)/60 )
+    m = int( (t-3600*(h+24*d))/60 )
     s = int( t-3600*(h+24*d) - 60*m )
     if d == 0:
         print(" %s : %dh %02dm %02ds"%(st, h, m, s))

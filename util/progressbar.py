@@ -118,7 +118,11 @@ class ETA(ProgressBarWidget):
         mins = secs // 60
         secs -= 60*mins
         #print('duration', days, hrs, mins, secs)
-        return "d%d:h%d:m%d:s%d" % (days, hrs, mins, secs)
+        if days >0:
+            val = "d%d:h%d:m%d:s%d" % (days, hrs, mins, secs)
+        else:
+            val = "h%d:m%d:s%d" % (hrs, mins, secs)
+        return val
     def update(self, pbar):
         if pbar.currval == 0:
             return 'ETA:  --:--:--'
