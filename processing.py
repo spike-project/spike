@@ -208,7 +208,7 @@ def do_proc_F2(dinp, doutp):
             output.close()
     pbar.finish()
 
-def do_proc_F1(dinp, doutp):
+def do_proc_F1(dinp, doutp, parameter):
     "scan all cols of dinp, apply proc() and store into doutp"
     size = doutp.axis1.size
     scan = min(dinp.size2, doutp.size2)      # min() because no need to do extra work !
@@ -220,11 +220,23 @@ def do_proc_F1(dinp, doutp):
         c = dinp.col(i)
         apod(c, size)
         c.rfft()    
+        # get statistics
+        buff = c.get_buffer()
+        b = buff.copy()
+        for i in range(10):
+            b = b[ b-b.mean()<3*b.std() ]
+        # computed ridge and remove
+        if parameter.do_F1 and parameter.do_rem_ridge:
+            c -= b.mean()
+        # clean for compression
+        if parameter.compress_outfile :
+            threshold = parameter.compress_level * b.std()
+            c.zeroing(threshold)
         doutp.set_col(i,c)
         pbar.update(i)
     pbar.finish()
 
-def do_proc_F1_modu(dinp, doutp):
+def do_proc_F1_modu(dinp, doutp, parameter):
     "as do_proc_F1, but applies hypercomplex modulus() at the end"
     size = 2*doutp.axis1.size
     scan =  min(dinp.size2, doutp.size2)
@@ -243,7 +255,21 @@ def do_proc_F1_modu(dinp, doutp):
         d.axis1.itype = 1
         d.axis2.itype = 1
         d.modulus()
-        doutp.set_col(i,d.col(0))
+        # recover buffer
+        c = d.col(0)
+        # get statistics
+        buff = c.get_buffer()
+        b = buff.copy()
+        for i in range(10):
+            b = b[ b-b.mean()<3*b.std() ]
+        # computed ridge and remove
+        if parameter.do_F1 and parameter.do_rem_ridge:
+            c -= b.mean()
+        # clean for compression
+        if parameter.compress_outfile :
+            threshold = parameter.compress_level * b.std()
+            c.zeroing(threshold)
+        doutp.set_col(i,c)
         pbar.update(i+1)
     pbar.finish()
 
@@ -255,13 +281,27 @@ def _do_proc_F1_flip_modu(data):
     d.set_col(1,  c1 )
     d.axis1.itype = 0
     d.axis2.itype = 1
+    # perform freq_highmass demodulation
     d.flipphase(0.0, 180*shift) # equivalent to  d.flip()  d.phase()  d.flop()
     if parameter.do_urqrd:
         d.urqrd(k = parameter.urqrd_rank, axis = 1)#
     apod(d, size, axis = 1)
     d.rfft(axis = 1)        # this rfft() is different from npfft.rfft() one !
     d.modulus()
-    return d.col(0).get_buffer()   # return raw data
+    # recover buffer
+    buff = d.col(0).get_buffer()
+    # get staistics
+    b = buff.copy()
+    for i in range(10):
+        b = b[ b-b.mean()<3*b.std() ]
+    # computed ridge and remove
+    if parameter.do_F1 and parameter.do_rem_ridge:
+        buff -= b.mean()
+    # clean for compression
+    if parameter.compress_outfile :
+        threshold = parameter.compress_level * b.std()
+        buff[abs(buff)<threshold] = 0.0
+    return buff   # return raw data
 
 def iterarg(dinp, rot, size, parameter ):
     "an iterator used by the processing to allow  multiprocessing or MPI set-up"
@@ -343,22 +383,19 @@ def do_process2D(dinp, datatemp, doutp, parameter):
         if parameter.do_flip and parameter.do_modulus:
             do_proc_F1_flip_modu(datatemp, doutp, parameter)
         elif parameter.do_modulus:
-            do_proc_F1_modu(datatemp, doutp)
+            do_proc_F1_modu(datatemp, doutp, parameter)
         else:
-            do_proc_F1(datatemp, doutp)
+            do_proc_F1(datatemp, doutp, parameter)
         print_time(time.time()-t0, "F1 processing time")
-    # remove ridge computed on the last 10% rows
-    if parameter.do_F1 and parameter.do_rem_ridge:      
-        doutp.rem_ridge()
-    if parameter.compress_outfile :  # fastclean is the trick for compression
-        doutp.fastclean(nsigma=parameter.compress_level, axis=1)
     print_time(time.time()-t00, "F1-F2 processing time")
 
-def downsample2D(data, outp, n1, n2):
+def downsample2D(data, outp, n1, n2, compress=False, compress_level=3.0):
     """
     takes data (a 2D) and generate a smaller dataset downsampled by factor (n1,n2) on each axis
     then returned data-set is n1*n2 times smaller
-    - use scipy.signal.decimate() along F2, just takes the mean along F1
+    - do a filtered decimation along n2
+    - simply takes the mean along n1
+    - set to zero all entries below 3*sigma if compress is True
     ** Not fully tested on non powers of 2 **
     """
     for i in xrange(0, data.size1, n1):
@@ -369,7 +406,14 @@ def downsample2D(data, outp, n1, n2):
             else:
                 yy = data.row(i+j).buffer
             temp += yy
-        outp.buffer[i/n1,:] = (1.0/n1)*temp
+        temp *= (1.0/n1)
+        if compress:
+            b = temp.copy()
+            for j in range(3):
+                b = b[ b-b.mean()<3*b.std() ]
+            threshold = compress_level * b.std()    # compress_level * b.std()  is 3*sigma by default
+            temp[abs(temp)<threshold] = 0.0
+        outp.buffer[i/n1,:] = temp
     copyaxes(data, outp)
     outp.axis1.left_point = outp.axis1.left_point/n1
     outp.axis2.left_point = outp.axis2.left_point/n2
@@ -502,8 +546,9 @@ class Test(unittest.TestCase):
         # test is run from above spike
         from .Tests import directory
         if directory() != '__DATA_test__':
-            print('creating DATA_test symlink')
-            os.symlink(directory(),'__DATA_test__')
+            if not os.path.exists('__DATA_test__'):
+                print('creating DATA_test symlink')
+                os.symlink(directory(),'__DATA_test__')
         main(["prgm", "spike/test.mscf",])
         os.unlink('__DATA_test__')
 
@@ -711,7 +756,7 @@ downsampling %s
             #create_branch(hfar, group, d1)
             hfar.create_from_template(down, group)
             if debug > 0: print(down)
-            downsample2D(downprevious, down, int(downprevious.size1/sizeF1), int(downprevious.size2/sizeF2))
+            downsample2D(downprevious, down, int(downprevious.size1/sizeF1), int(downprevious.size2/sizeF2), compress=param.compress_outfile)
             hfar.axes_update(group = group, axis = 1, infos = {'left_point': down.axis1.left_point})
             downprevious = down
         print_time(time.time()-t0, "Downsampling time")
