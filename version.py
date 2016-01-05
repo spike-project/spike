@@ -3,8 +3,8 @@
 # Do not edit
 ProgramName = 'SPIKE'
 VersionName = 'Development version - beta'
-version = '0.7.0'
-rev_date = '19-11-2015'
+version = '0.7.1'
+rev_date = '05-01-2016'
 
 def report():
     "prints version name when SPIKE starts"

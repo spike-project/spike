@@ -13,7 +13,7 @@ from __future__ import print_function
 
 ProgramName = "SPIKE"
 VersionName = "Development version - beta"
-VersionInfo = ["0", "7", "0"]   # Major - Minor - Micro
+VersionInfo = ["0", "7", "1"]   # Major - Minor - Micro
 
 # Major.minor.micro (int) + name eg SPIKE_2_19_5
 # N.M.L
@@ -24,6 +24,9 @@ VersionInfo = ["0", "7", "0"]   # Major - Minor - Micro
 # bug fixes L+1
 
 """
+0.7.1 - 5 Jan 2016
+    - greatly improved internal compression of msh5 files
+    - many small corrections and bug fixes.
 0.7.0 - November 2015
     This is a major upgrade
     - a plugin mechanism has been created which allows to add very simply new features to the program
