@@ -247,15 +247,18 @@ class FTMSData(NPKData.NPKData):
         return self
 
     #----------------------------------------------
-    def save_msh5(self, name):
+    def save_msh5(self, name, compressed=False):
         """
         save data to a HDF5 file
         
-        experimental !
+        if compressed is True, file is internally compressed using HDF5 compressors (currently zlib)
+        not final version !!
         """
         import tables
         from .File.HDF5File import HDF5File, determine_chunkshape
         hf_file = HDF5File(name,"w")
+        if compressed:
+            hf_file.set_compression(On=True)
         if self.dim == 2:
             chunks = determine_chunkshape(self.size1, self.size2)
         else:
