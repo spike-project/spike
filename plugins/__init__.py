@@ -3,7 +3,7 @@
 """
 Plug-ins for the Spike package
 
-All the plugin files located in spike/plugins folder the loaded automatically 
+All the plugin files located in the spike/plugins folder are loaded automatically 
 when import importing spike the first time.
 
 the variable spike.plugins.plugins contains the list of the loaded plugin modules.

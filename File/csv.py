@@ -102,7 +102,7 @@ def Import_1D(filename, column=0, delimiter=','):
         if k in d.axis1.attributes:
             setattr(d.axis1, k, v)
         else:
-            print("Warning - wrong attributes : ",k,v)
+            print("Warning - wrong attribute: ",k,v)
     d.adapt_size()
     return d
 
