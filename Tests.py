@@ -189,11 +189,12 @@ def main():
     
     # Parse and interpret options.
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('-m', '--mail', action='append', help="a mail address to which the result is sent - multiple entries possible -")
-    parser.add_argument('-D', '--Data', help="the location of the data_test folder")
+    parser.add_argument('-m', '--mail', action='append', help="a mail address to which the result is sent at the end of the test - multiple entries possible -")
+    parser.add_argument('-D', '--Data', help="the location of the folder containing files for the tests")
     parser.add_argument('-t', '--test_modules', action='append', help="overwrite the list of modules to test - multiple entries possible -")
     parser.add_argument('-n', '--dry',  action='store_true', help="list parameters and do not run the tests")
     parser.add_argument('-d', '--dirty', action='store_true', help="do not remove temporary files")
+    parser.add_argument('-g', '--graphic',  action='store_true', help="restore graphic output (off by default for background testing)")
     
     args = parser.parse_args()
 
@@ -202,6 +203,7 @@ def main():
     print( "module", args.test_modules)
     print("dry", args.dry)
     print('dirty', args.dirty)
+    print('graphic', args.graphic)
     if args.dry:
         RUN = False
     if args.mail is not None:
@@ -213,7 +215,10 @@ def main():
         DATA_dir = args.Data
     if args.dirty:
         CLEAN = False
-    testplot.PLOT = False   # switches off the display for automatic tests
+    if args.graphic:
+        testplot.PLOT = True
+    else:
+        testplot.PLOT = False   # switches off the display for automatic tests
     testplot.config = {}
     testplot.config["DATA_dir"] = DATA_dir
 #    print(sys.modules)
