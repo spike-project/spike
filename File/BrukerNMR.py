@@ -634,6 +634,7 @@ def calibdosy(file="acqus"):
     p1 =  float(param["$P"][1])*1e-6
     p19 =  float(param["$P"][19])*1e-6
     d16 =  float(param["$D"][16])
+    d17 =  float(param["$D"][17])
     d20 =  float(param["$D"][20])
     pulprog = param["$PULPROG"]
 # STEBP_2echos Bruker avance sequences

@@ -4,21 +4,22 @@
 -------------------------------------------------------
    9.00  plugins/fastclean.py                        0
    8.18  Display/testplot.py                         0
-   7.96  File/csv.py                                 1
+   7.85  File/csv.py                                 1
    7.83  Algo/urQRd_util/pickle_instance.py          0
    7.61  util/mpiutil.py                             3
    7.14  plugins/test.py                             0
    7.05  QC.py                                       5
    6.97  File/GifaFile.py                           27
    6.94  util/counter.py                             3
+   6.85  visu2D.py                                   2
    6.78  util/progressbar.py                   1     7 
    6.67  Visu/old/fticrvisuUi.py                    43
-   6.52  visu2D.py                                   2
    6.50  util/near_prime.py                          0
    6.47  plugins/rem_ridge.py                        2
-   6.41  FTMS.py                                     4
+   6.46  FTMS.py                                     4
    6.36  NPKError.py                                 1
    6.25  File/Thermo.py                              4
+M  6.07  __init__.py                                 7
    6.00  Display/__init__.py                         0
    6.00  Visu/init/__init__.py                       0
    6.00  Visu/single/__init__.py                     0
@@ -35,12 +36,12 @@
    5.00  util/debug/MPI_test_attr.py                 5
 -------------------------------------------------------
    4.59  Visu/paramzoom.py                           0
-   4.54  NPKData.py                            5    47 
+   4.58  NPKData.py                            4    47 
    4.51  Algo/Cadzow_mpi2.py                         4
    4.44  plugins/sg.py                               2
+   4.40  Tests.py                                    7
    4.39  File/HDF5File.py                      2    36 
-   4.38  Tests.py                                    7
-   4.29  processing.py                         1    24 
+   4.31  processing.py                         1    25 
    4.26  File/mzXML.py                               3
    4.18  Algo/Cadzow.py                        3     2 
    4.17  SPIKE_usage_eg/eg_mva_2D.py                 4
@@ -51,7 +52,7 @@
    4.00  util/log_stdout.py                          0
    3.99  Algo/maxent.py                        1    13 
    3.65  util/hashcheck.py                           2
-   3.46  File/Apex.py                          4    14 
+M  3.45  File/Apex.py                          4    14 
    3.42  plugins/__init__.py                   2     3 
    3.40  Visu/graphic_tools.py                      24
    3.33  NPKConfigParser.py                         10
@@ -59,9 +60,9 @@
    3.05  Visu/interface_actions.py             5    43 
    3.05  Visu/Load.py                               11
    3.02  Algo/urQRd_util/Config.py                   2
-   2.61  plugins/Peaks.py                      6    20 
+   2.80  Visu/label_2D.py                      2    29 
+   2.64  plugins/Peaks.py                      6    20 
    2.59  plugins/Bucketing.py                        5
-   2.50  __init__.py                                 7
    2.50  version.py                                  0
    2.50  plugins/urQRd.py                           11
    2.42  util/log_stderr.py                          4
@@ -74,7 +75,6 @@
    2.03  Algo/BC.py                            5     3 
    1.94  Algo/Laplace.py                       1     5 
    1.92  Algo/SL0.py                           2     3 
-   1.78  Visu/label_2D.py                      2    30 
    1.61  SPIKE_usage_eg/Orbitrap_eg.py         1     1 
    1.48  Algo/Linpredic.py                     2     9 
    1.25  Algo/SL0_test.py                     15     4 
@@ -93,10 +93,10 @@
   -0.38  util/read_msh5.py                     1     5 
   -0.94  SPIKE_usage_eg/FTICR_eg.py            2     2 
   -1.12  Visu/profile_popup.py                15    24 
+M -1.65  File/Solarix.py                      30    19 
   -2.00  util/ReadConfig.py                    7     1 
   -2.01  Visu/display.py                       3    37 
   -2.08  Visu/interface.py                     3    22 
-  -2.14  File/Solarix.py                      30    20 
   -2.67  Algo/savitzky_golay.py                2     5 
   -2.70  Visu/canvas_event.py                  3    82 
   -2.87  util/signal_tools.py                 34    16 
@@ -121,10 +121,10 @@
   -19.61  Visu/init/fticrvisuUi.py            116    66 
 -------------------------------------------------------
 
-Overall aggregated note value is :  3.25/10
+Overall aggregated note value is :  3.29/10
 
-score is 31 / 55 / 29  (top / med / low)
-Mean - Median note values are :  1.40/10 -  2.59/10
+score is 32 / 54 / 29  (top / med / low)
+Mean - Median note values are :  1.45/10 -  2.80/10
   Median is below 5.0 - let's try to improve it
-Total number of errors : 516 on a total of 115 files
+Total number of errors : 515 on a total of 115 files
 -------------------------------------------------------
