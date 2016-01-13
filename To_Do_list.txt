@@ -14,8 +14,9 @@ Fichier pour RMN
 
 model pour RMN
 
+meilleur report pour hypercomplex
 
-
+processing / mettre .mscf dans .msh5
 
 BUGS
 ====
