@@ -6,8 +6,6 @@ Apex vs Solarix
         ExciteSweep 
         PULPROG_xx_seq et PULPROG_xx_compiled
 
-ExciteSweep pour demodu
-
 calib dans fichier
 
 Fichier pour RMN
@@ -17,6 +15,8 @@ model pour RMN
 meilleur report pour hypercomplex
 
 processing / mettre .mscf et .log dans .msh5
+
+test avec SubP-2015
 
 BUGS
 ====

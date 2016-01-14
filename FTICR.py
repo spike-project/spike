@@ -167,7 +167,7 @@ class FTICR_Tests(unittest.TestCase):
     def test_atob(self):
         "testing unit conversion functions"
         self.announce()
-        F = FTICRAxis(size=1000, specwidth=1667000, itype=0, currentunit="points", ref_mass=344.0974, ref_freq=419620.0, highmass=2000.0, offset=10000.0)
+        F = FTICRAxis(size=1000, specwidth=1667000, itype=0, currentunit="points", calibA=344.0974*419620.0, highmass=2000.0, offset=10000.0)
 #        self.assertAlmostEqual(F.deltamz(F.itomz(1023))/F.itomz(1023), 1.0/1023)    # delta_m / m is 1/size at lowest mass - before extraction
 #        self.assertAlmostEqual((F.lowmass/F.deltamz(F.lowmass)) /( F.size*(F.specwidth+F.offset)/F.specwidth-1), 1.0, 5)
         self.assertAlmostEqual(123*F.htomz(123), 321*F.htomz(321))    # verify that f*m/z is constant !
@@ -175,7 +175,7 @@ class FTICR_Tests(unittest.TestCase):
         self.assertAlmostEqual(F.itoh(0), F.offset)
         self.assertAlmostEqual(F.itoh(F.size-1), F.specwidth+F.offset)   # last point is size-1 !!!
         for twice in range(2):
-            F = FTICRAxis(size=1000, specwidth=1667000, itype=0, currentunit="points", ref_mass=344.0974, ref_freq=419620.0, highmass=2000.0)
+            F = FTICRAxis(size=1000, specwidth=1667000, itype=0, currentunit="points", calibA=344.0974*419620.0, highmass=2000.0)
             if twice == 1:  # second time tests 2nd order calibration
                 print ("TWICE") 
                 F.calibB = 55.0
@@ -192,9 +192,14 @@ class FTICR_Tests(unittest.TestCase):
         "testing FTICRAxis object"
         self.announce()
         A = FTICRAxis(specwidth=1667000)
-        print(fticr_mass_axis(A.size, A.specwidth, A.ref_mass, A.ref_freq))
-        print(A.itomz(np.arange(1,A.size)))
-        print(A.mass_axis())
+        ax1 = A.itomz(np.arange(0.0,A.size))[1:]
+        ax2 = A.mass_axis()[1:]
+        print (ax1)
+        print (ax2)
+        self.assertAlmostEqual(ax1.sum(), ax2.sum())
+        self.assertAlmostEqual(ax1.min(), 5.99880024e+01)
+        self.assertAlmostEqual(ax1.max(), 61367.72645470906)
+        #        6.13677265e+04   3.06838632e+04   2.04559088e+04 ...,   6.01055107e+01, 6.00466991e+01   5.99880024e+01
     def test_trim(self):
         """
         Test trimz 
