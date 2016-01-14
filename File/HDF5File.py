@@ -23,13 +23,16 @@ import time
 # to be changed only if the file format changes
 __file_version__ = "0.8"
 """
+__file_version__ 0.9 new list of attributes for FTMS axes
+    additional files are now stored along the data
 __file_version__ 0.8 axes are gathered in one table, it's a more HDF5 way to deal with informations
 __file_version__ 0.7 has the ability to update the axes
 __file_version__ 0.6 is first stabilized multiresolution version
 """
 # version is the library version number
-__version__ = "0.8"
+__version__ = "0.9"
 """
+v 0.9 new list of attributes for FTMS axes / extended format / better compression
 v 0.8 axes are gathered in one table, it's a more HDF5 way to deal with informations
 v 0.6 Uses tables.parameter to optimise the use of the cache
 """
@@ -92,13 +95,13 @@ class HDF5File(object):
             if (self.debug > 0):
                 print("open in read mode")
             self.access = access
-            self.hf = tables.openFile(self.fname, self.access)
+            self.hf = tables.open_file(self.fname, self.access)
             self.get_file_infos()
         elif access == "w":
             if (self.debug > 0):
                 print("Open HDF5 File with writing rights")
             self.access = access
-            self.hf = tables.openFile(self.fname, self.access)
+            self.hf = tables.open_file(self.fname, self.access)
             self.create_generic(owner=owner)
             if (info is not None):
                 if (self.debug > 0):
@@ -121,19 +124,19 @@ class HDF5File(object):
             if (self.debug > 0):
                 print("open in modifying mode r+")
             self.access = "r+"
-            self.hf = tables.openFile(self.fname, self.access)
+            self.hf = tables.open_file(self.fname, self.access)
             self.get_file_infos()
         elif access == "rw":
             if (self.debug > 0):
                 print("open in modifying mode rw")
             self.access = "r+"
-            self.hf = tables.openFile(self.fname, self.access)
+            self.hf = tables.open_file(self.fname, self.access)
             self.get_file_infos()
         elif access == "a":
             if (self.debug > 0):
                 print("open in modifying mode a")
             self.access = "a"
-            self.hf = tables.openFile(self.fname, self.access)
+            self.hf = tables.open_file(self.fname, self.access)
             self.get_file_infos()
         else:
             raise " Internal error in HDF5 creation - This should never happen"
@@ -143,7 +146,7 @@ class HDF5File(object):
         """
         check file version and exit if incompatible
         """
-        self.hf = tables.openFile(self.fname,"r")
+        self.hf = tables.open_file(self.fname,"r")
         try:
             infos = self.hf.root.generic_table.read()
         except:
@@ -178,8 +181,8 @@ python HDF5File.py update {0}
         """
         self.dim = data.dim
         self.create_tables()
-        group_resol = self.createGroup("/", group)
-        group_axe = self.createGroup(group_resol, 'axes')
+        group_resol = self.create_group("/", group)
+        group_axe = self.create_group(group_resol, 'axes')
         self.dims = []
         for i in range(self.dim):
             ii = i + 1
@@ -197,8 +200,8 @@ python HDF5File.py update {0}
         """
         self.dim = buff.dim
         self.create_tables()
-        group_resol = self.createGroup("/", group)
-        group_axe = self.createGroup(group_resol, 'axes')
+        group_resol = self.create_group("/", group)
+        group_axe = self.create_group(group_resol, 'axes')
         self.dims = []
         for i in range(self.dim):
             ii = i + 1
@@ -230,7 +233,7 @@ python HDF5File.py update {0}
     #----------------------------------------------
     def create_generic(self, owner=None):
         """
-        A table is created with all generic informations about the file : owner, method, HDF5 Release,CreationDate, Last modification
+        A table is created with all generic informations about the file : owner, method, HDF5 Release, CreationDate, Last modification
         """
         import time
         # Generic infos that don't depend on the axis 
@@ -243,14 +246,14 @@ python HDF5File.py update {0}
         self.generic_table["Creation_Date"] = tables.StringCol(itemsize=16)
         self.generic_table["Last_Modification_Date"] = tables.StringCol(itemsize=16)
         
-        generic = self.createTable("/", "generic_table", self.generic_table)
+        generic = self.create_table("/", "generic_table", self.generic_table)
         rows = generic.row
         if owner is None:
             rows["Owner"] = "Unknown"
         else:
             rows["Owner"] = owner
         rows["Method"] = "FTICR-MS"
-        rows["HDF5_Version"] = tables.hdf5Version
+        rows["HDF5_Version"] = tables.hdf5_version
         rows["Version"] = __version__
         rows["File_Version"] = __file_version__
         rows["Creation_Date"] = time.strftime("%m/%d/%Y %I:%M:%S %p", time.localtime(os.path.getctime(self.fname)))
@@ -265,17 +268,22 @@ python HDF5File.py update {0}
         Creates the different tables needed in a HDF5File according to the info parameters given 
         If you don't pass any info dictionnary, it will take parameters from the self.header
         """
+        # MAD TO BE ADAPTED !!!
         # Infos that have to be known on each axis 
         self.axis_table = {}
-        self.axis_table["size"] = tables.Int32Col()
-        self.axis_table["highmass"] = tables.Float32Col()
         self.axis_table["itype"] = tables.Int32Col()
-        self.axis_table["left_point"] = tables.Int32Col()
-        self.axis_table["ref_freq"] = tables.Float32Col()
-        self.axis_table["ref_mass"] = tables.Float32Col()
-        self.axis_table["specwidth"] = tables.Float32Col()
-        self.axis_table["units"] = tables.StringCol(itemsize=16)
+        self.axis_table["size"] = tables.Int32Col()
+#        self.axis_table["units"] = tables.StringCol(itemsize=16)
         self.axis_table["sampling"] = tables.StringCol(itemsize=16)
+        self.axis_table["specwidth"] = tables.Float32Col()
+        self.axis_table["highmass"] = tables.Float32Col()
+        self.axis_table["offset"] = tables.Float32Col()
+        self.axis_table["left_point"] = tables.Int32Col()
+        self.axis_table["calibA"] = tables.Float64Col()
+        self.axis_table["calibB"] = tables.Float64Col()
+        self.axis_table["calibC"] = tables.Float64Col()
+        
+
     #----------------------------------------------
     def position_array(self, group="resol1"):
         """
@@ -296,7 +304,7 @@ python HDF5File.py update {0}
                 chunks = determine_chunkshape(sizeF1, sizeF2)
 
             if (self.debug > 0): print("chunks", chunks)
-            Carray = self.createCArray("/"+group, 'data', tables.Float64Atom(), (sizeF1, sizeF2), chunk = chunks)
+            Carray = self.create_carray("/"+group, 'data', tables.Float64Atom(), (sizeF1, sizeF2), chunk = chunks)
             # if you have given a numpy array as buffer, it uses it to fillin the data
             if (self.nparray is not None):
                 for i1 in xrange(sizeF1):
@@ -312,7 +320,7 @@ python HDF5File.py update {0}
                 sizeF1 = self.info["Dim1"] 
             else:
                 sizeF1 = self.dims[0]
-            Carray = self.createCArray("/"+group, 'data', tables.Float64Atom(), (sizeF1,))
+            Carray = self.create_carray("/"+group, 'data', tables.Float64Atom(), (sizeF1,))
 
             if (self.nparray is not None):
                 Carray = self.nparray[:]
@@ -364,20 +372,20 @@ python HDF5File.py update {0}
         #     raise Exception(" You might be trying to load a file with another architecture 'maybe different resolutions'")
             
         
-        for table in self.hf.walkNodes("/"+group,"Table"): # get the list of tables in the axes group
+        for table in self.hf.walk_nodes("/"+group,"Table"): # get the list of tables in the axes group
            values = table.read()
-        dtypes = ("highmass","itype","left_point","ref_freq","ref_mass","sampling","size","specwidth","units")
-        
+#        dtypes = ("highmass","itype","left_point","ref_freq","ref_mass","sampling","size","specwidth","units")
+        fields = [i[0] for i in values.dtype.descr]  # rename / rewrite of dtype above
         for i in range(len (values)):
             dico = {}
             for j in range(len(values[i])):
-                dico[dtypes[j]] = values[i][j]
-            units = dico["units"]
-            if units not in ("points", "Hz", "m/z"):
-                units = "points"
-            setattr(self.data, "axis%d"%(i+1), FTICR.FTICRAxis(highmass=dico["highmass"],left_point = dico["left_point"],size=dico["size"], specwidth=dico["specwidth"], itype=dico["itype"], ref_mass = dico["ref_mass"], ref_freq =dico["ref_freq"],currentunit=units))
+                dico[fields[j]] = values[i][j]
+            ax = FTICR.FTICRAxis()  # create empty axis
+            for j in range(len(values[i])): 
+                setattr(ax, fields[j], values[i][j])    # copy table entries
+            setattr(self.data, "axis%d"%(i+1), ax)      # and set axis
            
-                #self.axes_update(axis = i+1, infos = dico)
+        self.data.adapt_size()      # axis sizes have to be updated
         return self.data
         
     #----------------------------------------------
@@ -408,12 +416,12 @@ python HDF5File.py update {0}
     #----------------------------------------------
     def table_update(self, group = "resol1", axis = 2, key = 'highmass', value = 4000.0 ):
         """Microchangement in the wanted table"""
-        for table in self.hf.walkNodes("/"+group,"Table"): # get the list of tables in the axes group
+        for table in self.hf.walk_nodes("/"+group,"Table"): # get the list of tables in the axes group
             #print table
             #if (str(table.name) == str(name)):# get the table with the correct name
             #    try :
                 
-            table.modifyColumn((axis-1), column = value, colname = key)
+            table.modify_column((axis-1), column = value, colname = key)
             #    except :
             #        raise Exception("You might have problem accessing your MSH5 file")
 
@@ -430,7 +438,7 @@ python HDF5File.py update {0}
         else:                       # here in 64bit
             flag = 'i'              # strange, but works here.
             chunks = self.determine_chunkshape()
-        Carray = self.createCArray("/"+group, 'data', tables.Float64Atom(), (self.dims[0], self.dims[1]), chunk = chunks)
+        Carray = self.create_carray("/"+group, 'data', tables.Float64Atom(), (self.dims[0], self.dims[1]), chunk = chunks)
         with open(ser_file,"rb") as f:
             for i1 in xrange(int(self.dims[0]) ):
                 tbuf = f.read(4*int(self.dims[1]) )
@@ -454,8 +462,8 @@ python HDF5File.py update {0}
         """
         self.dim = data.dim
         self.create_tables()
-        group_resol = self.createGroup("/", group)
-        table_axes = self.createTable(group_resol, 'axes', self.axis_table)
+        group_resol = self.create_group("/", group)
+        table_axes = self.create_table(group_resol, 'axes', self.axis_table, )
         infos = []
         self.dims = []
         for i in range(self.dim):
@@ -505,21 +513,21 @@ python HDF5File.py update {0}
         self.hf.close()
         if (self.debug > 0) : print("IT's CLOSED ", self.fname)
     #----------------------------------------------
-    def createGroup(self, where, name):
+    def create_group(self, where, name):
         """
         Create a group in the given hf_file
         """ 
-        group = self.hf.createGroup(where, name)
+        group = self.hf.create_group(where, name)
         return group
     #----------------------------------------------
-    def createTable(self, where, name, description):
+    def create_table(self, where, name, description):
         """
         Create a Table in the given hf_file at the given position with the right description
         """
-        table = self.hf.createTable( where, name, description)
+        table = self.hf.create_table( where, name, description)
         return table
     #----------------------------------------------
-    def createCArray(self, where, name, data_type, shape, chunk = None):
+    def create_carray(self, where, name, data_type, shape, chunk = None):
         """
         Create a CArray in the given hf_file
         """
@@ -527,7 +535,7 @@ python HDF5File.py update {0}
             if not chunk:
                 chunk = determine_chunkshape(shape[0], shape[1])
         # filters is set from outside, see self.set_compression()
-        array = self.hf.createCArray(where, name, data_type, shape,  chunkshape = chunk,  filters = self.filters)
+        array = self.hf.create_carray(where, name, data_type, shape,  chunkshape = chunk,  filters = self.filters)
         return array
     
     #----------------------------------------------
@@ -556,11 +564,12 @@ python HDF5File.py update {0}
         """
         infos = self.hf.root.generic_table.read()
         print("******************* \n %s is a %s file created by %s on %s with code version %s.\n HDF5 version is %s and API version is %s.\n Last modification has been made %s \n********************"% ( self.fname, infos[0]['Method'], infos[0]['Owner'], infos[0]['Creation_Date'], infos[0]['Version'], infos[0]['HDF5_Version'], infos[0]['File_Version'], infos[0]['Last_Modification_Date']))
+
 ################################################
 # Update functions
 def update(fname, debug = 1):
     """update so that the file is up to date"""
-    hf = tables.openFile(fname,"r")
+    hf = tables.open_file(fname,"r")
     try:
         infos = hf.root.generic_table.read()
     except:
@@ -582,6 +591,10 @@ def update(fname, debug = 1):
         print("updating from 0.7 to 0.8")
         up0p7_to_0p8(fname, debug=debug)
         fileversion = 0.8
+    if fileversion < 0.9:
+        print("updating from 0.8 to 0.9")
+        up0p8_to_0p9(fname, debug=debug)
+        fileversion = 0.9
     print("The file %s has been fully updated to %s"%(fname,__file_version__))
 #----------------------------------------------
 def up0p6_to_0p7(fname, debug = 1):
@@ -591,14 +604,14 @@ def up0p6_to_0p7(fname, debug = 1):
     """
     import time
     print("modifying dtype of highmass")
-    hf = tables.openFile(fname,"r+")
-    for table in hf.walkNodes("/","Table"): # get the list of tables in the axes group
+    hf = tables.open_file(fname,"r+")
+    for table in hf.walk_nodes("/","Table"): # get the list of tables in the axes group
         try :
             table.description.highmass.type = 'float32'
         except:
             print(" no highmass field in this table")
-    hf.root.generic_table.modifyColumn(0, column = "0.7", colname = "File_Version")
-    hf.root.generic_table.modifyColumn(0, column = time.strftime("%m/%d/%Y %I:%M:%S %p", time.localtime()), colname = "Last_Modification_Date")
+    hf.root.generic_table.modify_column(0, column = "0.7", colname = "File_Version")
+    hf.root.generic_table.modify_column(0, column = time.strftime("%m/%d/%Y %I:%M:%S %p", time.localtime()), colname = "Last_Modification_Date")
     
     hf.close()
 #----------------------------------------------
@@ -606,26 +619,55 @@ def up0p7_to_0p8(fname, debug = 1):
     """docstring for up0p7_to_0p8
     Function that deals with changing HDF5 files created with file_version 0.7 to be read with 0.8
     """
-    hf = tables.openFile(fname,"r+")
+    hf = tables.open_file(fname,"r+")
     
     description = ""
-    for group in hf.iterNodes("/","Group"): # get the list of tables in the file
+    for group in hf.iter_nodes("/","Group"): # get the list of tables in the file
         infos = []
-        for table in hf.iterNodes(group.axes,"Table"): # get the list of tables in the file
+        for table in hf.iter_nodes(group.axes,"Table"): # get the list of tables in the file
             if (table.name != "generic_table"):
                 infos.append(table.read())
                 description = table.description
-        hf.removeNode(group,"axes",True)
+        hf.remove_node(group,"axes",True)
 
-        table = hf.createTable (group, "axes" , description)
+        table = hf.create_table (group, "axes" , description)
         for i in xrange(len(infos)):
             infos[i]["sampling"] = "uniform"
             table.append(infos[i])
         table.flush()
         table.close()
     
-    hf.root.generic_table.modifyColumn(0, column = "0.8", colname = "File_Version")
-    hf.root.generic_table.modifyColumn(0, column = time.strftime("%m/%d/%Y %I:%M:%S %p", time.localtime()), colname = "Last_Modification_Date")
+    hf.root.generic_table.modify_column(0, column = "0.8", colname = "File_Version")
+    hf.root.generic_table.modify_column(0, column = time.strftime("%m/%d/%Y %I:%M:%S %p", time.localtime()), colname = "Last_Modification_Date")
+    if (debug > 0):
+        print("We have to gather all axes in one table")
+    hf.close()
+#----------------------------------------------
+def up0p8_to_0p9(fname, debug = 1):
+    """
+    Function that deals with changing HDF5 files created with file_version 0.8 to be read with 0.9 lib
+    """
+    raise "Not Available YET !"
+    hf = tables.open_file(fname,"r+")
+    
+    description = ""
+    for group in hf.iter_nodes("/","Group"): # get the list of tables in the file
+        infos = []
+        for table in hf.iter_nodes(group.axes,"Table"): # get the list of tables in the file
+            if (table.name != "generic_table"):
+                infos.append(table.read())
+                description = table.description
+        hf.remove_node(group,"axes",True)
+
+        table = hf.create_table (group, "axes" , description)
+        for i in xrange(len(infos)):
+            infos[i]["sampling"] = "uniform"
+            table.append(infos[i])
+        table.flush()
+        table.close()
+    
+    hf.root.generic_table.modify_column(0, column = "0.8", colname = "File_Version")
+    hf.root.generic_table.modify_column(0, column = time.strftime("%m/%d/%Y %I:%M:%S %p", time.localtime()), colname = "Last_Modification_Date")
     if (debug > 0):
         print("We have to gather all axes in one table")
     hf.close()
@@ -688,7 +730,7 @@ class HDF5_Tests(unittest.TestCase):
         import time
         
         d = HDF5File(self.name_get,"rw",debug = 1)
-        d.axes_update(axis = 2, infos = {'highmass':4200.00, 'units':'m/z'})
+        d.axes_update(axis = 2, infos = {'highmass':4200.00, 'itype':1})
         d.close()
     #----------------------------------------------
     def _test_chunkshape(self):

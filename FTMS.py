@@ -64,7 +64,7 @@ class FTMSAxis(NPKData.Axis):
     #-------------------------------------------------------------------------------
     def _report(self):
         "low level report"
-        return "size : %d   sw %f  offset %f  ref_mass %f ref_freq %f  left_point %f  highmass %f  itype %d currentunit %s"%(self.size, self.specwidth, self.offset, self.ref_mass, self.ref_freq, self.left_point, self.highmass, self.itype, self.currentunit)
+        return "size : %d   sw %f  offset %f left_point %f  highmass %f  itype %d currentunit %s calibA,B,C: (%f %f %f)"%(self.size, self.specwidth, self.offset, self.left_point, self.highmass, self.itype, self.currentunit, self.calibA, self.calibB, self.calibC)
     def report(self):
         "high level reporting - to be redifined by subclasser"
         self._report()

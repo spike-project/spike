@@ -61,9 +61,9 @@ class OrbiAxis(FTMS.FTMSAxis):
             specwidth=specwidth, offset=offset, left_point=left_point, highmass=highmass,
             calibA=calibA, calibB=calibB, calibC=calibC)
         self.OrbiAxis = "OrbiAxis"
-        self.calibA = 0.0
-        self.calibB = ref_mass*(ref_freq**2)
-        self.calibC = 0.0
+        self.calibA = calibA
+        self.calibB = calibB
+        self.calibC = calibC
         self.attributes.insert(0,"OrbiAxis") # updates storable attributes
         self.attributes.insert(0,"calibA") # updates storable attributes
         self.attributes.insert(0,"calibB") # updates storable attributes
@@ -139,7 +139,7 @@ class Orbi_Tests(unittest.TestCase):
     def test_atob(self):
         "testing unit conversion functions"
         self.announce()
-        Oaxis = OrbiAxis(size = 1000, specwidth = 1667000, itype = 0, currentunit = "points", ref_mass = 344.0974, ref_freq = 419620.0, highmass = 2000.0)
+        Oaxis = OrbiAxis(size = 1000, specwidth = 1667000, itype = 0, currentunit = "points", calibB=344.0974*(419620.0**2), highmass = 2000.0)
         self.assertAlmostEqual(Oaxis.itoh(0), 0)
         self.assertAlmostEqual(Oaxis.itoh(Oaxis.size-1), Oaxis.specwidth)   # last point is size-1 !!!
         self.assertAlmostEqual(Oaxis.itomz(1023)/Oaxis.deltamz(Oaxis.itomz(1023)), 1023./2, places = 2)    # delta_m / m is 1/size at highest mass - before extraction

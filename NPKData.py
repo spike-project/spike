@@ -247,7 +247,7 @@ class Axis(object):
         self.currentunit = currentunit
         self.sampling = None        # index list of sampled points if instantiated
         self.sampling_info = {}
-        self.attributes = ["itype", "currentunit", "sampling"]    # storable attributes
+        self.attributes = ["itype", "sampling"]    # storable attributes
     def report(self):
         if self.sampling:
             return "size : %d   sampled from %d   itype %d   unit %s"%(self.size, max(self.sampling), self.itype, self.currentunit)
