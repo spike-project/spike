@@ -20,42 +20,51 @@ from spike import NPKData
 from .NPKError import NPKError
 
 
-HighestMass = 100000.0  # the highest m/z of interest ever
+HighestMass = 10000000.0  # the highest m/z of interest ever
 
 class FTMSAxis(NPKData.Axis):
     """
     hold information for one FT-MS axis
     used internally
     """
-    def __init__(self, size=1024, specwidth=2000.0*math.pi, itype=0, currentunit="points", ref_mass=344.0974, ref_freq=419620.0, highmass=10000.0, left_point = 0.0):
+#    def __init__(self, size=1024, specwidth=2000.0*math.pi, itype=0, currentunit="points", ref_mass=344.0974, ref_freq=419620.0, highmass=10000.0, left_point = 0.0, offset=0.0):
+    def __init__(self, itype=0, currentunit="points", size=1024, specwidth=1E6,  offset=0.0, left_point = 0.0, highmass=10000.0, calibA=0.0, calibB=0.0, calibC=0.0 ):
+#  lowmass_disp=222.0, highmass_disp=222222.0,):
         """
         all parameters from Axis, plus
+
         specwidth   highest frequency,
-        ref_mass    m/z used for initial calibration
-        ref_freq    frequency of the calibration m/z
-        highmass    highest m/z of interest - usually defined by the excitation pulse low frequency limit
-        left_point  coordinates of first data point; usually 0.0 after Fourier Transform; may be different after extraction
+        offset      carrier frequency in heterodyn or lowest frequency if acquisition does notcontains 0.0,
 
-        possible values for unit are "points" "m/z"
+        calibA, calibB, calibC : calibration constant, allowing 1 2 or 3 parameters calibration.
+            set to zero if unused
+            correspond to Bruker parameter ML1 ML2 ML3 for FTICR
+            correspond to Thermo parameter  'Source Coeff1', 'Source Coeff2', 'Source Coeff3' for Orbitrap
+        highmass    highest physical m/z of interest
+        left_point  coordinates of first data point; usually 0.0 after Fourier Transform; may be different after extraction        
+        currentunit default unit used for display and zoom,
+            possible values for unit are "points" "m/z"
 
-        conversion methods should work on numpy arrays as well
         """
         super(FTMSAxis, self).__init__(size=size, itype=itype)
         self.specwidth = specwidth
-        self.ref_mass = ref_mass
-        self.ref_freq = ref_freq
-        self.highmass = highmass
+        self.offset = offset
+
+        self.calibA = calibA
+        self.calibB = calibB
+        self.calibC = calibC
         self.left_point = left_point
+        self.highmass = highmass      
+
         self.units["m/z"] = NPKData.Unit(name="m/z", converter=self.itomz, bconverter=self.mztoi)
         self.units["Hz"] = NPKData.Unit(name="Hz", converter=self.itoh, bconverter=self.htoi)
         self.units["sec"]= NPKData.Unit(name="sec", converter=self.itos, bconverter=self.stoi)  # for transients
         self.currentunit = currentunit
-        for i in ("specwidth", "ref_mass", "ref_freq", "highmass", "left_point"):  # updates storable attributes
-            self.attributes.insert(0,i)
+        self.attributes = ["specwidth", "highmass", "offset", "left_point", "calibA", "calibB", "calibC"] + self.attributes
     #-------------------------------------------------------------------------------
     def _report(self):
         "low level report"
-        return "size : %d   sw %f  ref_mass %f ref_freq %f  left_point %f  highmass %f  itype %d currentunit %s"%(self.size, self.specwidth, self.ref_mass, self.ref_freq, self.left_point, self.highmass,self.itype, self.currentunit)
+        return "size : %d   sw %f  offset %f  ref_mass %f ref_freq %f  left_point %f  highmass %f  itype %d currentunit %s"%(self.size, self.specwidth, self.offset, self.ref_mass, self.ref_freq, self.left_point, self.highmass, self.itype, self.currentunit)
     def report(self):
         "high level reporting - to be redifined by subclasser"
         self._report()
@@ -76,9 +85,10 @@ class FTMSAxis(NPKData.Axis):
         #   after             start---------------end
         #                     left'---------------SW'
         start, end = self.getslice(zoom)
-        self.specwidth = self.itoh(end-1)
-        self.left_point += int(start)
+        # self.specwidth = self.itoh(end-1)
+        # self.left_point += int(start)
         self.size = int(end)-int(start)
+        self.left_point += int(start)
         return start, end
 
     # The 2 htomz() and mztoh() are used to build all other transfoms
@@ -114,14 +124,16 @@ class FTMSAxis(NPKData.Axis):
         """
         returns point value (i) from Hz value (h)
         """
-        pt_value = value * (self.size+self.left_point-1)/self.specwidth - self.left_point
+#        pt_value = value * (self.size+self.left_point-1)/self.specwidth - self.left_point
+        pt_value = (value - self.offset) * (self.size+self.left_point-1)/self.specwidth  - self.left_point
         return pt_value
     #-------------------------------------------------------------------------------
     def itoh(self, value):
         """
         returns Hz value (h) from point value (i)
         """      
-        hz_value =   (value + self.left_point)*self.specwidth / (self.size+self.left_point-1)
+#        hz_value =   (value + self.left_point)*self.specwidth / (self.size+self.left_point-1)
+        hz_value = (value  + self.left_point)*self.specwidth/(self.size+self.left_point-1) + self.offset
         return hz_value
     #-------------------------------------------------------------------------------
     def itomz(self, value):

@@ -16,7 +16,7 @@ model pour RMN
 
 meilleur report pour hypercomplex
 
-processing / mettre .mscf dans .msh5
+processing / mettre .mscf et .log dans .msh5
 
 BUGS
 ====

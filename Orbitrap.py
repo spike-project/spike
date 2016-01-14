@@ -40,20 +40,26 @@ class OrbiAxis(FTMS.FTMSAxis):
     hold information for one Orbitrap axis
     used internally
     """    
-    def __init__(self, size=1024, specwidth=FREQ0, itype=0, currentunit="points", ref_mass=REF_MASS, ref_freq=REF_FREQ, highmass=10000.0, left_point = 0.0):
+    def __init__(self, itype=0, currentunit="points", size=1024, specwidth=1E6,  offset=0.0, left_point = 0.0, highmass=10000.0, calibA=0.0, calibB=1E14, calibC=0.0):
         """
         all parameters from Axis, plus
         specwidth   highest frequency,
-        ref_mass    m/z used for calibration
-        ref_freq    frequency of the calibration m/z
-        highmass    highest m/z of interest - usually defined by the excitation pulse low frequency limit
-        left_point  coordinates of first data point; usually 0.0 after Fourier Transform; may be different after extraction
-        
-        possible values for unit are "points" "m/z"
+        offset      carrier frequency in heterodyn or lowest frequency if acquisition does not contains 0.0,
+
+        calibA, calibB, calibC : calibration constant, allowing 1 2 or 3 parameters calibration.
+            set to zero if unused
+            correspond to Bruker parameter ML1 ML2 ML3 for FTICR
+            correspond to Thermo parameter  'Source Coeff1', 'Source Coeff2', 'Source Coeff3' for Orbitrap
+        highmass    highest physical m/z of interest
+        left_point  coordinates of first data point; usually 0.0 after Fourier Transform; may be different after extraction        
+        currentunit default unit used for display and zoom,
+            possible values for unit are "points" "m/z"
         
         conversion methods work on numpy arrays as well
         """
-        super(OrbiAxis, self).__init__(size=size, specwidth=specwidth, itype=itype, currentunit=currentunit, ref_mass=ref_mass, ref_freq=ref_freq, highmass=highmass, left_point = left_point)
+        super(OrbiAxis, self).__init__(itype=itype, currentunit=currentunit, size=size,
+            specwidth=specwidth, offset=offset, left_point=left_point, highmass=highmass,
+            calibA=calibA, calibB=calibB, calibC=calibC)
         self.OrbiAxis = "OrbiAxis"
         self.calibA = 0.0
         self.calibB = ref_mass*(ref_freq**2)
@@ -69,10 +75,10 @@ class OrbiAxis(FTMS.FTMSAxis):
         
         if self.itype == 0: # Real
             return "Orbitrap axis at %f kHz,  %d real points,  from mz = %8.3f   to m/z = %8.3f  M/DeltaM (M=400) = %.0f"%  \
-            (self.specwidth/1000, self.size, self.highmass, self.lowmass, 400.0/self.deltamz(400.))
+            (self.specwidth/1000, self.size, self.lowmass, self.highmass, 400.0/self.deltamz(400.))
         else: # Complex
             return "Orbitrap axis at %f kHz,  %d complex pairs,  from mz = %8.3f   to m/z = %8.3f  M/DeltaM (M=400) = %.0f"%  \
-            (self.specwidth/1000, self.size/2, self.highmass, self.lowmass, 400.0/self.deltamz(400.))
+            (self.specwidth/1000, self.size/2, self.lowmass, self.highmass, 400.0/self.deltamz(400.))
 
     #-------------------------------------------------------------------------------
     def htomz(self, value):

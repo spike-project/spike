@@ -27,10 +27,10 @@ d.pp()          # computes a peak picking over the whole spectrum using 3 x stan
 d.pp(threshold=5E5, zoom=((700,1050),(300,350)) )     # zoom is always in the currently active unit, defined with d.unit
 
 # this attached the peak list to the dataset as d.peaks,
-# it is a list of Peaks1D objects, with some added properties
+# it is a list of Peaks2D objects, with some added properties
 print( "number of detected peaks: %d" % len(d.peaks))
 
-p0 = d.peaks[0]     # peaks have label, intensitiy and positions attributes
+p0 = d.peaks[0]     # peaks have label, intensity and positions attributes
 
 print( p0.report() )        # and a report method
                             # report has an additional format parameter which enables control on the output
