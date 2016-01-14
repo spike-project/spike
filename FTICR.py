@@ -41,41 +41,51 @@ class FTICRAxis(FTMS.FTMSAxis):
     hold information for one FT-ICR axis
     used internally
     """
-    def __init__(self, size=1024, specwidth=FREQ0, itype=0, currentunit="points", ref_mass=REF_MASS, ref_freq=REF_FREQ, highmass=10000.0, left_point = 0.0):
+#    def __init__(self, size=1024, specwidth=FREQ0, itype=0, currentunit="points", ref_mass=REF_MASS, ref_freq=REF_FREQ, highmass=10000.0, left_point = 0.0, offset=0.0):
+    def __init__(self, itype=0, currentunit="points", size=1024, specwidth=1E6,  offset=0.0, left_point = 0.0, highmass=10000.0, calibA=1E8, calibB=0.0, calibC=0.0, lowfreq=1E4, highfreq=1E6 ):
         """
         all parameters from Axis, plus
         specwidth   highest frequency,
-        ref_mass    m/z used for calibration
-        ref_freq    frequency of the calibration m/z
-        highmass    highest m/z of interest - usually defined by the excitation pulse low frequency limit
-        left_point  coordinates of first data point; usually 0.0 after Fourier Transform; may be different after extraction
+        offset      carrier frequency in heterodyn or lowest frequency if acquisition does not contains 0.0,
+
+        calibA, calibB, calibC : calibration constant, allowing 1 2 or 3 parameters calibration.
+            set to zero if unused
+            correspond to Bruker parameter ML1 ML2 ML3 for FTICR
+            correspond to Thermo parameter  'Source Coeff1', 'Source Coeff2', 'Source Coeff3' for Orbitrap
+        highmass    highest physical m/z of interest
+        left_point  coordinates of first data point; usually 0.0 after Fourier Transform; may be different after extraction        
+        currentunit default unit used for display and zoom,
+            possible values for unit are "points" "m/z"
+
+        lowfreq     lowest excitation pulse frequency
+        highfreq     highest excitation pulse frequency
         
-        possible values for unit are "points" "m/z"
-        
-        conversion methods work on numpy arrays as well
         """
-        super(FTICRAxis, self).__init__(size=size, specwidth=specwidth, itype=itype, currentunit=currentunit, ref_mass=ref_mass, ref_freq=ref_freq, highmass=highmass, left_point = left_point)
+        super(FTICRAxis, self).__init__(itype=itype, currentunit=currentunit, size=size,
+            specwidth=specwidth, offset=offset, left_point=left_point, highmass=highmass,
+            calibA=calibA, calibB=calibB, calibC=calibC)
         self.FTICR = "FTICR"
-        self.calibA = self.ref_mass*self.ref_freq
-        self.calibB = 0.0
-        self.calibC = 0.0
-        
+
+        self.lowfreq = lowfreq
+        self.highfreq = highfreq
+
         self.attributes.insert(0,"FTICR") # updates storable attributes
         self.attributes.insert(0,"calibA") # ML1
         self.attributes.insert(0,"calibB") # ML2
         self.attributes.insert(0,"calibC") # ML3
+        self.attributes.insert(0,"highfreq")
+        self.attributes.insert(0,"lowfreq")
         
     #-------------------------------------------------------------------------------
     def report(self):
         "high level reporting"
-        
-        if self.itype == 0: # Real
-            return "FT-ICR axis at %f kHz,  %d real points,  from mz = %8.3f   to m/z = %8.3f  R max (M=400) = %.0f"%  \
-            (self.specwidth/1000, self.size, self.highmass, self.lowmass, 400.0/self.deltamz(400.))
-        else: # Complex
-            return "FT-ICR axis at %f kHz,  %d complex pairs,  from mz = %8.3f   to m/z = %8.3f  R max (M=400) = %.0f"%  \
-            (self.specwidth/1000, self.size/2, self.highmass, self.lowmass, 400.0/self.deltamz(400.))
 
+        if self.itype == 0: # Real
+            return "FT-ICR report axis at %f kHz,  %d real points,  from physical mz = %8.3f   to m/z = %8.3f  R max (M=400) = %.0f"%  \
+            (self.specwidth/1000, self.size, self.lowmass, self.highmass, 400.0/self.deltamz(400.))
+        else: # Complex
+            return "FT-ICR report axis at %f kHz,  %d complex pairs,  from physical mz = %8.3f   to m/z = %8.3f  R max (M=400) = %.0f"%  \
+            (self.specwidth/1000, self.size/2, self.lowmass, self.highmass, 400.0/self.deltamz(400.))
 
     #-------------------------------------------------------------------------------
 # these are Bruker equations:
@@ -108,15 +118,6 @@ class FTICRAxis(FTMS.FTMSAxis):
         return self.calibA/m + self.calibC/(m**2)  - self.calibB
 
 #-------------------------------------------------------------------------------
-def fticr_mass_axis(length, spectral_width, ref_mass, ref_freq):
-    """
-    returns an array which will calibrate a FT-ICR experiment
-    length : number of points in the axis
-    spectral_width : of the ICR measure
-    ref_mass : value of the m/z reference
-    ref_freq =: frequence at which is is observed.
-    """
-    return ref_mass*ref_freq/(spectral_width * (1+np.arange(length))/length )
 
 class FTICRData(FTMS.FTMSData):
     """
@@ -166,12 +167,13 @@ class FTICR_Tests(unittest.TestCase):
     def test_atob(self):
         "testing unit conversion functions"
         self.announce()
-        F = FTICRAxis(size=1000, specwidth=1667000, itype=0, currentunit="points", ref_mass=344.0974, ref_freq=419620.0, highmass=2000.0)
-        self.assertAlmostEqual(F.deltamz(F.itomz(1023))/F.itomz(1023), 1.0/1023)    # delta_m / m is 1/size at highest mass - before extraction
-        self.assertAlmostEqual(123*F.itomz(123), 321*F.itomz(321))    # verify that f*m/z is constant !
-        self.assertAlmostEqual(123*F.mztoi(123), 321*F.mztoi(321))    # verify that f*m/z is constant !
-        self.assertAlmostEqual(F.itoh(0), 0)
-        self.assertAlmostEqual(F.itoh(F.size-1), F.specwidth)   # last point is size-1 !!!
+        F = FTICRAxis(size=1000, specwidth=1667000, itype=0, currentunit="points", ref_mass=344.0974, ref_freq=419620.0, highmass=2000.0, offset=10000.0)
+#        self.assertAlmostEqual(F.deltamz(F.itomz(1023))/F.itomz(1023), 1.0/1023)    # delta_m / m is 1/size at lowest mass - before extraction
+#        self.assertAlmostEqual((F.lowmass/F.deltamz(F.lowmass)) /( F.size*(F.specwidth+F.offset)/F.specwidth-1), 1.0, 5)
+        self.assertAlmostEqual(123*F.htomz(123), 321*F.htomz(321))    # verify that f*m/z is constant !
+        self.assertAlmostEqual(123*F.mztoh(123), 321*F.mztoh(321))    # verify that f*m/z is constant !
+        self.assertAlmostEqual(F.itoh(0), F.offset)
+        self.assertAlmostEqual(F.itoh(F.size-1), F.specwidth+F.offset)   # last point is size-1 !!!
         for twice in range(2):
             F = FTICRAxis(size=1000, specwidth=1667000, itype=0, currentunit="points", ref_mass=344.0974, ref_freq=419620.0, highmass=2000.0)
             if twice == 1:  # second time tests 2nd order calibration

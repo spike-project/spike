@@ -325,9 +325,9 @@ def do_proc_F1_flip_modu(dinp, doutp, parameter):
         hshift = parameter.freq_highmass
         shift = doutp.axis1.htoi(hshift)
         rot = dinp.axis1.htoi( hshift )       # rot correction is applied in the starting space
-    if debug>0: print("LEFT_POINT", shift)
-    doutp.axis1.left_point = shift      
-    doutp.axis1.specwidth += hshift    # correction of specwidth
+#    doutp.axis1.left_point = shift      
+    doutp.axis1.offset = hshift
+#    doutp.axis1.specwidth += hshift    # correction of specwidth
     xarg = iterarg(dinp, rot, size, parameter)      # construct iterator for main loop
     if parameter.mp:  # means multiprocessing //
         res = Pool.imap(_do_proc_F1_flip_modu, xarg)
