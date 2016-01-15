@@ -21,7 +21,7 @@ import time
 
 # File_version is written into the file and tag the file itself 
 # to be changed only if the file format changes
-__file_version__ = "0.8"
+__file_version__ = "0.9"
 """
 __file_version__ 0.9 new list of attributes for FTMS axes
     additional files are now stored along the data
@@ -265,15 +265,17 @@ python HDF5File.py update {0}
     #----------------------------------------------
     def create_tables(self):
         """
-        Creates the different tables needed in a HDF5File according to the info parameters given 
+        Creates the different tables needed in a HDF5File/FTICR according to the info parameters given 
         If you don't pass any info dictionnary, it will take parameters from the self.header
         """
         # MAD TO BE ADAPTED !!!
         # Infos that have to be known on each axis 
+        
         self.axis_table = {}
         self.axis_table["itype"] = tables.Int32Col()
         self.axis_table["size"] = tables.Int32Col()
 #        self.axis_table["units"] = tables.StringCol(itemsize=16)
+        self.axis_table["FTICR"] = tables.StringCol(itemsize=16)
         self.axis_table["sampling"] = tables.StringCol(itemsize=16)
         self.axis_table["specwidth"] = tables.Float32Col()
         self.axis_table["highmass"] = tables.Float32Col()
@@ -282,6 +284,8 @@ python HDF5File.py update {0}
         self.axis_table["calibA"] = tables.Float64Col()
         self.axis_table["calibB"] = tables.Float64Col()
         self.axis_table["calibC"] = tables.Float64Col()
+        self.axis_table["highfreq"] = tables.Float32Col()
+        self.axis_table["lowfreq"] = tables.Float32Col()
         
 
     #----------------------------------------------
