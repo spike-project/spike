@@ -60,11 +60,11 @@ class OrbiAxis(FTMS.FTMSAxis):
         super(OrbiAxis, self).__init__(itype=itype, currentunit=currentunit, size=size,
             specwidth=specwidth, offset=offset, left_point=left_point, highmass=highmass,
             calibA=calibA, calibB=calibB, calibC=calibC)
-        self.OrbiAxis = "OrbiAxis"
+        self.Orbitrap = "Orbitrap"
         self.calibA = calibA
         self.calibB = calibB
         self.calibC = calibC
-        self.attributes.insert(0,"OrbiAxis") # updates storable attributes
+        self.attributes.insert(0,"Orbitrap") # updates storable attributes
         self.attributes.insert(0,"calibA") # updates storable attributes
         self.attributes.insert(0,"calibB") # updates storable attributes
         self.attributes.insert(0,"calibC") # updates storable attributes

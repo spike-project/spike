@@ -276,8 +276,8 @@ class FTMSData(NPKData.NPKData):
         else:
             chunks = None
         hf_file.create_tables()
-        hf_file.createGroup("/", "resol1")
-        table_axes = hf_file.createTable("/resol1", "axes",hf_file.axis_table)
+        hf_file.create_group("/", "resol1")
+        table_axes = hf_file.create_table("/resol1", "axes",hf_file.axis_table)
         
         hf_file.create_tables()
         infos = []
@@ -286,9 +286,9 @@ class FTMSData(NPKData.NPKData):
             infos.append( self.axes(ii).__dict__)
         hf_file.fill_table(table_axes, infos)
         if self.dim == 2:
-            Hbuffer = hf_file.createCArray("/resol1", 'data', tables.Float64Atom(), (self.size1, self.size2), chunk = chunks)
+            Hbuffer = hf_file.create_carray("/resol1", 'data', tables.Float64Atom(), (self.size1, self.size2), chunk = chunks)
         else:
-            Hbuffer = hf_file.createCArray("/resol1", 'data', tables.Float64Atom(), (self.size1,), chunk =  None)
+            Hbuffer = hf_file.create_carray("/resol1", 'data', tables.Float64Atom(), (self.size1,), chunk =  None)
         Hbuffer[...] = self.buffer[...]
         hf_file.close()
         del(hf_file)
