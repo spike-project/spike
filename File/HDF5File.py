@@ -21,10 +21,11 @@ import time
 
 # File_version is written into the file and tag the file itself 
 # to be changed only if the file format changes
-__file_version__ = "0.9"
+__file_version__ = "0.89"
 """
 __file_version__ 0.9 new list of attributes for FTMS axes
     additional files are now stored along the data
+__file_version__ 0.89 transitionnal between 0.8 and 0.9 
 __file_version__ 0.8 axes are gathered in one table, it's a more HDF5 way to deal with informations
 __file_version__ 0.7 has the ability to update the axes
 __file_version__ 0.6 is first stabilized multiresolution version
@@ -599,7 +600,7 @@ def update(fname, debug = 1):
         print("updating from 0.8 to 0.9")
         up0p8_to_0p9(fname, debug=debug)
         fileversion = 0.9
-    print("The file %s has been fully updated to %s"%(fname,__file_version__))
+        print("The file %s has been fully updated to %s"%(fname,__file_version__))
 #----------------------------------------------
 def up0p6_to_0p7(fname, debug = 1):
     """docstring for up0p6_to_0p7
@@ -653,7 +654,7 @@ def up0p8_to_0p9(fname, debug = 1):
     """
     raise "Not Available YET !"
     hf = tables.open_file(fname,"r+")
-    
+
     description = ""
     for group in hf.iter_nodes("/","Group"): # get the list of tables in the file
         infos = []
@@ -807,10 +808,8 @@ def nparray_to_fticrd(name, nparray):
 def syntax(prgm):
     print("""
 ****** ERROR ******
-syntax is
-{0}
-   or 
-{0} Tests     (both run self tests)
+Usage:
+{0} Tests               runs self tests
    or
 {0} update file_name    to update a old file to current
 """.format(prgm))
@@ -823,8 +822,8 @@ if __name__ == '__main__':
     try:
         action = argv[1]
     except:
-        action = 'Tests'
-
+        syntax(argv[0])
+        sys.exit(0)
     # do
     if action == 'update':
         try:
@@ -838,3 +837,5 @@ if __name__ == '__main__':
         unittest.main()
     else:
         syntax(argv[0])
+        sys.exit(1)
+        
