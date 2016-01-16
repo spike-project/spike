@@ -97,10 +97,10 @@ def cleandir():
     import glob
     files_to_keep = ('ubiquitin_5_scan_res_30000_1.dat','cytoC_ms_1scan_000001.d', 'cytoC_2D_000001.d',
                 'dosy-cluster2-corr.gs2', 'dosy-cluster2.gs2',
-                'proj.gs1', 'ubiquitine_2D_000002.d','file_fticr',
-                'file_npar','npar_fticr','Lasalocid-Tocsy', 'Sampling_file.list', 
+                'proj.gs1', 'ubiquitine_2D_000002.d','Lasalocid-Tocsy', 'Sampling_file.list', 
                 'ubiquitine_2D_000002_Sampling_2k.list',
-                'Sampling_file_aposteriori_cytoCpnas.list','angio_ms_000005.d')
+                'Sampling_file_aposteriori_cytoCpnas.list','angio_ms_000005.d',
+                'SubsP_220615_2DFT_2k_128k_000001.d')
     for i in glob.glob(filename("*")):
         print(i, end=' ')
         if os.path.basename(i) in files_to_keep:
