@@ -14,17 +14,20 @@ import sys
 import os
 import unittest
 import numpy as np
-import tables
-import array
-import ConfigParser
 import time
+import array
+
+import json
+import tables
+from tables.nodes import filenode
+import ConfigParser
 
 # File_version is written into the file and tag the file itself 
 # to be changed only if the file format changes
-__file_version__ = "0.89"
+__file_version__ = "0.9"
 """
 __file_version__ 0.9 new list of attributes for FTMS axes
-    additional files are now stored along the data
+    additional files are now stored along the data in "attached" group.
 __file_version__ 0.89 transitionnal between 0.8 and 0.9 
 __file_version__ 0.8 axes are gathered in one table, it's a more HDF5 way to deal with informations
 __file_version__ 0.7 has the ability to update the axes
@@ -71,8 +74,18 @@ class HDF5File(object):
     H.save()
     H.close()
 
+    HDF5File have the capacity to store and retrieve complete files and python objects:
+    H.
+    
     """
-    def __init__(self, fname, access = 'r', info = None, nparray = None, fticrd = None, debug = 0):
+    def __init__(self, fname, access = 'r', info = None, nparray = None, fticrd = None, compress=False, debug = 0):
+        """
+        access:
+            r: Read-only; no data can be modified.
+            w: Write; a new file is created (an existing file with the same name would be deleted).
+            a: Append; an existing file is opened for reading and writing, and if the file does not exist it is created.
+            r+: It is similar to ‘a’, but the file must already exist.
+        """
         # still have to deal with changing the file_version when file is opened reading only
         from  .. import FTICR
         #import spike.FTICR as FTICR
@@ -87,7 +100,9 @@ class HDF5File(object):
         self.nparray = None
         self.chunks = None
         self.filters = None    # for compressing : tables.Filters(complevel=1, complib='zlib')
-        
+        if compress:
+            self.set_compression()
+
         if access not in ("w", "r", "rw", "a","r+"):
             raise Exception(access + " : acces key not valid")
         if os.path.isfile(self.fname):
@@ -103,7 +118,10 @@ class HDF5File(object):
                 print("Open HDF5 File with writing rights")
             self.access = access
             self.hf = tables.open_file(self.fname, self.access)
+            # generic_table contains info on the file
             self.create_generic(owner=owner)
+            # create a "attached" group for storing files using filenode mode - compressed -
+            self.hf.create_group("/",'attached',filters=tables.Filters(complevel=1, complib='zlib'))
             if (info is not None):
                 if (self.debug > 0):
                     print("Create HDF5 File from info")
@@ -167,9 +185,86 @@ python HDF5File.py update {0}
 """.format(self.fname, info["File_Version"],__file_version__)
             raise Exception(msg)
         return True
+
+    ######### file nodes ################
+    # store arbitrary objects in a hdf5 node
     #----------------------------------------------
+    def open_file(self, h5name, access='r', where='/attached'):
+        """
+        opens a node called h5name in the file, which can be accessed as a file.
+        returns a file stram which can be used as a classical file.
+        
+        access is either 
+            'r' : for reading an existing node
+            'w' : create a node for writing into it
+            'a' : for appending in an existing node
+        file is stored in a h5 group called h5name
+
+        eg.
+        F = h5.open_file('myfile.txt', 'w', where='/files')
+        # create a node called '/files/myfile.txt' (node 'myfile.txt' in the group '/files')
+        F.writelines(text)
+        F.close()
+        # and write some text into it
+
+        # then, latter on
+        F = h5.open_file('myfile.txt', 'r', where='/files')
+        textback = F.read()
+        F.close()
+
+        This is used to add parameter files, audit_trail, etc... to spike/hdf5 files
+        
+        it is based on the filenode module from pytables
+        """
+        if access == 'r':
+            v  = self.hf.get_node(where=where, name=h5name)
+            F = filenode.open_node(v, 'r')
+        elif access == 'a':
+            v  = self.hf.get_node(where=where, name=h5name)
+            F = filenode.open_node(v, 'a+')
+        elif access == 'w':
+            F = filenode.new_node(self.hf, where=where, name=h5name)
+        return F
+        
+    def store_file(self, filename, h5name=None, where='/attached'):
+        """
+        Store a (text) file into the hdf5 file,
+            filename: name of the file to be copied
+            h5name: is its internal name (more limitation than in regular filesystems)
+                copied from filename by default
+            where: group where the file is copied into the hdf5
+        file content will be retrieved using    open_file(h5name,'r)
+        """
+        if h5name is None:
+            h5name = filename
+        node = self.open_file(h5name, 'w', where=where)
+        with open(filename, 'r') as F:
+            node.write( F.read() )
+        node.close()
+    #----------------------------------------------
+    def store_object(self, obj, h5name, where='/'):
+        """
+        store a python object into the hdf5 file
+        object are then retrieve with retrieve_object()
+
+        uses JSON to serialize obj
+            - so works only on values, lists, dictionary, etc... but not functions or methods
+        """
+        node = filenode.new_node(self.hf, where=where, name=h5name)
+        json.dump(obj, node)
+    #----------------------------------------------
+    def retrieve_object(self, h5name, where='/', access='r'):
+        """
+        retrieve a python object stored with store_object()
+        """
+        v  = self.hf.get_node(where=where, name=h5name)
+        F = filenode.open_node(v,'r')
+        obj = json.load(F)
+        F.close()
+        return obj
+    ###############################################
     def set_compression(self, On=False):
-        "sets HDF5 file compression to zlib if On is True; to none otherwise"
+        "sets Carray HDF5 file compression to zlib if On is True; to none otherwise"
         if On:
             self.filters = tables.Filters(complevel=1, complib='zlib')
         else:
@@ -679,29 +774,30 @@ def up0p8_to_0p9(fname, debug = 1):
 
 #----------------------------------------------
 class HDF5_Tests(unittest.TestCase):
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
+        "This one is called before running all the tests"
         from ..Tests import filename, directory
         rootfiles = os.getcwd()
-        # make ini file from example
-        self.TestFolder = directory()
-        self.DataFolder = filename('cytoC_2D_000001.d')
-        self.name_write = filename("file_write")
-        self.name_fticr = filename("file_fticr")
-        self.name_npar = filename("file_npar")
-        self.npar_fticr = filename("npar_fticr")
-        self.name_chunk = filename("file_fticr")
-        self.name_get = filename("file_fticr")
-                
-        self.verbose = 1    # verbose > 0 switches messages on
+        print ('Setting up tests')
+        cls.TestFolder = directory()
+        cls.DataFolder = filename('cytoC_2D_000001.d')
+        cls.name_file1 = filename("test_file.msh5")
+        cls.name_file2 = filename("test_file2.msh5")
+        # Testing the creation of a HDF5 file according to a given nparray - and creating for next tests
+        data_init = 10*np.random.random((2048, 32*1024))  # example of buffer (numpy array) from which you might create a HDF5 file
+        threshold = data_init.std()
+        data_init[abs(data_init)<threshold] = 0.0   # but a large heap or zeros to test compression
+        h5f = HDF5File(cls.name_file1, "w", nparray = data_init, debug =1, compress=True)
+        h5f.close()
+        cls.verbose = 1    # verbose > 0 switches messages on
     def announce(self):
         if self.verbose > 0:
             print("\n========", self.shortDescription(), '===============')
     def test_get_data(self):
         "Test routine that opens a HDF5 file reading, gets the headers and the buffer"
-        self.announce()
-        print("testing get_data the type file")
-        
-        hdf5 = HDF5File(self.name_get,"rw")
+        self.announce()        
+        hdf5 = HDF5File(self.name_file1,"r")
         hdf5.load()
         B = hdf5.data
         hdf5.close()
@@ -711,21 +807,14 @@ class HDF5_Tests(unittest.TestCase):
         self.announce()
         import Apex  as ap
         fticrdata = ap.Import_2D(self.DataFolder)
-        h5f = HDF5File(self.name_fticr, "w", fticrd = fticrdata, debug =1)
+        h5f = HDF5File(self.name_file2, "w", fticrd = fticrdata, debug =1, compress=True)
         h5f.close()
     #----------------------------------------------
-    def test_create_from_nparray(self):
-        "Testing the creation of a HDF5 file according to a given nparray"
-        self.announce()
-        data_init = 10*np.random.random((2048, 65536))  # example of buffer (numpy array) from which you might create a HDF5 file
-        h5f = HDF5File(self.name_npar, "w", nparray = data_init, debug =1)
-        h5f.close()
-    #----------------------------------------------
-    def test_nparray_to_fticr(self):
+    def _test_nparray_to_fticr(self):
         "Test routine that creates a HDF5 file according to a given nparray and returns the buffer (FTICRData)"
         self.announce()
         data_init = 10*np.random.random((2048, 65536)) 
-        B = nparray_to_fticrd(self.npar_fticr, data_init)
+        B = nparray_to_fticrd(self.name_file2, data_init)
         print(B.axis1.size)
     #----------------------------------------------
     def test_axes_update(self):
@@ -734,7 +823,7 @@ class HDF5_Tests(unittest.TestCase):
         self.announce()
         import time
         
-        d = HDF5File(self.name_get,"rw",debug = 1)
+        d = HDF5File(self.name_file1,"rw",debug = 1)
         d.axes_update(axis = 2, infos = {'highmass':4200.00, 'itype':1})
         d.close()
     #----------------------------------------------
@@ -790,8 +879,30 @@ class HDF5_Tests(unittest.TestCase):
         d.modulus()
         print("modulus", time()-t0, "secondes")
         print("calcul", time()-t00, "secondes")
-
-
+    #----------------------------------------------
+    def test_filenodes(self):
+        "Test routines that work with filenodes"
+        self.announce()
+        # 1st objects
+        h5f = HDF5File(self.name_file1, "r+", debug =1)
+        obj =  ['foo', {'bar': ('baz', None, 1.0, 2)}]  # dummy complex object
+        h5f.store_object(obj, h5name='test')
+        objt = h5f.retrieve_object('test')
+        self.assertEqual(objt[1]['bar'][2],1.0)
+        # then files
+        name = 'scan.xml'
+        fname = os.path.join(self.DataFolder, name)
+        h5f.store_file(fname, h5name=name)
+        h5f.close()
+        h5f = HDF5File(self.name_file1, "r")
+        F = h5f.open_file(h5name=name)
+        for i in range(17):
+            l = F.readline()
+        self.assertEqual(l.strip(),
+            "<scan><count>15</count><minutes>0.4828</minutes><tic>1.398E7</tic><maxpeak>3.108E5</maxpeak></scan>")
+        F.close()
+        h5f.close()
+        h5f.close()
 #----------------------------------------------
 def nparray_to_fticrd(name, nparray):
     """
