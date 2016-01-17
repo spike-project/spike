@@ -29,7 +29,7 @@ from .. import NPKData as npkd
 from ..FTICR import FTICRData
 from ..File import HDF5File as hf
 
-def read_param(filename):
+def read_param(parfilename):
     """
         Open the given file and retrieve all parameters from apexAcquisition.method
         NC is written when no value for value is found
@@ -38,7 +38,7 @@ def read_param(filename):
        
         read_param returns  values in a dictionnary
     """
-    xmldoc = minidom.parse(filename)
+    xmldoc = minidom.parse(parfilename)
     
     x = xmldoc.documentElement
     pp = {}
@@ -62,7 +62,7 @@ def read_param(filename):
 def read_scan(filename):
     """
     Function that returns the number of scan that have been recorded
-    It is used to see wether the number of recorded points correspond to the L_20 parameter
+    It is used to see wether the number of recorded points corresponds to the L_20 parameter
     """
 
     xmldoc = minidom.parse(filename)
@@ -97,7 +97,7 @@ def locate_acquisition(folder):
         
     return L[0]
 #-----------------------------------------
-def Import_1D(folder,outfile = ""):
+def Import_1D(folder, outfile = ""):
     """
     Entry point to import 1D spectra
     It returns a FTICRData
@@ -107,33 +107,46 @@ def Import_1D(folder,outfile = ""):
         flag = 'l'              # Apex files are in int32
     else:                       # here in 64bit
         flag = 'i'              # strange, but works here.
-    filename = locate_acquisition(folder)
-    params = read_param(filename)
+    parfilename = locate_acquisition(folder)
+    params = read_param(parfilename)
+    
     
     # Import parameters : size in F1 
     sizeF1 = int(params["TD"])
-    Mass_High = float(params["EXC_hi"])
-    Mass_Low = float(params["EXC_low"])
+#    highfreq = float(params["EXC_hi"])
+#    lowfreq = float(params["EXC_low"])
     
     if os.path.isfile(os.path.join(folder, "fid")):
         fname = os.path.join(folder, "fid")
     else:
-        print("You are dealing with 2D data, you should use Import_2D")
-        sys.exit(1)
+        raise Exception("You are dealing with 2D data, you should use Import_2D")
     data = FTICRData( dim = 1 )   # create dummy 1D
+    #size, specwidth,  offset, left_point, highmass, calibA, calibB, calibC, lowfreq, highfreq
     data.axis1.size = sizeF1    # then set parameters
-    data.specwidth = float(params["SW_h"]) 
-    data.ref_mass = Mass_Low
-    data.ref_freq = float(params["SW_h"])
-    data.highmass = Mass_High
-    data.left_point = 0
-    
+    data.axis1.specwidth = float(params["SW_h"])
+    data.axis1.highfreq = float(params["EXC_hi"])
+    data.axis1.lowfreq = float(params["EXC_low"])
+    data.axis1.highmass = float(params["MW_high"])
+    data.axis1.left_point = 0
+    data.axis1.offset = 0.0
+    if float(params["ML1"]) >0.0:
+        data.axis1.calibA = float(params["ML1"])
+    if float(params["ML2"]) >0.0:
+        data.axis1.calibB = float(params["ML2"])
+    if float(params["ML3"]) >0.0:
+        data.axis1.calibC = float(params["ML3"])
+
+    data.params = params   # add the parameters to the data-set
+        
     if (outfile): # Creates the fticrdata with no array, just infos for the table
         HF = hf.HDF5File(outfile,"w")
         HF.create_from_template(data)
+        HF.store_object(params, h5name='params')    # store params in the file
+        # then store files xx.methods and scan.xml
+        HF.store_file(parfilename)
+        HF.store_file( os.path.join(folder,"scan.xml") )
         data.hdf5file = HF
         # I need a link back to the file in order to close it, however this creates a loop - experimental ! 
-        # HF.close()
     else:
         data.buffer = np.zeros((sizeF1))
     data.adapt_size()
@@ -141,11 +154,12 @@ def Import_1D(folder,outfile = ""):
         tbuf = f.read(4*sizeF1)
         abuf = np.array(array.array(flag,tbuf))
         data.buffer[:] = abuf[:]
-    data.params = params   # add the parameters to the data-set
+    if (outfile):
+        HF.flush()
     return data
 #-----------------------------------------
 
-def Import_2D(folder, outfile = "",F1specwidth = None):
+def Import_2D(folder, outfile = "", F1specwidth = None):
     """
     Entry point to import 2D spectra
     It returns a FTICRData
@@ -155,8 +169,8 @@ def Import_2D(folder, outfile = "",F1specwidth = None):
         flag = 'l'              # Apex files are in int32
     else:                       # here in 64bit
         flag = 'i'              # strange, but works here.
-    filename = locate_acquisition(folder)
-    params = read_param(filename)
+    parfilename = locate_acquisition(folder)
+    params = read_param(parfilename)
     #count_scan = read_scan(os.path.join(folder,"scan.xml"))
     # Import parameters : size in F1 and F2
     sizeF1 = int(params["L_20"])
@@ -164,28 +178,53 @@ def Import_2D(folder, outfile = "",F1specwidth = None):
     #     print "Mismatch between Apex file and scan.xml size F1 set to %i"%count_scan
     #     sizeF1 = count_scan
     sizeF2 = int(params["TD"])
-    Mass_High = float(params["MW_high"])                                  # renamed by BRUKER
-    Ref_Freq = 1000*419.62
-    Mass_Low = float(params["MW_low"])                                  # renamed by BRUKER
-    Mass_Low = 344.0974
+
     if os.path.isfile(os.path.join(folder,"ser")):
         fname = os.path.join(folder, "ser")
     else:
-        print("You are dealing with 1D data, you should use Import_1D")
-        sys.exit(1)
+        raise Exception("You are dealing with 1D data, you should use Import_1D")
+
+    #size, specwidth,  offset, left_point, highmass, calibA, calibB, calibC, lowfreq, highfreq
     data = FTICRData( dim=2 )   # create dummy 2D
-    data.axis1.size = sizeF1    # then set parameters
-    data.axis1.specwidth = 1/(2*float(params["IN_26"])) # PB here - MAD
-    data.axis2.size = sizeF2
-    data.axis2.specwidth = float(params["SW_h"]) 
-    # if F1specwidth:     # if given in arguments
-    #     data.axis1.specwidth = F1specwidth 
-    # else:
-    #     data.axis1.specwidth = data.axis2.specwidth
-    data.ref_mass = Mass_Low
-    data.ref_freq = Ref_Freq
-    data.highmass = Mass_High
-    data.left_point = 0
+
+    data.axis2.size = sizeF2    # then set parameters along F2 - classical axis -
+    data.axis2.specwidth = float(params["SW_h"])
+    data.axis2.highfreq = float(params["EXC_hi"])
+    data.axis2.lowfreq = float(params["EXC_low"])
+    data.axis2.highmass = float(params["MW_high"])
+    data.axis2.left_point = 0
+    data.axis2.offset = 0.0
+    if float(params["ML1"]) >0.0:
+        data.axis2.calibA = float(params["ML1"])
+    if float(params["ML2"]) >0.0:
+        data.axis2.calibB = float(params["ML2"])
+    if float(params["ML3"]) >0.0:
+        data.axis2.calibC = float(params["ML3"])
+
+    data.axis1.size = sizeF1    # then set parameters along F1- non classical axis -  
+    # assumes most parameter are equivalent - except specwidth
+    if F1specwidth is not None:     # if given in arguments
+        data.axis1.specwidth = F1specwidth 
+    else:
+        f1 =  float(params["IN_26"])    # IN_26 is used in 2D sequence as incremental time
+        if f1 < 1E-4:   # seems legit
+            data.axis1.specwidth = 1.0/(2*f1)
+        else:
+            data.axis1.specwidth = data.axis2.specwidth     # else assume square...
+    data.axis1.highfreq = float(params["EXC_hi"])
+    data.axis1.lowfreq = float(params["EXC_low"])
+    data.axis1.highmass = float(params["MW_high"])
+    data.axis1.left_point = 0
+    data.axis1.offset = 0.0
+    if float(params["ML1"]) >0.0:
+        data.axis1.calibA = float(params["ML1"])
+    if float(params["ML2"]) >0.0:
+        data.axis1.calibB = float(params["ML2"])
+    if float(params["ML3"]) >0.0:
+        data.axis1.calibC = float(params["ML3"])
+
+    data.params = params   # add the parameters to the data-set
+
     c1 = int(sizeF1/8. +1)
     c2 = int(sizeF2/8. +1)
     #print "chunkshape",c1,c2
@@ -194,21 +233,24 @@ def Import_2D(folder, outfile = "",F1specwidth = None):
     if (outfile): # Creates the fticrdata with no array, just infos for the table
         HF = hf.HDF5File(outfile,"w")
         HF.create_from_template(data)
+        HF.store_object(params, h5name='params')    # store params in the file
+        # then store files xx.methods and scan.xml
+        HF.store_file(parfilename)
+        HF.store_file( os.path.join(folder,"scan.xml") )
         data.hdf5file = HF
         # I need a link back to the file in order to close it, however this creates a loop - experimental ! 
-        # HF.close()
     else:
         data.buffer = np.zeros((sizeF1, sizeF2))
 #    data.adapt_size()
     with open(fname,"rb") as f:
         for i1 in xrange(sizeF1-1):
-            
             tbuf = f.read(4*sizeF2)
             abuf = np.array(array.array(flag,tbuf))
             data.buffer[i1,:] = abuf[:]
     # if (outfile):
     #     HF.close()
-    data.params = params   # add the parameters to the data-set
+    if (outfile):
+        HF.flush()
     return data
 #-----------------------------------------
 def Ser2D_to_FTICRFile(sizeF1, sizeF2, filename = "ser",outfile = "H5f.h5",chunks = None):
@@ -225,8 +267,8 @@ def Ser2D_to_FTICRFile(sizeF1, sizeF2, filename = "ser",outfile = "H5f.h5",chunk
     c2 = int(sizeF2/8. +1)
     chunks = (c1,c2)
     h5f = hf.HDF5File(outfile, "w")
-    h5f.createGroup("/", 'resol1')
-    h5f.createCArray("/resol1", 'data', tables.Float64Atom(), (sizeF1, sizeF2), chunk = chunks)
+    h5f.create_group("/", 'resol1')
+    h5f.create_carray("/resol1", 'data', tables.Float64Atom(), (sizeF1, sizeF2), chunk = chunks)
     with open(filename, "rb") as f:
         for i1 in xrange(sizeF1):
             tbuf = f.read(4*sizeF2)
@@ -236,7 +278,7 @@ def Ser2D_to_FTICRFile(sizeF1, sizeF2, filename = "ser",outfile = "H5f.h5",chunk
 #-----------------------------------------
 def read_2D(sizeF1, sizeF2, filename = "ser"):
     """
-    Reads in a Apex 2D fid
+    Reads in a Solarix 2D fid
 
     sizeF1 is the number of fid
     sizeF2 is the number of data-points in the fid
@@ -292,7 +334,6 @@ def write_ser(bufferdata,filename = "ser"):
                 f.write(bufferdata[i][j].astype("int32").tostring() )
 #----------------------------------------------
 class Solarix_Tests(unittest.TestCase):
-    from time import time
     def setUp(self):
         from ..Tests import filename, directory
         import ConfigParser
