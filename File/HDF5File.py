@@ -231,12 +231,12 @@ python HDF5File.py update {0}
         Store a (text) file into the hdf5 file,
             filename: name of the file to be copied
             h5name: is its internal name (more limitation than in regular filesystems)
-                copied from filename by default
+                copied from os.path.basename(filename) by default
             where: group where the file is copied into the hdf5
         file content will be retrieved using    open_file(h5name,'r)
         """
         if h5name is None:
-            h5name = filename
+            h5name = os.path.basename(filename)
         node = self.open_file(h5name, 'w', where=where)
         with open(filename, 'r') as F:
             node.write( F.read() )
@@ -605,6 +605,17 @@ python HDF5File.py update {0}
         # fills tables and carray with the values given self.info and self.nparray
         self.position_array()
     #----------------------------------------------
+    def flush(self):
+        """
+        flushes all nodes but does not close
+        """
+        if (self.debug > 0) : print("flushing ", self.fname)
+        for node in self.hf.walk_nodes("/","Table"):
+            node.flush()
+        for node in self.hf.walk_nodes("/","Array"):
+            node.flush()
+        
+    #----------------------------------------------
     def close(self):
         """
         Closes HDF5File
@@ -891,6 +902,7 @@ class HDF5_Tests(unittest.TestCase):
         name = 'scan.xml'
         fname = os.path.join(self.DataFolder, name)
         h5f.store_file(fname, h5name=name)
+        h5f.flush()
         h5f.close()
         # now retrieve
         h5f = HDF5File(self.name_file1, "r", debug =1)
