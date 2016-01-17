@@ -887,19 +887,25 @@ class HDF5_Tests(unittest.TestCase):
         h5f = HDF5File(self.name_file1, "r+", debug =1)
         obj =  ['foo', {'bar': ('baz', None, 1.0, 2)}]  # dummy complex object
         h5f.store_object(obj, h5name='test')
-        objt = h5f.retrieve_object('test')
-        self.assertEqual(objt[1]['bar'][2],1.0)
         # then files
         name = 'scan.xml'
         fname = os.path.join(self.DataFolder, name)
         h5f.store_file(fname, h5name=name)
         h5f.close()
+        # now retrieve
+        h5f = HDF5File(self.name_file1, "r", debug =1)
+        objt = h5f.retrieve_object('test')
+        self.assertEqual(objt[1]['bar'][2],1.0)
+        with self.assertRaises(Exception):
+            objt2 = h5f.retrieve_object('foo')
         h5f = HDF5File(self.name_file1, "r")
         F = h5f.open_file(h5name=name)
         for i in range(17):
             l = F.readline()
         self.assertEqual(l.strip(),
             "<scan><count>15</count><minutes>0.4828</minutes><tic>1.398E7</tic><maxpeak>3.108E5</maxpeak></scan>")
+        with self.assertRaises(Exception):
+            G = h5f.open_file(h5name="foo.bar")
         F.close()
         h5f.close()
         h5f.close()

@@ -6,8 +6,6 @@ Apex vs Solarix
         ExciteSweep 
         PULPROG_xx_seq et PULPROG_xx_compiled
 
-calib dans fichier
-
 Fichier pour RMN
 
 model pour RMN
@@ -33,7 +31,3 @@ move dowsampling outside processing
 correct wrong downsampling in F2
 
 correct wrong syntax for apodisation
-
-left_point faux
-
-entete généraux msh5
