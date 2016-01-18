@@ -13,6 +13,7 @@ Modification by Lionel 2015-07-10
 from __future__ import print_function
 from scipy.optimize import minimize
 import numpy as np
+from numpy import pi
 import unittest
 import multiprocessing as mp
 from scipy import interpolate
@@ -76,7 +77,7 @@ def baseline0(y, degree=2, power=1, method="Powell", chunksize=2000, nbcores=Non
         lsize = y.size/nchunk
         recov = lsize/10  # recovering parts
         corr = np.linspace(0.0,1.0,2*recov)
-        corr = np.sin( np.linspace(0,np.pi/2,2*recov) )**2  # cosine roll-off
+        corr = np.sin( np.linspace(0,pi/2,2*recov) )**2  # cosine roll-off
         corrm1 = 1.0-corr
         bl = np.zeros_like(y)
         bl[0:lsize+recov] = bcL1_init(y[0:lsize+recov], degree=degree, power=power)

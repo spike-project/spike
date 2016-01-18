@@ -268,10 +268,12 @@ class SavingTests(unittest.TestCase):
         interf = INTERFACE()
         paramz = PARAM_ZOOM(data)
         display = DISPLAY(QtMplCv, data, interf, paramz)  
-        print(display.zoom_area())
-        print(type(display.res2dd()))
-        
+        self.assertEqual(display.levfact, 4)
+        self.assertEqual(display.AREAMIN, 800000)
+        self.assertIsInstance(display.interface, INTERFACE)
+        self.assertIsInstance(display.paramz, PARAM_ZOOM)
 
+                                                  
 if __name__ == '__main__':
     unittest.main()
          
