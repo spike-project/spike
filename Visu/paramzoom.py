@@ -48,6 +48,15 @@ class paramzoomTests(unittest.TestCase):
         data = LOAD(configfile = 'spike/Visu/visu2d_eg.mscf')
         paramz = PARAM_ZOOM(data)
         paramz.report()
+        self.assertEqual(paramz.movezoo,[0, 0, 0, 0])
+        self.assertEqual(paramz.listview_index,0)
+        self.assertEqual(paramz.sliderpos,1)
+        self.assertEqual(paramz.scale,1)
+        self.assertEqual(paramz.area3Dmax,5e3)
+        self.assertFalse(paramz.zoomready)
+        self.assertIsNone(paramz.greyzoo)
+        self.assertIsNone(paramz.mouse_motion)
+        
 
 if __name__ == '__main__':
     unittest.main()

@@ -56,15 +56,14 @@ class INTERFACE(): #interface
         make the layout in the centralwidget
         '''
         print("makes and fills the layout")
-        self.ui.layoutC = QtGui.QVBoxLayout(self.ui.centralwidget)#creation of the layout widget.
-        self.ui.layoutC.setContentsMargins(280, 50, 10, 70) # Margin for the picture left, up, right, bottom
+        self.ui.layoutC = QtGui.QVBoxLayout(self.ui.centralwidget)   #creation of the layout widget.
+        self.ui.layoutC.setContentsMargins(280, 50, 10, 70)          # Margin for the picture left, up, right, bottom
         
-    def clearlayout(self, layout):#   Delete item widgets in the layout to allow the refresh.
+    def clearlayout(self, layout):                                   #   Delete item widgets in the layout to allow the refresh.
         '''
         Clear the layout of the centralwidget
         '''
-        if debug(self):
-            print("in interface.clearlayout")
+        if debug(self): print("in interface.clearlayout")
         while layout.count() > 0:
             item = layout.takeAt(0)
             if not item: continue
@@ -80,8 +79,9 @@ class interfaceTests(unittest.TestCase):
     def test_interface(self):
         "Testing interface module"
         interf = INTERFACE()
-        interf.clearlayout(interf.ui.layoutC)
-        interf.clearlayout(interf.ui.layoutD)
-      
+        self.assertIsInstance(interf.window, QtGui.QMainWindow) 
+        self.assertIsInstance(interf.ui, Ui) 
+        self.assertIsInstance(interf.ui.layoutC, QtGui.QVBoxLayout)
+        
 if __name__ == '__main__':
     unittest.main()

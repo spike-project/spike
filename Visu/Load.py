@@ -92,12 +92,18 @@ class LOAD(object):
 
 
 class LoadTests(unittest.TestCase):
+    def setUp(self):
+        """Initialisation des tests."""
+        self.nbresolutions = 1
 
     def test_load(self):
-        " - Testing load module"
+        "Testing load module"
         l = LOAD(configfile = 'spike/Visu/visu2d_eg.mscf')
-        print("type(l.d[0])", type(l.d[0]))
-        print(dir(l))
+        self.assertTrue(l.mode_point)
+        self.assertTrue(l.active)
+        self.assertEqual(len(self.d), self.nbresolutions)
+        self.assertEqual(len(self.d_interm), self.nbresolutions)
+        self.assertEqual(len(self.NBRES), self.nbresolutions)
 
 if __name__ == '__main__':
     unittest.main()

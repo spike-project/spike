@@ -10,11 +10,12 @@ Various tools for performing signal processing (SNR calculation,
 
 from __future__ import print_function
 import numpy as np
+from numpy.fft import rfft as nprfft, irfft as npirfft
+from numpy import pi
 import math
 import scipy.fftpack as fft
 from scipy.signal import firwin2, firwin, convolve, lfilter
-from numpy.fft import rfft as nprfft
-from numpy.fft import irfft as npirfft
+
 import unittest
 import time
 from ..NPKData import NPKData
@@ -138,7 +139,7 @@ class SIGNAL_NOISE(object):
         '''
         Frequencies for the signal
         '''
-        self.Freq = [(i+1+np.sqrt(10))*np.pi*500.0j for i in range(self.nbpeaks)]  # frequencies
+        self.Freq = [(i+1+np.sqrt(10))*pi*500.0j for i in range(self.nbpeaks)]  # frequencies
         
     def make_pure_signal(self):
         '''
@@ -254,7 +255,7 @@ class SIGNAL_NOISE(object):
 def fid_signoise_type(nbpeaks,lendata, noise, noisetype):
    
     LB = 1.11       # linewidth
-    Freq = [(i+1+np.sqrt(10))*np.pi*500.0j for i in range(nbpeaks)]  # frequencies
+    Freq = [(i+1+np.sqrt(10))*pi*500.0j for i in range(nbpeaks)]  # frequencies
     Amp = [(i+1)*20 for i in range(nbpeaks)]    # amplitudes
 
     data0 = np.zeros(lendata,dtype=complex)

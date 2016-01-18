@@ -167,6 +167,7 @@ def test_urQRd(
     ============== example of use of urQRd on a synthetic data-set ===============
     """
     import time
+    from numpy import pi
     import matplotlib.pyplot as plt
     from matplotlib.ticker import MaxNLocator
 
@@ -188,7 +189,7 @@ def test_urQRd(
     ################################################ Create the data
     nbpeaks = 8     # number of simulated signals
     LB = 1.11       # linewidth
-    Freq = [(i+1+np.sqrt(10))*np.pi*500.0j for i in range(nbpeaks)]  # frequencies
+    Freq = [(i+1+np.sqrt(10))*pi*500.0j for i in range(nbpeaks)]  # frequencies
     Amp = [(i+1)*20 for i in range(nbpeaks)]    # amplitudes
 
     data0 = np.zeros(lendata,dtype=complex)
