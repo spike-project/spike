@@ -190,8 +190,8 @@ def Import_2D(folder, outfile = "", F1specwidth = None):
 
     data.axis2.size = sizeF2    # then set parameters along F2 - classical axis -
     data.axis2.specwidth = float(params["SW_h"])
-    data.axis2.highfreq = float(params["EXC_hi"])
-    data.axis2.lowfreq = float(params["EXC_low"])
+    data.axis2.highfreq = float(params["EXC_Freq_High"])
+    data.axis2.lowfreq = float(params["EXC_Freq_Low"])
     data.axis2.highmass = float(params["MW_high"])
     data.axis2.left_point = 0
     data.axis2.offset = 0.0
@@ -254,29 +254,6 @@ def Import_2D(folder, outfile = "", F1specwidth = None):
     if (outfile):
         HF.flush()
     return data
-#-----------------------------------------
-def Ser2D_to_FTICRFile(sizeF1, sizeF2, filename = "ser",outfile = "H5f.h5",chunks = None):
-    """
-    Charge any ser file directly in H5f file
-    """
-    print(filename)
-    print(outfile)
-    if sys.maxint == 2**31-1:   # the flag used by array depends on architecture - here on 32biy
-        flag = 'l'              # Apex files are in int32
-    else:                       # here in 64bit
-        flag = 'i'              # strange, but works here.
-    c1 = int(sizeF1/8. +1)
-    c2 = int(sizeF2/8. +1)
-    chunks = (c1,c2)
-    h5f = hf.HDF5File(outfile, "w")
-    h5f.create_group("/", 'resol1')
-    h5f.create_carray("/resol1", 'data', tables.Float64Atom(), (sizeF1, sizeF2), chunk = chunks)
-    with open(filename, "rb") as f:
-        for i1 in xrange(sizeF1):
-            tbuf = f.read(4*sizeF2)
-            abuf = np.array(array.array(flag,tbuf))
-            h5f.hf.root.resol1.data[i1,0:sizeF2] = abuf[0:sizeF2]
-    h5f.close()
 #-----------------------------------------
 def read_2D(sizeF1, sizeF2, filename = "ser"):
     """
@@ -379,11 +356,6 @@ class Solarix_Tests(unittest.TestCase):
         d = Import_2D("/DATA/FT-ICR-Cyto/cytoC_2D_000006.d")                prend 1080Mo de mémoire en 18 secondes
         d = Import_2D("/DATA/FT-ICR-Cyto/cytoC_2D_000006.d","test.hdf5")    prend 80Mo de mémoire en 21.6 secondes et créé un fichier de 1Go
         """
-    #-------------------------------------------------
-    def _test_ser2D_FTICRFile(self):
-        " Test the transfer from a ser file to an HDF5File"
-        self.announce()
-        Ser2D_to_FTICRFile(2048, 65536, filename = self.serfile ,outfile = self.outHDF,chunks = (257,8193))
     #-------------------------------------------------
     def _test_2(self):
         " Test and time direct processing"

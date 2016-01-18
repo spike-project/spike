@@ -223,6 +223,7 @@ python -m spike.File.HDF5File.py update {0}
         
         it is based on the filenode module from pytables
         """
+        import warnings
         if access == 'r':
             v  = self.hf.get_node(where=where, name=h5name)
             F = filenode.open_node(v, 'r')
@@ -230,7 +231,9 @@ python -m spike.File.HDF5File.py update {0}
             v  = self.hf.get_node(where=where, name=h5name)
             F = filenode.open_node(v, 'a+')
         elif access == 'w':
-            F = filenode.new_node(self.hf, where=where, name=h5name)
+            with warnings.catch_warnings():   # remove warnings, as the dot in name activates them
+                warnings.simplefilter("ignore")
+                F = filenode.new_node(self.hf, where=where, name=h5name)
         return F
         
     def store_internal_file(self, filename, h5name=None, where='/attached'):
