@@ -124,8 +124,8 @@ def Import_1D(folder, outfile = ""):
     #size, specwidth,  offset, left_point, highmass, calibA, calibB, calibC, lowfreq, highfreq
     data.axis1.size = sizeF1    # then set parameters
     data.axis1.specwidth = float(params["SW_h"])
-    data.axis1.highfreq = float(params["EXC_hi"])
-    data.axis1.lowfreq = float(params["EXC_low"])
+    data.axis1.highfreq = float(params["EXC_Freq_High"])
+    data.axis1.lowfreq = float(params["EXC_Freq_Low"])
     data.axis1.highmass = float(params["MW_high"])
     data.axis1.left_point = 0
     data.axis1.offset = 0.0
@@ -141,10 +141,11 @@ def Import_1D(folder, outfile = ""):
     if (outfile): # Creates the fticrdata with no array, just infos for the table
         HF = hf.HDF5File(outfile,"w")
         HF.create_from_template(data)
-        HF.store_object(params, h5name='params')    # store params in the file
+        HF.store_internal_object(params, h5name='params')    # store params in the file
         # then store files xx.methods and scan.xml
-        HF.store_file(parfilename)
-        HF.store_file( os.path.join(folder,"scan.xml") )
+        HF.store_internal_file(parfilename)
+        HF.store_internal_file( os.path.join(folder,"scan.xml") )
+        HF.store_internal_file( os.path.join(folder,"ExciteSweep") )
         data.hdf5file = HF
         # I need a link back to the file in order to close it, however this creates a loop - experimental ! 
     else:
@@ -211,8 +212,8 @@ def Import_2D(folder, outfile = "", F1specwidth = None):
             data.axis1.specwidth = 1.0/(2*f1)
         else:
             data.axis1.specwidth = data.axis2.specwidth     # else assume square...
-    data.axis1.highfreq = float(params["EXC_hi"])
-    data.axis1.lowfreq = float(params["EXC_low"])
+    data.axis1.highfreq = float(params["EXC_Freq_High"])
+    data.axis1.lowfreq = float(params["EXC_Freq_Low"])
     data.axis1.highmass = float(params["MW_high"])
     data.axis1.left_point = 0
     data.axis1.offset = 0.0
@@ -233,10 +234,11 @@ def Import_2D(folder, outfile = "", F1specwidth = None):
     if (outfile): # Creates the fticrdata with no array, just infos for the table
         HF = hf.HDF5File(outfile,"w")
         HF.create_from_template(data)
-        HF.store_object(params, h5name='params')    # store params in the file
+        HF.store_internal_object(params, h5name='params')    # store params in the file
         # then store files xx.methods and scan.xml
-        HF.store_file(parfilename)
-        HF.store_file( os.path.join(folder,"scan.xml") )
+        HF.store_internal_file(parfilename)
+        HF.store_internal_file( os.path.join(folder,"scan.xml") )
+        HF.store_internal_file( os.path.join(folder,"ExciteSweep") )
         data.hdf5file = HF
         # I need a link back to the file in order to close it, however this creates a loop - experimental ! 
     else:
