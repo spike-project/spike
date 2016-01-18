@@ -6,6 +6,7 @@ import numpy as np
 from .. util.debug_tools import*  
 from .. Visu.Matplotlib_generictools import*
 from .. Visu.Pyside_PyQt4 import*
+import unittest
 
 @dec_class_pr
 @decclassdebugging
@@ -154,5 +155,47 @@ class ZOOM_PLOT(object):                                                        
             print("in zooming.drawrect")
         self.drawrectC(llx, lly, urx, ury, layout1 = layout1)   
         self.drawrectD(llx, lly, urx, ury, layout2 = layout2)
-    
+
+class ZoomPlotTests(unittest.TestCase):
+
+    def test_zoomplot(self):
+        "Testing zoom plot module"
+        from .. Visu.canvas import Qt4MplCanvas as QtMplCv     # class for using matplotlib in Qt canvas.
+        from .. Visu.Load import LOAD
+        from .. Visu.interface import INTERFACE
+        from .. Visu.paramzoom import PARAM_ZOOM
+        from .. Visu.Saving import SAVE
+        from .. Visu.graphic_tools import GRAPHTOOLS
+        from .. Visu.convert import CONVERT
+        
+        data = LOAD(configfile = 'spike/Visu/visu2d_eg.mscf')
+        interf = INTERFACE()
+        paramz = PARAM_ZOOM(data)
+        display = DISPLAY(QtMplCv, data, interf, paramz)  
+        save = SAVE(data)  
+        convert = CONVERT(display, data, paramz)
+        gtools = GRAPHTOOLS(paramz, display, data, save, convert)  
+        
+        zp = ZOOM_PLOT(display, interf, data, paramz, gtools)
+        
+        self.display = display                              # handle the displays in the canvas.
+        self.interface = interf                             # object for interactinf with the interface.
+        self.data = data                                    # data loaded
+        self.paramz = paramz
+        self.gtools = gtools
+        
+        self.rectd = None                                                                           # graphical object for the zoom rectangle of the small window
+        self.rectc = None                                                                           # graphical object for the zoom rectangle of the main window
+        self.drawgreyzoom = True
+        
+        self.assertIsNone(zp.rectd)
+        self.assertIsNone(zp.rectc)
+        self.assertTrue(zp.drawgreyzoom)
+        
+        self.assertIsInstance(zp.data, LOAD)
+        self.assertIsInstance(zp.interf, INTERFACE)
+        self.assertIsInstance(zp.paramz, PARAM_ZOOM)  
+        self.assertIsInstance(zp.display, DISPLAY)
+        self.assertIsInstance(zp.gtools, GRAPHTOOLS)
+
     

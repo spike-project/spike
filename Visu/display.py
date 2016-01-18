@@ -256,7 +256,7 @@ class DISPLAY():# class regrouping tools to change resolution with zoom
                         xytext = (posy, posx), textcoords = 'offset points', size = 10,# va="center", #xytext=(posx, posy), 
                         bbox = dict(boxstyle = "round", fc = color, ec = "none"),)
                  
-class SavingTests(unittest.TestCase):
+class DisplayTests(unittest.TestCase):
 
     def test_display(self):
         "Testing display module"
