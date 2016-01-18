@@ -36,7 +36,7 @@ __file_version__ 0.6 is first stabilized multiresolution version
 # version is the library version number
 __version__ = "0.9"
 """
-v 0.9 new list of attributes for FTMS axes / extended format / better compression
+v 0.9 porting from pytables v2 to v3.x / new list of attributes for FTMS axes / storage for files and objects / better compression
 v 0.8 axes are gathered in one table, it's a more HDF5 way to deal with informations
 v 0.6 Uses tables.parameter to optimise the use of the cache
 """
@@ -74,9 +74,16 @@ class HDF5File(object):
     H.save()
     H.close()
 
-    HDF5File have the capacity to store and retrieve complete files and python objects:
-    H.
     
+    HDF5File have the capacity to store and retrieve complete files and python objects:
+        with
+    lis = [any kind of list or tuple]  # works also with dict and nested list and dict
+        then
+    H.store_internal_object(lis, "name_of_storage")
+        will store the object, and
+    lis_back = H.retrieve_object("name_of_storage")
+        will retrieve it
+    data are stored using JSON, so anything compatible will do  
     """
     def __init__(self, fname, access = 'r', info = None, nparray = None, fticrd = None, compress=False, debug = 0):
         """
@@ -180,7 +187,7 @@ The file {0} is from version {1} while this program handles file version {2}.
 You have to update your msh5 file running update functions.
 to do this run the following program :
 
-python HDF5File.py update {0}
+python -m spike.File.HDF5File.py update {0}
 
 """.format(self.fname, info["File_Version"],__file_version__)
             raise Exception(msg)
@@ -189,7 +196,7 @@ python HDF5File.py update {0}
     ######### file nodes ################
     # store arbitrary objects in a hdf5 node
     #----------------------------------------------
-    def open_file(self, h5name, access='r', where='/attached'):
+    def open_internal_file(self, h5name, access='r', where='/attached'):
         """
         opens a node called h5name in the file, which can be accessed as a file.
         returns a file stram which can be used as a classical file.
@@ -201,14 +208,14 @@ python HDF5File.py update {0}
         file is stored in a h5 group called h5name
 
         eg.
-        F = h5.open_file('myfile.txt', 'w', where='/files')
+        F = h5.open_internal_file('myfile.txt', 'w', where='/files')
         # create a node called '/files/myfile.txt' (node 'myfile.txt' in the group '/files')
         F.writelines(text)
         F.close()
         # and write some text into it
 
         # then, latter on
-        F = h5.open_file('myfile.txt', 'r', where='/files')
+        F = h5.open_internal_file('myfile.txt', 'r', where='/files')
         textback = F.read()
         F.close()
 
@@ -226,23 +233,23 @@ python HDF5File.py update {0}
             F = filenode.new_node(self.hf, where=where, name=h5name)
         return F
         
-    def store_file(self, filename, h5name=None, where='/attached'):
+    def store_internal_file(self, filename, h5name=None, where='/attached'):
         """
         Store a (text) file into the hdf5 file,
             filename: name of the file to be copied
             h5name: is its internal name (more limitation than in regular filesystems)
                 copied from os.path.basename(filename) by default
             where: group where the file is copied into the hdf5
-        file content will be retrieved using    open_file(h5name,'r)
+        file content will be retrieved using    open_internal_file(h5name,'r)
         """
         if h5name is None:
             h5name = os.path.basename(filename)
-        node = self.open_file(h5name, 'w', where=where)
+        node = self.open_internal_file(h5name, 'w', where=where)
         with open(filename, 'r') as F:
             node.write( F.read() )
         node.close()
     #----------------------------------------------
-    def store_object(self, obj, h5name, where='/'):
+    def store_internal_object(self, obj, h5name, where='/'):
         """
         store a python object into the hdf5 file
         object are then retrieve with retrieve_object()
@@ -250,12 +257,13 @@ python HDF5File.py update {0}
         uses JSON to serialize obj
             - so works only on values, lists, dictionary, etc... but not functions or methods
         """
-        node = filenode.new_node(self.hf, where=where, name=h5name)
+        node = filenode.new_node(self.hf, where=where, name=h5name, filters=tables.Filters(complevel=1, complib='zlib'))
         json.dump(obj, node)
+        node.close()
     #----------------------------------------------
     def retrieve_object(self, h5name, where='/', access='r'):
         """
-        retrieve a python object stored with store_object()
+        retrieve a python object stored with store_internal_object()
         """
         v  = self.hf.get_node(where=where, name=h5name)
         F = filenode.open_node(v,'r')
@@ -759,6 +767,10 @@ def up0p8_to_0p9(fname, debug = 1):
     Function that deals with changing HDF5 files created with file_version 0.8 to be read with 0.9 lib
     """
     raise "Not Available YET !"
+    # cree attached
+    # cree params
+    # conversion d'unité  - gérer les mr différemment
+    # 
     hf = tables.open_file(fname,"r+")
 
     description = ""
@@ -897,11 +909,11 @@ class HDF5_Tests(unittest.TestCase):
         # 1st objects
         h5f = HDF5File(self.name_file1, "r+", debug =1)
         obj =  ['foo', {'bar': ('baz', None, 1.0, 2)}]  # dummy complex object
-        h5f.store_object(obj, h5name='test')
+        h5f.store_internal_object(obj, h5name='test')
         # then files
         name = 'scan.xml'
         fname = os.path.join(self.DataFolder, name)
-        h5f.store_file(fname, h5name=name)
+        h5f.store_internal_file(fname, h5name=name)
         h5f.flush()
         h5f.close()
         # now retrieve
@@ -911,13 +923,13 @@ class HDF5_Tests(unittest.TestCase):
         with self.assertRaises(Exception):
             objt2 = h5f.retrieve_object('foo')
         h5f = HDF5File(self.name_file1, "r")
-        F = h5f.open_file(h5name=name)
+        F = h5f.open_internal_file(h5name=name)
         for i in range(17):
             l = F.readline()
         self.assertEqual(l.strip(),
             "<scan><count>15</count><minutes>0.4828</minutes><tic>1.398E7</tic><maxpeak>3.108E5</maxpeak></scan>")
         with self.assertRaises(Exception):
-            G = h5f.open_file(h5name="foo.bar")
+            G = h5f.open_internal_file(h5name="foo.bar")
         F.close()
         h5f.close()
         h5f.close()
