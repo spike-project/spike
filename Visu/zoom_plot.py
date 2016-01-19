@@ -164,6 +164,7 @@ class ZoomPlotTests(unittest.TestCase):
         from .. Visu.Load import LOAD
         from .. Visu.interface import INTERFACE
         from .. Visu.paramzoom import PARAM_ZOOM
+        from .. Visu.display import DISPLAY
         from .. Visu.Saving import SAVE
         from .. Visu.graphic_tools import GRAPHTOOLS
         from .. Visu.convert import CONVERT
@@ -178,22 +179,14 @@ class ZoomPlotTests(unittest.TestCase):
         
         zp = ZOOM_PLOT(display, interf, data, paramz, gtools)
         
-        self.display = display                              # handle the displays in the canvas.
-        self.interface = interf                             # object for interactinf with the interface.
-        self.data = data                                    # data loaded
-        self.paramz = paramz
-        self.gtools = gtools
-        
-        self.rectd = None                                                                           # graphical object for the zoom rectangle of the small window
-        self.rectc = None                                                                           # graphical object for the zoom rectangle of the main window
-        self.drawgreyzoom = True
+
         
         self.assertIsNone(zp.rectd)
         self.assertIsNone(zp.rectc)
         self.assertTrue(zp.drawgreyzoom)
         
         self.assertIsInstance(zp.data, LOAD)
-        self.assertIsInstance(zp.interf, INTERFACE)
+        self.assertIsInstance(zp.interface, INTERFACE)
         self.assertIsInstance(zp.paramz, PARAM_ZOOM)  
         self.assertIsInstance(zp.display, DISPLAY)
         self.assertIsInstance(zp.gtools, GRAPHTOOLS)

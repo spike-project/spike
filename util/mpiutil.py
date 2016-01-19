@@ -53,13 +53,14 @@ recv is for picklable python objects
 
 try:
     from mpi4py import MPI
-    MPI_comm = MPI.COMM_WORLD
-    MPI_rank = MPI_comm.Get_rank()
-    MPI_size = MPI_comm.size
 except ImportError:
     print("no MPI available")
     MPI_rank = 0
     MPI_size = 1
+else:
+    MPI_comm = MPI.COMM_WORLD
+    MPI_rank = MPI_comm.Get_rank()
+    MPI_size = MPI_comm.size
 
 # TAG for MPI
 WORK_TAG = 1    # tag work message
