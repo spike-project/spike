@@ -728,7 +728,7 @@ processing FT
         pass
     datatemp.hdf5file.close()
     if param.do_F1:
-        hfar.axes_update(group = group,axis = 1, infos = {'specwidth':d1.axis1.specwidth, 'left_point':int(d1.axis1.left_point)})
+        hfar.axes_update(group = group,axis = 1, infos = {'offset':int(d1.axis1.offset)})
     if param.interfile is None:
         temp.close()
         os.unlink(interfile)
@@ -750,7 +750,7 @@ downsampling %s
             group = 'resol%d'%(i+2)     # +2 because we poped the first value
             if debug > 0: print("downsampling", group, (sizeF1, sizeF2))
             down = FTICRData( dim = 2 )   # create dummy 2D
-            copyaxes(d1, down)        # copy axes from d0 to d1
+            copyaxes(d1, down)        # copy axes from d1 to down
             down.axis1.size = sizeF1
             down.axis2.size = sizeF2
             #create_branch(hfar, group, d1)
