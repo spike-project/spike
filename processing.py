@@ -317,17 +317,18 @@ def do_proc_F1_flip_modu(dinp, doutp, parameter):
     scan =  min(dinp.size2, doutp.size2)
     widgets = ['Processing F1 flip-modu: ', pg.Percentage(), ' ', pg.Bar(marker='-',left = '[',right = ']'), pg.ETA()]
     pbar= pg.ProgressBar(widgets = widgets, maxval = scan) #, fd=sys.stdout)
-    if parameter.freq_highmass == 0:   # means not given in .mscf file -> compute from highmass
-        shift = doutp.axis1.mztoi( doutp.axis1.highmass )   # frequency shift in points, computed from location of highmass
-        hshift = doutp.axis1.itoh(shift)                    # the same in Hz
-        rot = dinp.axis1.mztoi( dinp.axis1.highmass )       # rot correction is applied in the starting space
+    
+    i if parameter.freq_highmass == 0:   # means not given in .mscf file -> compute from lowfreq
+        hshift = dinp.axis1.lowfreq        
+        shift = doutp.axis1.htoi(hshift)   # frequency shift in points, computed from pluse generator lowfreq
+        rot = dinp.axis1.htoi(hshift)       # rot correction is applied in the starting space
     else:
         hshift = parameter.freq_highmass
-        shift = doutp.axis1.htoi(hshift)
-        rot = dinp.axis1.htoi( hshift )       # rot correction is applied in the starting space
-#    doutp.axis1.left_point = shift      
-    doutp.axis1.offset = hshift
-#    doutp.axis1.specwidth += hshift    # correction of specwidth
+        shift = doutp.axis1.htoi(hshift)   # frequency shift in points, computed from pluse generator lowfreq
+        rot = dinp.axis1.htoi(hshift) 
+        
+    doutp.axis1.offset = shift
+
     xarg = iterarg(dinp, rot, size, parameter)      # construct iterator for main loop
     if parameter.mp:  # means multiprocessing //
         res = Pool.imap(_do_proc_F1_flip_modu, xarg)
@@ -415,8 +416,8 @@ def downsample2D(data, outp, n1, n2, compress=False, compress_level=3.0):
             temp[abs(temp)<threshold] = 0.0
         outp.buffer[i/n1,:] = temp
     copyaxes(data, outp)
-    outp.axis1.left_point = outp.axis1.left_point/n1
-    outp.axis2.left_point = outp.axis2.left_point/n2
+    outp.axis1.offset = round(outp.axis1.offset/n1)
+    outp.axis2.offset = round(outp.axis2.offset/n2)
     outp.adapt_size()
     return outp
 
@@ -454,6 +455,8 @@ class Proc_Parameters(object):
         self.compress_level = 1.0
         self.tempdir = "/tmp"
         self.largest = LARGESTDATA
+        self.freq_highmass = 0.0         
+        
         if configfile:
             self.load(configfile)
     def load(self, cp):
@@ -728,7 +731,7 @@ processing FT
         pass
     datatemp.hdf5file.close()
     if param.do_F1:
-        hfar.axes_update(group = group,axis = 1, infos = {'offset':int(d1.axis1.offset)})
+        hfar.axes_update(group = group,axis = 1, infos = {'offset':round(d1.axis1.offset)})
     if param.interfile is None:
         temp.close()
         os.unlink(interfile)
@@ -757,7 +760,7 @@ downsampling %s
             hfar.create_from_template(down, group)
             if debug > 0: print(down)
             downsample2D(downprevious, down, int(downprevious.size1/sizeF1), int(downprevious.size2/sizeF2), compress=param.compress_outfile)
-            hfar.axes_update(group = group, axis = 1, infos = {'left_point': down.axis1.left_point})
+            hfar.axes_update(group = group,axis = 1, infos = {'offset':round(down.axis1.offset)})
             downprevious = down
         print_time(time.time()-t0, "Downsampling time")
     # close output file
