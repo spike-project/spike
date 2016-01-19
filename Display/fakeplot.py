@@ -94,6 +94,10 @@ class fake(object):
         print("-- xtick :",args[0])
     def set_yticklabels(self, *args, **key):
         print("-- ytick :",args[0])
+    def xlim(self, *args, **key):
+        print("-- xlim :",args[0])
+    def ylim(self, *args, **key):
+        print("-- ylim :",args[0])
 def figure(*args, **key):
     return gca().figure(*args, **key)
 def subplot(*args, **key):
@@ -127,6 +131,10 @@ def xlabel(*args, **key):
     return gca().xlabel(*args, **key)
 def ylabel(*args, **key):
     return gca().ylabel(*args, **key)
+def xlim(*args, **key):
+    return gca().xlim(*args, **key)
+def ylim(*args, **key):
+    return gca().ylim(*args, **key)
 def title(*args, **key):
     return gca().title(*args, **key)
 def suptitle(*args, **key):
