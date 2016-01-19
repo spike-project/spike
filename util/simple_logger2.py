@@ -18,7 +18,8 @@ import threading
 
 def strdate():
     n = datetime.now()
-    return n.strftime('%Y-%h-%d-%Hh%M')
+    #return n.strftime('%Y-%h-%d-%Hh%M') #CR error at runtime on Windows
+    return n.strftime('%a-%d-%b-%Y-%H-%M-%S')
 
 class _Writer(object):
     '''
