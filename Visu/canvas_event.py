@@ -8,6 +8,7 @@ from .. util.debug_tools import*
 from .. Visu.Matplotlib_generictools import*
 from .. Visu.zoom_plot import ZOOM_PLOT 
 from .. Visu.Pyside_PyQt4 import*
+import unittest
 
 @dec_class_pr
 @decclassdebugging
@@ -19,11 +20,11 @@ class CANVAS_EVENT(object):
         self.display = display 
         self.interface = interf
         self.data = data
-        self.paramz = paramz # zoom parameters
-        self.gtools = gtools  # graphic tools
-        self.convert = convert # conversions mz/point
-        self.select_tools = stools # gestion of the selected tools.
-        self.move_wind = mwind # zoom window movements after drag or zoom or anything else.
+        self.paramz = paramz        # zoom parameters
+        self.gtools = gtools        # graphic tools
+        self.convert = convert      # conversions mz/point
+        self.select_tools = stools  # gestion of the selected tools.
+        self.move_wind = mwind      # zoom window movements after drag or zoom or anything else.
         self.zoom = zoom
         self.zplot = ZOOM_PLOT(display, interf, data, paramz, gtools)
         self.rectd = None                                                                           # graphical object for the zoom rectangle of the small window
@@ -118,7 +119,7 @@ class CANVAS_EVENT(object):
 
     def on_press(self, event):                                                                      # 
         '''
-        When pressed, triggers the rectangle drawing
+        When pressed, "on_press" triggers the rectangle drawing
         Waits for the mouse button's release to make the zoom. 
         Calls self.on_press_D_event and self.on_press_C_event
         '''
@@ -253,3 +254,49 @@ class CANVAS_EVENT(object):
         self.display.connect('button_release_event', self.on_release)            # connecting the release event
         self.display.connect('motion_notify_event', self.detect_corner) 
         #self.fig.canvas.mpl_connect('scroll_event', zo.on_scroll)
+
+class canvas_event_Tests(unittest.TestCase):
+
+    def test_canvas_event(self):
+        "Testing canvas event module"
+        from .. Visu.Load import LOAD #
+        from .. Visu.Saving import SAVE
+        from .. Visu.graphic_tools import GRAPHTOOLS           # class contiaining the graphic tools for doing profiles etc
+        from .. Visu.display import DISPLAY                    # class to handle diplay of the dataset.
+        from .. Visu.canvas import Qt4MplCanvas as QtMplCv     # class for using matplotlib in Qt canvas.
+        from .. Visu.paramzoom import PARAM_ZOOM               # class object for the zoom parameters
+        from .. Visu.zooming import ZOOMING                    # class for taking care of the zooms
+        from .. Visu.move_window import MOVE_WINDOW            # class to handle the zoom windows positions
+        from .. Visu.interface import INTERFACE                # class for completing the interface. 
+        from .. Visu.convert import CONVERT                    # Class for conversion operations between mz and point
+        from .. Visu.single.select_tools import SELECT_TOOLS   # class to handle the selected tool used in the interface.
+        
+        data = LOAD(configfile = 'spike/Visu/visu2d_eg.mscf')
+        save = SAVE(data)                                                                               # saves 2D, 3D, profiles.
+        paramz = PARAM_ZOOM(data)                                                                       # takes the parameters for zoom. 
+        interf = INTERFACE()                                                                            # instantiate the interface 
+        display = DISPLAY(QtMplCv, data, interf, paramz)                                                # control the display, zoom/resolution. etc
+        convert = CONVERT(display, data, paramz)                                                        # conversion mz/point
+        gtools = GRAPHTOOLS(paramz, display, data, save, convert)                                       # graphic tools
+        stools = SELECT_TOOLS(display, paramz, interf)                                                  # orthogonally select tools 
+        mwind = MOVE_WINDOW(display, interf, data, paramz, gtools, convert, stools)                     # moving zoom window, drag etc
+        zoom = ZOOMING(display, interf, data, paramz, gtools, convert, stools, mwind)
+
+        ce = CANVAS_EVENT(display, interf, data, paramz, gtools, convert, stools, mwind, zoom)
+
+        self.assertIsNone(ce.rectc)
+        self.assertIsNone(ce.rectd)
+        ##
+        self.assertIsInstance(ce.data, LOAD)
+        self.assertIsInstance(ce.paramz, PARAM_ZOOM)
+        self.assertIsInstance(ce.interface, INTERFACE)
+        self.assertIsInstance(ce.display, DISPLAY)
+        self.assertIsInstance(ce.convert, CONVERT)
+        self.assertIsInstance(ce.gtools, GRAPHTOOLS)
+        self.assertIsInstance(ce.select_tools, SELECT_TOOLS)
+        self.assertIsInstance(ce.move_wind, MOVE_WINDOW)
+        self.assertIsInstance(ce.zoom, ZOOMING)
+
+
+if __name__ == '__main__':
+    unittest.main()

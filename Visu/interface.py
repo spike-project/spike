@@ -40,7 +40,7 @@ class INTERFACE(): #interface
         #print whichapp 
         self.window = QtGui.QMainWindow()
         self.ui = Ui()# 
-        self.ui.setupUi(self.window)#set up of the main window
+        self.ui.setupUi(self.window) # Set up of the main window
         #self.show_toolbar = False
         self.init_interf()
         
@@ -56,10 +56,10 @@ class INTERFACE(): #interface
         make the layout in the centralwidget
         '''
         print("makes and fills the layout")
-        self.ui.layoutC = QtGui.QVBoxLayout(self.ui.centralwidget)   #creation of the layout widget.
+        self.ui.layoutC = QtGui.QVBoxLayout(self.ui.centralwidget)   # Create the layout widget.
         self.ui.layoutC.setContentsMargins(280, 50, 10, 70)          # Margin for the picture left, up, right, bottom
         
-    def clearlayout(self, layout):                                   #   Delete item widgets in the layout to allow the refresh.
+    def clearlayout(self, layout):                                   # Delete item widgets in the layout to allow the refresh.
         '''
         Clear the layout of the centralwidget
         '''

@@ -43,8 +43,10 @@ class SavingTests(unittest.TestCase):
         "Testing Saving module"
         from .. Visu.Load import LOAD
         data = LOAD(configfile = 'spike/Visu/visu2d_eg.mscf')
-        path_save = SAVE(data)
-        print("path_save is ", path_save)
+        save = SAVE(data)
+        
+        self.assertIsNone(save.dir_saved)
+        self.assertIsInstance(save.data, LOAD)
 
 if __name__ == '__main__':
     unittest.main()

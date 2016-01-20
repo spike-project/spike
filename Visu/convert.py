@@ -103,5 +103,26 @@ class CONVERT():
         y1 = min(y1, self.display.currentd.size1 - 1)
         self.paramz.zoom_coord = [x0, y0, x1, y1]
         
+class Convert_Tests(unittest.TestCase):
+    def setUp(self):
+        """Initialisation des tests."""
+
+    def test_convert(self):
+        'Testing "convert" module'
+        from .. Visu.Load import LOAD
+        from .. Visu.paramzoom import PARAM_ZOOM
+        from .. Visu.display import DISPLAY
+        from .. Visu.convert import CONVERT
+        ###
+        data = LOAD(configfile = 'spike/Visu/visu2d_eg.mscf')
+        paramz = PARAM_ZOOM(data)
+        display = DISPLAY(QtMplCv, data, interf, paramz)  
+        convert = CONVERT(display, data, paramz)
+        ##
+        # print "convert.to_npk() ", convert.to_npk()
+        # print "convert.maxres() ", convert.maxres()
+        # print "convert.itomz_all ", convert.itomz_all(d, llx, lly, urx, ury)
+        # print "convert.mztoi_all ", convert.mztoi_all(d, llx, lly, urx, ury)
+
 if __name__ == '__main__':
-    print("hello")
+    unittest.main()
