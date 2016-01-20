@@ -178,9 +178,7 @@ class ZoomPlotTests(unittest.TestCase):
         gtools = GRAPHTOOLS(paramz, display, data, save, convert)  
         
         zp = ZOOM_PLOT(display, interf, data, paramz, gtools)
-        
 
-        
         self.assertIsNone(zp.rectd)
         self.assertIsNone(zp.rectc)
         self.assertTrue(zp.drawgreyzoom)
@@ -191,4 +189,5 @@ class ZoomPlotTests(unittest.TestCase):
         self.assertIsInstance(zp.display, DISPLAY)
         self.assertIsInstance(zp.gtools, GRAPHTOOLS)
 
-    
+if __name__ == '__main__':
+    unittest.main()  

@@ -8,7 +8,7 @@ from .. Visu.zoom_plot import ZOOM_PLOT
 
 @dec_class_pr
 @decclassdebugging
-class MOVE_WINDOW():                                                                                    # class regrouping methods about drag function
+class MOVE_WINDOW():                                                                   # class regrouping methods about drag function
     '''
     Drag the zoomed area or just makes the zooming area.
     The coordinates are in "point" format at the root of the treatment
@@ -26,7 +26,7 @@ class MOVE_WINDOW():                                                            
         self.select_tools = stools # selected tools
         self.convert = convert
         self.zplot = ZOOM_PLOT(display, interf, data, paramz, gtools)
-        self.stretch = False                                                                        # switch to allow stretching of windows by taking the corners
+        self.stretch = False                                                        # switch to allow stretching of windows by taking the corners
         self.selline = False 
         self.vecshift = []
         self.drag = False
@@ -39,15 +39,15 @@ class MOVE_WINDOW():                                                            
         Dragging the window
         '''
         try:
-            self.zplot.rectc.remove()                                                               # erase the zoom rectangle in canvas c
-            self.zplot.rectd.remove()                                                               # erase the zoom rectangle in canvas d
-            #self.gzoo.remove()                                                                     # erase grey blue area
+            self.zplot.rectc.remove()                                          # erase the zoom rectangle in canvas c
+            self.zplot.rectd.remove()                                          # erase the zoom rectangle in canvas d
+            #self.gzoo.remove()                                                # erase grey blue area
         except :
             pass
-        if inzoomdrag :                                                                        # move the zoom rectangle
-            self.moverect([dx, dy],"Czoom")                                                         # dragging the zoom window
+        if inzoomdrag :                                                        # move the zoom rectangle
+            self.moverect([dx, dy],"Czoom")                                    # dragging the zoom window
         elif not self.paramz.zoomready:
-            self.moverect([dx, dy], "C")                                                            # dragging all the picture
+            self.moverect([dx, dy], "C")                                       # dragging all the picture
 
     def move_refreshC_line(self, dx, dy):
         '''
@@ -57,23 +57,23 @@ class MOVE_WINDOW():                                                            
         zc = self.paramz.zoom_coord
         self.display.qmc.setCursor(QtGui.QCursor(QtGui.QPixmap(\
                 'spike/Visu/iconsUi/pencil-iconsm.jpg')))
-        if len(zc) == 2 :                                                                           # draw intermediate line
-            try : self.linec.remove()                                                                 # erase the line in canvas C
+        if len(zc) == 2 :                                                       # draw intermediate line
+            try : self.linec.remove()                                           # erase the line in canvas C
             except : pass 
-            self.gtools.drawline(zc[0], zc[1], dx, dy, self.layoutC, self.layoutD)                  # draw line in windows C
+            self.gtools.drawline(zc[0], zc[1], dx, dy, self.layoutC, self.layoutD)    # draw line in windows C
 
     def move_refreshC_rect(self, dx, dy):
         '''
         Moves the rectangle in C window.
         '''
         if self.zplot.rectc is not None :
-            try: self.zplot.rectc.remove()                                                               # erases the zoom rectangle in canvas c
+            try: self.zplot.rectc.remove()                                       # erases the zoom rectangle in canvas c
             except: print("no self.zplot.rectc")
         if self.zplot.rectd is not None :
-            try: self.zplot.rectd.remove()                                                               # erases the zoom rectangle in canvas d
+            try: self.zplot.rectd.remove()                                        # erases the zoom rectangle in canvas d
             except: print("no self.zplot.rectd")
         zc = self.paramz.zoom_coord
-        self.zplot.drawrect(zc[0], zc[1], dx, dy, self.layoutC, self.layoutD)                       # draw zoom rectangles in windows C and D
+        self.zplot.drawrect(zc[0], zc[1], dx, dy, self.layoutC, self.layoutD)     # draw zoom rectangles in windows C and D
 
     def move_refreshC(self, dx, dy):
         '''
@@ -88,14 +88,14 @@ class MOVE_WINDOW():                                                            
             inzoomdrag = dx > llx and dx < urx and dy > lly and dy < ury and self.paramz.zoomready
         except :
             pass
-        if  self.drag :                                                                      # right mouse button  "hand cursor"
+        if  self.drag :                                                      # right mouse button  "hand cursor"
             self.move_dragC(inzoomdrag, dx, dy)
-        ########                                                                                    # Cursor mode
-        if not self.drag :                                                                          # left mouse button   "arrow cursor"
-            if self.selline :                                                                       # if line selection # and not and not vis.mode_point
+        ########                                                             # Cursor mode
+        if not self.drag :                                                   # left mouse button   "arrow cursor"
+            if self.selline :                                                # if line selection # and not and not vis.mode_point
                 self.move_refreshC_line(dx, dy)
             else : 
-                if debug(self): print("will make self.move_refreshC_rect ")                                                                                 # draw zoom window in C and D
+                if debug(self): print("will make self.move_refreshC_rect ")        # draw zoom window in C and D
                 self.move_refreshC_rect(dx, dy)
                     
     def move_zoom_win(self, poswin, llx , lly, urx, ury):
@@ -152,13 +152,13 @@ class MOVE_WINDOW():                                                            
         '''
         if debug(self): print("in moverectD ")
         rapp2, rapp1 = (self.data.resmin.size2/float(self.display.currentd.size2),
-                        self.data.resmin.size1/float(self.display.currentd.size1))                  # 
+                        self.data.resmin.size1/float(self.display.currentd.size1))         
         winx = (urx - llx)/2; winy = (ury-lly)/2
         pwx = float(poswin[0])/rapp2; pwy = float(poswin[1])/rapp1
         newllx, newlly, newurx, newury = pwx - winx, pwy - winy, pwx + winx, pwy + winy
         self.paramz.zoom_coord = [newllx, newlly, newurx, newury ]#
         self.zplot.drawrect(newllx, newlly, newurx, newury, layout2 = self.layoutD)                 # draws zoom rectangle in D
-                                                                         # Calculates new position in window C
+                                                             
     def moverect(self, poswin, winselect):
         '''
         Function to move zoom area in window "C" and window "D"
