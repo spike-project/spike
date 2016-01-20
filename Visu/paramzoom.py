@@ -57,6 +57,5 @@ class paramzoomTests(unittest.TestCase):
         self.assertIsNone(paramz.greyzoo)
         self.assertIsNone(paramz.mouse_motion)
         
-
 if __name__ == '__main__':
     unittest.main()

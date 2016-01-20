@@ -33,5 +33,6 @@ class Qt4MplCanvas(FigureCanvas):
         Action.triggered.connect(selectL)
         menu.exec_(event.globalPos())
         
+
 if __name__ == '__main__':
-    print("hello")
+    pass

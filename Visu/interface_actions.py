@@ -28,10 +28,10 @@ class INTERACT(object):
         ########
         self.canv_event = CANVAS_EVENT(display, interf, data, paramz, gtools, convert, stools, mwind, zoom)
         self.list_res()             # list of resolutions, made from self.data
-        self.lowmass_shift = 1e-7   # very small shift for profiles.
-        self.pt_shift = 1e-7        # very small shift for doing the profiles
+        self.lowmass_shift = 1e-7   # 
+        self.pt_shift = 1e-7        # 
         #self.list_res()  
-        self.select_tools.change_to('zoom') # position the tool to zoom tool.
+        self.select_tools.change_to('zoom')     # select the "zoom" tool.
         self.interface.ui.pushButton_4.setText("go to m/z")
 
     def list_res(self):
@@ -115,15 +115,6 @@ class INTERACT(object):
         if self.data.param.multresfile :
             self.afffile()                                                                          # visualization
             
-    def permute_states (self, test, etat0, etat1):                                                  # pour les boutons dont a fonction est un va et vient. 
-        '''
-        function for swapping between two states..
-        have to define first value of state before.
-        '''
-        if debug(self): print("etat is : ", test)
-        if test == etat0:  test = etat1
-        else : test = etat0
-        return test
     
     def drag_connect(self):
         '''
@@ -202,17 +193,14 @@ class INTERACT(object):
         Show dataset in C window and addresses of used files
         vis.resmin : resolution for window D
         '''
-        if debug(self):   
-            print("##                                                                               # in interface_actions.afffile")
+        if debug(self):   print("### in interface_actions.afffile")
         sizefticr = os.path.getsize(self.data.param.multresfile)                                    # Takes the size of the multiresolution file
         self.interface.ui.label_8.setText(str(round(sizefticr/1e6)) + " MB")                        # show the size of the data in the interface 
         self.interface.ui.label_6.setText(self.data.param.multresfile)                              # Path to the multiresolution file
-        if debug(self):
-            print("in interface_actions.afffile makes self.display.affd ")
+        if debug(self):  print("in interface_actions.afffile makes self.display.affd ")
         self.display.affd(self.data.d[len(self.data.d)-1], self.data.resmin,
                       self.interface.ui.layoutC, self.interface.ui.layoutD)                                                 #initialisation with resolution 1
-        if debug(self):
-            print("in interface_actions.afffile makes self.canv_event.interact_with_canvasC ")
+        if debug(self): print("in interface_actions.afffile makes self.canv_event.interact_with_canvasC ")
         self.canv_event.interact_with_canvasC()
         absmx = self.data.d[len(self.data.d)-1].absmax
         for dd in self.data.d:
@@ -224,13 +212,11 @@ class INTERACT(object):
         '''
         Passes from point to m/z
         '''
-        if debug(self):   
-            print("in interface_actions.swap_from_proint")
+        if debug(self): print("in interface_actions.swap_from_proint")
         self.data.mode_point = False
         self.interface.ui.pushButton_4.setText("go to pt")
         for dd in self.data.d:
-            if debug(self):   
-                print("dd.units = m/z")
+            if debug(self): print("dd.units = m/z")
             dd.axis1.currentunit = "m/z"
             dd.axis2.currentunit = "m/z"
     
@@ -425,11 +411,9 @@ class INTERACT(object):
         self.zoom.change_view(change_layoutD = True)
         self.canv_event.release_refrechC()                                                          # Makes the zoom
         self.zoom.change_zoom()                                                                     # makes zoom and saves the zoom, resolution and scale
-        if debug(self):
-            print("#### changing to zoom mode   ")
+        if debug(self): print("#### changing to zoom mode   ")
         self.select_tools.change_to('zoom') 
-        if debug(self):
-            print("self.paramz.zoomready ", self.paramz.zoomready)
+        if debug(self): print("self.paramz.zoomready ", self.paramz.zoomready)
         
     def manual_profile(self):
         '''
@@ -485,29 +469,29 @@ class INTERACT(object):
         '''
         self.savefigure('pdf')
 
-    def backhome(self):                                                                             # retrieving last zoom and resolution
+    def backhome(self):                                                      # retrieving last zoom and resolution
         '''
         going to the original view
         '''
         self.paramz.listview_index = 0
-        self.zoom.change_view_from_list()                                                           # changing the zoom with history
+        self.zoom.change_view_from_list()                                    # changing the zoom with history
         self.select_tools.change_to('zoom')
         
-    def backzoo(self):                                                                              # retrieving last zoom and resolution
+    def backzoo(self):                                                       # retrieving last zoom and resolution
         '''
         going back in the zooms
         '''
-        if len(self.paramz.listview) > 1 and self.paramz.listview_index > 0:                        # if there is more than one element in list of coordinates.
+        if len(self.paramz.listview) > 1 and self.paramz.listview_index > 0:   # if there is more than one element in list of coordinates.
             self.paramz.listview_index += -1
-        self.zoom.change_view_from_list()                                                           # changing the zoom with history  
+        self.zoom.change_view_from_list()                                      # changing the zoom with history  
 
-    def forwzoo(self):                                                                              # retrieving last zoom and resolution
+    def forwzoo(self):                                                         # retrieving last zoom and resolution
         '''
         going forward in the zooms
         '''
-        if self.paramz.listview_index < len(self.paramz.listview) - 1 :                                # if there is more than one element in list of coordinates.
+        if self.paramz.listview_index < len(self.paramz.listview) - 1 :         # if there is more than one element in list of coordinates.
             self.paramz.listview_index += 1
-        self.zoom.change_view_from_list()                                                              # changing the zoom with history
+        self.zoom.change_view_from_list()                                       # changing the zoom with history
     
     def zoom3D(self):
         '''
@@ -532,5 +516,47 @@ class INTERACT(object):
             message = " the zoom area is too large"
             print(message)
             self.display.affd(self.display.currentd, self.data.resmin,\
-             self.interface.ui.layoutC, make_zoom = False, message = message)
-        self.select_tools.change_to('zoom')
+             self.interface.ui.layoutC, make_zoom = False, message = message) # 
+        self.select_tools.change_to('zoom')  # Select the "zoom" tool
+
+class Interface_actions_Tests(unittest.TestCase):
+    def setUp(self):
+        """Initialisation des tests."""
+  
+    def test_interface_actions(self):
+        "Testing interface_actions module"
+        
+        from .. Visu.Load import LOAD #
+        from .. Visu.Saving import SAVE
+        from .. Visu.graphic_tools import GRAPHTOOLS           # class contiaining the graphic tools for doing profiles etc
+        from .. Visu.display import DISPLAY                    # class to handle diplay of the dataset.
+        from .. Visu.interface_actions import INTERACT         # class for to handle interaction with the interface.
+        from .. Visu.canvas import Qt4MplCanvas as QtMplCv     # class for using matplotlib in Qt canvas.
+        from .. Visu.paramzoom import PARAM_ZOOM               # class object for the zoom parameters
+        from .. Visu.zooming import ZOOMING                    # class for taking care of the zooms
+        from .. Visu.move_window import MOVE_WINDOW            # class to handle the zoom windows positions
+        from .. Visu.zooming import ZOOM3D                       # class for viewing peaks in 3D
+        from .. Visu.interface import INTERFACE                # class for completing the interface. 
+        from .. Visu.convert import CONVERT                    # Class for conversion operations between mz and point
+        from .. Visu.single.select_tools import SELECT_TOOLS   # class to handle the selected tool used in the interface.
+        
+        data = LOAD(configfile = 'spike/Visu/visu2d_eg.mscf')
+        save = SAVE(data)                                                                               # saves 2D, 3D, profiles.
+        paramz = PARAM_ZOOM(data)                                                                       # takes the parameters for zoom. 
+        interf = INTERFACE()                                                                            # instantiate the interface 
+        display = DISPLAY(QtMplCv, data, interf, paramz)                                                # control the display, zoom/resolution. etc
+        
+        convert = CONVERT(display, data, paramz)                                                        # conversion mz/point
+        gtools = GRAPHTOOLS(paramz, display, data, save, convert)                                       # graphic tools
+        stools = SELECT_TOOLS(display, paramz, interf)                                                  # orthogonally select tools 
+        mwind = MOVE_WINDOW(display, interf, data, paramz, gtools, convert, stools)                     # moving zoom window, drag etc
+        zoom = ZOOMING(display, interf, data, paramz, gtools, convert, stools, mwind)
+        zoom3d = ZOOM3D()                                                                               # zoom 3D on localalized area.
+        interact = INTERACT(zoom, mwind, data, display, interf, paramz,\
+            gtools, zoom3d, stools, convert, save)
+        ### Tests
+        self.assertIsInstance(interact.data, LOAD)
+    
+
+if __name__ == '__main__':
+    unittest.main()

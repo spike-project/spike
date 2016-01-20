@@ -14,7 +14,7 @@ from .. Visu.Pyside_PyQt4 import*
 
 @dec_class_pr
 @decclassdebugging
-class ZOOM_TOOLS(object):# class regrouping methods about zoom
+class ZOOM_TOOLS(object): # class regrouping methods about zoom
     def __init__(self, canv, interf, data, paramz, gtools):
         self.canv = canv
         self.interface = interf
