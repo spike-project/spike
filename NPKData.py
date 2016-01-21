@@ -253,6 +253,12 @@ class Axis(object):
             return "size : %d   sampled from %d   itype %d   unit %s"%(self.size, max(self.sampling), self.itype, self.currentunit)
         else:
             return "size : %d   itype %d   currentunit %s"%(self.size, self.itype, self.currentunit)
+    def _report(self):
+        "low level full-report"
+        st = ["Stored attributes:\n"] + ["  %s: %s\n"%(att,getattr(self,att)) for att in self.attributes]
+        st += ["other attributes:\n"] + ["  %s: %s\n"%(att,getattr(self,att)) for att in self.__dict__ if att not in self.attributes + ["attributes","units"] ]
+        st += ["  units: "] + [" %s"%k for k in self.units.keys()]
+        return "".join(st)
     def typestr(self):
         " returns its type (real or complex) as a string"
         if self.itype == 1:
@@ -396,9 +402,6 @@ class NMRAxis(Axis):
             self.attributes.insert(0, i)
         self.currentunit = currentunit
         
-    def _report(self):
-        "low level reporting"
-        return "size : %d   freq %f    sw %f   off %f   itype %d currentunit %s"%(self.size, self.frequency, self.specwidth, self.offset, self.itype, self.currentunit)
     def report(self):
         "high level reporting"
         if self.itype == 0:
@@ -519,9 +522,6 @@ class LaplaceAxis(Axis):
     def D_axis(self):
         """return axis containing Diffusion values, can be used for display"""
         return self.itod(self.points_axis())
-    def _report(self):
-        "low level report"
-        return "Dmin %f   Dmax %f  Dfactor %f"%(self.dmin,self.dmax,self.dfactor)
     def report(self):
         "hight level report"
         return "Laplace axis of %d points,  from %f to %f  using a scaling factor of %f"%  \
@@ -1496,15 +1496,34 @@ class NPKData(object):
         csv.save_unit(self, name, fmt=fmt)
         return self
     #----------------------------------------------
+    def _report(self):
+        """low level report"""
+        s = "%dD data-set\n"%self.dim
+        s += "".join( ["  %s: %s\n"%(att,getattr(self,att)) for att in self.__dict__ if att not in ["buffer","axis1","axis2","axis3"] ] )
+        s =  s+"\nAxis F1:\n" + self.axis1._report()
+        if self.dim >1:
+            s =  s+"\nAxis F2:\n" + self.axis2._report()
+        if self.dim >2:
+            s =  s+"\nAxis F3:\n" + self.axis3._report()
+        return s
     def report(self):
         """reports itself"""
         self.check(warn=True)
-        s = "Dim %d"%self.dim
-        s =  s+"\nAxis F1 : " + self.axis1.report()
+        isum = 0    # those two will be used to determine the hypercomplex state
+        iprod = 1
+        s = "%dD data-set"%self.dim
+        s =  s+"\nAxis F1 :" + self.axis1.report()
         if self.dim >1:
-            s =  s+"\nAxis F2 : " + self.axis2.report()
+            s =  s+"\nAxis F2: " + self.axis2.report()
         if self.dim >2:
-            s =  s+"\nAxis F3 : " + self.axis3.report()
+            s =  s+"\nAxis F3: " + self.axis3.report()
+        isum = sum( [ self.axes(i+1).itype for i in range(self.dim) ] )
+        if isum == 0:
+            s = s+"\ndata-set is real"
+        elif isum == 1:
+            s = s+"\ndata-set is complex"
+        else:
+            s = s+"\ndata-set is hypercomplex (order %d)"%(isum,)
         return s
     def __str__(self,*args,**kw):
         """
