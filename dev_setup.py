@@ -125,7 +125,7 @@ def generate_file(fname):
 # Do not edit
 """)
     version = ".".join(VersionInfo)
-    today = date.today().strftime("%d-%m-%Y")
+    today = date.today().strftime("%d-%b-%Y")
     f.write("ProgramName = '%s'\n"%ProgramName)
     f.write("VersionName = '%s'\n"%VersionName)
     f.write("version = '%s'\n"%version)
