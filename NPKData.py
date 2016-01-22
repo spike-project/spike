@@ -1758,7 +1758,7 @@ class NPKData(object):
                  defaut is 3
          alternativaly, you may use the strings "F1", "F2" or "F3"
          BUT not F12 F23 as 
-         0 is rest to default
+         0 is set to default
 
         """
         if self.dim == 1:
@@ -2441,7 +2441,7 @@ class NPKData(object):
             e = as_float((1 + 1.0j)*e)
         return self.apod_apply(axis,e)
     #-------------------------------------------------------------------------------
-    def apod_gm(self, axis=0,gb=1.0):
+    def apod_gm(self, gb, axis=0):
         """
         apply an gaussian apodisation, gb is in Hz
         WARNING : different from common definition of apodisation
@@ -2457,7 +2457,7 @@ class NPKData(object):
             e = as_float((1 + 1.0j)*e)
         return self.apod_apply(axis,e)
     #-------------------------------------------------------------------------------
-    def apod_tm(self, axis=0, tm1=0, tm2=0):
+    def apod_tm(self, tm1, tm2, axis=0):
         """
         apply a trapezoide apodisation, lb is in Hz
         WARNING : different from common definition of apodisation
@@ -2500,7 +2500,7 @@ class NPKData(object):
         print("APOD_TM still to be doublechecked",e)
         #return self.apod_apply(axis,e)
     #-------------------------------------------------------------------------------
-    def apod_em(self, axis=0,lb=1.0):
+    def apod_em(self, lb, axis=0):
         """
         apply an exponential apodisation, lb is in Hz
         WARNING : different from common definition of apodisation
@@ -2516,7 +2516,7 @@ class NPKData(object):
             e = as_float((1 + 1.0j)*e)
         return self.apod_apply(axis,e)
     #-------------------------------------------------------------------------------
-    def apod_sq_sin(self, axis=0, maxi=0):
+    def apod_sq_sin(self, maxi=0.0, axis=0):
         """
         apply a squared sinebell apodisation
         maxi ranges from 0 to 0.5
@@ -2541,7 +2541,7 @@ class NPKData(object):
         return self.apod_apply(axis,e)
         
     #-------------------------------------------------------------------------------
-    def apod_sin(self, axis=0, maxi=0):
+    def apod_sin(self, maxi=0.0, axis=0):
         """
         apply a sinebell apodisation
         maxi ranges from 0 to 0.5
