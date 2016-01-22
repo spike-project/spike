@@ -157,7 +157,7 @@ ignore-mixin-members=yes
 # List of classes names for which member attributes should not be checked
 # (useful for classes with attributes dynamically set).
 # MAD
-ignored-classes=subpl,SQLObject,numpy,scipy,scipy.fftpack,scipy.optimize,scipy.stats,tables,PyQt4,PyQt4.QtCore,PySide,PySide.QtCore,PySide.QtGui
+ignored-classes=subpl,SQLObject,numpy,numpy.random,scipy,scipy.fftpack,scipy.optimize,scipy.stats,tables,PyQt4,PyQt4.QtCore,PyQt4.QtGui,PyQt4.QtGui.QWidget,PySide,PySide.QtCore,PySide.QtGui,PySide.QtGui.QWidget,spike.NPKData.NPKData
 
 # When zope mode is activated, add a predefined set of Zope acquired attributes
 # to generated-members.
