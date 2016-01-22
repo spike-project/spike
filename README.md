@@ -266,9 +266,10 @@ a small description of the files:
 ### Authors and Licence ###
 Current Active authors for SPIKE are:
 
-- Marc-André Delsuc  .  `madelsuc -at- unistra.fr`
-- Lionel Chiron      .  `Lionel.Chiron -at- casc4de.eu`
+- Marc-André Delsuc     `madelsuc -at- unistra.fr`
+- Lionel Chiron         `Lionel.Chiron -at- casc4de.eu`
 - Petar Markov          `petar.markov -at- igbmc.fr`
+- Christian Rolando     `christian.rolando -at- univ-lille1.fr`
 
 Previous authors:
 - Marie-Aude Coutouly . `Marie-Aude.Coutouly -at- nmrtec.com`
