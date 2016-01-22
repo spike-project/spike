@@ -24,6 +24,8 @@ import numpy as np
 import array
 import tables
 from xml.dom import minidom
+from time import time
+
 
 from .. import NPKData as npkd
 from ..FTICR import FTICRData

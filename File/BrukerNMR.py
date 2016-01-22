@@ -489,7 +489,7 @@ class Exporter(object):
     
     original code from Lionel Chiron
     
-    NOT DEBUGGED - In development
+    NOT DEBUGGED - In development - Do not USE
     '''
     def __init__(self, direc="."):
         self.dir = direc

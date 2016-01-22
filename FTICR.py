@@ -27,9 +27,9 @@ from __future__ import print_function
 import math
 import unittest
 import numpy as np
-import File.HDF5File
-from spike import NPKData
-from spike import FTMS
+from . import NPKData
+from .File import HDF5File
+from . import FTMS
 from .NPKError import NPKError
 
 FREQ0 = 1E6
@@ -140,7 +140,7 @@ class FTICRData(FTMS.FTMSData):
         if name:
             if name.endswith(".msh5"):  # try loading .msh5 file
                 if debug>0: print("reading msh5")
-                H = File.HDF5File.HDF5File(name,"r")
+                H = HDF5File.HDF5File(name,"r")
                 H.load(mode=mode, group=group)      # load into memory by default !
                 super(FTICRData, self).__init__(buffer=H.data.buffer, debug=debug)
                 NPKData.copyaxes(H.data, self)  # and deep copy all axes from file

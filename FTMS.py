@@ -16,7 +16,7 @@ from __future__ import print_function
 import math
 import unittest
 import numpy as np
-from spike import NPKData
+from . import NPKData
 from .NPKError import NPKError
 
 
