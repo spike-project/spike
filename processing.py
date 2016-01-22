@@ -691,6 +691,7 @@ def main(argv = None):
         temp =  HDF5File(interfile, "w")
         datatemp = FTICRData(dim = 2)
         copyaxes(d0, datatemp)
+        datatemp.params = d0.params
         if param.do_modulus:
             datatemp.axis1.size = min(d0.size1, sizeF1)
             datatemp.axis2.size = 2*sizeF2
@@ -700,6 +701,7 @@ def main(argv = None):
         temp.create_from_template(datatemp)
     else:                # already existing
         datatemp = load_input(param.interfile)
+    datatemp.params = d0.params
     logflux.log.flush()     # flush logfile
     ### prepare output file
     if debug>0: print("preparing output file ")
@@ -713,6 +715,7 @@ def main(argv = None):
         if param.compress_outfile:    # file is compressed
             hfar.set_compression(True)
         hfar.create_from_template(d1, group)
+        d1.params = d0.params
         if debug>0:
             print("######################### d1.report() ################")
             print(d1.report())
@@ -775,6 +778,7 @@ downsampling %s
     print("==  cleaning an closing  ==")
     # copy files
     hfar.store_internal_file(filename=configfile, h5name="config.mscf", where='/attached')  # first mscf
+    print("configuration file file copied")
     for h5name in ["apexAcquisition.method", "ExciteSweep"]:    # then parameter files
         try:
             Finh5 = d0.hdf5file.open_internal_file(h5name)
@@ -789,6 +793,7 @@ downsampling %s
     # then logfile
     logflux.log.flush()     # flush logfile
     hfar.store_internal_file(filename=logflux.log_name, h5name="processing.log", where='/attached')
+    print("log file file copied")
     # and close
     d0.hdf5file.close()
     hfar.close()
@@ -796,7 +801,7 @@ downsampling %s
     if param.mp:
         Pool.close()    # finally closes multiprocessing slaves
     logflux.log.flush()     # flush logfile
-    sys.exit(0)
+
 # default values
 if __name__ == '__main__':
     mp.freeze_support()
