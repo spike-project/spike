@@ -252,6 +252,16 @@ python -m spike.File.HDF5File.py update {0}
             node.write( F.read() )
         node.close()
     #----------------------------------------------
+    def retrieve_internal_file(self, h5name, where='/attached'):
+        """
+        returns the content of a n internal file stored with store_internal_file() or written directly
+        """
+        v  = self.hf.get_node(where=where, name=h5name)
+        F = filenode.open_node(v,'r')
+        content = F.read()
+        F.close()
+        return content
+    #----------------------------------------------
     def store_internal_object(self, obj, h5name, where='/'):
         """
         store a python object into the hdf5 file

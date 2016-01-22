@@ -601,7 +601,7 @@ def main(argv = None):
     processing.py [ configuration_file.mscf ]
     if no argument is given, the standard file : process.mscf is used.
     """
-    TeeLogger(erase=True)
+    logflux = TeeLogger(erase=True)
     global Pool     # This global will hold the multiprocessing.Pool if needed
     Pool = None
     t0 = time.time()
@@ -634,6 +634,7 @@ def main(argv = None):
     if param.mp:
         Pool = mp.Pool(param.nproc)     # if multiprocessing, creates slaves early, while memory is empty !
     param.report()
+    logflux.log.flush()     # flush logfile
     ######## determine files and load inputfile
     ### input file either raw to be imported or already imported
     imported = False
@@ -668,6 +669,8 @@ def main(argv = None):
         print_time( time.time()-t0, "Import")
     else:
         print_time( time.time()-t0, "Load")
+    logflux.log.flush()     # flush logfile
+    ###### Read processing arguments
     Set_Table_Param()
     if debug>0:
         Report_Table_Param()
@@ -683,6 +686,7 @@ def main(argv = None):
         print("creating TEMPFILE:",interfile)
     else:
         interfile = param.interfile
+    ### in F2
     if param.do_F2:     # create
         temp =  HDF5File(interfile, "w")
         datatemp = FTICRData(dim = 2)
@@ -696,6 +700,7 @@ def main(argv = None):
         temp.create_from_template(datatemp)
     else:                # already existing
         datatemp = load_input(param.interfile)
+    logflux.log.flush()     # flush logfile
     ### prepare output file
     if debug>0: print("preparing output file ")
     if param.do_F1:
@@ -714,18 +719,21 @@ def main(argv = None):
             print("######################### Checked ################")
     else:
         d1 = None
+    logflux.log.flush()     # flush logfile
+    ###### Do processing
     print("""
 =============================
 processing FT
 =============================""")
     t0 = time.time()
     do_process2D(d0, datatemp, d1, param) # d0 original, d1 processed
-    # close input and temp file
-    try:
-        d0.hdf5file.close()
-    except AttributeError:      # depends on how d0 was loaded
-        pass
+    # close temp file
+    # try:
+    #     d0.hdf5file.close()
+    # except AttributeError:      # depends on how d0 was loaded
+    #     pass
     datatemp.hdf5file.close()
+    ### update files
     if param.do_F1:
         hfar.axes_update(group = group,axis = 1, infos = {'offset':d1.axis1.offset} )
     if param.interfile is None:
@@ -733,7 +741,8 @@ processing FT
         os.unlink(interfile)
     print("==  FT Processing finished  ==")
     print_time(time.time()-t0, "FT processing time")
-    
+    logflux.log.flush()     # flush logfile
+    ### downsample result
     if param.do_F1:
         downprevious = d1       # used to downsample by step   downprevious -downto-> down
         t0 = time.time()
@@ -758,14 +767,36 @@ downsampling %s
             downsample2D(downprevious, down, int(downprevious.size1/sizeF1), int(downprevious.size2/sizeF2), compress=param.compress_outfile)
             downprevious = down
         print_time(time.time()-t0, "Downsampling time")
-    # close output file
-    hfar.close()
-    
     print("== Processing finished  ==")
     print_time(time.time() - t00, "Total processing time")
+    logflux.log.flush()     # flush logfile
+    ### clean and close output files
+    # copy attached to outputfile
+    print("==  cleaning an closing  ==")
+    # copy files
+    hfar.store_internal_file(filename=configfile, h5name="config.mscf", where='/attached')  # first mscf
+    for h5name in ["apexAcquisition.method", "ExciteSweep"]:    # then parameter files
+        try:
+            Finh5 = d0.hdf5file.open_internal_file(h5name)
+        except:
+            print("no %s internal file to copy"%h5name)
+        else:   # performed only if no error
+            Fouth5 = hfar.open_internal_file(h5name, access='w')
+            Fouth5.write(Finh5.read())
+            Finh5.close()
+            Fouth5.close()
+            print("%s internal file copied"%h5name)
+    # then logfile
+    logflux.log.flush()     # flush logfile
+    hfar.store_internal_file(filename=logflux.log_name, h5name="processing.log", where='/attached')
+    # and close
+    d0.hdf5file.close()
+    hfar.close()
+    
     if param.mp:
         Pool.close()    # finally closes multiprocessing slaves
-
+    logflux.log.flush()     # flush logfile
+    sys.exit(0)
 # default values
 if __name__ == '__main__':
     mp.freeze_support()
