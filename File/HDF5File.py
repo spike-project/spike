@@ -505,8 +505,14 @@ python -m spike.File.HDF5File.py update {0}
             for j in range(len(values[i])): 
                 setattr(ax, fields[j], values[i][j])    # copy table entries
             setattr(self.data, "axis%d"%(i+1), ax)      # and set axis
-           
+        
         self.data.adapt_size()      # axis sizes have to be updated
+        
+        #finally load params object
+        try:
+            self.data.params = self.retrieve_object('params')
+        except:
+            print("WARNING: %s file does not have the params attribute"%self.fname)
         return self.data
         
     #----------------------------------------------
