@@ -2038,6 +2038,17 @@ class NPKData(object):
 #        print e
         return self.mult_by_vector(axis,e,mode="complex")
     #-------------------------------------------------------------------------------
+    def f1demodu(self, shift, axis=1):
+        """
+        'demodulate' a given 1D FID by multiplying it with the complex serie exp(i 2 pi shift)
+        this has the effect of shifting the frequency by 'shift' expressed in Hz
+        
+        if self is a 1D it is assumed to be complex
+        if self is & 2D it is assumed to have only 
+        faked by calling flipphase()
+        """
+        self.flipphase(0.0, 180.0*shift)
+        return self
     def flipphase(self, ph0, ph1, axis=1):
         """
         equivalent to   flip(); phase();flop()   but much faster
@@ -2047,7 +2058,6 @@ class NPKData(object):
         phase corrections are in degree
         """
         import math as m
-#        print "flipphase A TESTER"
         todo = self.test_axis(axis)
         if todo != 1 or self.dim != 2:
             raise NPKError(msg="works only along F1 axis of 2D", data=self)

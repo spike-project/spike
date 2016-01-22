@@ -238,7 +238,7 @@ def _do_proc_F1_flip_modu(data):
     d.set_col(1,  c1 )
     d.axis1.itype = 0
     d.axis2.itype = 1
-    d.flipphase(0.0, 180*shift) # equivalent to  d.flip()  d.phase()  d.flop()
+    d.f1demodu(shift)
     # e = np.empty( c0.size, dtype=complex)
     # p0 =  - 0.5*shift
     # p1 = shift/(c0.size-1)
@@ -290,7 +290,7 @@ def do_proc_F1_flip_modu(dinp, doutp, parameter, nproc=None):
                 d.set_col(off,  p )
             d.axis1.itype = 0
             d.axis2.itype = 1
-            d.flipphase(0.0, 180*rot) # equivalent to  d.flip()  d.phase()  d.flop()
+            d.f1demodu(rot)
             p = d.col(0)
             apod(p, size)       # avant ou apres ???
             if parameter.do_rqrd: 
@@ -337,7 +337,7 @@ def do_process2D(dinp, datatemp, doutp, parameter, nproc=None):
         do_proc_F2(dinp, datatemp)
     # in F1
     if parameter.do_F1:
-        if parameter.do_flip and parameter.do_modulus:
+        if parameter.do_f1demodu and parameter.do_modulus:
             do_proc_F1_flip_modu(datatemp, doutp, parameter,nproc=nproc)
         elif parameter.do_modulus:
             do_proc_F1_modu(datatemp, doutp)
@@ -404,7 +404,7 @@ class Proc_Parameters(object):
         self.do_F1 = True
         self.do_modulus = True
         self.do_rem_ridge = True
-        self.do_flip = True
+        self.do_f1demodu = True
         self.do_rqrd = False
         self.rqrd_rank = 10
         self.zflist = [0]
@@ -426,7 +426,7 @@ class Proc_Parameters(object):
         self.tempdir = cp.get( "processing", "tempdir", ".")       # dir for temporary file
         self.largest = cp.getint( "processing", "largest", LARGESTDATA)       # largest allowed file
         self.do_modulus = cp.getboolean( "processing", "do_modulus", str(self.do_modulus))   # do_modulus
-        self.do_flip = cp.getboolean( "processing", "do_flip", str(self.do_flip)) # do_flip
+        self.do_f1demodu = cp.getboolean( "processing", "do_f1demodu", str(self.do_f1demodu)) # do_f1demodu
         self.do_rqrd = cp.getboolean( "processing", "do_rqrd", str(self.do_rqrd)) # do_rqrd
         self.rqrd_rank = cp.getint( "processing", "rqrd_rank", str(self.rqrd_rank)) # do_rqrd
         self.do_rem_ridge = cp.getboolean( "processing", "do_rem_ridge", str(self.do_rem_ridge))
@@ -441,8 +441,8 @@ class Proc_Parameters(object):
             raise Exception("no processing !")
         if self.interfile is None and not (self.do_F1 and self.do_F2):
             raise Exception("Partial processing, without intermediate file")
-        if self.do_F1 and self.do_flip and not self.do_modulus:
-            raise Exception("do_flip but not do_modulus is not implemented !")
+        if self.do_F1 and self.do_f1demodu and not self.do_modulus:
+            raise Exception("do_f1demodu but not do_modulus is not implemented !")
         for f1,f2 in ((self.infile, self.interfile), (self.interfile,self.outfile), (self.infile, self.outfile)):
             if f1 == f2:
                 raise Exception("input and output files have the same name : %s - this is not possible"%f1)

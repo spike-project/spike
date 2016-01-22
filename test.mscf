@@ -48,8 +48,8 @@ do_urqrd = False
 # urQRd processing time is proportionnal to this
 urqrd_rank = 100
 
-# do_flip : if True, the F1 offset correction will be applied
-do_flip = True
+# do_f1demodu : if True, the F1 offset correction will be applied
+do_f1demodu = True
 # do_modulus : if True, a modulus will be applied at the end of the processing
 do_modulus = True
 # do_rem_ridge : if True, vertical ridges will be applied

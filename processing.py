@@ -273,16 +273,16 @@ def do_proc_F1_modu(dinp, doutp, parameter):
         pbar.update(i+1)
     pbar.finish()
 
-def _do_proc_F1_flip_modu(data):
-    "given a pair of columns, return the processed flipped FTed modulused column"
+def _do_proc_F1_demodu_modu(data):
+    "given a pair of columns, return the processed demodued FTed modulused column"
     c0, c1, shift, size, parameter = data
     d = FTICRData(buffer = np.zeros((c0.size1, 2)))     # 2 columns - used for hypercomplex modulus 
     d.set_col(0,  c0 )
     d.set_col(1,  c1 )
     d.axis1.itype = 0
     d.axis2.itype = 1
-    # perform freq_highmass demodulation
-    d.flipphase(0.0, 180*shift) # equivalent to  d.flip()  d.phase()  d.flop()
+    # perform freq_f1demodu demodulation
+    d.f1demodu(shift)
     if parameter.do_urqrd:
         d.urqrd(k = parameter.urqrd_rank, axis = 1)#
     apod(d, size, axis = 1)
@@ -311,33 +311,31 @@ def iterarg(dinp, rot, size, parameter ):
 #        print i, c0, c1, rot, size
         yield (c0, c1, rot, size, parameter)
 
-def do_proc_F1_flip_modu(dinp, doutp, parameter):
-    "as do_proc_F1, but applies flip and then complex modulus() at the end"
+def do_proc_F1_demodu_modu(dinp, doutp, parameter):
+    "as do_proc_F1, but applies demodu and then complex modulus() at the end"
     size = 2*doutp.axis1.size
     scan =  min(dinp.size2, doutp.size2)
-    widgets = ['Processing F1 flip-modu: ', pg.Percentage(), ' ', pg.Bar(marker='-',left = '[',right = ']'), pg.ETA()]
+    widgets = ['Processing F1 demodu-modu: ', pg.Percentage(), ' ', pg.Bar(marker='-',left = '[',right = ']'), pg.ETA()]
     pbar= pg.ProgressBar(widgets = widgets, maxval = scan) #, fd=sys.stdout)
-    if parameter.freq_highmass == 0:   # means not given in .mscf file -> compute from highmass
-        shift = doutp.axis1.mztoi( doutp.axis1.highmass )   # frequency shift in points, computed from location of highmass
-        hshift = doutp.axis1.itoh(shift)                    # the same in Hz
-        rot = dinp.axis1.mztoi( dinp.axis1.highmass )       # rot correction is applied in the starting space
+
+    if parameter.freq_f1demodu == 0:   # means not given in .mscf file -> compute from highmass
+        hshift = dinp.axis2.lowfreq   # frequency shift in points, computed from lowfreq of excitation pulse - assumiing the pulse was from high to low !
     else:
-        hshift = parameter.freq_highmass
-        shift = doutp.axis1.htoi(hshift)
-        rot = dinp.axis1.htoi( hshift )       # rot correction is applied in the starting space
-#    doutp.axis1.left_point = shift      
+        hshift = parameter.freq_f1demodu
+    shift = doutp.axis1.htoi(hshift)
+    rot = dinp.axis1.htoi( hshift )       # rot correction is applied in the starting space
     doutp.axis1.offset = hshift
-#    doutp.axis1.specwidth += hshift    # correction of specwidth
+
     xarg = iterarg(dinp, rot, size, parameter)      # construct iterator for main loop
     if parameter.mp:  # means multiprocessing //
-        res = Pool.imap(_do_proc_F1_flip_modu, xarg)
+        res = Pool.imap(_do_proc_F1_demodu_modu, xarg)
         for i,buf in enumerate(res):
             doutp.buffer[:,i] = buf
 #            doutp.set_col(i,p)
             pbar.update(i+1)
     elif mpiutil.MPI_size > 1:      # code for MPI processing //
         mpiutil.mprint('MPI NEW STYLE')
-        res = mpiutil.enum_imap(_do_proc_F1_flip_modu, xarg)    # apply it
+        res = mpiutil.enum_imap(_do_proc_F1_demodu_modu, xarg)    # apply it
         for i,buf in res:       # and get results
             doutp.buffer[:,i] = buf
 #            doutp.set_col(i, p)
@@ -353,7 +351,7 @@ def do_proc_F1_flip_modu(dinp, doutp, parameter):
             pickle.dump(pb, output) # for Qt progressbar
             output.close()
     else:       # plain non //
-        res = itertools.imap(_do_proc_F1_flip_modu, xarg)
+        res = itertools.imap(_do_proc_F1_demodu_modu, xarg)
         for i,buf in enumerate(res):
             doutp.buffer[:,i] = buf
 #            doutp.set_col(i,p)
@@ -380,8 +378,8 @@ def do_process2D(dinp, datatemp, doutp, parameter):
     # in F1
     if parameter.do_F1:
         t0 = time.time()
-        if parameter.do_flip and parameter.do_modulus:
-            do_proc_F1_flip_modu(datatemp, doutp, parameter)
+        if parameter.do_f1demodu and parameter.do_modulus:
+            do_proc_F1_demodu_modu(datatemp, doutp, parameter)
         elif parameter.do_modulus:
             do_proc_F1_modu(datatemp, doutp, parameter)
         else:
@@ -415,8 +413,6 @@ def downsample2D(data, outp, n1, n2, compress=False, compress_level=3.0):
             temp[abs(temp)<threshold] = 0.0
         outp.buffer[i/n1,:] = temp
     copyaxes(data, outp)
-    outp.axis1.left_point = outp.axis1.left_point/n1
-    outp.axis2.left_point = outp.axis2.left_point/n2
     outp.adapt_size()
     return outp
 
@@ -437,7 +433,7 @@ class Proc_Parameters(object):
         self.do_F1 = True
         self.do_modulus = True
         self.do_rem_ridge = True
-        self.do_flip = True
+        self.do_f1demodu = True
         self.do_urqrd = False
         self.urqrd_rank = 20
         self.zflist = None
@@ -454,8 +450,11 @@ class Proc_Parameters(object):
         self.compress_level = 1.0
         self.tempdir = "/tmp"
         self.largest = LARGESTDATA
+        self.freq_f1demodu = 0.0
+        
         if configfile:
             self.load(configfile)
+
     def load(self, cp):
         "load from cp config file - should have been opened with ConfigParser() first"
         self.apex =    cp.get( "import", "apex")                                        # input file
@@ -469,8 +468,8 @@ class Proc_Parameters(object):
         self.largest = cp.getint( "processing", "largest_file", 8*LARGESTDATA)            # largest allowed file
         self.largest = self.largest/8                                                   # in byte in the configfile, internally in word
         self.do_modulus = cp.getboolean( "processing", "do_modulus", str(self.do_modulus))   # do_modulus
-        self.do_flip = cp.getboolean( "processing", "do_flip", str(self.do_flip))       # do_flip
-        self.freq_highmass = cp.getfloat( "processing", "freq_highmass")        # freq for do_flip
+        self.do_f1demodu = cp.getboolean( "processing", "do_f1demodu", str(self.do_f1demodu))       # do_f1demodu
+        self.freq_f1demodu = cp.getfloat( "processing", "freq_f1demodu")        # freq for do_f1demodu
         self.do_urqrd = cp.getboolean( "processing", "do_urqrd", str(self.do_urqrd))    # do_urqrd
         self.urqrd_rank = cp.getint( "processing", "urqrd_rank", self.urqrd_rank)       # do_urqrd
         self.do_rem_ridge = cp.getboolean( "processing", "do_rem_ridge", str(self.do_rem_ridge))
@@ -499,8 +498,8 @@ class Proc_Parameters(object):
             raise Exception("no processing !")
         if self.interfile is None and not (self.do_F1 and self.do_F2):
             raise Exception("Partial processing, without intermediate file")
-        if self.do_F1 and self.do_flip and not self.do_modulus:
-            raise Exception("do_flip but not do_modulus is not implemented !")
+        if self.do_F1 and self.do_f1demodu and not self.do_modulus:
+            raise Exception("do_f1demodu but not do_modulus is not implemented !")
         for f1, f2 in ((self.infile, self.interfile), (self.interfile,self.outfile), (self.infile, self.outfile)):
             if f1 == f2:
                 raise Exception("input and output files have the same name : %s - this is not possible"%f1)
@@ -728,7 +727,7 @@ processing FT
         pass
     datatemp.hdf5file.close()
     if param.do_F1:
-        hfar.axes_update(group = group,axis = 1, infos = {'offset':int(d1.axis1.offset)})
+        hfar.axes_update(group = group,axis = 1, infos = {'offset':d1.axis1.offset} )
     if param.interfile is None:
         temp.close()
         os.unlink(interfile)
@@ -757,7 +756,6 @@ downsampling %s
             hfar.create_from_template(down, group)
             if debug > 0: print(down)
             downsample2D(downprevious, down, int(downprevious.size1/sizeF1), int(downprevious.size2/sizeF2), compress=param.compress_outfile)
-            hfar.axes_update(group = group, axis = 1, infos = {'left_point': down.axis1.left_point})
             downprevious = down
         print_time(time.time()-t0, "Downsampling time")
     # close output file
