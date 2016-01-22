@@ -96,7 +96,18 @@ def locate_acquisition(folder):
         raise Exception( "You have more than 1 apexAcquisition.method file in the %s folder, using the first one"%folder )
     elif len(L) == 0: 
         raise Exception( "You don't have any apexAcquisition.method file in the  %s folder, please double check the path"%folder )
-        
+    return L[0]
+#-----------------------------------------
+def locate_ExciteSweep(folder):
+    """
+        From the given folder this function return the absolute path to the ExciteSweep file
+        It should always be in a subfolder 
+    """
+    L = glob.glob(op.join(folder,"*","ExciteSweep"))
+    if len(L)>1:
+        raise Exception( "You have more than 1 ExciteSweep file in the %s folder, using the first one"%folder )
+    elif len(L) == 0: 
+        raise Exception( "You don't have any ExciteSweep file in the  %s folder, please double check the path"%folder )
     return L[0]
 #-----------------------------------------
 def Import_1D(folder, outfile = ""):
@@ -147,7 +158,7 @@ def Import_1D(folder, outfile = ""):
         # then store files xx.methods and scan.xml
         HF.store_internal_file(parfilename)
         HF.store_internal_file( os.path.join(folder,"scan.xml") )
-        HF.store_internal_file( os.path.join(folder,"ExciteSweep") )
+        HF.store_internal_file( locate_ExciteSweep(folder) )
         data.hdf5file = HF
         # I need a link back to the file in order to close it, however this creates a loop - experimental ! 
     else:
@@ -239,8 +250,8 @@ def Import_2D(folder, outfile = "", F1specwidth = None):
         HF.store_internal_object(params, h5name='params')    # store params in the file
         # then store files xx.methods and scan.xml
         HF.store_internal_file(parfilename)
-        HF.store_internal_file( os.path.join(folder,"scan.xml") )
-        HF.store_internal_file( os.path.join(folder,"ExciteSweep") )
+#        HF.store_internal_file( os.path.join(folder,"scan.xml") )
+        HF.store_internal_file( locate_ExciteSweep(folder) )
         data.hdf5file = HF
         # I need a link back to the file in order to close it, however this creates a loop - experimental ! 
     else:
