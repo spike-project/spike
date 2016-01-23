@@ -16,6 +16,7 @@ activate MP
 
 BUGS
 ====
+params missing in _mr.msh5 files ???
 
 extract et unit fausses en NMR
 
