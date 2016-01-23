@@ -5,16 +5,18 @@ This is the beta version of the **SPIKE** program. A collaborative development f
 # IMPORTANT
 
 This is the version 0.8.0 dated 23 Jan 2016
-    - first clean version using the new HDF5 file set-up
-        - WARNING
-          - HDF5 files created with this version cannot be read with previous versions
-          - HDF5 files created with previous versions cannot be read with this version - this should be fixed later -
-        - File now contains acquisition parameters files in the attached hdf5 sub-group
-    - datasets now carry store and retrieve the parmeters imported from manufacturers file in d.params
-    - improved FTMS calibration using 1, 2, and 3 parameters calibration : calibA calibB calibC, retrieve by Import from experimental file
-    - improved FTMS Hz unit, added the d.axis.offset parameter
-    - corrected fine details of F1 demodulation and added the parameter freq_f1demodu
-    - unittests extended, in particular in visu2D
+
+- first clean version using the new HDF5 file set-up
+ *it is however still preliminary, and many features are still missing - even documented ones*
+- **WARNING**
+    * HDF5 files created with this version cannot be read with previous versions
+    * HDF5 files created with previous versions cannot be read with this version - this should be fixed later -
+- File now contains acquisition parameters files in the attached hdf5 sub-group
+- datasets now carry store and retrieve the parmeters imported from manufacturers file in d.params
+- improved FTMS calibration using 1, 2, and 3 parameters calibration : calibA calibB calibC, retrieve by Import from experimental file
+- improved FTMS Hz unit, added the d.axis.offset parameter
+- corrected fine details of F1 demodulation and added the parameter freq_f1demodu
+- unittests extended, in particular in visu2D
 
 Starting today, a stable version will be maintained, downloadable as a zip file in the download page
 https://bitbucket.org/delsuc/spike/downloads
