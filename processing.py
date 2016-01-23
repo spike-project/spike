@@ -324,7 +324,7 @@ def do_proc_F1_demodu_modu(dinp, doutp, parameter):
         hshift = parameter.freq_f1demodu
     shift = doutp.axis1.htoi(hshift)
     rot = dinp.axis1.htoi( hshift )       # rot correction is applied in the starting space
-    doutp.axis1.offset = hshift
+    doutp.axis1.offsetfreq = hshift
 
     xarg = iterarg(dinp, rot, size, parameter)      # construct iterator for main loop
     if parameter.mp:  # means multiprocessing //
@@ -738,7 +738,7 @@ processing FT
     datatemp.hdf5file.close()
     ### update files
     if param.do_F1:
-        hfar.axes_update(group = group,axis = 1, infos = {'offset':d1.axis1.offset} )
+        hfar.axes_update(group = group,axis = 1, infos = {'offsetfreq':d1.axis1.offsetfreq} )
     if param.interfile is None:
         temp.close()
         os.unlink(interfile)

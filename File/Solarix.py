@@ -77,6 +77,16 @@ def read_scan(filename):
         if (child.nodeName == 'scan'):
             count_scan += 1
     return count_scan
+#-----------------------------------------    
+def read_ExciteSweep(filename):
+    """
+    Function that returns the lower and higher frequency of the pulse generator
+    """
+    ExciteSweep_lines = np.genfromtxt(filename, comments = "*", delimiter="\n") 
+    #CR ready if we need the full array
+    highfreq = np.fromstring(ExciteSweep_lines[0])
+    lowfreq = np.fromstring(ExciteSweep_lines[-1])
+    return lowfreq, highfreq
 #-----------------------------------------
 def get_param(param,names, values):
     """
@@ -134,11 +144,15 @@ def Import_1D(folder, outfile = ""):
     else:
         raise Exception("You are dealing with 2D data, you should use Import_2D")
     data = FTICRData( dim = 1 )   # create dummy 1D
-    #size, specwidth,  offset, left_point, highmass, calibA, calibB, calibC, lowfreq, highfreq
     data.axis1.size = sizeF1    # then set parameters
     data.axis1.specwidth = float(params["SW_h"])
-    data.axis1.highfreq = float(params["EXC_Freq_High"])
-    data.axis1.lowfreq = float(params["EXC_Freq_Low"])
+    try:  #CR for compatibility with Apex format as there is no EXciteSweep file
+        l,h = read_ExciteSweep(locate_ExciteSweep(folder))
+    except:
+        data.axis1.highfreq = float(params["EXC_Freq_High"])
+        data.axis1.lowfreq = float(params["EXC_Freq_Low"])
+    else:
+        data.axis2.lowfreq, data.axis2.highfreq = l,h
     data.axis1.highmass = float(params["MW_high"])
     data.axis1.left_point = 0
     data.axis1.offset = 0.0
@@ -155,9 +169,8 @@ def Import_1D(folder, outfile = ""):
         HF = hf.HDF5File(outfile,"w")
         HF.create_from_template(data)
         HF.store_internal_object(params, h5name='params')    # store params in the file
-        # then store files xx.methods and scan.xml
+        # then store files xx.methods 
         HF.store_internal_file(parfilename)
-        HF.store_internal_file( os.path.join(folder,"scan.xml") )
         HF.store_internal_file( locate_ExciteSweep(folder) )
         data.hdf5file = HF
         # I need a link back to the file in order to close it, however this creates a loop - experimental ! 
@@ -185,12 +198,10 @@ def Import_2D(folder, outfile = "", F1specwidth = None):
         flag = 'i'              # strange, but works here.
     parfilename = locate_acquisition(folder)
     params = read_param(parfilename)
-    #count_scan = read_scan(os.path.join(folder,"scan.xml"))
-    # Import parameters : size in F1 and F2
-    sizeF1 = int(params["L_20"])
-    # if (count_scan != sizeF1):
-    #     print "Mismatch between Apex file and scan.xml size F1 set to %i"%count_scan
-    #     sizeF1 = count_scan
+    
+    # Import parameters : size in F1 and F2    
+    sizeF1 = read_scan(os.path.join(folder,"scan.xml"))
+#    sizeF1 = int(params["L_20"]) #CR Not working if L_20 higher than 16383 
     sizeF2 = int(params["TD"])
 
     if os.path.isfile(os.path.join(folder,"ser")):
@@ -203,8 +214,13 @@ def Import_2D(folder, outfile = "", F1specwidth = None):
 
     data.axis2.size = sizeF2    # then set parameters along F2 - classical axis -
     data.axis2.specwidth = float(params["SW_h"])
-    data.axis2.highfreq = float(params["EXC_Freq_High"])
-    data.axis2.lowfreq = float(params["EXC_Freq_Low"])
+    try:  #CR for compatibility with Apex format as there is no EXciteSweep file
+        l,h = read_ExciteSweep(locate_ExciteSweep(folder))
+    except:
+        data.axis2.highfreq = float(params["EXC_Freq_High"])
+        data.axis2.lowfreq = float(params["EXC_Freq_Low"])
+    else:
+        data.axis2.lowfreq, data.axis2.highfreq = l,h
     data.axis2.highmass = float(params["MW_high"])
     data.axis2.left_point = 0
     data.axis2.offset = 0.0
@@ -225,8 +241,8 @@ def Import_2D(folder, outfile = "", F1specwidth = None):
             data.axis1.specwidth = 1.0/(2*f1)
         else:
             data.axis1.specwidth = data.axis2.specwidth     # else assume square...
-    data.axis1.highfreq = float(params["EXC_Freq_High"])
-    data.axis1.lowfreq = float(params["EXC_Freq_Low"])
+    data.axis1.highfreq = data.axis2.highfreq
+    data.axis1.lowfreq = data.axis2.lowfreq
     data.axis1.highmass = float(params["MW_high"])
     data.axis1.left_point = 0
     data.axis1.offset = 0.0
@@ -250,7 +266,7 @@ def Import_2D(folder, outfile = "", F1specwidth = None):
         HF.store_internal_object(params, h5name='params')    # store params in the file
         # then store files xx.methods and scan.xml
         HF.store_internal_file(parfilename)
-#        HF.store_internal_file( os.path.join(folder,"scan.xml") )
+        HF.store_internal_file( os.path.join(folder,"scan.xml") )
         HF.store_internal_file( locate_ExciteSweep(folder) )
         data.hdf5file = HF
         # I need a link back to the file in order to close it, however this creates a loop - experimental ! 
