@@ -27,14 +27,13 @@ class FTMSAxis(NPKData.Axis):
     hold information for one FT-MS axis
     used internally
     """
-#    def __init__(self, size=1024, specwidth=2000.0*math.pi, itype=0, currentunit="points", ref_mass=344.0974, ref_freq=419620.0, highmass=10000.0, left_point = 0.0, offset=0.0):
-    def __init__(self, itype=0, currentunit="points", size=1024, specwidth=1E6,  offset=0.0, left_point = 0.0, highmass=10000.0, calibA=0.0, calibB=0.0, calibC=0.0 ):
+    def __init__(self, itype=0, currentunit="points", size=1024, specwidth=1E6,  offsetfreq=0.0, left_point = 0.0, highmass=10000.0, calibA=0.0, calibB=0.0, calibC=0.0 ):
 #  lowmass_disp=222.0, highmass_disp=222222.0,):
         """
         all parameters from Axis, plus
 
         specwidth   highest frequency,
-        offset      carrier frequency in heterodyn or lowest frequency if acquisition does notcontains 0.0,
+        offsetfreq      carrier frequency in heterodyn or lowest frequency if acquisition does notcontains 0.0,
 
         calibA, calibB, calibC : calibration constant, allowing 1 2 or 3 parameters calibration.
             set to zero if unused
@@ -48,7 +47,7 @@ class FTMSAxis(NPKData.Axis):
         """
         super(FTMSAxis, self).__init__(size=size, itype=itype)
         self.specwidth = specwidth
-        self.offset = offset
+        self.offsetfreq = offsetfreq
 
         self.calibA = calibA
         self.calibB = calibB
@@ -60,11 +59,11 @@ class FTMSAxis(NPKData.Axis):
         self.units["Hz"] = NPKData.Unit(name="Hz", converter=self.itoh, bconverter=self.htoi)
         self.units["sec"]= NPKData.Unit(name="sec", converter=self.itos, bconverter=self.stoi)  # for transients
         self.currentunit = currentunit
-        self.attributes = ["specwidth", "highmass", "offset", "left_point", "calibA", "calibB", "calibC"] + self.attributes
+        self.attributes = ["specwidth", "highmass", "offsetfreq", "left_point", "calibA", "calibB", "calibC"] + self.attributes
     #-------------------------------------------------------------------------------
     def _report(self):
         "low level report"
-        return "size : %d   sw %f  offset %f left_point %f  highmass %f  itype %d currentunit %s calibA,B,C: (%f %f %f)"%(self.size, self.specwidth, self.offset, self.left_point, self.highmass, self.itype, self.currentunit, self.calibA, self.calibB, self.calibC)
+        return "size : %d   sw %f  offsetfreq %f left_point %f  highmass %f  itype %d currentunit %s calibA,B,C: (%f %f %f)"%(self.size, self.specwidth, self.offsetfreq, self.left_point, self.highmass, self.itype, self.currentunit, self.calibA, self.calibB, self.calibC)
     def report(self):
         "high level reporting - to be redifined by subclasser"
         self._report()
@@ -125,7 +124,7 @@ class FTMSAxis(NPKData.Axis):
         returns point value (i) from Hz value (h)
         """
 #        pt_value = value * (self.size+self.left_point-1)/self.specwidth - self.left_point
-        pt_value = (value - self.offset) * (self.size+self.left_point-1)/self.specwidth  - self.left_point
+        pt_value = (value - self.offsetfreq) * (self.size+self.left_point-1)/self.specwidth  - self.left_point
         return pt_value
     #-------------------------------------------------------------------------------
     def itoh(self, value):
@@ -133,7 +132,7 @@ class FTMSAxis(NPKData.Axis):
         returns Hz value (h) from point value (i)
         """      
 #        hz_value =   (value + self.left_point)*self.specwidth / (self.size+self.left_point-1)
-        hz_value = (value  + self.left_point)*self.specwidth/(self.size+self.left_point-1) + self.offset
+        hz_value = (value  + self.left_point)*self.specwidth/(self.size+self.left_point-1) + self.offsetfreq
         return hz_value
     #-------------------------------------------------------------------------------
     def itomz(self, value):

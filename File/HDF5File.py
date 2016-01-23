@@ -396,7 +396,7 @@ python -m spike.File.HDF5File.py update {0}
         self.axis_table["sampling"] = tables.StringCol(itemsize=16)
         self.axis_table["specwidth"] = tables.Float32Col()
         self.axis_table["highmass"] = tables.Float32Col()
-        self.axis_table["offset"] = tables.Float32Col()
+        self.axis_table["offsetfreq"] = tables.Float32Col()
         self.axis_table["left_point"] = tables.Int32Col()
         self.axis_table["calibA"] = tables.Float64Col()
         self.axis_table["calibB"] = tables.Float64Col()
