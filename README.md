@@ -2,6 +2,25 @@
 
 This is the beta version of the **SPIKE** program. A collaborative development for a FT-spectroscopy processing program.
 
+# IMPORTANT
+
+This is the version 0.8.0 dated 23 Jan 2016
+    - first clean version using the new HDF5 file set-up
+        - WARNING
+          - HDF5 files created with this version cannot be read with previous versions
+          - HDF5 files created with previous versions cannot be read with this version - this should be fixed later -
+        - File now contains acquisition parameters files in the attached hdf5 sub-group
+    - datasets now carry store and retrieve the parmeters imported from manufacturers file in d.params
+    - improved FTMS calibration using 1, 2, and 3 parameters calibration : calibA calibB calibC, retrieve by Import from experimental file
+    - improved FTMS Hz unit, added the d.axis.offset parameter
+    - corrected fine details of F1 demodulation and added the parameter freq_f1demodu
+    - unittests extended, in particular in visu2D
+
+Starting today, a stable version will be maintained, downloadable as a zip file in the download page
+https://bitbucket.org/delsuc/spike/downloads
+
+Two developpement branches will be used, one for the stable version - improved for bugs, and a devel branche, used for developping the new features.
+
 ## What is SPIKE ? ##
 
 **SPIKE** is a program that allows the processing, the display and the analysis of data-sets obtained from various Fourier-Transform spectroscopies. The name stands for **S**pectrometry **P**rocessing **I**nnovative **KE**rnel.
@@ -65,7 +84,7 @@ We believe that even in this partial development stage, this program might prove
 
 #### _other spectroscopies are being considered_
 
-##Files can be imported from
+## Files can be imported from
 
 * NMR:
     * Bruker Topspin
@@ -78,9 +97,9 @@ We believe that even in this partial development stage, this program might prove
     * Thermofisher raw data
 * any data in memory in a `Numpy` buffer.
 
-#Usage
+# Usage
 
-####As a processing library
+#### As a processing library
 SPIKE is primary meant for being used as a library, code can as simple as :
 ```python
 import spike           # insure spike is in your PYTHONPATH
@@ -108,10 +127,11 @@ import sys
 sys.path.append('the_dir_where_you_put_spike_distrib')
 ```
 
-####interactive mode
+#### interactive mode
 SPIKE allows to process datasets interactively from an IPython prompt, and is perfectly working in `IPython Notebook` 
 
 * Look at the examples files ( `eg_*.py` ) for examples and some documentation.
+  ( * not fully up to data * )
 * display is performed using the `Matplotlib` library.
 * large 2D-FT-ICR are handled in batch using the `processing.py` batch program, controlled by parameter file called `*.mscf`
 * The batch mode supports multiprocessing, both with MPI and natively on multi-core machines (still in-progress)
@@ -119,7 +139,7 @@ SPIKE allows to process datasets interactively from an IPython prompt, and is pe
 * data-sets are handled in the HDF5 standard file-format, which allows virtually unlimited file size ( _tested up to 200 Gb_ ).
 * Version : this is 0.7 beta version
 
-####running stand-alone programs
+#### running stand-alone programs
 
 processing.py and visu2D.py are two stand alone programs, written on the top of SPIKE.
  - processing.py allowing the efficient processing

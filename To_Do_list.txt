@@ -10,11 +10,9 @@ Fichier pour RMN
 
 model pour RMN
 
-meilleur report pour hypercomplex
-
-processing / mettre .mscf et .log dans .msh5
-
 test avec SubP-2015
+
+activate MP
 
 BUGS
 ====

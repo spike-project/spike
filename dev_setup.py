@@ -13,7 +13,7 @@ from __future__ import print_function
 
 ProgramName = "SPIKE"
 VersionName = "Development version - beta"
-VersionInfo = ["0", "7", "1"]   # Major - Minor - Micro
+VersionInfo = ["0", "8", "0"]   # Major - Minor - Micro
 
 # Major.minor.micro (int) + name eg SPIKE_2_19_5
 # N.M.L
@@ -24,8 +24,18 @@ VersionInfo = ["0", "7", "1"]   # Major - Minor - Micro
 # bug fixes L+1
 
 """
+0.8.0 - 23 Jan 2016
+    - first clean version using the new HDF5 file set-up
+        WARNING HDF5 files created with this version cannot be read with previous versions
+                HDF5 files created with previous versions cannot be read with this version - this should be fixed later -
+        File now contains acquisition parameters files in the attached hdf5 sub-group
+    - datasets now carry store and retrieve the parmeters imported from manufacturers file in d.params
+    - improved FTMS calibration using 1, 2, and 3 parameters calibration : calibA calibB calibC, retrieve by Import from experimental file
+    - improved FTMS Hz unit, added the d.axis.offset parameter
+    - corrected fine details of F1 demodulation and added the parameter freq_f1demodu
+    - unittests extended, in particular in visu2D
 0.7.1 - 5 Jan 2016
-    - greatly improved internal compression of msh5 files
+    - greatly improved internal compression of msh5 files and speed of processing.py
     - many small corrections and bug fixes.
 0.7.0 - November 2015
     This is a major upgrade
@@ -87,6 +97,7 @@ new version processing2.py (temporary name)  this one
 # Version control used - only one should be true
 UsingSVN = False # subversion
 UsingHG = True # mercurial
+# projet moved from svn to hg - git not defined yet
 if UsingSVN and UsingHG:
     raise Exception("Please define only one flag UsingHG or UsingHG !")
 
