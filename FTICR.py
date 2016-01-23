@@ -41,12 +41,11 @@ class FTICRAxis(FTMS.FTMSAxis):
     hold information for one FT-ICR axis
     used internally
     """
-#    def __init__(self, size=1024, specwidth=FREQ0, itype=0, currentunit="points", ref_mass=REF_MASS, ref_freq=REF_FREQ, highmass=10000.0, left_point = 0.0, offset=0.0):
-    def __init__(self, itype=0, currentunit="points", size=1024, specwidth=1E6,  offset=0.0, left_point = 0.0, highmass=10000.0, calibA=1E8, calibB=0.0, calibC=0.0, lowfreq=1E4, highfreq=1E6 ):
+    def __init__(self, itype=0, currentunit="points", size=1024, specwidth=1E6,  offsetfreq=0.0, left_point = 0.0, highmass=10000.0, calibA=1E8, calibB=0.0, calibC=0.0, lowfreq=1E4, highfreq=1E6 ):
         """
         all parameters from Axis, plus
         specwidth   highest frequency,
-        offset      carrier frequency in heterodyn or lowest frequency if acquisition does not contains 0.0,
+        offsetfreq      carrier frequency in heterodyn or lowest frequency if acquisition does not contains 0.0,
 
         calibA, calibB, calibC : calibration constant, allowing 1 2 or 3 parameters calibration.
             set to zero if unused
@@ -62,7 +61,7 @@ class FTICRAxis(FTMS.FTMSAxis):
         
         """
         super(FTICRAxis, self).__init__(itype=itype, currentunit=currentunit, size=size,
-            specwidth=specwidth, offset=offset, left_point=left_point, highmass=highmass,
+            specwidth=specwidth, offsetfreq=offsetfreq, left_point=left_point, highmass=highmass,
             calibA=calibA, calibB=calibB, calibC=calibC)
         self.FTICR = "FTICR"
 
@@ -171,13 +170,13 @@ class FTICR_Tests(unittest.TestCase):
     def test_atob(self):
         "testing unit conversion functions"
         self.announce()
-        F = FTICRAxis(size=1000, specwidth=1667000, itype=0, currentunit="points", calibA=344.0974*419620.0, highmass=2000.0, offset=10000.0)
+        F = FTICRAxis(size=1000, specwidth=1667000, itype=0, currentunit="points", calibA=344.0974*419620.0, highmass=2000.0, offsetfreq=10000.0)
 #        self.assertAlmostEqual(F.deltamz(F.itomz(1023))/F.itomz(1023), 1.0/1023)    # delta_m / m is 1/size at lowest mass - before extraction
-#        self.assertAlmostEqual((F.lowmass/F.deltamz(F.lowmass)) /( F.size*(F.specwidth+F.offset)/F.specwidth-1), 1.0, 5)
+#        self.assertAlmostEqual((F.lowmass/F.deltamz(F.lowmass)) /( F.size*(F.specwidth+F.offsetfreq)/F.specwidth-1), 1.0, 5)
         self.assertAlmostEqual(123*F.htomz(123), 321*F.htomz(321))    # verify that f*m/z is constant !
         self.assertAlmostEqual(123*F.mztoh(123), 321*F.mztoh(321))    # verify that f*m/z is constant !
-        self.assertAlmostEqual(F.itoh(0), F.offset)
-        self.assertAlmostEqual(F.itoh(F.size-1), F.specwidth+F.offset)   # last point is size-1 !!!
+        self.assertAlmostEqual(F.itoh(0), F.offsetfreq)
+        self.assertAlmostEqual(F.itoh(F.size-1), F.specwidth+F.offsetfreq)   # last point is size-1 !!!
         for twice in range(2):
             F = FTICRAxis(size=1000, specwidth=1667000, itype=0, currentunit="points", calibA=344.0974*419620.0, highmass=2000.0)
             if twice == 1:  # second time tests 2nd order calibration
