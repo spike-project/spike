@@ -1,0 +1,37 @@
+# files ignored by hg
+syntax: glob
+
+*.pyc
+.DS_Store
+*/.DS_Store
+.svn/*
+*.synctex.gz
+*~
+*.log
+*.orig
+.ipynb_checkpoints
+
+Miscellaneous
+Miscellaneous/__init__\.py
+Miscellaneous/approx_urQRd\.py
+Miscellaneous/big\.py
+Miscellaneous/bruker_corr\.py
+Miscellaneous/downsample\.py
+Miscellaneous/downsampling\.py
+Miscellaneous/pickpeak1d\.py
+Miscellaneous/pickpeak2d\.py
+Miscellaneous/poulding\.py
+Miscellaneous/processing2-urqrd_debug\.py
+Miscellaneous/processing2-urqrd\.py
+Miscellaneous/processing2\.py
+Miscellaneous/SetConfig\.py
+_build
+_static
+_templates
+rst
+Tests_specific.py
+process.mscf
+SPIKE_usage_eg/.ipynb_checkpoints/Processing2D_manual-checkpoint.ipynb
+Algo/urQRd_fft_trick.ipynb
+Algo/.ipynb_checkpoints/urQRd_fft_trick-checkpoint.ipynb
+

@@ -1,0 +1,31 @@
+FEATURES
+========
+Apex vs Solarix
+    dans dossier .m
+        <method version="solariXcontrol_2" > dans l'entete de  apexAcquisition.method
+        ExciteSweep 
+        PULPROG_xx_seq et PULPROG_xx_compiled
+
+Fichier pour RMN
+
+model pour RMN
+
+test avec SubP-2015
+
+activate MP
+
+BUGS
+====
+
+extract et unit fausses en NMR
+
+FFT optimal (check in fftconvolve) 
+    urqrd - sane, processing - fftbase
+
+mp vs MPI
+
+move dowsampling outside processing
+
+correct wrong downsampling in F2
+
+correct wrong syntax for apodisation
