@@ -40,11 +40,11 @@ class OrbiAxis(FTMS.FTMSAxis):
     hold information for one Orbitrap axis
     used internally
     """    
-    def __init__(self, itype=0, currentunit="points", size=1024, specwidth=1E6,  offset=0.0, left_point = 0.0, highmass=10000.0, calibA=0.0, calibB=1E14, calibC=0.0):
+    def __init__(self, itype=0, currentunit="points", size=1024, specwidth=1E6,  offsetfreq=0.0, left_point = 0.0, highmass=10000.0, calibA=0.0, calibB=1E14, calibC=0.0):
         """
         all parameters from Axis, plus
         specwidth   highest frequency,
-        offset      carrier frequency in heterodyn or lowest frequency if acquisition does not contains 0.0,
+        offsetfreq      carrier frequency in heterodyn or lowest frequency if acquisition does not contains 0.0,
 
         calibA, calibB, calibC : calibration constant, allowing 1 2 or 3 parameters calibration.
             set to zero if unused
@@ -58,7 +58,7 @@ class OrbiAxis(FTMS.FTMSAxis):
         conversion methods work on numpy arrays as well
         """
         super(OrbiAxis, self).__init__(itype=itype, currentunit=currentunit, size=size,
-            specwidth=specwidth, offset=offset, left_point=left_point, highmass=highmass,
+            specwidth=specwidth, offsetfreq=offsetfreq, left_point=left_point, highmass=highmass,
             calibA=calibA, calibB=calibB, calibC=calibC)
         self.Orbitrap = "Orbitrap"
         self.calibA = calibA
