@@ -14,6 +14,12 @@ test avec SubP-2015
 
 activate MP
 
+check baseline
+
+write helper_ipynb
+
+check plot / figure in d.display()
+
 BUGS
 ====
 params missing in _mr.msh5 files ???
