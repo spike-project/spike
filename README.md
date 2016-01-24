@@ -2,26 +2,32 @@
 
 This is the beta version of the **SPIKE** program. A collaborative development for a FT-spectroscopy processing program.
 
-# IMPORTANT
+# Relesase -
+
+This is the version 0.8.1 dated 24 Jan 2016
+
+- corrected a bug for Orbitrap related to offsetfreq.
+- **WARNING for version 0.8.0 and 0.8.1**
+    * HDF5 files created with theses versions cannot be read with previous versions
+    * HDF5 files created with previous versions cannot be read with these versions - this should be fixed later -
+
 
 This is the version 0.8.0 dated 23 Jan 2016
 
 - first clean version using the new HDF5 file set-up
  *it is however still preliminary, and many features are still missing - even documented ones*
-- **WARNING**
-    * HDF5 files created with this version cannot be read with previous versions
-    * HDF5 files created with previous versions cannot be read with this version - this should be fixed later -
 - File now contains acquisition parameters files in the attached hdf5 sub-group
 - datasets now carry store and retrieve the parmeters imported from manufacturers file in d.params
 - improved FTMS calibration using 1, 2, and 3 parameters calibration : calibA calibB calibC, retrieve by Import from experimental file
 - improved FTMS Hz unit, added the d.axis.offset parameter
 - corrected fine details of F1 demodulation and added the parameter freq_f1demodu
 - unittests extended, in particular in visu2D
-
-Starting today, a stable version will be maintained, downloadable as a zip file in the download page
+- Starting with this version
+  - a stable version will be maintained, downloadable as a zip file in the download page
 https://bitbucket.org/delsuc/spike/downloads
+  - Two developpement branches will be used, the `default` for the stable version - improved for bugs, and the `devel` branche, used for developping the new features.
 
-Two developpement branches will be used, one for the stable version - improved for bugs, and a devel branche, used for developping the new features.
+Complete history in the [release_notes.md](release_notes.md) file.
 
 ## What is SPIKE ? ##
 
@@ -167,7 +173,7 @@ sys.path.append('the_dir_where_you_put_spike_distrib')
 ```
 to the header of these scripts, and launch them from the directory which contains SPIKE the distribution.
 
-A more complete documentation is available [here](https://spikedoc.bitbucket.org).  
+A more complete documentation is available [here](https://spikedoc.bitbucket.org).
 
 
 ## How do I get SPIKE ? ##
@@ -178,11 +184,17 @@ It requires the following non-standard Python libraries :
 * [Numpy](http://docs.scipy.org/doc/numpy/reference/)
 * [Scipy](http://docs.scipy.org/doc/scipy/reference/)
 * [Matplotlib](http://Matplotlib.org/contents.html)
-* Qt / [PySide](http://qt-project.org/wiki/PySide)
 * HDF5 / [Pytables](http://www.pytables.org/moin) 
-* MPI / [mpi4py](http://www.mpi4py.scipy.org/)
+* Qt / [PySide](http://qt-project.org/wiki/PySide) *optional* used by visu2D
+* MPI / [mpi4py](http://www.mpi4py.scipy.org/) *optionnal* used for parallel processing of large FTICR 2D files
 
 It has been successfully tested in the [**Enthought**](https://enthought.com/) and [**Anaconda**](http://continuum.io/) distributions.
+
+To get it, you can simply 
+ - insall the above python distributions
+ - download the latest stable version here : https://bitbucket.org/delsuc/spike/downloads
+ - *or* `hg clone` the devel branch and keep it up-to-date
+
 
 ## History ##
 
