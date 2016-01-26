@@ -18,6 +18,7 @@ import unittest
 import math
 import re
 import time
+import warnings
 
 import version
 from NPKError import NPKError
@@ -1173,6 +1174,8 @@ class NPKData(object):
         """set into the current 2D the given 1D, as the column at position 0<=i<=size2-1 """
         self.check2D()
         d1D.check1D()
+        if d1D.axis1.itype != self.axis1.itype:
+            warnings.warn("column and 2D types do not match", UserWarning)
         self.buffer[:,i] = d1D.buffer
         return self
     #----------------------------------------------
@@ -1212,6 +1215,8 @@ class NPKData(object):
         """set into the current 2D the given 1D, as the row at position 0<=i<=size1-1 """
         self.check2D()
         d1D.check1D()
+        if d1D.axis1.itype != self.axis2.itype:
+            warnings.warn("row and 2D types do not match", UserWarning)
         self.buffer[i,:] = d1D.buffer[:]
         return self
     #----------------------------------------------
@@ -1517,13 +1522,23 @@ class NPKData(object):
             s =  s+"\nAxis F2: " + self.axis2.report()
         if self.dim >2:
             s =  s+"\nAxis F3: " + self.axis3.report()
+        s = s+"\n"+self.typestr()
+        return s
+    def typestr(self):
+        " returns its type (real, complex or hypercomplex) as a string"
+        # not ready for 3D !
         isum = sum( [ self.axes(i+1).itype for i in range(self.dim) ] )
         if isum == 0:
-            s = s+"\ndata-set is real"
+            s = "data-set is real"
         elif isum == 1:
-            s = s+"\ndata-set is complex"
+            if self.dim == 1:
+                s = "data-set is complex"
+            elif self.axis1.itype == 1:
+                s = "data-set is complex in F1"
+            elif self.axis2.itype == 1:
+                s = "data-set is complex in F2"
         else:
-            s = s+"\ndata-set is hypercomplex (order %d)"%(isum,)
+            s = "data-set is hypercomplex (order %d)"%(isum,)
         return s
     def __str__(self,*args,**kw):
         """
@@ -1853,11 +1868,15 @@ class NPKData(object):
             if todo == 1:
                 for i in xrange(self.size2):
                     r = self.col(i).swap()
-                    self.set_col(i,r)
+                    with warnings.catch_warnings():   # remove warnings, as mixed type activates them
+                        warnings.simplefilter("ignore")
+                        self.set_col(i,r)
             elif todo == 2:
                 for i in xrange(self.size1):
                     r = self.row(i).swap()
-                    self.set_row(i,r)
+                    with warnings.catch_warnings():   # remove warnings, as mixed type activates them
+                        warnings.simplefilter("ignore")
+                        self.set_row(i,r)
         elif self.dim == 3:
             raise NPKError("reste a faire", data=self)
         self.axes(todo).itype = 1
@@ -1885,11 +1904,15 @@ class NPKData(object):
             if todo == 1:
                 for i in xrange(self.size2):
                     r = self.col(i).unswap()
-                    self.set_col(i,r)
+                    with warnings.catch_warnings():   # remove warnings, as mixed type activates them
+                        warnings.simplefilter("ignore")
+                        self.set_col(i,r)
             elif todo == 2:
                 for i in xrange(self.size1):
                     r = self.row(i).unswap()
-                    self.set_row(i,r)
+                    with warnings.catch_warnings():   # remove warnings, as mixed type activates them
+                        warnings.simplefilter("ignore")
+                        self.set_row(i,r)
         elif self.dim == 3:
             raise NPKError("reste a faire")
         self.axes(todo).itype = 0
@@ -1913,7 +1936,11 @@ class NPKData(object):
                [  8.,   9.,  10.,  11.],
                [ 12.,  13.,  14.,  15.]])
         >>>bb.axis2.itype=1
+        >>>print bb.typestr()
+        data-set is complex in F2
         >>>bb.flip()
+        >>>print bb.typestr()
+        data-set is complex in F1
         >>>print bb.buffer
         array([[  0.,   2.],
                [  1.,   3.],
@@ -1924,7 +1951,6 @@ class NPKData(object):
                [ 12.,  14.],
                [ 13.,  15.]])
         """
-#        print "flip A REFAIRE SUR UNSWAP"
         if self.dim ==1:
             raise NPKError("Only in 2D or higher",data=self)
         elif self.dim == 2:
@@ -1950,7 +1976,6 @@ class NPKData(object):
         Useful for complex FT
         this is the opposite of flip()
         """
-        #print "flop A FAIRE SUR SWAP"
         if self.dim ==1:
             raise NPKError("Only in 2D or higher", data=self)
         elif self.dim == 2:
