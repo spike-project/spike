@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+
+<meta charset="UTF-8">
+<head>
+<title>Doc Notes</title>
+
+<script  src="http://ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
+<script  src="https://cdn.rawgit.com/strablabla/Tinkering/791c287/js/straptoc/straptoc.js"></script>
+<link rel="stylesheet" href="https://cdn.rawgit.com/strablabla/Tinkering/908db90/js/straptoc/straptoc.css">
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML">
+</script>
+
+
+<xmp theme="cerulean" style="display:none;">
+
+# Principle
+Call the prog script_doc.sh from just above *Spike* by: 
+    
+    ./spike/doc/script_doc.sh
+
+Then :
+
+* the program makes a folder named *spike_make_sphinx*. 
+    ```
+    sphinx-apidoc -F -o spike_make_sphinx spike
+    ```
+* This folder is completed with the files contained in spike/doc. 
+    ```
+    cp -r spike/doc/*   spike_make_sphinx/
+    ```
+* The code is compiled with Sphinx through : 
+    ```
+    cd spike_make_sphinx
+    make html
+    cd ..
+    ```
+* Injection of javacript in all the html files for removing documentation made by autodoc conerning Unittest and to remove the _debug attributes produced by the utility for facilitating the debugging.
+    ```
+    python -m spike.doc.insert_hide spike_make_sphinx/_build/html a'_debug' c'_Tests'
+    ```
+* All the html structure contained in *spike_make_sphinx/_build/html/* is copied in the bitbucket folder spikedoc.bitbucket.org
+    ```
+    cp -r spike_make_sphinx/_build/html/*  spikedoc.bitbucket.org/
+    ```
+* The folder *spike_make_sphinx* is removed
+    ```
+    rm -R spike_make_sphinx
+    ```
+
+</xmp>
+
+<script src="http://strapdownjs.com/v/0.2/strapdown.js"></script>
+<script> maketoc() </script>
+
+
+</html>
