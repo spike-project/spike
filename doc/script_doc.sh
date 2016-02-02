@@ -17,4 +17,4 @@ mkdir  -p spikedoc.bitbucket.org           # should already be there if ou want 
 cp -r spike_make_sphinx/_build/html/*  spikedoc.bitbucket.org/
 
 # remove temporary directory
-#rm -R spike_make_sphinx/*
+rm -R spike_make_sphinx/*
