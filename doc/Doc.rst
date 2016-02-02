@@ -1,18 +1,51 @@
 SPIKE Documentation
 ===================
 
-SPIKE organizes its data in two pieces:
+User Guide
+==========
 
- - a large n-dimensionnal real array that contains the actual spectroscopic data
- - an Axis() object, which contains all the caracteristics along the given axis (calibration, data-type, size, etc…)
+General Organization
+--------------------
+    ytbw (yet to be written)
 
-This organisation is the same regardless we are handling NMR Orbitrap or FTICR Data, the Axis() object is just overloaded with the corresponding set of parameters
+
+A Working example in NMR
+------------------------
+    ytbw
+    
+
+A Working example in FTICR
+--------------------------
+    ytbw
+	
+A Working example in Orbitrap
+-----------------------------
+    ytbw
+	
+Plotting
+========
+    ytbw
+
+Data File
+=========
+    ytbw
+
+
+Advance Usage
+=============
+
+SPIKE organizes internally its data in two pieces:
+
+ - a large n-dimensional real array that contains the actual spectroscopic data
+ - an Axis() object, which contains all the characteristics along the given axis (calibration, data-type, size, etc…)
+
+This organization is the same regardless we are handling NMR Orbitrap or FTICR Data, the Axis() object is just overloaded with the corresponding set of parameters
 
 Caveat on type
 --------------
 The main buffer is always a numpy array of type float64. However, some cases requires the spectroscopic data-set to be handled by complexes (for instance phase sensitive NMR of MS spectra). In this case the buffer remains a numpy array of type float64, and the attribute `.type` of the Axis() is set to 1, indicating the buffer should be considered as complex, with the real part located in even entries and imaginary parts located in odd entries (and the size forced to an even number).
 All internal SPIKE routine handle this and will consider complexes a data-set with its `.type` set to 1.
-For a n-Dimensionnal data-set, each axes has a type value, allowing hypercomplex arithmetics (see below)
+For a n-Dimensional data-set, each axes has a type value, allowing hypercomplex arithmetics (see below)
 
 Caveat on size
 --------------
@@ -41,19 +74,25 @@ would create a new buffer, as a `2j` if the complex number $0 +2i$ and the compl
 
 *Remark both examples are actually a bit contrived, as SPIKE allows doing:  (see below) *
 
+.. code:: python
+
     data *= 2		# to mean multiply by 2 the values of the data set
 
 
 If `copy=True` however, a new memory space is created and the data are copied into it.
 
 The main buffer is actually stored in the attribute `.buffer` of an NPKData. Thus `.buffer` is a standard numpy array, so you can actually play with it:
+
+.. code:: python
+
     x = data.buffer[i]
-but this is strongly discouraged, because the data-set is not checked. This syntax is used in some parts of the internal code for optimisation reasons.
+
+but this is strongly discouraged, because the data-set is not checked. This syntax is used in some parts of the internal code for optimization reasons.
 
 Data-set arithmetics
 --------------------
-	ytbw
-
+    
+    
 Hypercomplex arithmetics
 ------------------------
 	ytbw
