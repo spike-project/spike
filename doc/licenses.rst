@@ -1,5 +1,5 @@
 SPIKE License
--------------------------------
+-------------
 
 This software is governed by the CeCILL  license under French law and
 abiding by the rules of distribution of free software.  You can  use, 
@@ -28,10 +28,10 @@ The fact that you are presently reading this means that you have had
 knowledge of the CeCILL license and that you accept its terms.
 
 Secondary Licenses
-------------------------------
+------------------
 
 urQRd License
-++++++++++++++++++++++++++++
++++++++++++++
 
 Copyright (c) 2013 IGBMC. All rights reserved.
 Marc-Andr\'e Delsuc <madelsuc@unistra.fr>
@@ -66,11 +66,18 @@ The fact that you are presently reading this means that you have had
 knowledge of the CeCILL license and that you accept its terms.
 
 
-Anaconda License
-+++++++++++++++++++++++++++++++
+progressbar
++++++++++++
+from Nilton Volpato - LGPL licence,
 
-Anaconda END USER LICENSE AGREEMENT
 
-Anaconda (“the Software Product”) and accompanying documentation is licensed and not sold. The Software Product is protected by copyright laws and treaties, as well as laws and treaties related to other forms of intellectual property. Continuum Analytics Inc or its subsidiaries, affiliates, and suppliers (collectively “Continuum”) own intellectual property rights in the Software Product. The Licensee’s (“you” or “your”) license to download, use, copy, or change the Software Product is subject to these rights and to all the terms and conditions of this End User License Agreement (“Agreement”).
+The program also relies on the following libraries
+++++++++++++++++++++++++++++++++++++++++++++++++++
+numpy
+scipy
+matplotlib
+pytables
+mpi4py
 
-In addition to Continuum-licensed software, the Software product contains a collection of software packages from other sources (“Other Vendor Tools”). Continuum may also distribute updates to these packages on an “as is” basis and subject to their individual license agreements. These licenses are available either in the package itself or at http://docs.continuum.io/anaconda/licenses.html. Continuum reserves the right to change which Other Vendor Tools are provided in Anaconda.
+
+and the libraries included therein
