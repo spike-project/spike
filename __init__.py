@@ -6,6 +6,8 @@ The Spike Package
 """
 # from __future__ import absolute_import not needed anymore in 2.7
 import os, sys
+import warnings
+
 
 # Import exceptions
 from NPKError import NPKError

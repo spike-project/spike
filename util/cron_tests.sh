@@ -20,7 +20,7 @@ cd $HOME/tested_spike
 $HG clone ssh://hg@bitbucket.org/delsuc/spike
 
 # and run tess
-$PYTHON -m spike.Tests -D $DATAdir -m madelsuc@unistra.fr -m lionel.chiron@gmail.com
+$PYTHON -m spike.Tests -m $youradress@mail.com -D $DATAdir
 
 # Now build the documentation
 # this account must have read/write access to the repository for the doc be push backed
@@ -43,5 +43,5 @@ cd spike
 $HG pull && $HG update devel
 cd ..
 # and run tests here !
-$PYTHON -m spike.Tests -D $DATAdir -m madelsuc@unistra.fr -m lionel.chiron@gmail.com
+$PYTHON -m spike.Tests -m $youradress@mail.com -D $DATAdir
 
