@@ -1,6 +1,11 @@
 
 # Relase Notes
 
+#### 0.8.2 - 2 Feb 2016
+ - corrected a bug in processing when running under MPI parallel 
+ - added warning in set_col() and set_row() if type do not match.
+ - starting to work on the documentation
+
 #### 0.8.1 - 24 Jan 2016
  - corrected a bug for Orbitrap related to offsetfreq.
 

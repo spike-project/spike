@@ -13,7 +13,7 @@ from __future__ import print_function
 
 ProgramName = "SPIKE"
 VersionName = "Development version - beta"
-VersionInfo = ["0", "8", "1"]   # Major - Minor - Micro
+VersionInfo = ["0", "8", "2"]   # Major - Minor - Micro
 
 # Major.minor.micro (int) + name eg SPIKE_2_19_5
 # N.M.L
@@ -26,6 +26,11 @@ VersionInfo = ["0", "8", "1"]   # Major - Minor - Micro
 # Release Notes in md syntax !
 release_notes="""
 # Relase Notes
+
+#### 0.8.2 - 2 Feb 2016
+ - corrected a bug in processing when running under MPI parallel 
+ - added warning in set_col() and set_row() if type do not match.
+ - starting to work on the documentation
 
 #### 0.8.1 - 24 Jan 2016
  - corrected a bug for Orbitrap related to offsetfreq.
@@ -147,10 +152,10 @@ def generate_version():
     # revision
     if UsingSVN:
         svn = Popen(["svn", "info"], stdout=PIPE).communicate()[0]
-        revision = re.search('^Revision: (\d*)', svn, re.MULTILINE).group(1)
+        revision = re.search(r'^Revision: (\d*)', svn, re.MULTILINE).group(1)
     elif UsingHG:
         hg = Popen(["hg", "summary"], stdout=PIPE).communicate()[0]
-        revision = re.search('^parent: ([\d]*):', hg, re.MULTILINE).group(1)
+        revision = re.search(r'^parent: ([\d]*):', hg, re.MULTILINE).group(1)
     else:
         revision = "Undefined"
     # date   dd-mm-yyyy
@@ -168,11 +173,15 @@ def generate_file(fname):
 # This file is generated automatically by dev_setup.py 
 # Do not edit
 """)
-    version = ".".join(VersionInfo)
-    today = date.today().strftime("%d-%b-%Y")
+    #version = ".".join(VersionInfo)
+    #today = date.today().strftime("%d-%b-%Y")
+    
+    (version, revision, today) = generate_version()
+    
     f.write("ProgramName = '%s'\n"%ProgramName)
     f.write("VersionName = '%s'\n"%VersionName)
     f.write("version = '%s'\n"%version)
+    f.write("revision = '%s'\n"%revision)
     f.write("rev_date = '%s'\n"%today)
     f.write(r"""
 def report():
@@ -183,7 +192,8 @@ def report():
     ========================
     Version     : %s
     Date        : %s
-    ========================'''%(ProgramName, version, rev_date)
+    Revision Id : %s
+    ========================'''%(ProgramName, version, rev_date, revision)
 report()
 """)
     #print 'SPIKE version', version, 'date',date "
