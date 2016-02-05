@@ -2,15 +2,19 @@
 
 This is the beta version of the **SPIKE** program. A collaborative development for a FT-spectroscopy processing program.
 
-# Release -
+# Relesase -
+This is the version 0.8.2 dated 3 Feb 2016
+
+ - corrected a bug in processing when running under MPI parallel 
+ - added warnings in set_col() and set_row() if type do not match.
+ - starting to work on the documentation
 
 This is the version 0.8.1 dated 24 Jan 2016
 
 - corrected a bug for Orbitrap related to offsetfreq.
-- **WARNING for version 0.8.0 and 0.8.1**
+- **WARNING for versions 0.8.0  0.8.1 0.8.2**
     * HDF5 files created with theses versions cannot be read with previous versions
     * HDF5 files created with previous versions cannot be read with these versions - this should be fixed later -
-
 
 This is the version 0.8.0 dated 23 Jan 2016
 
@@ -41,6 +45,9 @@ It is still in very active development.
 Many features are missing, and many other while present, are not fully fixed.
 However, considering the amount of efforts already present in this code, we decided to make it available.
 We believe that even in this partial development stage, this program might prove useful for certain usages.
+
+## Documentation
+You can find a **Very preliminary** documentation [here](http://spikedoc.bitbucket.org/)
 
 ## SPIKE proposes the following features
 
