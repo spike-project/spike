@@ -40,7 +40,7 @@ def load():
     for pgfile in sorted( glob.glob( os.path.join(__path__[0],"*.py") ) ):
         b = os.path.basename(pgfile)    # code.py
         pgmod = os.path.splitext(b)[0]  # code
-        if not pgfile.endswith('__init__.py'):
+        if not pgfile.startswith('_'):
             loadone(pgmod, pgfile)
                 
 def loadone(pluginname, pgfile=None):
