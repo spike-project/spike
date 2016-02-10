@@ -1,5 +1,5 @@
 
-# Relase Notes
+# Release Notes
 
 #### 0.8.2 - 2 Feb 2016
  - corrected a bug in processing when running under MPI parallel 

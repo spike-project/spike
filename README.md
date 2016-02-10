@@ -2,7 +2,7 @@
 
 This is the beta version of the **SPIKE** program. A collaborative development for a FT-spectroscopy processing program.
 
-# Relesase -
+# Release -
 This is the version 0.8.2 dated 3 Feb 2016
 
  - corrected a bug in processing when running under MPI parallel 
