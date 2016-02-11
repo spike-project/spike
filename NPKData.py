@@ -497,6 +497,7 @@ class LaplaceAxis(Axis):
         self.dmin = dmin
         self.dmax = dmax
         self.dfactor = dfactor
+        self.Laplace = "Laplace"
         self.units["damping"] = Unit(name="damping", converter=self.itod, bconverter=self.dtoi, scale='log')
         self.units["Diff"] = self.units["damping"]
         for i in ("dmin", "dmax", "dfactor", "Laplace"):  # updates storable attributes
