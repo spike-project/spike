@@ -503,6 +503,7 @@ class LaplaceAxis(Axis):
         for i in ("dmin", "dmax", "dfactor", "Laplace"):  # updates storable attributes
             self.attributes.append(i)
         self.currentunit = currentunit
+        self.qvalues = None
         
     def itod(self, value):
         """
@@ -510,7 +511,7 @@ class LaplaceAxis(Axis):
         """
 #        print("itod might have to be checked")
         cst = (math.log(self.dmax)-math.log(self.dmin)) / (float(self.size)-1)
-        d = (self.dmin )* np.exp(cst*(value -1.0))
+        d = (self.dmin )* np.exp(cst*value)
         return d
     def dtoi(self, value):
         """
@@ -519,7 +520,7 @@ class LaplaceAxis(Axis):
 #        print("dtoi might have to be checked")
         cst = (math.log(self.dmax)-math.log(self.dmin)) / (float(self.size)-1)
 
-        i = 1.0 + (np.log(value) - np.log(self.dmin)) / cst
+        i = (np.log(value/self.dmin)) / cst
         return i
     def D_axis(self):
         """return axis containing Diffusion values, can be used for display"""
@@ -528,7 +529,14 @@ class LaplaceAxis(Axis):
         "hight level report"
         return "Laplace axis of %d points,  from %f to %f  using a scaling factor of %f"%  \
             (self.size, self.itod(0.0), self.itod(self.size-1), self.dfactor)
-        
+    def load_qvalues(self, fname):
+        """
+        doc
+        """
+        with open(fname,'r') as F:
+            self.qvalues = np.array([float(l) for l in F.readlines() if not l.startswith('#')])
+        return self.qvalues
+
 ########################################################################
 def copyaxes(inp,out):
     """
