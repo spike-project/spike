@@ -1431,7 +1431,7 @@ class NPKData(object):
                 fig.contour(axis[1][z2lo:z2up:step2],
                     axis[0][z1lo:z1up:step1],
                     self.buffer[z1lo:z1up:step1,z2lo:z2up:step2],
-                    level )
+                    level, colors=color, label=label )
             if xlabel == "_def_":
                 xlabel = self.axis2.currentunit
             if ylabel == "_def_":
