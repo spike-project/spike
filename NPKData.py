@@ -2486,7 +2486,7 @@ class NPKData(object):
         size = self.axes(todo).size
         if it == 1: # means complex
             size = size/2
-        e = np.exp(-gb*(np.arange(size)/sw)**2)
+        e = np.exp(-(gb*np.arange(size)/sw)**2)
         if it == 1:
             e = as_float((1 + 1.0j)*e)
         return self.apod_apply(axis,e)
