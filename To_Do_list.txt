@@ -6,6 +6,8 @@ Apex vs Solarix
         ExciteSweep 
         PULPROG_xx_seq et PULPROG_xx_compiled
 
+importer les 1r et 2rr
+
 Fichier pour RMN
 
 model pour RMN
