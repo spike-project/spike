@@ -2830,8 +2830,8 @@ class NPKDataTests(unittest.TestCase):
         LA = LaplaceAxis( dmin = 10.0, dmax = 10000.0, dfactor = 35534.34765625)
         damping = LA.itod(50)
         point = LA.dtoi(damping)
-        self.assertAlmostEqual(damping, 2154.43469003)
-        self.assertAlmostEqual(point, 50)
+        self.assertAlmostEqual(damping, 2404.099183509974)
+        self.assertEqual(point, 50)
         
     def test_zf(self):
         for ty in range(2):  # check both real and complex cases, and 1D and 2D (in F1)
