@@ -367,6 +367,7 @@ class GifaFile(object):
     def close(self):
         """ closes the associated file"""
         self.file.close()
+        self.fileB.close()
     #----------------------------------------------
     # properties
     @property
@@ -646,8 +647,7 @@ class GifaFileTests(unittest.TestCase):
         from ..Tests import filename
         self.announce()
         #f = tempfile.NamedTemporaryFile(delete=False)
-        f = open(filename("test_write.gs1"), "w")
-        nameout = f.name
+        nameout = filename("test_write.gs1")
         f.close()
         G = GifaFile(nameout,"w")
         # generate data
@@ -659,7 +659,7 @@ class GifaFileTests(unittest.TestCase):
         # put it into a NPKBuffer
         print("***", fid[10])
         B = npkd.NPKData(buffer=fid)
-        B.axis1 = npkd.NMRAxis(size=1024, specwidth=1000, offset=0.0, frequency=400.0, itype=1)
+        B.axis1 = npkd.NMRAxis(size=2*1024, specwidth=1000, offset=0.0, frequency=400.0, itype=1)
         # and save it
         G.set_data(B)
         G.save()
