@@ -593,7 +593,6 @@ class GifaFileTests(unittest.TestCase):
             print("\n========",self.shortDescription(),'===============')
     def test_read(self):
         """ - testing read capacities - """
-        import tempfile
         from ..Tests import filename, directory
         self.announce()
         # 1D
@@ -643,12 +642,10 @@ class GifaFileTests(unittest.TestCase):
 
     def test_write1D(self):
         """ - test 1D write capacities -"""
-        import tempfile, os
+        import os
         from ..Tests import filename
         self.announce()
-        #f = tempfile.NamedTemporaryFile(delete=False)
         nameout = filename("test_write.gs1")
-        f.close()
         G = GifaFile(nameout,"w")
         # generate data
         x = np.arange(1024)/1000.   # 1000 Hz on 1024 points
@@ -675,7 +672,6 @@ class GifaFileTests(unittest.TestCase):
 
     def test_write2D(self):
         """ - testing 2D read/write capacities - """
-        import tempfile
         from ..Tests import filename
         self.announce()
         # first read
@@ -688,8 +684,6 @@ class GifaFileTests(unittest.TestCase):
         G.close()
         del(G)
         # then save it
-        #f = tempfile.NamedTemporaryFile(delete=False)
-        #nameout = f.name
         nameout = filename("test_write2D2.gs2")
         #f.close()
         H = GifaFile(nameout,"w")
