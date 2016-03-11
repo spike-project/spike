@@ -15,6 +15,8 @@ from numpy import pi
 import math
 import scipy.fftpack as fft
 from scipy.signal import firwin2, firwin, convolve, lfilter
+from scipy.optimize import minimize
+#import  scipy.optimize as so
 
 import unittest
 import time
@@ -359,19 +361,26 @@ def findnoiselevel2(fid, nbseg=20):
 
 def findnoiselevel_offset(fid, nbseg = 10):
     """
-    Routine for determining the noise level
+    Routine for determining the noise level and mean value (considering a flat signal with gaussian noise and some outliers in the signal)
     cut the data in segments then make the standard deviation 
     for each segment compares the std dev with the average one and eliminates 
     segments giving a std dev above the mean
     finally makes the average on the sorted segments. 
     nbseg=10   nb of segment to cut the spectrum
     """
-    #print "in findnoiselevel"
+    def fun(x, t, data):
+        return np.sum(np.abs(x[0] + x[1]* t - data)) # L1 norm for the mean.
     less = len(fid)%nbseg     # rest of division of length of data by nb of segment
-    restpeaks = fid[:-less]   # remove the points that avoid to divide correctly the data in segment of same size.
+    if less !=0:
+        restpeaks = fid[:-less]   # remove the points that avoid to divide correctly the data in segment of same size.
+    else: 
+        restpeaks = fid
     newlist = np.array(np.hsplit(restpeaks,nbseg))    #Cutting in segments
-    noiselev = restpeaks.mean() + newlist.std(axis=1).min()
-    return noiselev
+    noiselev = newlist.std(axis=1).min()
+    noisemean = newlist.mean(axis=1)
+    t = np.arange(len(noisemean))
+    res = minimize(fun, x0 = [0,0], args=(t,noisemean), method="Powell") # Find the mean with L1 norm
+    return noiselev, res.x[0]
 
 def signal_to_noise(fid, nbseg = 20, peak = "max"):
     """
