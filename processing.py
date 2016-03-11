@@ -29,7 +29,6 @@ from .NPKData import copyaxes
 from .File.HDF5File import HDF5File, determine_chunkshape
 from .util import progressbar as pg
 from .util import mpiutil as mpiutil
-from .util.signal_tools import findnoiselevel_offset  as findnoiselevel
 from .NPKData import as_cpx
 from .util.simple_logger2 import TeeLogger
 
