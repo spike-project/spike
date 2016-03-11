@@ -16,7 +16,7 @@ import math
 import scipy.fftpack as fft
 from scipy.signal import firwin2, firwin, convolve, lfilter
 from scipy.optimize import minimize
-#import  scipy.optimize as so
+from matplotlib import pyplot as plt
 
 import unittest
 import time
@@ -334,7 +334,7 @@ def findnoiselevel(fid, nbseg = 20):
 
 def findnoiselevel_2D(data_array, nbseg = 20):
     """
- 
+
     """
     dim_array = data_array.size
     x = np.random.randint(dim_array, size = dim_array[0])
@@ -342,6 +342,19 @@ def findnoiselevel_2D(data_array, nbseg = 20):
     random2D = zip(x, y)
     noiselev = data_array[random2D].std()
 
+    return noiselev
+
+def findnoiselevel_2D_slice(data_array, ratio):
+    """
+    Routine for finding noise level by dividing the 2D spectrum in random vertical slices. 
+    """
+    lstd = []
+    for i in range(int(data_array.shape[1]*ratio)):
+        randcol = np.random.randint(data_array.shape[1])
+        cut = data_array[:,randcol]
+        noisecut = findnoiselevel(cut, nbseg=30)
+        lstd.append(noisecut)
+    noiselev = np.array(lstd).mean()
     return noiselev
 
 def findnoiselevel2(fid, nbseg=20):
