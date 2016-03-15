@@ -34,9 +34,13 @@ def filtering(sig, window = None):
     filtered_sig = FIR_filter(sig, nbpoles = 100, window = window)
     return filtered_sig
 
+def SNR(noisy,target):
+    "computes and return SNR value"
+    return sum(abs(target)**2)/sum(abs(noisy - target)**2)
+
 def SNR_dB(noisy,target):
     "computes and return SNR value, in dB"
-    return 10*np.log10(sum(abs(target)**2)/sum(abs(noisy - target)**2))
+    return 10*np.log10(SNR(noisy,target))
 
 def mfft(v):
      "utility that returns the modulus of the fft of v"
