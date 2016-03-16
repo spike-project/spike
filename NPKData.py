@@ -654,6 +654,8 @@ class NPKData(object):
         self.name = None
         self.level = None
 
+        if buffer is not None:
+            dim = len(buffer.shape)
         if name is not None:
             Go = GifaFile(name,"r")
             Go.load()
@@ -663,25 +665,6 @@ class NPKData(object):
             self.buffer = B.buffer  
             copyaxes(B,self)
             self.name = name            
-        elif buffer is not None:
-            self.buffer = buffer
-            self.axis1 = NMRAxis()
-            t = buffer.shape    # will raise exception if not an array
-            try:                # pbs may appear with pytables buffer
-                dt = buffer.dtype
-            except:
-                dt = np.float
-            if self.dim>1:
-                self.axis2 = NMRAxis()
-            if self.dim>2:
-                self.axis3 = NMRAxis()
-            if dt == np.float:
-                self.axes(dim).itype = 0
-            elif dt == np.complex:
-                self.buffer.dtype = np.float
-                self.axes(self.dim).itype = 1
-            else:
-                raise NPKError("Your data are neither float nor complex", data=self)
         elif shape is not None:
             self.buffer = np.zeros(shape)
             self.axis1 = NMRAxis()
@@ -707,6 +690,8 @@ class NPKData(object):
                 self.axis3 = NMRAxis()
             else:
                 raise NPKError("invalid dimension")
+        if buffer is not None:
+            self.set_buffer(buffer)
         self.adapt_size()
         self.check()
     #----------------------------------------------
