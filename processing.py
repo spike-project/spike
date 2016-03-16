@@ -190,15 +190,48 @@ def comp_sizes(d0,  zflist=None, szmlist=None, largest = LARGESTDATA, sizemin = 
     return sizes
 
 def apod(d, size, axis = 0):
-    "apply sin 0.5 apodisation and change size"
-    if d.size1<size:    # zerofilling
-        d.apod_sin(maxi = 0.5, axis = axis)
-        d.chsize(size)
-    elif d.size1>size:
-        d.chsize(size)  # truncating
-        d.apod_sin(maxi = 0.5, axis = axis)
+    """
+    apply apodisation and change size
+    4 cases
+        - 2D F1 or F2
+        - 1D coming from F1 or F2
+    1D or 2D in F2 are default  - apodisation in apod_sin(0.5)
+    in 2D F1 (axis=1) - apodisation is kaiser(5)
+    
+    3 situations
+        size after >  size before
+        size after <  size before
+        size after == size before
+    """
+    # utility which choose apod function - independent of d.dim
+    def do_apod(ax):
+        if ax==1:
+            d.kaiser(beta=5, axis = todo)    # kaiser(5) is as narrow as sin() but has much less wiggles
+        else:
+            d.apod_sin(maxi = 0.5, axis = todo)
+    # set parameters
+    todo = d.test_axis(axis)    # todo is either 1 or 2 : axis along which to act
+    initialsize = d.axes(todo).size   # size before zf along todo axis
+    # set final sizes
+    if d.dim == 1:
+        szf1 = size
+        szf2 = None
+    elif d.dim == 2:
+        if todo == 1:
+            szf1 = size
+            szf2 = d.size2
+        else:
+            szf1 = d.size1
+            szf2 = size
+    # now do it
+    if initialsize<size:    # zerofilling - apod first
+        do_apod(axis)
+        d.chsize(szf1, szf2)
+    elif initialsize>size:
+        d.chsize(szf1, szf2)  # truncating  - apod last
+        do_apod(axis)
     else:
-        d.apod_sin(maxi = 0.5, axis = axis)
+        do_apod(axis)
     return d
 
 def do_proc_F2(dinp, doutp):
@@ -802,10 +835,13 @@ downsampling %s
     logflux.log.flush()     # flush logfile
     ### clean and close output files
     # copy attached to outputfile
-    print("==  cleaning an closing  ==")
-    # copy files
+    print("==  cleaning and closing  ==")
+
+    # copy files and parameters
     hfar.store_internal_file(filename=configfile, h5name="config.mscf", where='/attached')  # first mscf
-    print("configuration file file copied")
+    hfar.store_internal_object( h5name='params', obj=d0.hdf5file.retrieve_object(h5name='params') )
+    print("parameters and configuration file file copied")
+
     for h5name in ["apexAcquisition.method", "ExciteSweep"]:    # then parameter files
         try:
             Finh5 = d0.hdf5file.open_internal_file(h5name)

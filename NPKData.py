@@ -1561,6 +1561,7 @@ class NPKData(object):
         express itself as a string,
         add checking here, as this is used during interactive use in ipython
         """
+        self.check(warn=True)
         return self.report(*args,**kw)
     #---------------------------------------------------------------------------
     def fill(self, value):
