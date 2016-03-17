@@ -132,7 +132,7 @@ def baseline1(y, degree=2, power=1, method="Powell", chunksize=2000, nbcores=Non
     
     return bl_final
 
-def correctbaseline(y, iterations=1, chunksize=100, firstpower=0.3,
+def correctbaseline(y, iterations=1, nbchunks = 100, firstpower=0.3,
                         secondpower=7, degree=2,  chunkratio=1.0,
                         interv_ignore = None, method="Powell",
                         nbcores= 10,
@@ -140,7 +140,7 @@ def correctbaseline(y, iterations=1, chunksize=100, firstpower=0.3,
     '''
     Find baseline by using low norm value and then high norm value to attract the baseline on the small values.
     iterations : number of iterations for convergence toward the small values. 
-    chunksize : size of each chunk on which is done the minimization. Typically, it must be larger than the peaks. 
+    nbchunks : number of chunks on which is done the minimization. Typically, each chunk must be larger than the peaks. 
     firstdeg : degree used for the first minimization 
     degree : degree of the polynome used for approaching each signal chunk. 
     chunkratio : ratio for changing the chunksize inside main loop
@@ -156,12 +156,13 @@ def correctbaseline(y, iterations=1, chunksize=100, firstpower=0.3,
         ii = interv_ignore
         delta = ii[1]-ii[0]
         y[ii[0]:ii[1]] = y[ii[0]] + np.arange(delta)/float(delta)*(y[ii[1]]-y[ii[0]]) # linear interpolation on the intervall.
-    
+    chunksize = y.size/nbchunks
     bl = baseline(y, degree=degree, power=firstpower, chunksize = chunksize, nbcores=nbcores, method="Powell")
     bls = {'bl':[], 'blmin':[]}
     for i in range(iterations):
         blmin = np.minimum.reduce([bl, y])
-        bl = baseline(blmin, degree=degree, power=secondpower, chunksize = int(chunksize*chunkratio), nbcores=nbcores, method=method)
+        bl = baseline(blmin, degree=degree, power=secondpower,
+                        chunksize = int(chunksize*chunkratio), nbcores=nbcores, method=method)
         bls['bl'].append(bl)
         bls['blmin'].append(blmin)
     if debug:
