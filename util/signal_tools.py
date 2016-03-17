@@ -53,25 +53,29 @@ def mrfft(v):
 
 class SIGNAL_NOISE(object):
     '''
-    Tool for generating SIGNAL with NOISE. 
+    Tool for generating SIGNAL with/without NOISE. 
     
     input:
         lenfid : length of the Fid
         nbpeaks : nb of frequencies
         amplitude : reference amplitude for signal
+        LB : exponential apodisation factor
         noise : noise amplitude
         shape : shape of the spectrum. Available : triangular, list. 
-        noisetype : kind of noise
-        shift : shift of the frequencies
+        noisetype : kind of noise, ie : additive, multiplicative etc...
+        shift : shift of the frequencies, the shift is expressed in points.
         trunc : truncaton ratio for the Fid. 
+        seed : for using a precise seed for random processes.
+        baseline : boolean for specifying if a baseline is added to the spectrum
     output:
         Noisy signal : self.fid
         Signal without noise :  self.fid0
         Noisy spectrum : self.spec
         Spectrum without noise :  self.spec0
     
-    eg1: sig = SIGNAL_NOISE( lenfid= 1000, nbpeaks = 20, amplitude = 27, noise = 5)
-    eg2:
+    eg1: # simplest usage
+        sig = SIGNAL_NOISE( lenfid= 1000, nbpeaks = 20, amplitude = 27, noise = 5)
+    eg2:  # with a list of amplitudes
         lamplit = list(np.random.randn(20)*10)
         sig = st.SIGNAL_NOISE( lenfid= 10000, nbpeaks = 20,  amplitude = lamplit, noise = 4, shape = "list")
     
@@ -80,9 +84,6 @@ class SIGNAL_NOISE(object):
     def __init__(self, lenfid, nbpeaks, amplitude, noise, LB = 1.11,\
         shape = "triangular", noisetype = 'additive', shift = 0,\
                 realfid = False, trunc = None, seed = None, baseline=None):
-        '''
-        
-        '''
         self.LB = LB # linewidth
         self.nbpeaks = nbpeaks   # number of lines in the signal
         self.lenfid = lenfid     # length of the fid
