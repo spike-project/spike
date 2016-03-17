@@ -79,7 +79,7 @@ class SIGNAL_NOISE(object):
     
     def __init__(self, lenfid, nbpeaks, amplitude, noise, LB = 1.11,\
         shape = "triangular", noisetype = 'additive', shift = 0,\
-                realfid = False, trunc = None, seed = None):
+                realfid = False, trunc = None, seed = None, baseline=None):
         '''
         
         '''
@@ -93,6 +93,7 @@ class SIGNAL_NOISE(object):
         self.trunc = trunc # factor of truncation of the Fid. 
         if not seed:
             np.random.seed(seed)                    # frequency shift
+        self.baseline = baseline
         self.x = np.arange(self.lenfid*1.0)/self.lenfid          #  time series
         self.fid = np.zeros(self.lenfid, dtype = complex) # fid without noise initialization
         self.fid0 = np.zeros(self.lenfid, dtype = complex) # noisy fid initialization
@@ -107,8 +108,11 @@ class SIGNAL_NOISE(object):
         self.make_pure_signal()         # make the signal without noise
         self.make_noisy_signal()        # make the noisy signal
         if self.realfid:
+            self.mfft = mrfft
             self.fid = np.real(self.fid)
             self.fid0 = np.real(self.fid0)
+        else: 
+            self.mfft = mfft
         self.fid_orig = self.fid.copy() # keep initial Fid when performing truncation etc.. 
         self.fid0_orig = self.fid0.copy() # keep initial Fid when performing truncation etc.. 
         
@@ -196,32 +200,39 @@ class SIGNAL_NOISE(object):
         for i in range(self.nbpeaks):
             self.fid +=  self.Amp[i] * np.exp(self.Freq[i]*xn) * np.exp(-self.LB*xn) * np.exp(1j*self.shift*self.x)
     
-    def _make_missing_point_noise():
+    def _make_missing_point_noise(self):
         '''
         Removes randomly some points after simulation of a regular set of points.
         '''
         miss = np.random.randint(2, size = len(self.x))
         self.fid = self.fid0*miss
+    
+    def _spec_baseline(self):
+        maxi = np.abs(self.mfft(self.fid).max())
+        x = np.linspace(0,10,self.lenfid)
+        return maxi*(0.1*np.sin(1.5*x)+0.2*x/x.max())
+    
+    def _spec_from_fid(self, fid):
+        '''
+        Passing from fid to spectrum
+        '''
+        spec = self.mfft(fid)
+        if self.baseline : spec += self._spec_baseline()
+        return spec
         
     @property
     def spec(self):
         '''
         Noisy spectrum
         '''
-        if self.realfid:
-            return mrfft(self.fid)
-        else:
-            return mfft(self.fid)
+        return self._spec_from_fid(self.fid)
     
     @property
     def spec0(self):
         '''
         Spectrum wihtout noise
         '''
-        if self.realfid:
-            return mrfft(self.fid0)
-        else:
-            return mfft(self.fid0)
+        return self._spec_from_fid(self.fid0)
     
     def zerof(self, fid, fid_ref):
         '''
