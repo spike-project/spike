@@ -187,7 +187,7 @@ class BC_Tests(unittest.TestCase):
         N = 100000
         x = np.linspace(0,10,N)
         y = np.sin(x/2) + 0.2*np.random.randn(N)
-        b = correctbaseline(y, iterations=10, chunksize=N/20)
+        b = correctbaseline(y, iterations=10, nbchunks = 20)
         corr = y-b
         self.assertTrue(np.std(corr) < 0.25)
         
