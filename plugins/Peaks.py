@@ -286,7 +286,7 @@ class Peak2DList(PeakList):
         print ("# %d in Peak list"%len(self), file=file)
         for pk in self:
             print(pk.report(f1=f1, f2=f2, format=format), file=file)
-    def display(self, axis = None, peak_label=False, zoom=None, show=False, f1=_identity, f2=_identity, color=None, markersize=None):
+    def display(self, axis = None, peak_label=False, zoom=None, show=False, f1=_identity, f2=_identity, color=None, markersize=6):
         """
         displays 2D peak list
         zoom is in index
@@ -502,7 +502,7 @@ def centroid(npkd, *arg, **kwarg):
         raise Exception("Centroid yet to be done")
     return npkd
 #-------------------------------------------------------
-def display_peaks(npkd, peak_label=False, zoom=None, show=False, color=None, markersize=None):
+def display_peaks(npkd, peak_label=False, zoom=None, show=False, color=None, markersize=6):
     """
     display the content of the peak list, 
     zoom is in current unit.

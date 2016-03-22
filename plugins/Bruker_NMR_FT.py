@@ -119,13 +119,16 @@ def conv_n_p(self):
     realises the n+p to SH conversion
     """
     self.check2D()
-    for i in xrange(0,self.size1,2):
-        a = self.row(i)
-        b = self.row(i+1)
-        self.set_row(i,a.copy().add(b) )    # put sum
+    for k in xrange(0,self.size1,2):
+        a = self.row(k)
+        b = self.row(k+1)
+#        self.set_row(k,a+b )    # put a+b
+#        self.set_row(k+1,(a-b).phase(90,0) )    # put i( a-b )
+        # this is about 60% faster !
+        self.set_row(k,a.copy().add(b) )    # put sum
         a.buffer += -b.buffer             # compute diff
         a.buffer = as_float( 1j*as_cpx(a.buffer) )  # dephase by 90°
-        self.set_row(i+1,a)                 # and put back
+        self.set_row(k+1,a)                 # and put back
     self.axis1.itype = 1
     return self
 NPKData_plugin("conv_n_p", conv_n_p)

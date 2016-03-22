@@ -23,6 +23,7 @@ import numpy as np
 
 from ..NPKData import NPKData
 
+debug = False
 verbose = False   # change this for vebose importers
 ################################################################
 def find_acqu_proc_gene(dir, acqulist):
@@ -63,18 +64,22 @@ def find_acqu3(dir="."):
     return( find_acqu_proc_gene(dir,('acqu3s','acqu3','ACQU3S','ACQU3')) )
 
 ################################################################
-def find_proc_down(dir, proclist):
+def find_proc_down(dire, proclist):
     """
     find a Bruker proc file associated to the directory dir and return its name
     
     search in pdada/PROCNO and returns the first one
     """
-# search acqu param file
-    for fname in glob.glob( op.join(dir,"pdata","*","*") ):
-        if op.basename(fname) in proclist:  # found
-            break
+    for pdata in glob.glob( op.join(dire,"pdata","*") ):
+        for f in proclist:
+            fname = op.join(pdata,f)
+            if debug: print('SEARCH',fname)
+            if op.exists(fname):
+                if debug: print('FOUND',f)
+                break
+        break
     else:
-        raise Exception("No proc file found in "+dir)
+        raise Exception("No proc file found in "+dire)
     return(fname)
 
 ################################################################
@@ -129,7 +134,6 @@ def read_param(filename="acqus"):
         f=fin.read()
         fin.close()
         ls= f.split("\n")
-
     #    for v in ls:
         while ls:
             v=ls.pop(0)
@@ -159,7 +163,7 @@ def read_param(filename="acqus"):
                 if (m is not None): 
                     if debug: print("STRING",v)
                     (key,val) = m.group(1,2)
-                    dict[key] = val
+                    dict[key] = "<"+val+">"
                     continue
                 m=re.match(r"##(.*)= *(.*)$",v )   #match value
                 if (m is not None):
@@ -173,6 +177,44 @@ def read_param(filename="acqus"):
             print(i+" = "+str(dict[i]))
     return dict
 
+################################################################
+def write_param(param, filename):
+    """
+    writes back a acqu/proc param file
+    """
+    def out(k):   # local function
+        "writes the entry k, deals with lists"
+        if isinstance(param[k], list): # deals with lists
+            F.write( "##%s= (0..%d)\n"%(k, len(param[k])-1) )
+            line = ""
+            for l in param[k]:  # write list entries, but line should be 72 char max !
+                line += l + " "
+                if len(line)>=72:
+                    F.write(line.strip() + "\n")
+                    line = ""
+            if line != "":
+                F.write(line.strip() + "\n")
+        else:
+            F.write( "##%s= %s\n"%(k, param[k]) )
+    #-------------------
+    klist = sorted(param.keys())
+    with open(filename, 'w') as F:
+        # first title and type
+        out('TITLE')
+        out('JCAMPDX')
+        # then plain $$ entries
+        for k in klist:
+            if not k.startswith('$') and k not in ( 'TITLE', 'JCAMPDX', 'comments', 'END'):
+                out(k)
+        # then comments (remove left \n   add one on right)
+        F.write( param['comments'].lstrip()+"\n" ) 
+        # then plain $$# entries
+        for k in klist:
+            if k.startswith('$'):
+                out(k)
+        # then END
+        out('END')
+        
 ################################################################
 def read_1D(size, filename="fid", bytorda=1):
     """
@@ -205,15 +247,15 @@ def read_2D(sizeF1, sizeF2, filename="ser", bytorda=1):
     npkbuf = np.empty((sizeF1, sizeF2), dtype=np.float64)
 # read binary
     if bytorda == 0:
-        fmt = "<64i"
+        fmt = "<256i"
     else:
-        fmt = ">64i"   # > is used to keep the normal endianess
+        fmt = ">256i"   # > is used to keep the normal endianess
     with open(filename,"rb") as F:
         for i1 in range(sizeF1):
-            for i2 in range(0, sizeF2, 64):   # read by 64 steps - MAndatory !
-                buf = F.read(256)
+            for i2 in range(0, sizeF2, 256):   # read by 64 steps - MAndatory !
+                buf = F.read(1024)
                 data = struct.unpack(fmt, buf)
-                bufsz = min(64, sizeF2-i2)
+                bufsz = min(256, sizeF2-i2)
                 npkbuf[i1,i2:i2+bufsz] = data[:bufsz]
                 # for i3 in range(bufsz):
                 #     setval(i1+1,i2+i3+1,ibuf[i3])      # copy to 2D buffer
@@ -314,15 +356,29 @@ def zerotime(acqu):
 
     return(zerotimeposition)
 ################################################################
-def offset(acqu,proc):
-    """computes the offset """
+def offset(acqu, proc):
+    """
+    computes the offset from Bruker to spike
+    """
     try:
         ppmPointUn = float(proc['$OFFSET'])
         ppmWidth = float(acqu['$SW_h']) / float(acqu['$SFO1'])
         calibrationOffset = float(ppmPointUn - ppmWidth)*  float(acqu['$SFO1'])
     except:
         calibrationOffset=0.0
-    return(calibrationOffset)
+    return (calibrationOffset)
+################################################################
+def revoffset(offset, acqu, proc):
+    """
+    computes the Bruker OFFSET (ppm of left most point) from spike axis offset value (Hz of rightmost point)
+    """
+    try:
+        SW_h = float(acqu['$SW_h'])
+        SFO1 = float(acqu['$SFO1'])
+        OFF = (offset+SW_h)/SFO1
+    except:
+        OFF = 0.0
+    return OFF
 ################################################################
 def Import_1D(filename="fid", outfile=None):
     """
@@ -381,7 +437,164 @@ def Import_1D_proc(filename="1r"):
     pardic = {"acqu": acqu, "proc": proc} # create ad-hoc parameters
     d.params = pardic   # add the parameters to the data-set
     return d
+################################################################
+def Export_proc(d, filename, template=None ):
+    """
+    Exports a 1D or a 2D npkdata to a  Bruker 1r / 2rr file, using templname as a template
     
+    fname and templname are procno : here/my_experiment/expno/pdata/procno/
+    and the files are created in the fname directory
+    a pdata/procno should already exists as a template
+    
+    if d contains metadat parameters from Bruker, there will be used,
+    however all files common to fname and templname expno will not be updated
+    
+    if fname and templname are exactly the same, (or templname is None)
+        the proc and procs files will be overwriten
+    """
+    #---------
+    if d.dim>2:
+        raise Exception('Not implemented yet')
+    if template is None:
+        template = filename
+
+    if (not op.exists(template)):
+        raise Exception(template+" : file not found")
+    if verbose:   print('Export %dD spectrum to %s using %s'%(d.dim,filename,template))
+
+    SMX = BrukerSMXWriter(d, filename, template)
+
+    # check and build dir trees from bottom
+    fexpno = op.dirname(op.dirname(filename))
+    texpno = SMX.addr_expno
+    escratch = False    # indicates expno Bruker dir tree has to be created from scratch
+    pscratch = False    # indicates procno Bruker dir tree has to be created from scratch
+    if not op.exists(fexpno):
+        os.makedirs(fexpno)
+        escratch = True
+        for f in glob.glob(op.join(texpno,'*')):        # copy metadata from template
+            if op.isfile(f) and op.basename(f) not in ('ser','fid'):  # but not raw data
+                if debug:   print('**CP**', f, fexpno)
+                shutil.copy( f, op.join(fexpno, op.basename(f)) )
+    if not op.exists(filename):
+        os.makedirs(filename)
+        fscratch = True
+        for f in glob.glob(op.join(template,'*')):        # copy metadat from template
+            if op.isfile(f) and op.basename(f) not in ('1r','1i','2rr','2ri','2ir','2ii'):  # but not raw data
+                if debug:   print('**CP**', f, filename)
+                shutil.copy( f, op.join(filename, op.basename(f)))
+    # now we create Bruker parameter files if creating from scratch and f contains meta data
+    # we provide a user warning if it is not possible
+    if escratch:
+        warn = False
+        if d.dim == 1:
+            pnamelist = ('acqu',)
+        elif d.dim == 2:
+            pnamelist = ('acqu','acqu2')
+        for pname in pnamelist:    # create parameter files
+            try:
+                par = d.params[pname]
+            except AttributeError, KeyError:
+                warn = True
+            else:
+                write_param(par, op.join(fexpno, pname) )
+                write_param(par, op.join(fexpno, pname+'s') )
+        if warn:
+            print("Warning, acqu/acqus files have not been updated")
+    if fscratch:    # here we create acqu/acqus files
+        warn = False
+        if d.dim == 1:
+            pnamelist = ('proc',)
+        elif d.dim == 2:
+            pnamelist = ('proc','proc2')
+        for pname in pnamelist:    # create parameter files
+            try:
+                par = d.params[pname]
+            except AttributeError, KeyError:
+                warn = True
+            else:
+                write_param(par, op.join(filename, pname) )
+                write_param(par, op.join(filename, pname+'s') )
+        if warn:
+            print("Warning, proc/procs files have not been updated")
+    # load template params
+    proc = read_param(find_proc(template, down=False))
+    acqu = read_param(find_acqu(texpno))
+    if d.dim == 2:
+        proc2 = read_param(find_proc2(template, down=False))
+        acqu2 = read_param(find_acqu2(texpno))
+
+    # scale between 2^28 and 2^29
+    bufabs = abs(d.buffer)
+    bmax = bufabs.max()
+    NC_proc = 0
+    while bmax <2**28:
+        bmax *= 2
+        NC_proc -= 1
+    while bmax >2**29:
+        bmax /= 2
+        NC_proc += 1
+    if debug:   print("NC_proc :", NC_proc)
+    buffinal = d.buffer * (2**(-NC_proc))
+    # update a few parameters and write proc files
+    if d.dim == 1:
+        proc['$SI'] = str(d.axis1.cpxsize)
+        proc['$SF'] = str(d.axis1.frequency)
+        proc['$SW_p'] = str(d.axis1.specwidth)
+        proc['$OFFSET'] = str(revoffset(d.axis1.offset, acqu, proc))
+        proc['$YMAX_p'] = str(buffinal.max())
+        proc['$YMIN_p'] = str(buffinal.min())
+        write_param(proc, op.join(filename, 'proc') )
+        write_param(proc, op.join(filename, 'procs') )
+    if d.dim == 2:
+        proc['$SI'] = str(d.axis2.cpxsize)
+        proc2['$SI'] = str(d.axis1.cpxsize)
+        proc['$SF'] = str(d.axis2.frequency)
+        proc2['$SF'] = str(d.axis1.frequency)
+        proc['$SW_p'] = str(d.axis2.specwidth)
+        proc2['$SW_p'] = str(d.axis1.specwidth)
+        proc['$OFFSET'] = str(revoffset(d.axis2.offset, acqu, proc))
+        proc2['$OFFSET'] = str(revoffset(d.axis1.offset, acqu2, proc2))
+        proc['$YMAX_p'] = str(buffinal.max())
+        proc['$YMIN_p'] = str(buffinal.min())
+        write_param(proc, op.join(filename, 'proc') )
+        write_param(proc, op.join(filename, 'procs') )
+        write_param(proc2, op.join(filename, 'proc2') )
+        write_param(proc2, op.join(filename, 'proc2s') )
+
+    # create binary files
+    if d.dim == 1:
+        if d.axis1.itype == 0:
+            writebin(op.join(filename, '1r'), buffinal)
+        else:
+            writebin(op.join(filename, '1r'), buffinal[::2])
+            writebin(op.join(filename, '1r'), buffinal[1::2])
+    if d.dim == 2:
+        if d.axis2.itype == 0:
+            if d.axis1.itype == 0:
+                writebin(op.join(filename, '2rr'), buffinal)
+            else:
+                writebin(op.join(filename, '1r'), buffinal[::2])
+                writebin(op.join(filename, '1r'), buffinal[1::2])
+
+    print('PASSED')
+    exit()
+
+
+    data = np.fromfile(filename, 'i4').astype(float)
+    if op.exists(op.join(dire,'1i')):  # reads imaginary part
+        data = data + 1j*np.fromfile(filename, 'i4')
+    d = NPKData(buffer=data)
+# then set parameters
+    d.axis1.specwidth = float(acqu['$SW_h'])
+    d.axis1.frequency = float(acqu['$SFO1'])
+    d.frequency = d.axis1.frequency
+    d.axis1.offset = offset(acqu, proc)
+    d.axis1.zerotime = zerotime(acqu)
+    pardic = {"acqu": acqu, "proc": proc} # create ad-hoc parameters
+    d.params = pardic   # add the parameters to the data-set
+    return d
+
 ################################################################
 def FnMODE(acqu, proc):
     """
@@ -434,8 +647,11 @@ def Import_2D(filename="ser", outfile=None):
     data = read_2D(sizeF1, sizeF2, filename,  bytorda=int(acqu['$BYTORDA']))
     d = NPKData(buffer=data)
 # then set parameters
-    d.axis1.specwidth = float(acqu2['$SW_h'])
     d.axis1.frequency = float(acqu2['$SFO1'])
+    try:
+        d.axis1.specwidth = float(acqu2['$SW_h'])
+    except KeyError:
+        d.axis1.specwidth = float(acqu2['$SW'])*d.axis1.frequency   # this happens in certain version of TopSpin
     d.axis2.specwidth = float(acqu['$SW_h'])
     d.axis2.frequency = float(acqu['$SFO1'])
     d.frequency = d.axis2.frequency

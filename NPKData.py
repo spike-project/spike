@@ -249,6 +249,14 @@ class Axis(object):
         self.sampling = None        # index list of sampled points if instantiated
         self.sampling_info = {}
         self.attributes = ["itype", "sampling"]    # storable attributes
+    @property
+    def cpxsize(self):
+        """returns size of complex entries
+        this is different from size, 
+        size == cpxsize if axis is real
+        size == 2*cpxsize if axis is complex
+        """
+        return self.size/(self.itype+1)
     def report(self):
         if self.sampling:
             return "size : %d   sampled from %d   itype %d   unit %s"%(self.size, max(self.sampling), self.itype, self.currentunit)
@@ -1816,7 +1824,7 @@ class NPKData(object):
         todo = self.test_axis(axis)
         it = self.axes(todo).itype
         if it == 0:
-            print("You already have real data - nothing done")
+#            print("You already have real data - nothing done")
             return self
         if self.dim == 1:
             self.buffer = self.buffer[::2]
@@ -2056,7 +2064,7 @@ class NPKData(object):
 #            e = np.exp( 1J* e)
         # then apply
 #        print e
-        return self.mult_by_vector(axis,e,mode="complex")
+        return self.mult_by_vector(axis, e, mode="complex")
     #-------------------------------------------------------------------------------
     def f1demodu(self, shift, axis=1):
         """
