@@ -32,10 +32,10 @@
     location    the directory where the output files will be written
     
 """
+from __future__ import print_function
 __author__ = "Marc A. Delsuc <delsuc@igbmc.fr>"
 __date__ = "Oct 2009"
 
-from __future__ import print_function
 import math
 from Generic import *
 
