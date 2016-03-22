@@ -42,133 +42,114 @@ def bcL1_init(y, degree=2, power=1, method="Powell"):
     coeff = fitpolyL1(x, y, degree=degree, power=power, method=method)
     return poly(x,coeff)
 
-def bcL1(args): #y, degree=2, power=1, method="Powell"
-    # print(args)
+def bcL1(args): 
+    '''
+    compute a baseline on y using fitpolyL1 for the parallel case.
+    '''
     y, degree, power, method  = args
-    "compute a baseline on y using fitpolyL1"
     x = np.arange(1.0*y.size)
     coeff = fitpolyL1(x, y, degree=degree, power=power, method=method)
     return poly(x,coeff)
 
-def interp_bl1(bl, lsize, nbseg = 17, kind = "linear"):
-    '''
-    Takes the whole baseline, divides it in smaller chunks than the initial chunks. Then makes an interpolation.
-    '''
-    bl_reduced = np.concatenate((bl[::lsize/nbseg], bl[-1:]))
-    x_reduced = np.concatenate((np.arange(bl.size)[::lsize/nbseg], np.array([bl.size-1]))) 
-    bl_interp = interpolate.interp1d(x_reduced, bl_reduced, kind=kind) # interpolate.splrep(x_reduced, bl_reduced, s=0)
-    bl_final = bl_interp(np.arange(bl.size))
-    return bl_final
-
-
-def baseline0(y, degree=2, power=1, method="Powell", chunksize=2000, nbcores=None):
+def baseline0(y, degree=2, power=1, method="Powell",
+                chunksize=2000, nbcores=None, ratiocov = 0.7):
     """
     compute a piece-wise baseline on y using fitpolyL1
-    degree is the degree of the underlying polynome
-    chunksize defines the size of the pieces
-    a cosine roll-off is used to smooth out chunks junctions
-
+    degree :  is the degree of the underlying polynome
+    power : norm for the approximation
+    chunksize :  defines the size of the pieces. 
+    nbcores : number of cores used for parallelization of the calculations.
+    ratiocov : covering ratio of the chunks
     y - baseline(y) produces a baseline corrected spectrum
     """
+    def approx_BL_parallel():
+        '''
+        Method for making the baseline using multiprocessing
+        '''
+        for k, estimate in enumerate(res):
+            s0 = slice((k+1)*lsize-cov,(k+2)*lsize+cov)
+            scov0 = slice((k+1)*lsize-cov,(k+1)*lsize+cov) # covering part
+            scov1 = slice((k+1)*lsize+cov,(k+2)*lsize+cov) # NON-covering part
+            tbl = estimate
+            bl[scov0] = tbl[:2*cov]*corr +bl[scov0]*corrm1 # correction from 0 to 2*cov
+            bl[scov1] = tbl[2*cov:] # rest of the baseline is the estimate
+
+    def approx_BL_serial():
+        '''
+        Method for making the baseline serially chunk after chunk.
+        '''
+        for i in range(1,nchunk-1):
+            tbl = bcL1_init(y[i*lsize-cov:(i+1)*lsize+cov], degree=degree, power=power) # Estimate
+            bl[i*lsize-cov:i*lsize+cov] = bl[i*lsize-cov:i*lsize+cov]*corrm1 + tbl[:2*cov]*corr # correction from 0 to 2*cov
+            bl[i*lsize+cov:(i+1)*lsize+cov] = tbl[2*cov:] # rest of the baseline is the estimate
+
     nchunk = y.size/chunksize
     if nchunk <2:
         bl = bcL1_init(y, degree=degree, power=power, method=method)
     else:
         lsize = y.size/nchunk
-        recov = lsize/10  # recovering parts
-        corr = np.linspace(0.0,1.0,2*recov)
-        corr = np.sin( np.linspace(0,pi/2,2*recov) )**2  # cosine roll-off
+        cov = int(lsize*ratiocov)           # covering parts
+        corr = np.linspace(0.0,1.0,2*cov)   # simple weighting coeeficient for fusionning chunks. 
         corrm1 = 1.0-corr
         bl = np.zeros_like(y)
-        bl[0:lsize+recov] = bcL1_init(y[0:lsize+recov], degree=degree, power=power)
+        bl[0:lsize+cov] = bcL1_init(y[0:lsize+cov], degree=degree, power=power)
         i = 0 # if nchunk == 2 !
         ###
-        if nbcores: # Parallelization
-            p = mp.Pool(nbcores) # Multiprocessing
-            args = iter([[y[i*lsize-recov:(i+1)*lsize+recov], degree, power, method] for i in range(1,nchunk-1)])
+        if nbcores:             # Parallelization
+            p = mp.Pool(nbcores)        # Multiprocessing Pool
+            args = iter([[y[i*lsize-cov:(i+1)*lsize+cov], degree, power, method] for i in range(1,nchunk-1)])
             res = p.imap(bcL1, args)
-            for k, estimate in enumerate(res):
-                s0 = slice((k+1)*lsize-recov,(k+2)*lsize+recov)
-                srecov0 = slice((k+1)*lsize-recov,(k+1)*lsize+recov)
-                srecov1 = slice((k+1)*lsize+recov,(k+2)*lsize+recov)
-                tbl = estimate
-                bl[srecov0] = bl[srecov0]*corrm1 + tbl[:2*recov]*corr
-                bl[srecov1] = tbl[2*recov:]
-                
+            approx_BL_parallel()    # Make the baseline in parallel
             p.close() 
         else:
-            for i in range(1,nchunk-1):
-                tbl = bcL1_init(y[i*lsize-recov:(i+1)*lsize+recov], degree=degree, power=power)
-            
-                bl[i*lsize-recov:i*lsize+recov] = bl[i*lsize-recov:i*lsize+recov]*corrm1 + tbl[:2*recov]*corr
-                bl[i*lsize+recov:(i+1)*lsize+recov] = tbl[2*recov:]
-        i = i+1
-        tbl = bcL1_init(y[i*lsize-recov:-1], degree=degree)
-        bl[i*lsize-recov:i*lsize+recov] = bl[i*lsize-recov:i*lsize+recov]*corrm1 + tbl[:2*recov]*corr
-        bl[i*lsize+recov:] = tbl[2*recov-1:]
+            approx_BL_serial()      # Make the baseline in serial
+        i = nchunk-1
+        tbl = bcL1_init(y[i*lsize-cov:-1], degree=degree, power=power)
+        bl[i*lsize-cov:i*lsize+cov] = bl[i*lsize-cov:i*lsize+cov]*corrm1 + tbl[:2*cov]*corr # correction from 0 to 2*cov
+        bl[i*lsize+cov:] = tbl[2*cov-1:] # rest of the baseline is the estimate ## -1
     return bl
 
-def baseline1(y, degree=2, power=1, method="Powell", chunksize=2000, nbcores=None):
-    """
-    compute a piece-wise baseline on y using fitpolyL1
-    degree is the degree of the underlying polynome
-    chunksize defines the size of the pieces
-
-    y - baseline(y) produces a baseline corrected spectrum
-    """
-    nchunk = y.size/chunksize
-    if nchunk <2:
-        bl = bcL1(y, degree=degree, power=power, method=method)
-    else: # Parallelize
-        lsize = y.size/nchunk
-        bl = np.zeros_like(y)
-        p = mp.Pool(nbcores) # Multiprocessing
-        args = iter([[y[i*lsize:(i+1)*lsize], degree, power, method] for i in range(nchunk)])
-        res = p.imap(bcL1, args)
-        for i, estimate in enumerate(res):
-            bl[i*lsize:(i+1)*lsize] = estimate
-        p.close()
-    bl_final = interp_bl1(bl, lsize, kind = "linear") # Smoothing to avoid segmentation of the baseline.
-    
-    return bl_final
 
 def correctbaseline(y, iterations=1, nbchunks = 100, firstpower=0.3,
                         secondpower=7, degree=2,  chunkratio=1.0,
                         interv_ignore = None, method="Powell",
                         nbcores= 10,
-                        debug = False, choiceBL = 0):
+                        debug = False, choiceBL = 0, ratiocov=0.7):
     '''
     Find baseline by using low norm value and then high norm value to attract the baseline on the small values.
+    Parameters : 
     iterations : number of iterations for convergence toward the small values. 
     nbchunks : number of chunks on which is done the minimization. Typically, each chunk must be larger than the peaks. 
+    firstpower : norm used for the first iterate
+    secondpower : norm used for attracting the curve toward the lowest values. 
     firstdeg : degree used for the first minimization 
     degree : degree of the polynome used for approaching each signal chunk. 
     chunkratio : ratio for changing the chunksize inside main loop
     interv_ignore : ignore a given intervall in the spectrum (eg : avoids issues with water pick)
     method : Algorithm used for minimization on each chunk
-    nbcores : number of cores used for minimizing in parallel on many chunks. 
+    nbcores : number of cores used for minimizing in parallel on many chunks.
+    debug : if debug is set to True, the dictionary bls is built
+    ratiocov : covering ratio of the chunks. High recovering ratios seem to give better results. By default ratiocov = 0.7
     '''
     if choiceBL == 0:
         baseline = baseline0
-    elif choiceBL == 1:
-        baseline = baseline1
     if interv_ignore:
         ii = interv_ignore
         delta = ii[1]-ii[0]
         y[ii[0]:ii[1]] = y[ii[0]] + np.arange(delta)/float(delta)*(y[ii[1]]-y[ii[0]]) # linear interpolation on the intervall.
-    chunksize = y.size/nbchunks
-    bl = baseline(y, degree=degree, power=firstpower, chunksize = chunksize, nbcores=nbcores, method="Powell")
-    bls = {'bl':[], 'blmin':[]}
+    chunksize = y.size/nbchunks    # size if each chunk in the baseline
+    bl = baseline(y, degree=degree, power=firstpower, chunksize = chunksize, nbcores=nbcores, method="Powell", ratiocov=ratiocov) # First iterate
+    bls = {'bl':[], 'blmin':[]} # Initialisation of bls for debugging. 
     for i in range(iterations):
         blmin = np.minimum.reduce([bl, y])
         bl = baseline(blmin, degree=degree, power=secondpower,
-                        chunksize = int(chunksize*chunkratio), nbcores=nbcores, method=method)
-        bls['bl'].append(bl)
-        bls['blmin'].append(blmin)
+                        chunksize = int(chunksize*chunkratio), nbcores=nbcores, method=method, ratiocov=ratiocov)
+        bls['bl'].append(bl) # saving the estimate
+        bls['blmin'].append(blmin) # saving the fusion between bl and the part of the curve under the estimate
     if debug:
-        return bl, bls
+        return bl, bls # return the resutling baseline with the iterations
     else:
-        return bl
+        return bl # return the resutling baseline
 
 class BC_Tests(unittest.TestCase):
     def test_poly(self):
