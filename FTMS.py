@@ -60,13 +60,6 @@ class FTMSAxis(NPKData.Axis):
         self.units["sec"]= NPKData.Unit(name="sec", converter=self.itos, bconverter=self.stoi)  # for transients
         self.currentunit = currentunit
         self.attributes = ["specwidth", "highmass", "offsetfreq", "left_point", "calibA", "calibB", "calibC"] + self.attributes
-    #-------------------------------------------------------------------------------
-    def _report(self):
-        "low level report"
-        return "size : %d   sw %f  offsetfreq %f left_point %f  highmass %f  itype %d currentunit %s calibA,B,C: (%f %f %f)"%(self.size, self.specwidth, self.offsetfreq, self.left_point, self.highmass, self.itype, self.currentunit, self.calibA, self.calibB, self.calibC)
-    def report(self):
-        "high level reporting - to be redifined by subclasser"
-        self._report()
 
     #-------------------------------------------------------------------------------
     @property
@@ -83,11 +76,13 @@ class FTMSAxis(NPKData.Axis):
         #   before      -------------------------------SW
         #   after             start---------------end
         #                     left'---------------SW'
+        si = self.size
         start, end = self.getslice(zoom)
         # self.specwidth = self.itoh(end-1)
         # self.left_point += int(start)
         self.size = int(end)-int(start)
         self.left_point += int(start)
+        self.specwidth = (self.specwidth*self.size)/si
         return start, end
 
     # The 2 htomz() and mztoh() are used to build all other transfoms
@@ -131,7 +126,7 @@ class FTMSAxis(NPKData.Axis):
         """
         returns Hz value (h) from point value (i)
         """      
-#        hz_value =   (value + self.left_point)*self.specwidth / (self.size+self.left_point-1)
+#        hz_value = (value + self.left_point)*self.specwidth / (self.size+self.left_point-1)
         hz_value = (value  + self.left_point)*self.specwidth/(self.size+self.left_point-1) + self.offsetfreq
         return hz_value
     #-------------------------------------------------------------------------------
