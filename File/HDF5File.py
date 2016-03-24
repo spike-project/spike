@@ -16,6 +16,7 @@ import unittest
 import numpy as np
 import time
 import array
+import tempfile
 
 import json
 import tables
@@ -50,6 +51,23 @@ def determine_chunkshape(size1, size2):
     c2 = int(size2/64. +1)
 #    update_cache_size()
     return (c1, c2)
+
+# The dictionary used to define axes tables
+FTICR_AXISvp9 = {
+    "itype":tables.Int32Col(),
+    "size":tables.Int32Col(),
+    "FTICR":tables.StringCol(itemsize=16),
+    "sampling":tables.StringCol(itemsize=16),
+    "specwidth":tables.Float32Col(),
+    "highmass":tables.Float32Col(),
+    "offsetfreq":tables.Float32Col(),
+    "left_point":tables.Int32Col(),
+    "calibA":tables.Float64Col(),
+    "calibB":tables.Float64Col(),
+    "calibC":tables.Float64Col(),
+    "highfreq":tables.Float32Col(),
+    "lowfreq":tables.Float32Col(),
+    }
 
 class HDF5File(object):
     """
@@ -110,7 +128,7 @@ class HDF5File(object):
         if compress:
             self.set_compression()
 
-        if access not in ("w", "r", "rw", "a","r+"):
+        if access not in ("w", "r", "rw", "a", "r+"):
             raise Exception(access + " : acces key not valid")
         if os.path.isfile(self.fname):
             self.checkversion()
@@ -183,11 +201,13 @@ class HDF5File(object):
         
         if info["File_Version"] != __file_version__:
             msg = """
+
+WARNING
 The file {0} is from version {1} while this program handles file version {2}.
 You have to update your msh5 file running update functions.
-to do this run the following program :
+to do this run the following command ( adapt to your local spike setup ) :
 
-python -m spike.File.HDF5File.py update {0}
+python -m spike.File.HDF5File update {0}
 
 """.format(self.fname, info["File_Version"],__file_version__)
             raise Exception(msg)
@@ -340,13 +360,13 @@ python -m spike.File.HDF5File.py update {0}
         
         for i in xrange(len(infos)):
             for key in infos[i].keys():
-                rows["sampling"] = "uniform"            # default value for sampling
+#                rows["sampling"] = "uniform"            # default value for sampling
                 if key in self.axis_table:
                     rows[key] = infos[i][key]
             
             rows.append()
         table.flush()
-        table.close()
+#        table.close()
     #----------------------------------------------
     def create_generic(self, owner=None):
         """
@@ -382,28 +402,27 @@ python -m spike.File.HDF5File.py update {0}
     #----------------------------------------------
     def create_tables(self):
         """
-        Creates the different tables needed in a HDF5File/FTICR according to the info parameters given 
-        If you don't pass any info dictionnary, it will take parameters from the self.header
+        Creates the different tables needed in a HDF5File/FTICR  
         """
         # MAD TO BE ADAPTED !!!
         # Infos that have to be known on each axis 
         
-        self.axis_table = {}
-        self.axis_table["itype"] = tables.Int32Col()
-        self.axis_table["size"] = tables.Int32Col()
-#        self.axis_table["units"] = tables.StringCol(itemsize=16)
-        self.axis_table["FTICR"] = tables.StringCol(itemsize=16)
-        self.axis_table["sampling"] = tables.StringCol(itemsize=16)
-        self.axis_table["specwidth"] = tables.Float32Col()
-        self.axis_table["highmass"] = tables.Float32Col()
-        self.axis_table["offsetfreq"] = tables.Float32Col()
-        self.axis_table["left_point"] = tables.Int32Col()
-        self.axis_table["calibA"] = tables.Float64Col()
-        self.axis_table["calibB"] = tables.Float64Col()
-        self.axis_table["calibC"] = tables.Float64Col()
-        self.axis_table["highfreq"] = tables.Float32Col()
-        self.axis_table["lowfreq"] = tables.Float32Col()
-        
+        self.axis_table = FTICR_AXISvp9
+#         self.axis_table = {}
+#         self.axis_table["itype"] = tables.Int32Col()
+#         self.axis_table["size"] = tables.Int32Col()
+# #        self.axis_table["units"] = tables.StringCol(itemsize=16)
+#         self.axis_table["FTICR"] = tables.StringCol(itemsize=16)
+#         self.axis_table["sampling"] = tables.StringCol(itemsize=16)
+#         self.axis_table["specwidth"] = tables.Float32Col()
+#         self.axis_table["highmass"] = tables.Float32Col()
+#         self.axis_table["offsetfreq"] = tables.Float32Col()
+#         self.axis_table["left_point"] = tables.Int32Col()
+#         self.axis_table["calibA"] = tables.Float64Col()
+#         self.axis_table["calibB"] = tables.Float64Col()
+#         self.axis_table["calibC"] = tables.Float64Col()
+#         self.axis_table["highfreq"] = tables.Float32Col()
+#         self.axis_table["lowfreq"] = tables.Float32Col()
 
     #----------------------------------------------
     def position_array(self, group="resol1"):
@@ -493,9 +512,12 @@ python -m spike.File.HDF5File.py update {0}
         #     raise Exception(" You might be trying to load a file with another architecture 'maybe different resolutions'")
             
         
-        for table in self.hf.walk_nodes("/"+group,"Table"): # get the list of tables in the axes group
-           values = table.read()
-#        dtypes = ("highmass","itype","left_point","ref_freq","ref_mass","sampling","size","specwidth","units")
+#        for table in self.hf.walk_nodes("/"+group,"Table"): # get the list of tables in the axes group
+#          values = table.read()
+#           print(values)
+#           exit()
+        table = getattr(hfgroup,"axes")
+        values = table.read()
         fields = [i[0] for i in values.dtype.descr]  # rename / rewrite of dtype above
         for i in range(len (values)):
             dico = {}
@@ -785,33 +807,57 @@ def up0p8_to_0p9(fname, debug = 1):
     """
     Function that deals with changing HDF5 files created with file_version 0.8 to be read with 0.9 lib
     """
-    raise "Not Available YET !"
-    # cree attached
-    # cree params
-    # conversion d'unité  - gérer les mr différemment
-    # 
     hf = tables.open_file(fname,"r+")
 
-    description = ""
-    for group in hf.iter_nodes("/","Group"): # get the list of tables in the file
-        infos = []
-        for table in hf.iter_nodes(group.axes,"Table"): # get the list of tables in the file
-            if (table.name != "generic_table"):
-                infos.append(table.read())
-                description = table.description
-        hf.remove_node(group,"axes",True)
+    # creates /attached/
+    hf.create_group("/", 'attached', filters=tables.Filters(complevel=1, complib='zlib'))
 
-        table = hf.create_table (group, "axes" , description)
-        for i in xrange(len(infos)):
-            infos[i]["sampling"] = "uniform"
-            table.append(infos[i])
-        table.flush()
-        table.close()
+    # now modify axes tables
+
+    for group in hf.iter_nodes("/","Group"): # get the list of tables in the file
+        print("GROUP",group._v_name)
+        if group._v_name.startswith('resol'):
+            axesv8 = getattr(group,"axes")
+            print(axesv8)
+            # do unit conversion
+            newaxes = []
+            for iax, ax in enumerate(axesv8):
+                newax = {}
+                # from 0.! to 0.9 FTMS freq coordinate system has changed, 
+                # so here we translate from ond to new (where sw is invariant)
+                sw = axesv8[iax]['specwidth']
+                size = axesv8[iax]['size']
+                left_point = axesv8[iax]['left_point']
+                newax['left_point'] = 0
+                newax['offsetfreq'] = left_point*sw/(size-1+left_point)  # only approximate to a few Hz !
+                newax['specwidth'] = sw - newax['offsetfreq']  # and remove this valuee
+                newax['calibA'] = axesv8[iax]['ref_mass']*axesv8[iax]['ref_freq']
+                newax['calibB'] = 0.0
+                newax['calibC'] = 0.0
+                newax['FTICR'] = 'FTICR'
+                newax['highfreq'] = newax['specwidth']
+                newax['lowfreq'] = newax['calibA']/axesv8[iax]["highmass"]
+                # the following are common to v08 and v09
+                for key in ["size", "highmass", "itype", "sampling"]:
+                    newax[key] = axesv8[iax][key]
+#                print (iax, newax)
+                newaxes.append(newax)
+            # remove old axes
+            hf.remove_node(group,"axes",True)
+            # create a new on
+            axtable = hf.create_table (group, "axes" , FTICR_AXISvp9)
+            # and fills it
+            rows = axtable.row
+            for ax in newaxes:
+                for key in ax.keys():
+                    rows[key] = ax[key]
+                rows.append()
+            axtable.flush()
     
-    hf.root.generic_table.modify_column(0, column = "0.8", colname = "File_Version")
+    # update version
+    hf.root.generic_table.modify_column(0, column = "0.9", colname = "File_Version")
     hf.root.generic_table.modify_column(0, column = time.strftime("%m/%d/%Y %I:%M:%S %p", time.localtime()), colname = "Last_Modification_Date")
-    if (debug > 0):
-        print("We have to gather all axes in one table")
+    print("file update succesful")
     hf.close()
 
 #----------------------------------------------
@@ -844,7 +890,7 @@ class HDF5_Tests(unittest.TestCase):
         B = hdf5.data
         hdf5.close()
     #----------------------------------------------
-    def test_create_from_fticr(self):
+    def _test_create_from_fticr(self):
         "Test routine that creates a HDF5 file according to a given FTICRData"
         self.announce()
         import Apex  as ap
@@ -852,14 +898,14 @@ class HDF5_Tests(unittest.TestCase):
         h5f = HDF5File(self.name_file2, "w", fticrd = fticrdata, debug =1, compress=True)
         h5f.close()
     #----------------------------------------------
-    def _test_nparray_to_fticr(self):
+    def __test_nparray_to_fticr(self):
         "Test routine that creates a HDF5 file according to a given nparray and returns the buffer (FTICRData)"
         self.announce()
         data_init = 10*np.random.random((2048, 65536)) 
         B = nparray_to_fticrd(self.name_file2, data_init)
         print(B.axis1.size)
     #----------------------------------------------
-    def test_axes_update(self):
+    def _test_axes_update(self):
         "Test routine that overloads the parameter from an axis"
         import Apex  as ap
         self.announce()
@@ -922,7 +968,7 @@ class HDF5_Tests(unittest.TestCase):
         print("modulus", time()-t0, "secondes")
         print("calcul", time()-t00, "secondes")
     #----------------------------------------------
-    def test_filenodes(self):
+    def _test_filenodes(self):
         "Test routines that work with filenodes"
         self.announce()
         # 1st objects
