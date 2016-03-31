@@ -39,8 +39,8 @@ interfproc = False
 '''
 Processing for performing urQRd  on 2D FTICR datasets.
 previous version was named processing2-urqrd-superresol
-under Linux or MacOsX : mpirun -n nbproc python -m spike.processing.py (configfile.mscf)
-under Windows : mpiexec -n nbproc python -m spike.processing.py (configfile.mscf)
+under Linux or MacOsX : mpirun -n nbproc python -m spike.processing (configfile.mscf)
+under Windows : mpiexec -n nbproc python -m spike.processing (configfile.mscf)
 '''
 # some static parameters
 # the largest dataset allowed
