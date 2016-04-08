@@ -189,6 +189,7 @@ class BrukerWriter(BrukerSMXHandler):
         if fname and templname are exactly the same, (or templname is None)
             the proc and procs files will be overwriten
         """
+        self.d = d
         if d.dim>2:
             raise Exception('Not implemented yet')
         # we use templname as basis
@@ -223,13 +224,13 @@ class BrukerWriter(BrukerSMXHandler):
         # we provide a user warning if it is not possible
         if escratch:
             warn = False
-            if d.dim == 1:
+            if self.d.dim == 1:
                 pnamelist = ('acqu',)
-            elif d.dim == 2:
+            elif self.d.dim == 2:
                 pnamelist = ('acqu','acqu2')
             for pname in pnamelist:    # create parameter files
                 try:
-                    par = d.params[pname]
+                    par = self.d.params[pname]
                 except AttributeError, KeyError:
                     warn = True
                 else:
@@ -239,13 +240,13 @@ class BrukerWriter(BrukerSMXHandler):
                 print("Warning, acqu/acqus files have not been updated")
         if fscratch:    # here we create acqu/acqus files
             warn = False
-            if d.dim == 1:
+            if self.d.dim == 1:
                 pnamelist = ('proc',)
-            elif d.dim == 2:
+            elif self.d.dim == 2:
                 pnamelist = ('proc','proc2')
             for pname in pnamelist:    # create parameter files
                 try:
-                    par = d.params[pname]
+                    par = self.d.params[pname]
                 except AttributeError, KeyError:
                     warn = True
                 else:
@@ -256,13 +257,13 @@ class BrukerWriter(BrukerSMXHandler):
         # load template params
         proc = read_param(find_proc(template, down=False))
         acqu = read_param(find_acqu(texpno))
-        if d.dim == 2:
+        if self.d.dim == 2:
             proc2 = read_param(find_proc2(template, down=False))
             acqu2 = read_param(find_acqu2(texpno))
 
     def scale_data(self):
         # scale between 2^28 and 2^29
-        bufabs = abs(d.buffer)
+        bufabs = abs(self.d.buffer)
         bmax = bufabs.max()
         NC_proc = 0
         while bmax <2**28:
@@ -272,27 +273,27 @@ class BrukerWriter(BrukerSMXHandler):
             bmax /= 2
             NC_proc += 1
         if debug:   print("NC_proc :", NC_proc)
-        buffinal = d.buffer * (2**(-NC_proc))
+        buffinal = self.d.buffer * (2**(-NC_proc))
     def update_params(self):
         # update a few parameters and write proc files
-        if d.dim == 1:
-            proc['$SI'] = str(d.axis1.cpxsize)
-            proc['$SF'] = str(d.axis1.frequency)
-            proc['$SW_p'] = str(d.axis1.specwidth)
-            proc['$OFFSET'] = str(revoffset(d.axis1.offset, acqu, proc))
+        if self.d.dim == 1:
+            proc['$SI'] = str(self.d.axis1.cpxsize)
+            proc['$SF'] = str(self.d.axis1.frequency)
+            proc['$SW_p'] = str(self.d.axis1.specwidth)
+            proc['$OFFSET'] = str(revoffset(self.d.axis1.offset, acqu, proc))
             proc['$YMAX_p'] = str(buffinal.max())
             proc['$YMIN_p'] = str(buffinal.min())
             write_param(proc, op.join(filename, 'proc') )
             write_param(proc, op.join(filename, 'procs') )
-        if d.dim == 2:
-            proc['$SI'] = str(d.axis2.cpxsize)
-            proc2['$SI'] = str(d.axis1.cpxsize)
-            proc['$SF'] = str(d.axis2.frequency)
-            proc2['$SF'] = str(d.axis1.frequency)
-            proc['$SW_p'] = str(d.axis2.specwidth)
-            proc2['$SW_p'] = str(d.axis1.specwidth)
-            proc['$OFFSET'] = str(revoffset(d.axis2.offset, acqu, proc))
-            proc2['$OFFSET'] = str(revoffset(d.axis1.offset, acqu2, proc2))
+        if self.d.dim == 2:
+            proc['$SI'] = str(self.d.axis2.cpxsize)
+            proc2['$SI'] = str(self.d.axis1.cpxsize)
+            proc['$SF'] = str(self.d.axis2.frequency)
+            proc2['$SF'] = str(self.d.axis1.frequency)
+            proc['$SW_p'] = str(self.d.axis2.specwidth)
+            proc2['$SW_p'] = str(self.d.axis1.specwidth)
+            proc['$OFFSET'] = str(revoffset(self.d.axis2.offset, acqu, proc))
+            proc2['$OFFSET'] = str(revoffset(self.d.axis1.offset, acqu2, proc2))
             proc['$YMAX_p'] = str(buffinal.max())
             proc['$YMIN_p'] = str(buffinal.min())
             write_param(proc, op.join(filename, 'proc') )
@@ -301,15 +302,15 @@ class BrukerWriter(BrukerSMXHandler):
             write_param(proc2, op.join(filename, 'proc2s') )
     def write_files(self):
         # create binary files
-        if d.dim == 1:
-            if d.axis1.itype == 0:
+        if self.d.dim == 1:
+            if self.d.axis1.itype == 0:
                 writebin(op.join(filename, '1r'), buffinal)
             else:
                 writebin(op.join(filename, '1r'), buffinal[::2])
                 writebin(op.join(filename, '1r'), buffinal[1::2])
-        if d.dim == 2:
-            if d.axis2.itype == 0:
-                if d.axis1.itype == 0:
+        if self.d.dim == 2:
+            if self.d.axis2.itype == 0:
+                if self.d.axis1.itype == 0:
                     writebin(op.join(filename, '2rr'), buffinal)
                 else:
                     writebin(op.join(filename, '1r'), buffinal[::2])
