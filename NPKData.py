@@ -760,11 +760,33 @@ class NPKData(object):
         "returns the dimension of data : 1 2 or 3 (for 1D 2D or 3D)"
         return len(self.buffer.shape)
     @property
+    def cpxsize1(self):
+        """
+        returns the size of the F1 spectral axis in 1D 2D and 3D (number of entries, real or complex)
+        i.e. the unique axis in 1D, the slowest axis in 2D and 3D
+        """
+        return self.axis1.cpxsize
+    @property
+    def cpxsize2(self):
+        """
+        returns the size of the F2 spectral axis in 2D and 3D  (number of entries, real or complex)
+        i.e. the slowest axis in 2D and the intermediate in 3D
+        """
+        return self.axis2.cpxsize
+    @property
+    def cpxsize3(self):
+        """
+        returns the size of the F3 spectral axis in 3D  (number of entries, real or complex)
+        i.e. the slowest axis in 3D
+        """
+        return self.axis3.cpxsize
+    @property
     def size1(self):
         """
         returns the size of the F1 spectral axis in 1D 2D and 3D
         i.e. the unique axis in 1D, the slowest axis in 2D and 3D
         warning, if data along axis is complex, the size is twice the number of complex pairs
+            i.e. this is the size of the underlying array
         """
         return self.axis1.size
     @property
@@ -773,6 +795,7 @@ class NPKData(object):
         returns the size of the F2 spectral axis in 2D and 3D
         i.e. the slowest axis in 2D and the intermediate in 3D
         warning, if data along axis is complex, the size is twice the number of complex pairs
+            i.e. this is the size of the underlying array
         """
         return self.axis2.size
     @property
@@ -781,6 +804,7 @@ class NPKData(object):
         returns the size of the F3 spectral axis in 3D
         i.e. the slowest axis in 3D
         warning, if data along axis is complex, the size is twice the number of complex pairs
+            i.e. this is the size of the underlying array
         """
         return self.axis3.size
     @property

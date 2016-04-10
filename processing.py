@@ -208,7 +208,7 @@ def apod(d, size, axis = 0):
         if ax==1:
             d.kaiser(beta=5, axis = todo)    # kaiser(5) is as narrow as sin() but has much less wiggles
         else:
-            d.apod_sin(maxi = 0.5, axis = todo)
+            d.kaiser(beta=3.5, axis = todo)
     # set parameters
     todo = d.test_axis(axis)    # todo is either 1 or 2 : axis along which to act
     initialsize = d.axes(todo).size   # size before zf along todo axis
@@ -343,8 +343,11 @@ def _do_proc_F1_demodu_modu(data):
     d.axis2.itype = 1
     # perform freq_f1demodu demodulation
     d.f1demodu(shift)
+    # clean thru urqrd
     if parameter.do_urqrd:
-        d.urqrd(k = parameter.urqrd_rank, axis = 1)#
+        d.urqrd(k=parameter.urqrd_rank, iterations=parameter.urqrd_iterations, axis=1)
+
+    # finally do FT
     apod(d, size, axis = 1)
     d.rfft(axis = 1)        # this rfft() is different from npfft.rfft() one !
     d.modulus()
@@ -496,6 +499,7 @@ class Proc_Parameters(object):
         self.do_f1demodu = True
         self.do_urqrd = False
         self.urqrd_rank = 20
+        self.urqrd_iterations = 1
         self.zflist = None
         self.szmlist = None
         self.mp = False
@@ -532,6 +536,7 @@ class Proc_Parameters(object):
         self.freq_f1demodu = cp.getfloat( "processing", "freq_f1demodu")        # freq for do_f1demodu
         self.do_urqrd = cp.getboolean( "processing", "do_urqrd", str(self.do_urqrd))    # do_urqrd
         self.urqrd_rank = cp.getint( "processing", "urqrd_rank", self.urqrd_rank)       # do_urqrd
+        self.urqrd_iterations = cp.getint( "processing", "urqrd_iterations", self.urqrd_iterations)       #
         self.do_rem_ridge = cp.getboolean( "processing", "do_rem_ridge", str(self.do_rem_ridge))
         self.mp = cp.getboolean( "processing", "use_multiprocessing", str(self.mp))
         self.nproc = cp.getint( "processing", "nb_proc", self.nproc)
@@ -725,6 +730,10 @@ def main(argv = None):
     else:
         d0 = load_input(param.infile)
     d0.check2D()    # raise error if not a 2D
+    try:
+	d0.params
+    except:
+	d0.params = {}  # create empty dummy params block
     if imported:
         print_time( time.time()-t0, "Import")
     else:
@@ -839,7 +848,10 @@ downsampling %s
 
     # copy files and parameters
     hfar.store_internal_file(filename=configfile, h5name="config.mscf", where='/attached')  # first mscf
-    hfar.store_internal_object( h5name='params', obj=d0.hdf5file.retrieve_object(h5name='params') )
+    try:
+        hfar.store_internal_object( h5name='params', obj=d0.hdf5file.retrieve_object(h5name='params') )
+    except:
+	print("Not params copied to Output file") 
     print("parameters and configuration file file copied")
 
     for h5name in ["apexAcquisition.method", "ExciteSweep"]:    # then parameter files
