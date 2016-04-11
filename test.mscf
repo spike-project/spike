@@ -40,8 +40,8 @@ do_F1 = True
 # will deploy on nb_proc core. - seems to be buggy on certain dstribution of python
 # note that for large data-files   MPI   should be favored when available.
 # in which case, use_multiprocessing and nb_proc are ignored
-use_multiprocessing = False
-nb_proc = 4
+use_multiprocessing = True
+nb_proc = 2
 # do_urqrd : if True, the urQRd denoising is applied in F1
 do_urqrd = False
 # rank used for urqrd - 2 to 3 times the number of lines expected in columns
