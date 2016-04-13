@@ -6,8 +6,6 @@ Apex vs Solarix
         ExciteSweep 
         PULPROG_xx_seq et PULPROG_xx_compiled
 
-importer les 1r et 2rr
-
 Fichier pour RMN
 
 model pour RMN
@@ -24,17 +22,10 @@ check plot / figure in d.display()
 
 BUGS
 ====
-params missing in _mr.msh5 files ???
-
 extract et unit fausses en NMR
-
-FFT optimal (check in fftconvolve) 
-    urqrd - sane, processing - fftbase
 
 mp vs MPI
 
 move dowsampling outside processing
 
 correct wrong downsampling in F2
-
-correct wrong syntax for apodisation

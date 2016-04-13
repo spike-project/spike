@@ -40,16 +40,24 @@ do_F1 = True
 # will deploy on nb_proc core. - seems to be buggy on certain dstribution of python
 # note that for large data-files   MPI   should be favored when available.
 # in which case, use_multiprocessing and nb_proc are ignored
-use_multiprocessing = False
-nb_proc = 4
+use_multiprocessing = True
+nb_proc = 2
 # do_urqrd : if True, the urQRd denoising is applied in F1
 do_urqrd = False
 # rank used for urqrd - 2 to 3 times the number of lines expected in columns
 # urQRd processing time is proportionnal to this
 urqrd_rank = 100
+# urQRd iterations improve the signal, but somehow 
+# urQRd processing time is proportionnal to this one as well
+urqrd_iterations = 2
 
 # do_f1demodu : if True, the F1 offset correction will be applied
 do_f1demodu = True
+# if freq_f1demodu is defined, it will be used by do_f1demodu
+# should be set to the last freq value of the excitation pulse
+# if not set, highmass is used (assuming a lowmass to highmass pulse)
+# freq_f1demodu = 123456.789 
+
 # do_modulus : if True, a modulus will be applied at the end of the processing
 do_modulus = True
 # do_rem_ridge : if True, vertical ridges will be applied

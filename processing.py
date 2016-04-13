@@ -208,7 +208,7 @@ def apod(d, size, axis = 0):
         if ax==1:
             d.kaiser(beta=5, axis = todo)    # kaiser(5) is as narrow as sin() but has much less wiggles
         else:
-            d.apod_sin(maxi = 0.5, axis = todo)
+            d.kaiser(beta=3.5, axis = todo)
     # set parameters
     todo = d.test_axis(axis)    # todo is either 1 or 2 : axis along which to act
     initialsize = d.axes(todo).size   # size before zf along todo axis
@@ -234,7 +234,46 @@ def apod(d, size, axis = 0):
         do_apod(axis)
     return d
 
-def do_proc_F2(dinp, doutp):
+def iterargF2(dinp, size, scan):
+    "an iterator used by the F2 processing to allow multiprocessing or MPI set-up"
+    for i in range(scan):
+        r = dinp.row(i)
+        yield (r, size)
+
+def _do_proc_F2(data):
+    "do the elementary F2 processing - called by the mp loop"
+    r, size = data
+    apod(r, size)
+    r.rfft()    
+    return r
+
+def do_proc_F2mp(dinp, doutp, parameter):
+    "do the processing in MP"    
+    size = doutp.axis2.size
+    scan = min(dinp.size1, doutp.size1)      # min() because no need to do extra work !
+    widgets = ['Processing F2: ', pg.Percentage(), ' ', pg.Bar(marker='-',left='[',right=']'), pg.ETA()]
+    pbar= pg.ProgressBar(widgets=widgets, maxval=scan) #, fd=sys.stdout)
+    print("############  in do_proc_F2 #########")
+    print(doutp.report())
+    xarg = iterargF2(dinp, size, scan )      # construct iterator for main loop
+    if parameter.mp:  # means multiprocessing //
+        res = Pool.imap(_do_proc_F2, xarg)
+        for i,r in enumerate(res):
+            doutp.set_row(i,r)
+            pbar.update(i+1)
+    elif mpiutil.MPI_size > 1:      # code for MPI processing //
+        res = mpiutil.enum_imap(_do_proc_F2, xarg)    # apply it
+        for i,r in res:       # and get results
+            doutp.set_row(i,r)
+            pbar.update(i+1)
+    else:       # plain non //
+        res = itertools.imap(_do_proc_F2, xarg)
+        for i,r in enumerate(res):
+            doutp.set_row(i,r)
+            pbar.update(i+1)
+    pbar.finish()
+    
+def do_proc_F2(dinp, doutp, parameter):
     "scan all rows of dinp, apply proc() and store into doutp"
     size = doutp.axis2.size
     scan = min(dinp.size1, doutp.size1)      # min() because no need to do extra work !
@@ -254,8 +293,6 @@ def do_proc_F2(dinp, doutp):
     print(doutp.report())
     #print dir(doutp)
     for i in xrange(scan):
-        # if i%(scan/16) == 0:                    # print avancement
-        #     print "proc row %d / %d"%(i,scan)
         r = dinp.row(i)
         apod(r, size)
         r.rfft()    
@@ -343,8 +380,11 @@ def _do_proc_F1_demodu_modu(data):
     d.axis2.itype = 1
     # perform freq_f1demodu demodulation
     d.f1demodu(shift)
+    # clean thru urqrd
     if parameter.do_urqrd:
-        d.urqrd(k = parameter.urqrd_rank, axis = 1)#
+        d.urqrd(k=parameter.urqrd_rank, iterations=parameter.urqrd_iterations, axis=1)
+
+    # finally do FT
     apod(d, size, axis = 1)
     d.rfft(axis = 1)        # this rfft() is different from npfft.rfft() one !
     d.modulus()
@@ -375,7 +415,7 @@ def do_proc_F1_demodu_modu(dinp, doutp, parameter):
     "as do_proc_F1, but applies demodu and then complex modulus() at the end"
     size = 2*doutp.axis1.size
     scan =  min(dinp.size2, doutp.size2)
-    widgets = ['Processing F1 demodu-modu: ', pg.Percentage(), ' ', pg.Bar(marker='-',left = '[',right = ']'), pg.ETA()]
+    widgets = ['Processing F1 demodu-modulus: ', pg.Percentage(), ' ', pg.Bar(marker='-',left = '[',right = ']'), pg.ETA()]
     pbar= pg.ProgressBar(widgets = widgets, maxval = scan) #, fd=sys.stdout)
 
     if parameter.freq_f1demodu == 0:   # means not given in .mscf file -> compute from highmass
@@ -394,7 +434,6 @@ def do_proc_F1_demodu_modu(dinp, doutp, parameter):
 #            doutp.set_col(i,p)
             pbar.update(i+1)
     elif mpiutil.MPI_size > 1:      # code for MPI processing //
-        mpiutil.mprint('MPI NEW STYLE')
         res = mpiutil.enum_imap(_do_proc_F1_demodu_modu, xarg)    # apply it
         for i,buf in res:       # and get results
             doutp.buffer[:,i] = buf
@@ -433,7 +472,7 @@ def do_process2D(dinp, datatemp, doutp, parameter):
     # in F2
     t00 = time.time()
     if parameter.do_F2:
-        do_proc_F2(dinp, datatemp)
+        do_proc_F2mp(dinp, datatemp, parameter)
         print_time(time.time()-t00, "F2 processing time")
     # in F1
     if parameter.do_F1:
@@ -496,6 +535,7 @@ class Proc_Parameters(object):
         self.do_f1demodu = True
         self.do_urqrd = False
         self.urqrd_rank = 20
+        self.urqrd_iterations = 1
         self.zflist = None
         self.szmlist = None
         self.mp = False
@@ -532,6 +572,7 @@ class Proc_Parameters(object):
         self.freq_f1demodu = cp.getfloat( "processing", "freq_f1demodu")        # freq for do_f1demodu
         self.do_urqrd = cp.getboolean( "processing", "do_urqrd", str(self.do_urqrd))    # do_urqrd
         self.urqrd_rank = cp.getint( "processing", "urqrd_rank", self.urqrd_rank)       # do_urqrd
+        self.urqrd_iterations = cp.getint( "processing", "urqrd_iterations", self.urqrd_iterations)       #
         self.do_rem_ridge = cp.getboolean( "processing", "do_rem_ridge", str(self.do_rem_ridge))
         self.mp = cp.getboolean( "processing", "use_multiprocessing", str(self.mp))
         self.nproc = cp.getint( "processing", "nb_proc", self.nproc)
@@ -725,6 +766,10 @@ def main(argv = None):
     else:
         d0 = load_input(param.infile)
     d0.check2D()    # raise error if not a 2D
+    try:
+	d0.params
+    except:
+	d0.params = {}  # create empty dummy params block
     if imported:
         print_time( time.time()-t0, "Import")
     else:
@@ -839,7 +884,10 @@ downsampling %s
 
     # copy files and parameters
     hfar.store_internal_file(filename=configfile, h5name="config.mscf", where='/attached')  # first mscf
-    hfar.store_internal_object( h5name='params', obj=d0.hdf5file.retrieve_object(h5name='params') )
+    try:
+        hfar.store_internal_object( h5name='params', obj=d0.hdf5file.retrieve_object(h5name='params') )
+    except:
+	print("Not params copied to Output file") 
     print("parameters and configuration file file copied")
 
     for h5name in ["apexAcquisition.method", "ExciteSweep"]:    # then parameter files

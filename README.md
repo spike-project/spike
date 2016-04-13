@@ -9,14 +9,14 @@ This is the version 0.8.2 dated 3 Feb 2016
  - added warnings in set_col() and set_row() if type do not match.
  - starting to work on the documentation
 
-This is the version 0.8.1 dated 24 Jan 2016
+version 0.8.1 dated 24 Jan 2016
 
 - corrected a bug for Orbitrap related to offsetfreq.
 - **WARNING for versions 0.8.0  0.8.1 0.8.2**
     * HDF5 files created with theses versions cannot be read with previous versions
     * HDF5 files created with previous versions cannot be read with these versions - this should be fixed later -
 
-This is the version 0.8.0 dated 23 Jan 2016
+version 0.8.0 dated 23 Jan 2016
 
 - first clean version using the new HDF5 file set-up
  *it is however still preliminary, and many features are still missing - even documented ones*
