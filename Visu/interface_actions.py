@@ -13,6 +13,13 @@ from .canvas_event import CANVAS_EVENT
 @dec_class_pr
 @decclassdebugging
 class INTERACT(object):
+    '''
+    13th of April, 2016, current syntax for profile
+        * profile in x or y eg : y450 or x322
+        * diagonal profile eg :
+            * 300, 450, 700, 870 y -> diagonal profile with projection on y (F1)
+            * 300, 450, 700, 870 x -> diagonal profile with projection on x (F2)
+    '''
     def __init__(self, zoom, mwind, data, display, interf, paramz, gtools, zoom3d, stools, convert, save):
         print("in INTERACT")
         self.zoom = zoom
@@ -343,10 +350,10 @@ class INTERACT(object):
             if debug(self):
                 print("lineEdit_value ", lineEdit_value)
                 print("ct ", ct)
-            if lineEdit_value.find(ct) == 0:                                                        # if x or y is found
+            if lineEdit_value.find(ct) == 0:                                                        # if prefixes x or y is found
                 if debug(self):
                     print("coord type is ", ct)
-                self.name_profile = lineEdit_value.replace('.','-')
+                self.name_profile = lineEdit_value.replace('.','-') # name of the profile, eg y500 or x634
                 llx, lly, urx, ury =  self.prepare_coord_profile(lineEdit_value, ct)                # returns profile coordinates from lineEdit value.
                 if debug(self):
                     print("name profile is ", self.name_profile)
@@ -381,11 +388,11 @@ class INTERACT(object):
                 llx, lly, urx, ury = map(float, values.split(','))                                  # from string to float
             else:
                 urx, ury, llx, lly = map(float, values.split(','))                                  # from string to float
-            self.zoom.profile_type = 'diag' + axeprofile
+            self.zoom.profile_type = 'diag' + axeprofile    # type of profile
             if debug(self):
                 print("in take_lineEdit profile coordinates are ", llx, lly, urx, ury)
             #self.name_profile = 'diagonal'
-            self.name_profile = 'diag_'+ values.replace(',','-')
+            self.name_profile = 'diag_'+ values.replace(',','-')     # passing from x0,y0,x1,y1 to diag_x0-y0-x1-y1
         except:   # x/y profile
           try:
             print("values = ", values)
