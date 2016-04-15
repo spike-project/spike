@@ -111,7 +111,7 @@ def baseline0(y, degree=2, power=1, method="Powell",
 
 
 def correctbaseline(y, iterations=1, nbchunks = 100, firstpower=0.3,
-                        secondpower=7, degree=2,  chunkratio=1.0,
+                        secondpower=7, degree=1,  chunkratio=1.0,
                         interv_ignore = None, method="Powell",
                         nbcores= 10,
                         debug = False, choiceBL = 0, ratiocov=0.7):
