@@ -1,6 +1,28 @@
 
 # Release Notes
 
+#### 0.8.3 - April 2016
+- ALL
+  - a new `cpxsize` property, associated to axes and dataset, which counts complex and real entries
+  - display and peak display now accept a color and markersize arguments
+  - improved plugins, plugins with a filename starting with _ do not load
+  - automatic baseline correction algorithms have been improved ( `Algo/BC.py` )
+  - `finnoiselevel()` set of functions has been rewritten ( `util/signal_tools.py` )
+  - standard test now includes testing for `multiprocessing` - *DOES NOT WORK ON ALL DISTRIBUTION* if it is your case,
+    set `use_multiprocessing = False` in test.mscf
+- NMR
+  - BrukerNMR now imports TopSpin processed dataset (1r, 2rr)
+  - conv_n_p() was wrong and has been corrected
+  - `gm_apod()` was wrong and has been corrected_
+  - corrected an error in GifaFile access under Windows
+  - improved and corrected Laplace axes - for a new DOSY module to come...
+- MS
+ - processing.py (2D FTMS) now includes parallel processing in F2 (helping in certain cases)
+ - and gives sharper lineshape thanks to kaiser() apodisation
+ - files from the previous program version (0.7.x) can now be upgraded and read. just do
+    ```    python -m spike.File.HDF5File update your_file.msh5  ```
+ - improved .report() for FTMS datasets
+
 #### 0.8.2 - 2 Feb 2016
  - corrected a bug in processing when running under MPI parallel 
  - added warning in set_col() and set_row() if type do not match.
