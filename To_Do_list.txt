@@ -6,6 +6,8 @@ Apex vs Solarix
         ExciteSweep 
         PULPROG_xx_seq et PULPROG_xx_compiled
 
+fermer le pool ou MPI en sortant via register.
+
 Fichier pour RMN
 
 model pour RMN

@@ -40,6 +40,8 @@ do_F1 = True
 # will deploy on nb_proc core. - seems to be buggy on certain dstribution of python
 # note that for large data-files   MPI   should be favored when available.
 # in which case, use_multiprocessing and nb_proc are ignored
+# This test set multiprocessing to True - DOES NOT WORK ON ALL DISTRIBUTION -
+# if processing fails (core dump !), set this to False
 use_multiprocessing = True
 nb_proc = 2
 # do_urqrd : if True, the urQRd denoising is applied in F1
