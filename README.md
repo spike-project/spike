@@ -3,10 +3,22 @@
 This is the beta version of the **SPIKE** program. A collaborative development for a FT-spectroscopy processing program.
 
 # Release -
-This is the version 0.8.2 dated 3 Feb 2016
+This is the version 0.8.3 - 17 April 2016
+
+- **FINALLY files from the previous program version (0.7.x) can now be upgraded and read.** just do
+  -  ```    python -m spike.File.HDF5File update your_file.msh5  ```
+- improved support for parallel processing
+  - processing.py (2D FTMS) now includes parallel processing in F2 (helping in certain cases)
+  - standard test now includes testing for `multiprocessing` - *DOES NOT WORK ON ALL DISTRIBUTION* if it is your case, modify test.mscf to: `use_multiprocessing = False`  
+- a new `cpxsize` property, associated to axes and dataset, which counts complex and real entries; helps even developping macros
+- improved plugins, automatic baseline, noise measure, 
+- NMR : BrukerNMR now imports TopSpin processed dataset (1r, 2rr)
+- MS : sharper lineshape in 2D-FTMS
+
+version 0.8.2 dated 3 Feb 2016
 
  - corrected a bug in processing when running under MPI parallel 
- - added warnings in set_col() and set_row() if type do not match.
+ - added warnings in `set_col()` and `set_row()` if type do not match.
  - starting to work on the documentation
 
 version 0.8.1 dated 24 Jan 2016
@@ -28,7 +40,7 @@ version 0.8.0 dated 23 Jan 2016
 - unittests extended, in particular in visu2D
 - Starting with this version
   - a stable version will be maintained, downloadable as a zip file in the download page
-https://bitbucket.org/delsuc/spike/downloads
+      `https://bitbucket.org/delsuc/spike/downloads`
   - Two developpement branches will be used, the `default` for the stable version - improved for bugs, and the `devel` branche, used for developping the new features.
 
 Complete history in the [release_notes.md](release_notes.md) file.

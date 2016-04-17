@@ -8,6 +8,7 @@ adapted my M-A Delsuc
 from __future__ import print_function
 import numpy as np
 from time import time
+import os
 import os.path as op
 from . import BrukerNMR as Bruker
 
@@ -50,11 +51,14 @@ class BrukerSMXHandler(object):
         Reads the data file (1D or 2D) and keeps it in self.data_1d for 1D
         in self.data_2d_2rr and self.data_2d_2ri for 2D.
         '''
-        if os.path.exists(op.join(self.addr_expno,'fid')):
+        if op.exists(op.join(self.addr_expno,'fid')):
             self.read_1D()
-        elif os.path.exists(op.join(self.addr_expno,'ser')):
+        elif op.exists(op.join(self.addr_expno,'ser')):
             self.read_2D()
 
+    def read_1D(self):
+        "not implemented - use File.BrukerNMR instead"
+        raise Exception("not implmented - use File.BrukerNMR instead")
     def read_2D(self):
         '''
         Reads the 2D "fid" file and keeps it in self.data
@@ -168,152 +172,5 @@ class BrukerSMXHandler(object):
             f.write(data.astype('>i4').tostring()) # big endian
         f.close()
         print ("rewrote ", filename)
-
-class BrukerWriter(BrukerSMXHandler):
-    """
-    Exports a 1D or a 2D npkdata to a  Bruker 1r / 2rr file, using another SMX as a template
-
-    """
-    def __init__(self, d, fname, templname):
-        """initialize
-        d is an NMR NPKData 
-
-        fname and templname are procno :    eg   /here/expname/12/pdata/1 
-
-        and the files are created in the fname directory
-        a pdata/procno should already exists as a template
-
-        if d contains metadata parameters from Bruker, there will be used,
-        however all files common to fname and templname expno will not be updated
-
-        if fname and templname are exactly the same, (or templname is None)
-            the proc and procs files will be overwriten
-        """
-        self.d = d
-        if d.dim>2:
-            raise Exception('Not implemented yet')
-        # we use templname as basis
-        super(BrukerWriter, self).__init__(templname)
-
-        self.filename = op.abspath(fname)
-        
-        # check and build dir trees from bottom
-        self.fexpno = op.dirname(op.dirname(self.filename))
-
-    def create_dir_tree(self):
-        texpno = op.dirname(op.dirname(template))
-        escratch = False    # indicates expno Bruker dir tree has to be created from scratch
-        pscratch = False    # indicates procno Bruker dir tree has to be created from scratch
-        if not op.exists(fexpno):
-            os.makedirs(fexpno)
-            escratch = True
-            for f in glob.glob(op.join(texpno,'*')):        # copy metadata from template
-                if op.isfile(f) and op.basename(f) not in ('ser','fid'):  # but not raw data
-                    if debug:   print('**CP**', f, fexpno)
-                    shutil.copy( f, op.join(fexpno, op.basename(f)) )
-        if not op.exists(filename):
-            os.makedirs(filename)
-            fscratch = True
-            for f in glob.glob(op.join(template,'*')):        # copy metadat from template
-                if op.isfile(f) and op.basename(f) not in ('1r','1i','2rr','2ri','2ir','2ii'):  # but not raw data
-                    if debug:   print('**CP**', f, filename)
-                    shutil.copy( f, op.join(filename, op.basename(f)))
-
-    def write_params(self):
-        # now we create Bruker parameter files if creating from scratch and f contains meta data
-        # we provide a user warning if it is not possible
-        if escratch:
-            warn = False
-            if self.d.dim == 1:
-                pnamelist = ('acqu',)
-            elif self.d.dim == 2:
-                pnamelist = ('acqu','acqu2')
-            for pname in pnamelist:    # create parameter files
-                try:
-                    par = self.d.params[pname]
-                except AttributeError, KeyError:
-                    warn = True
-                else:
-                    write_param(par, op.join(fexpno, pname) )
-                    write_param(par, op.join(fexpno, pname+'s') )
-            if warn:
-                print("Warning, acqu/acqus files have not been updated")
-        if fscratch:    # here we create acqu/acqus files
-            warn = False
-            if self.d.dim == 1:
-                pnamelist = ('proc',)
-            elif self.d.dim == 2:
-                pnamelist = ('proc','proc2')
-            for pname in pnamelist:    # create parameter files
-                try:
-                    par = self.d.params[pname]
-                except AttributeError, KeyError:
-                    warn = True
-                else:
-                    write_param(par, op.join(filename, pname) )
-                    write_param(par, op.join(filename, pname+'s') )
-            if warn:
-                print("Warning, proc/procs files have not been updated")
-        # load template params
-        proc = read_param(find_proc(template, down=False))
-        acqu = read_param(find_acqu(texpno))
-        if self.d.dim == 2:
-            proc2 = read_param(find_proc2(template, down=False))
-            acqu2 = read_param(find_acqu2(texpno))
-
-    def scale_data(self):
-        # scale between 2^28 and 2^29
-        bufabs = abs(self.d.buffer)
-        bmax = bufabs.max()
-        NC_proc = 0
-        while bmax <2**28:
-            bmax *= 2
-            NC_proc -= 1
-        while bmax >2**29:
-            bmax /= 2
-            NC_proc += 1
-        if debug:   print("NC_proc :", NC_proc)
-        buffinal = self.d.buffer * (2**(-NC_proc))
-    def update_params(self):
-        # update a few parameters and write proc files
-        if self.d.dim == 1:
-            proc['$SI'] = str(self.d.axis1.cpxsize)
-            proc['$SF'] = str(self.d.axis1.frequency)
-            proc['$SW_p'] = str(self.d.axis1.specwidth)
-            proc['$OFFSET'] = str(revoffset(self.d.axis1.offset, acqu, proc))
-            proc['$YMAX_p'] = str(buffinal.max())
-            proc['$YMIN_p'] = str(buffinal.min())
-            write_param(proc, op.join(filename, 'proc') )
-            write_param(proc, op.join(filename, 'procs') )
-        if self.d.dim == 2:
-            proc['$SI'] = str(self.d.axis2.cpxsize)
-            proc2['$SI'] = str(self.d.axis1.cpxsize)
-            proc['$SF'] = str(self.d.axis2.frequency)
-            proc2['$SF'] = str(self.d.axis1.frequency)
-            proc['$SW_p'] = str(self.d.axis2.specwidth)
-            proc2['$SW_p'] = str(self.d.axis1.specwidth)
-            proc['$OFFSET'] = str(revoffset(self.d.axis2.offset, acqu, proc))
-            proc2['$OFFSET'] = str(revoffset(self.d.axis1.offset, acqu2, proc2))
-            proc['$YMAX_p'] = str(buffinal.max())
-            proc['$YMIN_p'] = str(buffinal.min())
-            write_param(proc, op.join(filename, 'proc') )
-            write_param(proc, op.join(filename, 'procs') )
-            write_param(proc2, op.join(filename, 'proc2') )
-            write_param(proc2, op.join(filename, 'proc2s') )
-    def write_files(self):
-        # create binary files
-        if self.d.dim == 1:
-            if self.d.axis1.itype == 0:
-                writebin(op.join(filename, '1r'), buffinal)
-            else:
-                writebin(op.join(filename, '1r'), buffinal[::2])
-                writebin(op.join(filename, '1r'), buffinal[1::2])
-        if self.d.dim == 2:
-            if self.d.axis2.itype == 0:
-                if self.d.axis1.itype == 0:
-                    writebin(op.join(filename, '2rr'), buffinal)
-                else:
-                    writebin(op.join(filename, '1r'), buffinal[::2])
-                    writebin(op.join(filename, '1r'), buffinal[1::2])
 
 
