@@ -1,5 +1,7 @@
 FEATURES
 ========
+zzmp -> BC
+
 Apex vs Solarix
     dans dossier .m
         <method version="solariXcontrol_2" > dans l'entete de  apexAcquisition.method
@@ -31,3 +33,5 @@ mp vs MPI
 move dowsampling outside processing
 
 correct wrong downsampling in F2
+
+second complex
