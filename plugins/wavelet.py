@@ -52,8 +52,9 @@ def wavelet(npkd, nsigma=1.0, wavelet='db3'):
     """
     Performs the wavelet denoising of a 1D or 2D spectrum.
     
-    nsigma  the threshold is nsigma times the estimate noise level, default 1.0
-    wavelet the wavelet basis used, default 'db3'
+    nsigma  the threshold is nsigma times the estimate noise level,
+        default 1.0 - corresponds to a relatively strong denoising
+    wavelet the wavelet basis used, default 'db3' (Daubechies 3)
         check pywt.wavelist() for the list of possible wavelet
     
     eg:
@@ -97,10 +98,10 @@ class WaveLetTest(unittest.TestCase):
         self.assertTrue(abs(n-0.95)<0.1)
         self.assertAlmostEqual(d[1234],100.0)
         self.assertAlmostEqual(d[4321],10.0)
-        d.wavelet(nsigma=0.5)  # relatively strong denoising
+        d.wavelet(nsigma=0.5)        # relatively strong denoising
         n = findnoiselevel(d.get_buffer())
         print (n, d[1234], d[4321])
         self.assertTrue(n<0.01)
         self.assertTrue(d[1234]>80.0)
-        self.assertTrue(d[4321]>1.0)
+        self.assertTrue(d[4321]>3.0)
 
