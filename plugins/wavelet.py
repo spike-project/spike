@@ -14,7 +14,13 @@ from __future__ import print_function
 import numpy as np
 import unittest
 
-import pywt
+try:
+    import pywt
+    ok = True
+except:
+#    raise Exception('This plugin requires the installation of the PyWavelet library ( www.pybytes.com/pywavelets )')
+    print('*** This plugin requires the installation of the PyWavelet library ( www.pybytes.com/pywavelets )')
+    ok = False
 
 from spike import NPKError
 from spike.NPKData import NPKData_plugin
@@ -69,13 +75,13 @@ def wavelet(npkd, nsigma=1.0, wavelet='db3'):
         z = denoise1D(npkd.get_buffer(), nsigma*npkd.get_buffer().std(), wavelet=wavelet)
     elif npkd.dim == 2:
         z = denoise2D(npkd.get_buffer(), nsigma*npkd.get_buffer().std(), wavelet=wavelet)
-        nsigma.set_buffer(z)
     else:
         raise NPKError("not implemented")
     npkd.set_buffer(z)
     return npkd
 
-NPKData_plugin("wavelet", wavelet)
+if ok:
+    NPKData_plugin("wavelet", wavelet)
 
 class WaveLetTest(unittest.TestCase):
     """ - Testing Wavelet plugin- """
@@ -88,20 +94,23 @@ class WaveLetTest(unittest.TestCase):
         """ - testing wavelet - """
         from spike.util.signal_tools import findnoiselevel
         from spike.NPKData import NPKData
+        if not ok:
+            print("wavelet plugin not installed")
+            return
         self.announce()        
         si = 8000
         b = np.random.randn(si)
         d = NPKData(buffer=b)
         d[1234]=100.0
-        d[4321]=10.0
+        d[4321]=30.0
         n = findnoiselevel(d.get_buffer())
         self.assertTrue(abs(n-0.95)<0.1)
         self.assertAlmostEqual(d[1234],100.0)
-        self.assertAlmostEqual(d[4321],10.0)
+        self.assertAlmostEqual(d[4321],30.0)
         d.wavelet(nsigma=0.5)        # relatively strong denoising
         n = findnoiselevel(d.get_buffer())
         print (n, d[1234], d[4321])
         self.assertTrue(n<0.01)
         self.assertTrue(d[1234]>80.0)
-        self.assertTrue(d[4321]>3.0)
+        self.assertTrue(d[4321]>10.0)
 
