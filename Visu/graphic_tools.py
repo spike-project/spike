@@ -187,10 +187,10 @@ class GRAPHTOOLS():
         
         if self.data.mode_point:
             data_profile.type = 'points'
-            data_profile.axis1.units = 'points'
+            data_profile.axis1.currentunits = 'points'
         else:
             data_profile.type = 'm/z'
-            data_profile.axis1.units = 'm/z'
+            data_profile.axis1.currentunits = 'm/z'
         data_profile.along = typeprof
         return data_profile
 
