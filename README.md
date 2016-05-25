@@ -3,33 +3,17 @@
 This is the beta version of the **SPIKE** program. A collaborative development for a FT-spectroscopy processing program.
 
 # Release -
-This is the version 0.8.2 dated 3 Feb 2016
+This is the version 0.8.3 - 17 April 2016
 
- - corrected a bug in processing when running under MPI parallel 
- - added warnings in set_col() and set_row() if type do not match.
- - starting to work on the documentation
-
-version 0.8.1 dated 24 Jan 2016
-
-- corrected a bug for Orbitrap related to offsetfreq.
-- **WARNING for versions 0.8.0  0.8.1 0.8.2**
-    * HDF5 files created with theses versions cannot be read with previous versions
-    * HDF5 files created with previous versions cannot be read with these versions - this should be fixed later -
-
-version 0.8.0 dated 23 Jan 2016
-
-- first clean version using the new HDF5 file set-up
- *it is however still preliminary, and many features are still missing - even documented ones*
-- File now contains acquisition parameters files in the attached hdf5 sub-group
-- datasets now carry store and retrieve the parmeters imported from manufacturers file in d.params
-- improved FTMS calibration using 1, 2, and 3 parameters calibration : calibA calibB calibC, retrieve by Import from experimental file
-- improved FTMS Hz unit, added the d.axis.offset parameter
-- corrected fine details of F1 demodulation and added the parameter freq_f1demodu
-- unittests extended, in particular in visu2D
-- Starting with this version
-  - a stable version will be maintained, downloadable as a zip file in the download page
-https://bitbucket.org/delsuc/spike/downloads
-  - Two developpement branches will be used, the `default` for the stable version - improved for bugs, and the `devel` branche, used for developping the new features.
+- **FINALLY files from the previous program version (0.7.x) can now be upgraded and read.** just do
+  -  ```    python -m spike.File.HDF5File update your_file.msh5  ```
+- improved support for parallel processing
+  - processing.py (2D FTMS) now includes parallel processing in F2 (helping in certain cases)
+  - standard test now includes testing for `multiprocessing` - *DOES NOT WORK ON ALL DISTRIBUTION* if it is your case, modify test.mscf to: `use_multiprocessing = False`  
+- a new `cpxsize` property, associated to axes and dataset, which counts complex and real entries; helps even developping macros
+- improved plugins, automatic baseline, noise measure, 
+- NMR : BrukerNMR now imports TopSpin processed dataset (1r, 2rr)
+- MS : sharper lineshape in 2D-FTMS
 
 Complete history in the [release_notes.md](release_notes.md) file.
 
@@ -202,23 +186,42 @@ To get it, you can simply
  - download the latest stable version here : https://bitbucket.org/delsuc/spike/downloads
  - *or* `hg clone` the devel branch and keep it up-to-date
 
-
-## History ##
+## Origins ##
 
 **SPIKE** is originated from the ** _Gifa_ ** program, developed by M-A Delsuc and others in `FORTRAN 77` since the late eighties.
 _Gifa_ has known several mutations, and finally ended as a partial rewrite called **NPK**.
-[NPK](http://abcis.cbs.cnrs.fr/NPK/) program is based on some of the original `FORTRAN` code, wrapped in Java and Python, which allows to control all the program possibilities from the Python level.
-NPK is a pure computing kernel, with no graphical possibilities, and has been used as a kernel embedded in the commercial program NMRNoteBook, commercialized by NMRTEC.
+The [NPK](http://abcis.cbs.cnrs.fr/NPK/) program is based on some of the original `FORTRAN` code, wrapped in Java and Python, which allows to control all the program possibilities from the Python level.
+NPK purely a computing kernel, with no graphical possibilities, and has been used as a kernel embedded in the commercial program NMRNoteBook, commercialized by NMRTEC.
 
 However, NPK was showing many weaknesses, mostly due to the 32bits organization, and a poor file format. So, when a strong scientific environment became available in Python, a rewrite in pure Python was undertaken. To this initial project, called NPK-V2, many new functionalities were added, and mostly the capability to work in other spectroscopies than NMR.
 
-At some point, we chose to fork NPK-V2 to SPIKE, and make it public.
+At some point in 2014, we chose to fork NPK-V2 to SPIKE, and make it public.
 
 ## Citing SPIKE ##
 SPIKE is not published yet, if you happen to use it successfully and wish to cite it, please refer to this site, as well as the following references :
 
   1.	Tramesel, D., Catherinot, V. & Delsuc, M.-A. Modeling of NMR processing, toward efficient unattended processing of NMR experiments. _J Magn Reson_ **188**, 56–67 (2007).
   2.	van Agthoven, M. A., Chiron, L., Coutouly, M.-A., Delsuc, M.-A. & Rolando, C. Two-Dimensional ECD FT-ICR Mass Spectrometry of Peptides and Glycopeptides. _Anal Chem_ **84**, 5589–5595 (2012).
+
+# Developing for SPIKE
+**SPIKE** is an open-source program, this means that external contributions are welcomed.
+If you believe your improvement is useful for other people, please submit a `pull request`.
+**Note** that pull request should be associated to the `devel` branch.
+This branch is devoted to new features not fully tested yet and still susceptible of changes,
+while the `default` branch is meant for stable code.
+
+#### plugins
+If you consider adding some new feature, it is probably a good idea to implement it as a plugin.
+The code contains already quite a few plugins, some are quite sophisticated - see `Peaks.py` for instance which implements a 1D and 2D peak picker, as well as a centroid evaluation and a full listing capability.
+
+You can check also `fastclean.py` for a very simple plugin, or `wavelet.py` for a plugin relying on an external library which has to be installed.
+
+#### Some Good Practice
+
+- Spike contains many tools, most of the basic function for data interaction are found in the `NPKData.py` master file; utilities are also scattered in the `util` module.
+Use then, life will be easier for the users.
+- Please write tests, even for the plugins ! We use standard python `unittest`, so nothing fancy. All the tests are run automatically every night (code is `Tests.py`), so it will detect rapidly all potential problem.
+- push your pull requests to the `devel` branch - `default` is for the stable releases.
 
 ## Organisation of the Code ##
 
@@ -309,11 +312,12 @@ Current Active authors for SPIKE are:
 
 - Marc-André Delsuc     `madelsuc -at- unistra.fr`
 - Lionel Chiron         `Lionel.Chiron -at- casc4de.eu`
-- Petar Markov          `petar.markov -at- igbmc.fr`
 - Christian Rolando     `christian.rolando -at- univ-lille1.fr`
 
 Previous authors:
-- Marie-Aude Coutouly . `Marie-Aude.Coutouly -at- nmrtec.com`
+
+- Petar Markov          `petar.markov -at- igbmc.fr`
+- Marie-Aude Coutouly . `Marie-Aude.COUTOULY - at- datastorm.fr`
 
 Covered code is provided under this license on an "as is" basis, without warranty of any kind, either expressed or implied, including, without limitation, warranties that the covered code is free of defects. The entire risk as to the quality and performance of the covered code is with you. Should any covered code prove defective in any respect, you (not the initial developer or any other contributor) assume the cost of any necessary servicing, repair or correction.
 
