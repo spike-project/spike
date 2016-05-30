@@ -146,7 +146,7 @@ class BrukerSMXHandler(object):
             # print "self.rdata[sub_slices].shape ",self.rdata[sub_slices].shape
             # print "interm[slt1, slt2].shape ",interm[slt1, slt2].shape
             # print "self.rdata[sub_slices].shape",self.rdata[sub_slices].shape
-            self.rdata[sub_slices] = interm[slt2, slt1]
+            rdata[sub_slices] = interm[slt2, slt1]
         return rdata
 
     def read_file(self, filename):
