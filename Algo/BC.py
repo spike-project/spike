@@ -109,11 +109,41 @@ def baseline0(y, degree=2, power=1, method="Powell",
         bl[i*lsize+cov:] = tbl[2*cov-1:] # rest of the baseline is the estimate ## -1
     return bl
 
+def baseline1(y, degree=2, chunksize=2000):
+    """
+    compute a piece-wise baseline on y using fitpolyL1
+    degree is the degree of the underlying polynome
+    chunksize defines the size of the pieces
+    a cosine roll-off is used to smooth out chunks junctions
+
+    y - baseline(y) produces a baseline corrected spectrum
+    """
+    nchunk = y.size/chunksize
+    if nchunk <2:
+        bl = bcL1(y, degree=degree)
+    else:
+        lsize = y.size/nchunk
+        recov = lsize/10  # recovering parts
+        corr = np.linspace(0.0,1.0,2*recov)
+        corr = np.sin( np.linspace(0,np.pi/2,2*recov) )**2  # cosine roll-off
+        corrm1 = 1.0-corr
+        bl = np.zeros_like(y)
+        bl[0:lsize+recov] = bcL1(y[0:lsize+recov], degree=degree)
+        i = 0 # if nchunk == 2 !
+        for i in range(1,nchunk-1):
+            tbl = bcL1(y[i*lsize-recov:(i+1)*lsize+recov], degree=degree)
+            bl[i*lsize-recov:i*lsize+recov] = bl[i*lsize-recov:i*lsize+recov]*corrm1 + tbl[:2*recov]*corr
+            bl[i*lsize+recov:(i+1)*lsize+recov] = tbl[2*recov:]
+        i = i+1
+        tbl = bcL1(y[i*lsize-recov:-1], degree=degree)
+        bl[i*lsize-recov:i*lsize+recov] = bl[i*lsize-recov:i*lsize+recov]*corrm1 + tbl[:2*recov]*corr
+        bl[i*lsize+recov:] = tbl[2*recov-1:]
+    return bl
 
 def correctbaseline(y, iterations=1, nbchunks = 100, firstpower=0.3,
                         secondpower=7, degree=1,  chunkratio=1.0,
                         interv_ignore = None, method="Powell",
-                        nbcores= 10,
+                        nbcores= None,
                         debug = False, choiceBL = 0, ratiocov=0.7):
     '''
     Find baseline by using low norm value and then high norm value to attract the baseline on the small values.
@@ -127,7 +157,7 @@ def correctbaseline(y, iterations=1, nbchunks = 100, firstpower=0.3,
     chunkratio : ratio for changing the chunksize inside main loop
     interv_ignore : ignore a given intervall in the spectrum (eg : avoids issues with water pick)
     method : Algorithm used for minimization on each chunk
-    nbcores : number of cores used for minimizing in parallel on many chunks.
+    nbcores : number of cores used for minimizing in parallel on many chunks (if not None)
     debug : if debug is set to True, the dictionary bls is built
     ratiocov : covering ratio of the chunks. High recovering ratios seem to give better results. By default ratiocov = 0.7
     '''
