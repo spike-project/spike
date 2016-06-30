@@ -135,7 +135,10 @@ class Peak1D(Peak):
             format = self.report_format
         return format.format( self.Id, self.label, f(self.pos), self.intens, self.width,  self.pos_err, self.intens_err, self.width_err)
     def _report(self, f=_identity):
-        "full report for 1D Peaks"
+        """
+        full report for 1D Peaks
+        list is : Id, label, pos intens, widthF1, width, pos_err, intens_err, width_err
+        """
         return self.report(f=f, format=self.full_format)
         
 class Peak2D(Peak):
@@ -182,7 +185,10 @@ class Peak2D(Peak):
             format = self.report_format
         return format.format( self.Id, self.label, f1(self.posF1), f2(self.posF2), self.intens, self.widthF1, self.widthF2, self.posF1_err, self.posF2_err, self.intens_err, self.widthF1_err, self.widthF2_err )
     def _report(self, f1=_identity, f2=_identity):
-        "full report for 2D Peaks"
+        """
+        full report for 2D Peaks
+        list is : Id, label, posF1, posF2, intens, widthF1, widthF2, posF1_err, posF2_err, intens_err, widthF1_err, widthF2_err
+        """
         return self.report(f1=f1, f2=f2, format=self.full_format)
 
 class PeakList(list):
@@ -250,11 +256,11 @@ class Peak1DList(PeakList):
         for pk in self:
             print(pk.report(f=f, format=format), file=file)
     def _report(self, f=_identity, file=None):
-        "full report for 1D peak list"
-        print ("# %d in Peak list"%len(self), file=file)
-        print ("# Id, label, pos, intens, width,  pos_err, intens_err, width_err", file=file)
-        for pk in self:
-            print(pk._report(f=f), file=file)
+        """return full report for 1D peak list
+        list is : Id, label, pos, intens, width,  pos_err, intens_err, width_err
+        """
+        lst = [pk._report(f=f) for pk in self ]
+        return "\n".join(lst)
     def display(self, peak_label=False, zoom=None, show=False, f=_identity, color = None, markersize=None):
         """
         displays 1D peaks
@@ -304,11 +310,11 @@ class Peak2DList(PeakList):
         for pk in self:
             print(pk.report(f1=f1, f2=f2, format=format), file=file)
     def _report(self, f=_identity, file=None):
-        "full report for 2D peak list"
-        print ("# %d in Peak list"%len(self), file=file)
-        print ("# Id, label, posF1, posF2, intens, widthF1, widthF2, posF1_err, posF2_err, intens_err, widthF1_err, widthF2_err", file=file)
-        for pk in self:
-            print(pk._report(f1=f1, f2=f2), file=file)
+        """return full report for 2D peak list
+        list is : Id, label, posF1, posF2, intens, widthF1, widthF2, posF1_err, posF2_err, intens_err, widthF1_err, widthF2_err
+        """
+        lst = [pk._report(f1=f1, f2=f2) for pk in self ]
+        return "\n".join(lst)
     def display(self, axis = None, peak_label=False, zoom=None, show=False, f1=_identity, f2=_identity, color=None, markersize=6):
         """
         displays 2D peak list
