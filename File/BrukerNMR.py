@@ -561,7 +561,7 @@ def Export_proc(d, filename, template=None ):
         proc['$OFFSET'] = str(revoffset(d.axis2.offset, acqu, proc))
         proc2['$SI'] = str(d.axis1.cpxsize)
         if isinstance(d.axis1, LaplaceAxis):  # if DOSY
-            print('XXX il reste a coder Diff dans TOPSPIN XXX')
+            print('Warning, storing DOSY parameters to Topspin dataset still not fully tested !')
         else:                                               # else 2D NMR
             proc2['$SF'] = str(d.axis1.frequency)
             proc2['$SW_p'] = str(d.axis1.specwidth)
