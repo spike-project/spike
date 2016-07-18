@@ -15,12 +15,13 @@ July 2016 M-A Delsuc
 from __future__ import print_function
 import numpy as np
 import unittest
+import scipy
+from scipy.optimize import minimize, curve_fit
 
 import spike
 from spike import NPKError
 from spike.NPKData import NPKData_plugin, NPKData, flatten, parsezoom
 from spike.util.counter import timeit
-from scipy.optimize import minimize, curve_fit
 # This counter is used to count function evaluation
 count = 0
 
@@ -122,11 +123,15 @@ def fit(npkd, zoom=None):
     """
     fit the 1D npkd data-set for Lorentzian line-shape
     current peak list is used as an initial values for fitting
+    Only peaks within the zoom windows are fitted
+    
     fitting is contraint from the initial values
         - intensity will not allowed to change by more than x0.5 to x2
         - positions by more than 5 points
         - width by more than x5
+        (constraints work only for scipy version >= 0.17 )
     It may help to use centroid() to pre-optimize the peak list before calling fit(), or calling fit() twice (slower)
+    
     """
     # 3 parameters per peaks : Amp, Pos, Width
     z1, z2 = parsezoom(npkd, zoom)
@@ -150,7 +155,10 @@ def fit(npkd, zoom=None):
     Y = npkd.get_buffer()[z1:z2]
     Y = Y.real
 #    kwargs={"jac":cdSpec}
-    PP1 = curve_fit(cSpec, x, Y, PP,bounds=(minbound,maxbound), method='dogbox')
+    if scipy.__version__ > '0.17.0':
+        PP1 = curve_fit(cSpec, x, Y, PP, bounds=(minbound,maxbound), method='dogbox')
+    else:
+        PP1 = curve_fit(cSpec, x, Y, PP)
     results = PP1[0]
     errors = np.sqrt(np.diag(PP1[1]))
     chi2 = tofit(results,x,Y)   # computes error and store it
@@ -201,9 +209,10 @@ class FitTests(unittest.TestCase):
         d.pp(threshold=1000)
         # check
         self.assertEqual(list(d.peaks.pos) , [159.0, 175.0, 183.0])
-        # first fit is not full because of constraints on widthes (third peak)
         d.fit()
-        self.assertAlmostEqual(d.peaks.chi2, 121.72613405, places=6)
+        if scipy.__version__ > '0.17.0':
+            # first fit is not full because of constraints on widthes (third peak)
+            self.assertAlmostEqual(d.peaks.chi2, 121.72613405, places=6)
         d.fit()
         self.assertAlmostEqual(d.peaks.chi2, 15.0445981291, places=6)    # second is complete
         # other possibility is centroid
