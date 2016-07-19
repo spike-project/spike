@@ -85,7 +85,17 @@ import spike.Algo.savitzky_golay as sgm
 import spike.Algo.BC as BC
 ########################################################################
 def bcorr_auto(npkd, iterations=10, nbchunks=40, degree=1, nbcores=2, smooth=True):
-    """applies an automatic baseline correction"""
+    """applies an automatic baseline correction
+    
+    Find baseline by using low norm value and then high norm value to attract the baseline on the small values.
+    Parameters : 
+    iterations : number of iterations for convergence toward the small values. 
+    nbchunks : number of chunks on which is done the minimization. Typically, each chunk must be larger than the peaks. 
+    degree : degree of the polynome used for approaching each signal chunk. 
+    nbcores : number of cores used for minimizing in parallel on many chunks (if not None)
+    
+    smooth i True, applies a final Savitsky-Golay smoothing
+    """
     npkd.check1D()
     bl = BC.correctbaseline(npkd.get_buffer(), iterations=iterations, nbchunks=nbchunks, degree=degree, nbcores=nbcores)
     #baseline(npkd.get_buffer(), degree=degree)
