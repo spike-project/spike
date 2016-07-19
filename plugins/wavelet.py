@@ -1,8 +1,7 @@
 #!/usr/bin/env python 
 # encoding: utf-8
 
-"""
-A plugin which install wavelet denoising
+"""A plugin which install wavelet denoising
 
 This plugin is based on the PyWavelet library, which should be installed independently before trying to use this plugin
 It can be found at: http://www.pybytes.com/pywavelets/

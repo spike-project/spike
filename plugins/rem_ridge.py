@@ -1,8 +1,7 @@
 #!/usr/bin/env python 
 # encoding: utf-8
 
-"""
-rem_ridge.py
+"""removes ridges in 2D
 
 Created by Marc-André on 2011-08-15.
 Copyright (c) 2011 IGBMC. All rights reserved.

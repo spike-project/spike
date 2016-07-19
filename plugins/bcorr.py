@@ -1,13 +1,14 @@
 #!/usr/bin/env python 
 # encoding: utf-8
 
-"""
-set of function for the baseline correction
+"""set of function for the baseline correction
 
-Very Sloppy - Not finsihed !
+First version - Not finished !
+
+improved July 2016
 """
 
-from __future__ import print_function
+from __future__ import print_function, division
 import numpy as np
 from scipy import interpolate
 from scipy.optimize import leastsq
@@ -21,15 +22,17 @@ def _spline_interpolate(buff, xpoints, kind = 3):
         we are using splrep and splev instead of interp1d because interp1d needs to have 0 and last point
         it doesn't extend.
     """
-    y = buff[xpoint]
-    if len(xpoints) > 2:
+    if len(xpoints) == 2 :
+        return _linear_interpolate(buff, xpoints)
+    elif len(xpoints) > 2:
+        xpoints.sort()
+        y = buff[xpoints]
         tck = interpolate.splrep(xpoints, y, k=kind)
-    elif len(xpoints) == 2 :
-        tck = interpolate.splrep(xpoints, y, k=1)
+        def f(x):
+            return interpolate.splev(x, tck, der=0, ext=0)
+        return f
     else:  # if only one points given, returns a constant, which is the value at that point.
         raise NPKError("too little points in spline interpolation")
-    return interpolate.splev(np.arange(len(buff)), tck, der=0)
-
 #-------------------------------------------------------------------------------
 def _linear_interpolate(buff, xpoints):
     """computes and returns a linear interpolation"""
@@ -44,7 +47,7 @@ def _interpolate(func, npkd, xpoints, axis = 'F2'):
     xpoints are the location of pivot points
     """
     if npkd.dim == 1:
-        f = _linear_interpolate(npkd.buffer, xpoints)
+        f = func(npkd.buffer, xpoints)
         x = np.arange(npkd.size1)
         npkd.buffer -= f(x)
     elif npkd.dim == 2:
@@ -81,15 +84,55 @@ def spline_interpolate(npkd, xpoints, axis='F2'):
 import spike.Algo.savitzky_golay as sgm
 import spike.Algo.BC as BC
 ########################################################################
-def baseline(npkd, degree=4, smooth=True):
-    """applies a polynomial baseline correction"""
+def bcorr_auto(npkd, iterations=10, nbchunks=40, degree=1, nbcores=2, smooth=True):
+    """applies an automatic baseline correction"""
     npkd.check1D()
-    bl = BC.baseline(npkd.get_buffer(), degree=degree)
+    bl = BC.correctbaseline(npkd.get_buffer(), iterations=iterations, nbchunks=nbchunks, degree=degree, nbcores=nbcores)
+    #baseline(npkd.get_buffer(), degree=degree)
     if smooth:
         bl = sgm.savitzky_golay( bl, 205, 7)
     npkd.set_buffer( npkd.get_buffer() - bl)
     return npkd
 
+def bcorr(npkd, method='spline', xpoints=None):
+    """
+    recapitulate all baseline correction methods, only 1D so far
+    
+    method is either
+        auto: 
+            use bcorr_auto, uses an automatic determination of the baseline
+            does not work with negative peaks.
+        linear:
+            simple 1D correction
+        spline:
+            a cubic spline correction
+    both linear and spline use an additional list of pivot points 'xpoints' used to calculate the baseline
+    if xpoints absent,  pivots are estimated automaticaly
+    if xpoints is integer, it determines the number of computed pivots (defaut is 8 if xpoints is None)
+
+    default is spline with automatic detection of 8 baseline points
+    """
+    if method=='auto':
+        return bcorr_auto(npkd)
+    else:
+        if xpoints is None or isinstance(xpoints,int):
+            if xpoints is None :
+                N = 8
+            else:
+                N = xpoints            
+            bf = abs(npkd.get_buffer())
+            chunksize = npkd.size1//N
+            print (chunksize)
+            xpoints = np.array([i+bf[i:i+chunksize-1].argmin() for i in range(0, npkd.size1, chunksize)])
+            print (xpoints)
+    if method=='linear':
+        return linear_interpolate(npkd, xpoints)
+    elif method=='spline':
+        return spline_interpolate(npkd, xpoints)
+    else:
+        raise Exception("Wrong method in bcorr plugin")
+
 NPKData_plugin("bcorr_lin", linear_interpolate)
 NPKData_plugin("bcorr_spline", spline_interpolate)
-NPKData_plugin("baseline", baseline)
+NPKData_plugin("bcorr_auto", bcorr_auto)
+NPKData_plugin("bcorr", bcorr)

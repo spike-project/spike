@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # encoding: utf-8
-"""
-A set of tools for computing bucketing for 1D and 2D NMR spectra
+"""A set of tools for computing bucketing for 1D and 2D NMR spectra
 
 
 Created by DELSUC Marc-André on 2015-09-06.

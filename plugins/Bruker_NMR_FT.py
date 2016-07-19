@@ -1,8 +1,8 @@
 #!/usr/bin/env python 
 # encoding: utf-8
 
-"""
-This plugins implement the set of Fourier Transform used for NMR
+"""This plugin implement the set of Fourier Transform used for NMR
+
 and some other related utilities
 
 MAD September 2015

@@ -1,8 +1,7 @@
 #!/usr/bin/env python 
 # encoding: utf-8
 
-"""
-set of function Savitsky-Golay smoothing
+"""set of function Savitsky-Golay smoothing
 
 """
 
