@@ -1,8 +1,7 @@
 #!/usr/bin/env python 
 # encoding: utf-8
 
-"""
-A utility to set to zero all points below a ratio
+"""A utility to set to zero all points below a ratio
 
 """
 

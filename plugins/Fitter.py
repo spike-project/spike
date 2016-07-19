@@ -1,8 +1,7 @@
 #!/usr/bin/env python 
 # encoding: utf-8
 
-"""
-set of function for Peak detections and display
+"""set of function for Peak fitter
 
 Very First functionnal - Not finished !
 

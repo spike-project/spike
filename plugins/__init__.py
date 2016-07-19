@@ -52,7 +52,7 @@ def loadone(pluginname, pgfile=None):
     direc = __path__[0] # plugins folder
     if pgfile is None:
         pgfile = os.path.join(direc, pluginname + ".py")
-    print("Importing plugin << %s >>"%pluginname)
+    print("---- Importing  << %s >>"%pluginname)
     try:
         plugins.remove(pluginname)
         print("WARNING existing plugin %s is overwritten"%pluginname)
@@ -60,6 +60,7 @@ def loadone(pluginname, pgfile=None):
         pass
     try:
         m = imp.load_source(pluginname, pgfile)
+        print("     "+m.__doc__.split('\n')[0])    # print first line of documentation
         plugins.append(pluginname)
     except:
         print("*** Failed ***")

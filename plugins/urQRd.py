@@ -1,7 +1,7 @@
 #!/usr/bin/env python 
 # encoding: utf-8
 
-# plugin for urqrd
+"plugin for the urQRd denoising method"
 
 from __future__ import print_function
 import unittest

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # encoding: utf-8
-"""
+"""Autmomatic phase correction for 1D NMR spectra
 
-Autmomatic phase correction for 1D NMR spectra, based on an earlier version from NPK
+based on an earlier version from NPK
 
 works by minimizing the negative part of the spectrum
 WILL NOT WORK on positive/negative spectra (JMOD, W-LOGSY, etc.)
