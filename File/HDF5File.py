@@ -496,6 +496,7 @@ python -m spike.File.HDF5File update {0}
         from  .. import FTICR
         if (self.debug > 0): print(group)
         hfgroup = getattr(self.hf.root, group)
+        print('############ ', dir(hfgroup))
         try:
             hbuf = hfgroup.data
         except:

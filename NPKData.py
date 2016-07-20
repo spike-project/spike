@@ -20,8 +20,8 @@ import re
 import time
 import warnings
 
-import version
-from NPKError import NPKError
+from . import version
+from . NPKError import NPKError
 
 ########################################################################
 # series of utilities
