@@ -236,18 +236,20 @@ def test_urQRd(
         raise Exception("unknown noise type")
 
     iSNR = SNR(data,data0)
-    print "Initial Noisy Data SNR: %.2f dB - noise type : %s"%(iSNR,noisetype)
+    print("Initial Noisy Data SNR: %.2f dB - noise type : %s"%(iSNR,noisetype))
 
     ###########----
     fdata = mfft(data0) # FFT of noiseless signal
     fdatanoise = mfft(data)# FFT of noisy signal 
 
     ###########
-    print "=== Running urQR algo ===",
-    print "lendata:",lendata,
-    print " orda:",orda,
-    print ' rank:',rank
-
+    print('''
+    === Running urQR algo ===",
+    lendata : {0}
+    orda : {1}
+    rank : {2}
+    '''.format(lendata, orda, rank))
+    
     t0 = time.time()
     datarqrd = urQRd(data, k=rank, orda=orda, iterations=iterations) # denoise signal with urQRd
     trQRd = time.time()-t0
@@ -255,10 +257,10 @@ def test_urQRd(
     fdatarqrd  = mfft(datarqrd )# FFT of urQRd denoised signal
     # normrQR = norm(fdatarqrd -fdata)/norm(fdata)
     # print "= normratio ",normrQR
-    print "=== Result ==="
+    print("=== Result ===")
     fSNR = SNR(datarqrd, data0)
-    print "Denoised SNR: %.2f dB  - processing gain : %.2f dB"%( fSNR, fSNR-iSNR )
-    print "processing time for urQRd : %.2f sec"%trQRd
+    print("Denoised SNR: %.2f dB  - processing gain : %.2f dB"%( fSNR, fSNR-iSNR ))
+    print("processing time for urQRd : %.2f sec"%trQRd)
     ################################################################# Plotting
     fig = plt.figure()
     plot_param(fig,321)

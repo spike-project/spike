@@ -9,12 +9,12 @@ rev_date = '03-02-2016'
 
 def report():
     "prints version name when SPIKE starts"
-    print '''
+    print('''
     ========================
-          %s
+          {0}
     ========================
-    Version     : %s
-    Date        : %s
-    Revision Id : %s
-    ========================'''%(ProgramName, version, rev_date, revision)
+    Version     : {1}
+    Date        : {2}
+    Revision Id : {3}
+    ========================'''.format(ProgramName, version, rev_date, revision))
 report()
