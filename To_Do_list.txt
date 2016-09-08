@@ -1,6 +1,8 @@
 FEATURES
 ========
-zzmp -> BC
+**kw pour display()
+
+arithmetic avec numpy array
 
 Apex vs Solarix
     dans dossier .m
@@ -17,8 +19,6 @@ model pour RMN
 test avec SubP-2015
 
 activate MP
-
-check baseline
 
 write helper_ipynb
 

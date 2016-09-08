@@ -205,10 +205,13 @@ class HDF5File(object):
 WARNING
 The file {0} is from version {1} while this program handles file version {2}.
 You have to upgrade your msh5 file applying the update function.
-to do this run the following command ( adapt to your local spike setup ) :
+to do this run the following spike command:
+
+spike.File.HDF5File.update("{0}")
+
+or by running the following program: ( adapt to your local spike setup ) :
 
 python -m spike.File.HDF5File update {0}
-
 """.format(self.fname, info["File_Version"],__file_version__)
             raise Exception(msg)
         return True
@@ -496,7 +499,7 @@ python -m spike.File.HDF5File update {0}
         from  .. import FTICR
         if (self.debug > 0): print(group)
         hfgroup = getattr(self.hf.root, group)
-        print('############ ', dir(hfgroup))
+        #print('############ ', dir(hfgroup))
         try:
             hbuf = hfgroup.data
         except:

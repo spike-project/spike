@@ -264,6 +264,66 @@ class SIGNAL_NOISE(object):
             
         return SNR_dB(processed_fid, fid_ref)
 
+def fid_signoise_type(nbpeaks,lendata, noise, noisetype):
+    "Obsolete"
+    LB = 1.11       # linewidth
+    Freq = [(i+1+np.sqrt(10))*pi*500.0j for i in range(nbpeaks)]  # frequencies
+    Amp = [(i+1)*20 for i in range(nbpeaks)]    # amplitudes
+
+    data0 = np.zeros(lendata,dtype=complex)
+    x = np.arange(lendata*1.0)/lendata          #  time series
+    for i in range(nbpeaks):
+        data0 +=  Amp[i] * np.exp(Freq[i]*x) * np.exp(-LB*x)
+
+    if noisetype == "additive":
+        dataadd = data0 + noise*(np.random.randn(x.size) + 1j*np.random.randn(x.size))  # additive complex noise
+        data = dataadd
+
+    elif noisetype == "multiplicative":
+        Anoise = noise/2
+        Fnoise = noise/200
+        for i in range(nbpeaks):
+            nAmp = Amp[i] + Anoise*np.random.randn(x.size)
+            nFreq = Freq[i] + Fnoise*np.random.randn(x.size)
+            data +=  nAmp * np.exp(nFreq*x) * np.exp(-LB*x)
+        
+    elif noisetype == "sampling":
+        xn = x + 0.5*np.random.randn(x.size)/lendata          #  time series with noisy jitter
+        data = np.zeros(lendata,dtype = complex)
+        for i in range(nbpeaks):
+            data +=  Amp[i] * np.exp(Freq[i]*xn) * np.exp(-LB*xn)
+        
+    elif noisetype == "missing points":
+        miss = np.random.randint(2, size=len(x))
+        dataadd = data0*miss
+        data = dataadd
+    else:
+        raise Exception("unknown noise type")
+    return data
+
+def fid_signoise(nbpeaks, ampl, lengthfid, noise, shift = 0, shape = "triangular", seed = True):
+    '''
+    Obsolete
+
+    Build fid with triangular spectrum from number of peaks : nbpeaks, amplitude : ampl,
+    the length of the fid : lengthfid, and the noise level : noise.
+    if shape is "triangular", uses ampl as minimum amplitude.
+    if shape is "list", uses the given list to make the amplitudes.
+    The seed of random generator can be activated or deactivated with boolean 'seed'
+    '''
+    if seed:
+        np.random.seed(11232)
+    LB = 1  # linewidth
+    x = np.arange(lengthfid*1.0)/lengthfid        
+    fid0 = 1j*np.zeros_like(x)      # complex fid
+    omeg = 430.1*1j
+    for i in range(1, nbpeaks + 1):
+        if shape == "triangular":
+            fid0 +=  i*ampl*np.exp(omeg*(i)*x)*np.exp(-LB*x)*np.exp(1j*shift*x)   #
+        elif shape == 'list':
+            fid0 +=  ampl[i-1]*np.exp(omeg*(i)*x)*np.exp(-LB*x)*np.exp(1j*shift*x)
+    fid = fid0 + noise*(np.random.randn(x.size) + 1j*np.random.randn(x.size)) # additive noise 
+    return fid
 
 def findnoiselevel(fid, nbseg = 20):
     """

@@ -133,7 +133,7 @@ def bcorr(npkd, method='spline', xpoints=None):
             bf = abs(npkd.get_buffer())
             chunksize = npkd.size1//N
             print (chunksize)
-            xpoints = np.array([i+bf[i:i+chunksize-1].argmin() for i in range(0, npkd.size1, chunksize)])
+            xpoints = np.array([i+bf[i:i+chunksize-8].argmin() for i in range(4, npkd.size1, chunksize)])
             print (xpoints)
     if method=='linear':
         return linear_interpolate(npkd, xpoints)
