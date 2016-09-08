@@ -129,7 +129,7 @@ def bcorr(npkd, method='spline', xpoints=None):
             if xpoints is None :
                 N = 8
             else:
-                N = xpoints            
+                N = xpoints
             bf = abs(npkd.get_buffer())
             chunksize = npkd.size1//N
             print (chunksize)
