@@ -13,7 +13,7 @@ from __future__ import print_function
 
 ProgramName = "SPIKE"
 VersionName = "Development version - beta"
-VersionInfo = ["0", "8", "2"]   # Major - Minor - Micro
+VersionInfo = ["0", "9", "0"]   # Major - Minor - Micro
 
 # Major.minor.micro (int) + name eg SPIKE_2_19_5
 # N.M.L
@@ -26,6 +26,24 @@ VersionInfo = ["0", "8", "2"]   # Major - Minor - Micro
 # Release Notes in md syntax !
 release_notes="""
 # Relase Notes
+
+#### 0.9 - 8 sept 2016
+- added a baseline correction plugins, already quite developed, with 3 different methods
+- added an line fitter, in 1D and 2D, still exploratory, only Lorentzian for the moment
+- added an automatic phasing plugins, still exploratory
+- added a wavelet filtering plugins (requires the PyWavelet library)
+- added a 3D zoom plugins (requires the Mayavi library)
+- added export to Topspin/Bruker files, and added import of processed Topspin files
+- added the upgrade of files from previous version
+- added the d.axis?.cpxsize : the size of an axis expressed in spectroscopic points (real of complex)
+ different from d.axis?.size which is the size of an axis expressed in data points so
+   - d.axis?.cpxsize == d.axis?.size     is axis is real
+   - d.axis?.cpxsize == d.axis?.size/2   is axis is complex
+- improved the Peak-Picker (mostly the output capabilities)
+- improved processing.py for nicer spectra, and possibly faster processing
+- improved visu2D.py, for a greater stability and improved selection syntax
+- corrected a bug in d.conv_n_p()
+- and many small bugs as well
 
 #### 0.8.2 - 2 Feb 2016
  - corrected a bug in processing when running under MPI parallel 
@@ -186,14 +204,14 @@ def generate_file(fname):
     f.write(r"""
 def report():
     "prints version name when SPIKE starts"
-    print '''
+    print( '''
     ========================
-          %s
+          {0}
     ========================
-    Version     : %s
-    Date        : %s
-    Revision Id : %s
-    ========================'''%(ProgramName, version, rev_date, revision)
+    Version     : {1}
+    Date        : {2}
+    Revision Id : {3}
+    ========================'''.format(ProgramName, version, rev_date, revision))
 report()
 """)
     #print 'SPIKE version', version, 'date',date "
