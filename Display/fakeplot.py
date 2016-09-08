@@ -24,7 +24,7 @@ FAKE = True
 
 class fake(object):
     """fake figure object"""
-    def __init__(self):
+    def __init__(self, *args, **key):
         global current
         current += 1
         print("******* figure %d *****"%current)
