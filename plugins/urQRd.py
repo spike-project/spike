@@ -11,7 +11,7 @@ from spike.NPKData import NPKData_plugin,  as_cpx, as_float, _base_fft,\
 from spike.Algo.urQRd import urQRd
 from spike.util.signal_tools import filtering
 
-import sys
+import sys #
 if sys.version_info[0] < 3:
     pass
 else:

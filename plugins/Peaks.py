@@ -67,7 +67,7 @@ Sept 2015 M-A Delsuc
 from __future__ import print_function
 import numpy as np
 import unittest
-
+###
 from spike import NPKError
 from spike.NPKData import NPKData_plugin, NPKData, flatten, parsezoom
 from spike.util.counter import timeit

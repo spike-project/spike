@@ -25,7 +25,7 @@ then, any NPKData will inherit the myname() method
 For the moment, only NPKData plugins are handled.
 
 """
-from __future__ import print_function
+from __future__ import print_function #
 import imp
 import traceback
 import unittest

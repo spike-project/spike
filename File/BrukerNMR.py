@@ -454,7 +454,7 @@ def Export_proc(d, filename, template=None ):
     if fname and templname are exactly the same, (or templname is None)
         only 1r / 2rr proc and procs files will be overwriten
     """
-    from BrukerSMX import BrukerSMXHandler
+    from .BrukerSMX import BrukerSMXHandler
     #---------
     if d.dim>2:
         raise Exception('Not implemented yet')
