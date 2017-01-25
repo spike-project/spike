@@ -501,7 +501,7 @@ def Export_proc(d, filename, template=None ):
         for pname in pnamelist:    # create parameter files
             try:
                 par = d.params[pname]   # check is dataset contains Bruker parameters (either from import or from hdf5 files)
-            except AttributeError, KeyError:
+            except(AttributeError, KeyError):
                 warn = True
             else:
                 write_param(par, op.join(fexpno, pname) )
@@ -517,7 +517,7 @@ def Export_proc(d, filename, template=None ):
         for pname in pnamelist:    # create parameter files
             try:
                 par = d.params[pname]
-            except AttributeError, KeyError:
+            except(AttributeError, KeyError):
                 warn = True
             else:
                 write_param(par, op.join(filename, pname) )

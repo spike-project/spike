@@ -51,6 +51,7 @@ import numpy.linalg as linalg
 from scipy.linalg import norm
 from numpy.fft import fft, ifft
 
+
 def urQRd(data, k, orda=None, iterations=1):
     
     """ 

@@ -23,6 +23,12 @@ import warnings
 from . import version
 from . NPKError import NPKError
 
+import sys
+if sys.version_info[0] < 3:
+    pass
+else:
+    xrange = range
+
 ########################################################################
 # series of utilities
 
@@ -1085,14 +1091,14 @@ class NPKData(object):
         self.absmax = 0.0
         return self
     #---------------------------------------------------------------------------
-    def _extract1d(self, zoom ):
+    def _extract1d(self, zoom):
         self.check1D()
         x1, y1 = self.axis1.extract(zoom)
         self.buffer = self.buffer[x1:y1]
         self.adapt_size()
         return self
     #---------------------------------------------------------------------------
-    def _extract2d(self, zoom ):
+    def _extract2d(self, zoom):
         self.check2D()
         zoom = flatten(zoom)
         x1, y1 = self.axis1.extract( (zoom[0], zoom[1]) )

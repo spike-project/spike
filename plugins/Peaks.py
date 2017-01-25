@@ -214,7 +214,7 @@ class PeakList(list):
             keys = kwds.keys()
             keys.sort()
             extras = ", ".join(["%s=%s" % (k, kwds[k]) for k in keys])
-            raise ValueError, "unrecognized keyword args: %s" % extras
+            raise(ValueError, "unrecognized keyword args: %s" % extras)
     @property
     def intens(self):
         "returns a numpy array of the intensities"

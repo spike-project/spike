@@ -43,7 +43,7 @@ def load():
         if not b.startswith('_'):
             loadone(pgmod, pgfile)
                 
-def loadone(pluginname, pgfile=None):
+def loadone(pluginname, pgfile=None, debug=True):
     """
     loads the plugin "pluginname" found in file pgfile
     if pgfile is None, the file is found in the plugins folder (without the .py extension)
@@ -52,20 +52,20 @@ def loadone(pluginname, pgfile=None):
     direc = __path__[0] # plugins folder
     if pgfile is None:
         pgfile = os.path.join(direc, pluginname + ".py")
-    print("---- Importing  << %s >>"%pluginname)
+    if debug: print("---- Importing  << %s >>"%pluginname)
     try:
         plugins.remove(pluginname)
-        print("WARNING existing plugin %s is overwritten"%pluginname)
+        if debug: print("WARNING existing plugin %s is overwritten"%pluginname)
     except    ValueError:
         pass
     try:
         m = imp.load_source(pluginname, pgfile)
-        print("     "+m.__doc__.split('\n')[0])    # print first line of documentation
+        if debug: print("     "+m.__doc__.split('\n')[0])    # print first line of documentation
         plugins.append(pluginname)
     except:
-        print("*** Failed ***")
+        if debug: print("*** Failed ***")
         traceback.print_exc()
-        print("*** Continuing ***")
+        if debug: print("*** Continuing ***")
 
 class PluginTests(unittest.TestCase):
     def test_plugin(self):
