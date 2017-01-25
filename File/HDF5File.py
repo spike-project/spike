@@ -21,7 +21,10 @@ import tempfile
 import json
 import tables
 from tables.nodes import filenode
-import ConfigParser
+try:
+    import ConfigParser
+except:
+    import configparser as ConfigParser
 
 # File_version is written into the file and tag the file itself 
 # to be changed only if the file format changes

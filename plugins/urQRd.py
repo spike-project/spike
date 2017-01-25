@@ -11,6 +11,12 @@ from spike.NPKData import NPKData_plugin,  as_cpx, as_float, _base_fft,\
 from spike.Algo.urQRd import urQRd
 from spike.util.signal_tools import filtering
 
+import sys
+if sys.version_info[0] < 3:
+    pass
+else:
+    xrange = range
+
 def urqrd(npkd, k, orda = None, iterations = 1, axis=0):
     """
     Apply urQRd denoising to data
