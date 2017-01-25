@@ -23,7 +23,7 @@ import warnings
 from . import version
 from . NPKError import NPKError
 
-import sys
+import sys #
 if sys.version_info[0] < 3:
     pass
 else:
