@@ -1,8 +1,10 @@
 FEATURES
 ========
+bk.ft() bk.ftf2() bk.ftF1(FnMode)
+
 **kw pour display()
 
-arithmetic avec numpy array
+arithmetic avec numpy array  d /= x
 
 Apex vs Solarix
     dans dossier .m

@@ -4,6 +4,7 @@
 """This plugin implement the set of Fourier Transform used for NMR
 
 and some other related utilities
+commands starting with bk_ emulates (kind of) the topspin commands
 
 MAD September 2015
 
@@ -14,6 +15,12 @@ import unittest
 
 from spike import NPKError
 from spike.NPKData import NPKData_plugin, as_float, as_cpx
+
+import sys #
+if sys.version_info[0] < 3:
+    pass
+else:
+    xrange = range
 
 ########################################################################
 def check_real(data, axis):
@@ -102,6 +109,7 @@ def bruker_corr(self):
     self.phase(0, -360.0*delay, axis=0) # apply phase correction
     return self
 NPKData_plugin("bruker_corr", bruker_corr)
+NPKData_plugin("bk_corr", bruker_corr)
 #-------------------------------------------------------------------------------
 def bruker_proc_phase(self):
     """
@@ -113,6 +121,8 @@ def bruker_proc_phase(self):
     self.phase(ph0, ph1+zero) #Performs the phase correction from proc file
     return self
 NPKData_plugin("bruker_proc_phase", bruker_proc_phase)
+NPKData_plugin("bk_xf2p", bruker_proc_phase)
+NPKData_plugin("bk_pk", bruker_proc_phase)
 #-------------------------------------------------------------------------------  
 def conv_n_p(self):
     """
@@ -132,6 +142,109 @@ def conv_n_p(self):
     self.axis1.itype = 1
     return self
 NPKData_plugin("conv_n_p", conv_n_p)
+
+#-------------------------------------------------------------------------------
+def wdw(data, axis=1):
+    """emulates Bruker window function"""
+    def _sine(ssb):
+        "computes maxi for sine(ssb)"
+        if ssb == 0:
+            return 0.5
+        elif ssb == 2:
+            return 0.0
+        elif ssb == 3:
+            return 0.25
+        elif ssb == 4:
+            return 0.333
+        elif ssb == 5:
+            return 0.375
+        elif ssb == 6:
+            return 0.4
+        else:
+            return 0.5
+    def _wdw(data, pp, axis):
+        "does the work"
+        if pp['$WDW'] == '0': # none
+            pass
+        elif pp['$WDW'] == '2': # GM
+            data.apod_gm(pp['$GB'], axis=axis)
+        elif pp['$WDW'] == '3': # SINE
+            data.apod_sin(_sine(pp['$SSB']), axis=axis)
+        elif pp['$WDW'] == '4': # QSINE
+            data.apod_sq_sin(_sine(pp['$SSB']), axis=axis)
+        elif pp['$WDW'] == '5': # TM
+            data.apod_tm(pp['$TM1'], pp['$TM2'], axis=axis)
+        else:
+            raise Exception("WDW not implemented")
+        return data
+    if data.dim == 1:
+        data = _wdw(data, data.params['proc'], 1)
+    elif data.dim == 2:
+        if axis == 2:
+            data = _wdw(data, data.params['proc'], 2)
+        else:
+            data = _wdw(data, data.params['proc2'], 1)
+    return data    
+NPKData_plugin("bk_wdw", wdw)
+#-------------------------------------------------------------------------------
+def ftF2(data):
+    """emulates Bruker ft of a 2D in F1 depending on FnMode"""
+    if data.dim != 2:
+        NPKError("Command available in 2D only", data=data)
+    if data.axis2.itype == 1:
+        data.ft_sim()
+    else:
+        data.ft_seq()
+    return data
+NPKData_plugin("bk_ftF2", ftF2)
+#-------------------------------------------------------------------------------
+def ftF1(data):
+    """emulates Bruker ft of a 2D in F1 depending on FnMode
+    
+    None    0
+    QF      1
+    QSEQ    2
+    TPPI    3
+    States  4
+    States-TPPI 5
+    Echo-AntiEcho   6
+    """
+    typ = data.params['acqu2']["$FnMODE"]
+    if typ == '0':
+        pass
+    elif typ == '1':
+        data.ft_phase_modu()
+    elif typ == '2':
+        data.rfft()
+    elif typ == '3':
+        data.ft_tppi()
+    elif typ == '4':
+        data.ft_sh()
+    elif typ == '5':
+        data.ft_sh_tppi()
+    elif typ == '6':
+        data.ft_n_p()
+    if data.params['proc2']["$REVERSE"] == 'yes':
+        data.reverse(axis='F1')
+    return data
+NPKData_plugin("bk_ftF1", ftF1)
+#-------------------------------------------------------------------------------
+def xf2(data):
+    """emulates xf2 command from topspin"""
+    data.bk_wdw(axis=2).bk_ftF2()
+    return data
+NPKData_plugin("bk_xf2", xf2)
+#-------------------------------------------------------------------------------
+def xf1(data):
+    """emulates xf1 command from topspin"""
+    data.bk_wdw(axis=1).bk_ftF1()
+    return data
+NPKData_plugin("bk_xf1", xf1)
+#-------------------------------------------------------------------------------
+def xfb(data):
+    """emulates xfb command from topspin"""
+    return data.bk_xf2().bk_xf1()
+NPKData_plugin("bk_xfb", xfb)
 
 #########################################################
 class Bruker_NMR_FT(unittest.TestCase):

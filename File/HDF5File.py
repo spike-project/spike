@@ -22,14 +22,19 @@ import json
 import tables
 from tables.nodes import filenode
 
-try:
+if sys.version_info[0] < 3:
     import ConfigParser
-except:
+else:
     import configparser as ConfigParser
+    xrange = range
+
 
 # File_version is written into the file and tag the file itself 
 # to be changed only if the file format changes
-__file_version__ = "0.9"
+if sys.version_info[0] < 3:
+    __file_version__ = "0.9"
+else:
+    __file_version__ = b"0.9"
 """
 __file_version__ 0.9 new list of attributes for FTMS axes
     additional files are now stored along the data in "attached" group.
