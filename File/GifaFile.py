@@ -21,10 +21,17 @@ from ..NPKError import NPKError
 import unittest
 import os
 
+import sys #
+if sys.version_info[0] < 3:
+    pass
+else:
+    xrange = range
+
 HEADERSIZE = 4096   # the size of the ascii header
 BLOCKIO = 4096      # the size of the chunk written to disk
 
 __version__ = "0.3"
+# ported to python 3 jan 2017
 # MAD&MAC 12 12 2011 :  nasty bug in reading 2D which let one point to zero - introduced in previous modif
 # MAD 13 07 2010 :   2D read in windows
 #                   speed-up of read thanks to Numpy
@@ -69,7 +76,7 @@ class GifaFile(object):
                 raise Exception(access + " : acces key not valid")
             self.file = open(fname, access) # open file at once  - CR change file to open Python 2.6
             if access == "r":
-                self.fileB = open(fname, "rb") # CR "b" for Windows
+                self.fileB = open(fname, "rb") # CR "b" for Windows  - MAD and python3
         else:       # if not string, assume a File object
             try:
                 self.fname = fname.name
@@ -78,13 +85,13 @@ class GifaFile(object):
             self.file = fname
             self.fileB = fname
         if access == "r":     # check if it is a real one
-            l = self.file.readline()
-            hsz = re.match('HeaderSize\s*=\s*(\d+)', l)
+            l = self.fileB.readline(32)
+            hsz = re.match('HeaderSize\s*=\s*(\d+)', l.decode())
             if not hsz:
                 self.file.close()
                 raise Exception("file %s not valid"%fname)
             self.headersize = int(hsz.group(1))
-            self.file.seek(0)   # and rewind.
+            self.fileB.seek(0)   # and rewind.
         if access == "w":
             self.headersize = HEADERSIZE
         self.header = None
@@ -192,8 +199,9 @@ class GifaFile(object):
         return a dictionnary of the file header
         internal use
         """
-        self.file.seek(0)   # rewind.
-        buf = self.file.read(self.headersize)
+        self.fileB.seek(0)   # rewind.
+        buf = self.fileB.read(self.headersize).decode()
+        self.fileB.seek(0)   # rewind.
         dic = {}
         for line in buf.split("\n"): # go through lines in buf
             lsp = re.split(r'(?<!\\)=', line, 1)   #matches = but not
@@ -210,7 +218,7 @@ class GifaFile(object):
         internal use
         """
         l = ("%-12s = %s\n")%(key, self.header[key])
-        self.fileB.write(l) # CR write in binary mode to presserve the UNIX EOL character
+        self.fileB.write(l.encode())    #  CR write in binary mode to presserve the UNIX EOL character - MAD now general in py3
         if self.debug > 0 : print(l, end=' ')
         return len(l)
     #----------------------------------------------
@@ -349,13 +357,13 @@ class GifaFile(object):
         self.fileB.seek(0) #CR not neccesary, better to be carefull
         len_so_far = 0
         l = "HeaderSize   = %d\n"%HEADERSIZE
-        self.fileB.write(l)
+        self.fileB.write(l.encode())
         len_so_far = len_so_far+len(l)
         # then the other
         for k in self.header.keys():
             len_so_far = len_so_far + self.write_header_line(k)
         # then flush buffer up to Headersize
-        self.fileB.write( "0"*(HEADERSIZE-len_so_far) )
+        self.fileB.write( b"0"*(HEADERSIZE-len_so_far) )
         
     #----------------------------------------------
     def load_header(self):
