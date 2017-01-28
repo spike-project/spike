@@ -8,7 +8,7 @@ Created by Marc-André on 2010-03-18.
 Copyright (c) 2010 IGBMC. All rights reserved.
 """
 
-from __future__ import print_function
+from __future__ import print_function, division
 
 __version__ = "0.1.3"
 
@@ -22,6 +22,10 @@ import sys
 debug = False
 import unittest
 import time
+if sys.version_info[0] < 3:
+    pass
+else:
+    xrange = range
 
 truncated = True    # When True, a flag is used which allow a slightly faster algorithm for SVD to be used.
 # from NPKdata
@@ -264,7 +268,7 @@ class CadzowTest(unittest.TestCase):
         NN = 1
 #        t0 = time.time()
         for i in range(1, NN+1):  # makes NN computation with varying order
-            o = N/4  # N*i/10
+            o = N//4  # N*i/10
             fid1 = cadzow(fid, n_of_line=10, n_of_iter=2, orda=o)
             fidn = fidn+fid1
 #        print "CALCUL : ",time.time()-t0

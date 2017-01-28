@@ -9,7 +9,7 @@ Implement the basic mechanisms for spectral data-sets
 Created by Marc-André and Marie-Aude on 2010-03-17.
 """
 
-from __future__ import print_function
+from __future__ import print_function, division
 import numpy as np
 import numpy.fft as npfft
 import copy
@@ -43,7 +43,7 @@ def hypercomplex_modulus(arr, size1, size2):
         arr = np.array([[1, 4],[3, 7],[1, 9],[5, 7]])
         is an hypercomplex with size1 = 2 and size2 = 2
     """
-    b = np.zeros((size1/2, size2/2))
+    b = np.zeros((size1//2, size2//2))
     brr = arr[::2, ::2]
     bri = arr[::2, 1::2]
     bir = arr[1::2, ::2]

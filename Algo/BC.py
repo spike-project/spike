@@ -10,7 +10,7 @@ Modification by Lionel 2015-07-10
 
 """
 
-from __future__ import print_function
+from __future__ import print_function, division
 from scipy.optimize import minimize
 import numpy as np
 from numpy import pi
@@ -83,11 +83,11 @@ def baseline0(y, degree=2, power=1, method="Powell",
             bl[i*lsize-cov:i*lsize+cov] = bl[i*lsize-cov:i*lsize+cov]*corrm1 + tbl[:2*cov]*corr # correction from 0 to 2*cov
             bl[i*lsize+cov:(i+1)*lsize+cov] = tbl[2*cov:] # rest of the baseline is the estimate
 
-    nchunk = y.size/chunksize
+    nchunk = y.size//chunksize
     if nchunk <2:
         bl = bcL1(y, degree=degree, power=power, method=method)
     else:
-        lsize = y.size/nchunk
+        lsize = y.size//nchunk
         cov = int(lsize*ratiocov)           # covering parts
         corr = np.linspace(0.0,1.0,2*cov)   # simple weighting coeeficient for fusionning chunks. 
         corrm1 = 1.0-corr
@@ -118,12 +118,12 @@ def baseline1(y, degree=2, chunksize=2000):
 
     y - baseline(y) produces a baseline corrected spectrum
     """
-    nchunk = y.size/chunksize
+    nchunk = y.size//chunksize
     if nchunk <2:
         bl = bcL1(y, degree=degree)
     else:
-        lsize = y.size/nchunk
-        recov = lsize/10  # recovering parts
+        lsize = y.size//nchunk
+        recov = lsize//10  # recovering parts
         corr = np.linspace(0.0,1.0,2*recov)
         corr = np.sin( np.linspace(0,np.pi/2,2*recov) )**2  # cosine roll-off
         corrm1 = 1.0-corr
@@ -171,7 +171,7 @@ def correctbaseline(y, iterations=1, nbchunks = 100, firstpower=0.3,
         ii = interv_ignore
         delta = ii[1]-ii[0]
         y[ii[0]:ii[1]] = y[ii[0]] + np.arange(delta)/float(delta)*(y[ii[1]]-y[ii[0]]) # linear interpolation on the intervall.
-    chunksize = y.size/nbchunks    # size if each chunk in the baseline
+    chunksize = y.size//nbchunks    # size if each chunk in the baseline
     bl = baseline(y, degree=degree, power=firstpower, chunksize = chunksize, nbcores=nbcores, method="Powell", ratiocov=ratiocov) # First iterate
     bls = {'bl':[], 'blmin':[]} # Initialisation of bls for debugging. 
     for i in range(iterations):
@@ -195,14 +195,14 @@ class BC_Tests(unittest.TestCase):
         N = 100000
         x = np.linspace(0,10,N)
         y = np.sin(x/2) + 0.2*np.random.randn(N)
-        b = baseline0(y,chunksize=N/20)
+        b = baseline0(y,chunksize=N//20)
         corr = y-b
         self.assertTrue(np.std(corr) < 0.21)
     def test_baseline1(self):
         N = 100000
         x = np.linspace(0,10,N)
         y = np.sin(x/2) + 0.2*np.random.randn(N)
-        b = baseline1(y,chunksize=N/20)
+        b = baseline1(y,chunksize=N//20)
         corr = y-b
         self.assertTrue(np.std(corr) < 0.21)
     def _test_correctbaseline(self):
