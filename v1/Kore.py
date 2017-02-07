@@ -209,7 +209,7 @@ class Kore(object):
         if self._datab.buffer.shape == self._current.buffer.shape:
             self._current.buffer += self._datab.buffer
         else:
-            raise "diff sizes ", self._datab.buffer.shape, self._current.buffer.shape
+            raise Exception("diff sizes ", self._datab.buffer.shape, self._current.buffer.shape)
     
     #--------------------------------------------------------------------------
     def mult1d(self, axis = 0):
@@ -549,7 +549,7 @@ class Kore(object):
             shift = self._current.mean( ((a,c),(b,d)) )
             noise = self._current.std( ((a,c),(b,d)) )
         else:
-            raise('Not available in 3D')
+            raise Exception('Not available in 3D')
         self._shift = shift
         self._noise = noise
     #---------------------------------------------------------------------------
