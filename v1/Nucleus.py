@@ -21,7 +21,7 @@ ROBIN K. HARRIS, EDWIN D. BECKER, SONIA M. CABRAL DE MENEZES, ROBIN GOODFELLOW, 
 Pure Appl.Chem., Vol.73, No.11, pp.1795-1818, 2001.
 """
 
-from __future__ import print_function
+from __future__ import print_function, division
 
 __author__ = "Marc A. Delsuc <delsuc@igbmc.fr>"
 #__date__ = "Oct 2009"  # MAD added  table4 
@@ -216,7 +216,7 @@ def report(H_freq=600.0):
         f2 = freqB(s, Bo)
         if (spin%2 == 0):   # spin is integer
             print("%5s  :  spin %1i     Freq %8.4f    Q : %6.3f   Abundance : %7.3f%%  recept : %5.2e "% \
-                (s,spin/2, freq(s,H_freq),quadrupoleMoment,naturalAbondance,receptivity(s)))
+                (s, spin//2, freq(s,H_freq),quadrupoleMoment,naturalAbondance,receptivity(s)))
         else:
             if spin == 1:
                 print("%5s  :  spin %1i/2   Freq %8.4f                 Abundance : %7.3f%%  recept : %5.2e"% \

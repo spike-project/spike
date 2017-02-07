@@ -23,8 +23,11 @@ __date__ = "Oct 2009"
 
 # UserDict is used for 2.1 compatibility required by jython
 
-import UserDict
-import os
+import collections
+try:
+    from UserDict import UserDict
+except ImportError:
+    from collections import UserDict
 
 
 #---------------------------------------------------------------------------
@@ -58,7 +61,7 @@ def NPKevaluate(val):
     found=0
     try:    # try eval()
         fval=eval(val)
-        if callable(fval):  # we want to avoid functions !
+        if  isinstance(fval, collections.Callable) :  # we want to avoid functions !
             pass
 #            print " callable"
         else:
@@ -98,7 +101,7 @@ def NPKevaluate(val):
 
 
 #---------------------------------------------------------------------------
-class NPKParam(UserDict.UserDict):
+class NPKParam(UserDict):
     "NPKParam class handles the parameter set used by NPK"
     #---------------------------------------------------------------------------
     def __init__(self,dict_=()):
@@ -221,7 +224,7 @@ class NPKParam(UserDict.UserDict):
         """
 #        from NPK import NPK_PATH
 #        base = os.path.join(NPK_PATH,"Param")
-        import Generic
+        from . import Generic
         base = os.path.join(Generic.get_npk_path(),"Param")
         for l in default_list:
             self.load( os.path.join(base,l) +".gtb" )
@@ -255,7 +258,7 @@ class NPKParam(UserDict.UserDict):
                     p[j]=self[i]
         if verbose:
             print(p)
-            raise "stop due to verbose mode"
+            raise Exception("stop due to verbose mode")
         return p
 
 # if launched with
