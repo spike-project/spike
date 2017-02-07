@@ -1,8 +1,8 @@
 #!/usr/bin/env python 
 # encoding: utf-8
 
-"""
-Test procedure for plug-ins
+"""Test procedure for plugins
+
 """
 
 from __future__ import print_function
