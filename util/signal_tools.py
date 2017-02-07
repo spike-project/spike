@@ -8,7 +8,7 @@ Various tools for performing signal processing (SNR calculation,
     synthetic Fids with noise, noise level etc... )
 '''
 
-from __future__ import print_function
+from __future__ import print_function, division
 import numpy as np
 from numpy.fft import rfft as nprfft, irfft as npirfft
 from numpy import pi
@@ -121,8 +121,8 @@ class SIGNAL_NOISE(object):
         '''
         Uses Fid truncated
         '''
-        self.fid[self.lenfid/self.trunc:] = 0 # truncate
-        self.fid0[self.lenfid/self.trunc:] = 0 # truncate
+        self.fid[self.lenfid//self.trunc:] = 0 # truncate
+        self.fid0[self.lenfid//self.trunc:] = 0 # truncate
     
     def full():
         '''
@@ -341,7 +341,7 @@ def findnoiselevel(fid, nbseg = 20):
     if nbseg < 4:
         noiselev = levels[0]
     else:
-        noiselev = np.mean(levels[0:nbseg/4])
+        noiselev = np.mean(levels[0:nbseg//4])
     return noiselev
 
 def findnoiselevel_2D(data_array, nbseg = 20):

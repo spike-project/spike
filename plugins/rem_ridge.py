@@ -10,6 +10,11 @@ Copyright (c) 2011 IGBMC. All rights reserved.
 from __future__ import print_function
 from spike import NPKError
 from spike.NPKData import NPKData_plugin
+import sys #
+if sys.version_info[0] < 3:
+    pass
+else:
+    xrange = range
 
 def rem_ridge(data):
     """
