@@ -262,7 +262,7 @@ class Axis(object):
         size == cpxsize if axis is real
         size == 2*cpxsize if axis is complex
         """
-        return self.size/(self.itype+1)
+        return self.size//(self.itype+1)
     def report(self):
         if self.sampling:
             return "size : %d   sampled from %d   itype %d   unit %s"%(self.size, max(self.sampling), self.itype, self.currentunit)
@@ -295,12 +295,11 @@ class Axis(object):
         """
         if len(zoom) != 2:
             raise NPKError("slice should be defined as coordinate pair (left,right) in axis' current unit %s"%self.currentunit)
+        a = int( round( self.ctoi(zoom[0]) ) )
+        b = int( round( self.ctoi(zoom[1]) ) )
         if self.itype == 1:     # complex axis
-            a = int( 2*round( (self.ctoi(zoom[0])-0.5)/2 ) )     # insure real (a%2==0)
-            b = int( 2*round( (self.ctoi(zoom[1])-0.5)/2 ) )
-        else:
-            a = int( round( self.ctoi(zoom[0]) ) )
-            b = int( round( self.ctoi(zoom[1]) ) )
+            a = 2*(a//2)  # int( 2*round( (self.ctoi(zoom[0])-0.5)/2 ) )     # insure real (a%2==0)
+            b = 2*(b//2)  # int( 2*round( (self.ctoi(zoom[1])-0.5)/2 ) )
         left, right = min(a,b), max(a,b)
         if self.itype == 1:     # complex axis
             right += 1  # insure imaginary
@@ -424,7 +423,7 @@ class NMRAxis(Axis):
             (self.frequency, self.size, self.itop(self.size-1), self.itoh(self.size-1), self.itop(0), self.itoh(0))
         else:
             return "NMR axis at %f MHz,  %d complex pairs,  from %f ppm (%f Hz) to %f ppm  (%f Hz)"%  \
-            (self.frequency, self.size/2, self.itop(self.size-1), self.itoh(self.size-1), self.itop(0), self.itoh(0))
+            (self.frequency, self.cpxsize, self.itop(self.size-1), self.itoh(self.size-1), self.itop(0), self.itoh(0))
 
     #-------------------------------------------------------------------------------
     def extract(self, zoom):
@@ -1732,7 +1731,7 @@ class NPKData(object):
                 t = np.arange(self.size1)*freq/self.axis1.specwidth
                 self.buffer += amp*np.cos(np.pi*t)
             else:
-                t = np.arange(self.size1/2)*freq/self.axis1.specwidth
+                t = np.arange(self.size1//2)*freq/self.axis1.specwidth
                 self.buffer += as_float( amp*np.exp(1j*np.pi*t) )
         else:
             raise NotImplementedError
@@ -1897,7 +1896,7 @@ class NPKData(object):
         if it == 1:
             raise NPKError("Dataset should be real along given axis", data=self)
         if self.dim ==1:
-            self.buffer = as_float(self.buffer[:self.size1/2] + 1j*self.buffer[self.size1/2:]).copy()
+            self.buffer = as_float(self.buffer[:self.size1//2] + 1j*self.buffer[self.size1//2:]).copy()
         elif self.dim == 2:
             if todo == 1:
                 for i in xrange(self.size2):
@@ -1932,8 +1931,8 @@ class NPKData(object):
             raise NPKError("Dataset should be complex along given axis", data=self)
         if self.dim ==1:
             cop = as_cpx(self.buffer).copy()
-            self.buffer[:self.size1/2] = cop.real
-            self.buffer[self.size1/2:] = cop.imag
+            self.buffer[:self.size1//2] = cop.real
+            self.buffer[self.size1//2:] = cop.imag
         elif self.dim == 2:
             if todo == 1:
                 for i in xrange(self.size2):
@@ -1991,7 +1990,7 @@ class NPKData(object):
             if not(self.axis2.itype==1 and self.axis1.itype==0):
                 raise NPKError("wrong axis itype", data=self)
             self.unswap(axis=2)       # separate real and imag
-            self.buffer.resize((2*self.size1,self.size2/2)) # then change size
+            self.buffer.resize((2*self.size1,self.size2//2)) # then change size
             self.axis2.itype = 0
             self.axis1.itype = 1
         elif self.dim == 3:
@@ -2017,7 +2016,7 @@ class NPKData(object):
             if not(self.axis2.itype==0 and self.axis1.itype==1):
                 raise NPKError("wrong axis itype", data=self)
             #print "resize"
-            self.buffer.resize((self.size1/2,self.size2*2)) # then change size
+            self.buffer.resize((self.size1//2,self.size2*2)) # then change size
             #print "adapt_size"
             self.adapt_size()
             #print "swap"
@@ -2082,7 +2081,7 @@ class NPKData(object):
         it = self.axes(todo).itype
         if it == 0:
             raise NPKError(msg="no phase correction on real data-set", data=self)
-        size = self.axes(todo).size/2       # compute correction in e
+        size = self.axes(todo).size//2       # compute correction in e
         if ph1==0:  # we can optimize a little
             e = np.exp(1J*m.radians(float(ph0))) * np.ones( size, dtype=complex)   # e = exp(j ph0)
         else:
@@ -2135,7 +2134,7 @@ class NPKData(object):
                 z = m.radians(p0 + i*p1)
                 e[i] = m.cos(z) + 1J*m.sin(z)           # e_i = exp(j ph0 + i)
         #c = np.empty( size,dtype=complex)
-        for i in xrange(self.axis2.size/2):
+        for i in xrange(self.axis2.size//2):
             #c[:,2*i] = e * (self.buffer[:,2*i] + 1j*self.buffer[:,2*i+1])
             c = e * (self.buffer[:,2*i] + 1j*self.buffer[:,2*i+1])
             self.buffer[:,2*i] = c.real
@@ -2319,7 +2318,7 @@ class NPKData(object):
                     self.buffer[:,i] = r.buffer[:]
         elif self.dim == 3:
             print("A FAIRE")
-            
+        return self
     #---------------------------------------------------------------------------
     def transpose(self, axis=0):
         """
@@ -2334,9 +2333,12 @@ class NPKData(object):
         """
         todo = self.test_axis(axis)
         if self.dim == 2:
-            if np.isInt(self.size1/2) :
-                print("Ok")
-            
+            self.set_buffer( self.get_buffer().T )
+            self.axis1, self.axis2 = self.axis2, self.axis1
+            self.adapt_size()
+        else:
+            raise NPKError("Operation not available", self)
+        return self
     #---------------------------------------------------------------------------
     def reverse(self, axis=0):
         """
@@ -2464,7 +2466,7 @@ class NPKData(object):
         sw = self.axes(todo).specwidth
         size = self.axes(todo).size
         if it == 1: # means complex
-            size = size/2
+            size = size//2
         e = np.kaiser(size, beta)
         if it == 1:
             e = as_float((1 + 1.0j)*e)
@@ -2479,7 +2481,7 @@ class NPKData(object):
         sw = self.axes(todo).specwidth
         size = self.axes(todo).size
         if it == 1: # means complex
-            size = size/2
+            size = size//2
         e = np.hamming(size)
         if it == 1:
             e = as_float((1 + 1.0j)*e)
@@ -2494,7 +2496,7 @@ class NPKData(object):
         sw = self.axes(todo).specwidth
         size = self.axes(todo).size
         if it == 1: # means complex
-            size = size/2
+            size = size//2
         e = np.hanning(size)
         if it == 1:
             e = as_float((1 + 1.0j)*e)
@@ -2510,7 +2512,7 @@ class NPKData(object):
         sw = self.axes(todo).specwidth
         size = self.axes(todo).size
         if it == 1: # means complex
-            size = size/2
+            size = size//2
         e = np.exp(-(gb*np.arange(size)/sw)**2)
         if it == 1:
             e = as_float((1 + 1.0j)*e)
@@ -2530,9 +2532,9 @@ class NPKData(object):
         it = self.axes(todo).itype
         size = self.axes(todo).size
         if it == 1: # means complex
-            #size = size/2
-            tm1 = min(size,2*(tm1/2)+1)
-            tm2 = 2*(tm2/2)+1
+            #size = size//2
+            tm1 = min(size,2*(tm1//2)+1)
+            tm2 = 2*(tm2//2)+1
         ftm1 = tm1
         ftm2 = size-tm2+1
         e = np.zeros(size)
@@ -2569,7 +2571,7 @@ class NPKData(object):
         sw = self.axes(todo).specwidth
         size = self.axes(todo).size
         if it == 1: # means complex
-            size = size/2
+            size = size//2
         e = np.exp(-lb*np.arange(size)/sw)
         if it == 1:
             e = as_float((1 + 1.0j)*e)
@@ -2588,7 +2590,7 @@ class NPKData(object):
         it = self.axes(todo).itype
         size = self.axes(todo).size
         if it == 1:
-            size = size/2
+            size = size//2
         s = 2*(1-maxi)
         zz = m.pi/((size-1)*s)
         yy = m.pi*(s-1)/s         #yy has the dimension of a phase
@@ -2613,7 +2615,7 @@ class NPKData(object):
         it = self.axes(todo).itype
         size = self.axes(todo).size
         if it == 1:
-            size = size/2
+            size = size//2
         s = 2*(1-maxi)
         zz = m.pi/((size-1)*s)
         yy = m.pi*(s-1)/s         #yy has the dimension of a phase
@@ -2718,14 +2720,14 @@ class NPKData(object):
                 print ("real data, nothing to do")
             else:   # do something
                 if self.axis1.itype == 1 and self.axis2.itype == 0: # along F1 only
-                    b = np.zeros((self.size1/2, self.size2))    # create new smaller array
+                    b = np.zeros((self.size1//2, self.size2))    # create new smaller array
                     for i in xrange(0,self.size1,2):    # new version is about x3 faster
                         dr = self.buffer[i,:]
                         di = self.buffer[i+1,:]
-                        b[i/2,:] = np.sqrt(dr**2 + di**2)        # and copy modulus in b 
+                        b[i//2,:] = np.sqrt(dr**2 + di**2)        # and copy modulus in b 
                     self.axis1.itype = 0                        # finally update axis
                 elif self.axis1.itype == 0 and self.axis2.itype == 1: # along F2 only
-                    b = np.zeros((self.size1,self.size2/2))
+                    b = np.zeros((self.size1,self.size2//2))
                     for i in xrange(self.size1):
                         d = as_cpx(self.buffer[i,:])    # copy() not needed in F2
                         b[i,:] = np.sqrt(np.real(d*d.conj()))
