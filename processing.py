@@ -71,9 +71,12 @@ def _unpickle_method(func_name, obj, cls):
         else:
             break
     return func.__get__(obj, cls)
-import copy_reg
+try:
+    import copy_reg as copyreg
+except:
+    import copyreg
 import types
-copy_reg.pickle(types.MethodType, _pickle_method, _unpickle_method)
+copyreg.pickle(types.MethodType, _pickle_method, _unpickle_method)
 # end of the trick
 #####################################################
 
@@ -767,9 +770,9 @@ def main(argv = None):
         d0 = load_input(param.infile)
     d0.check2D()    # raise error if not a 2D
     try:
-	d0.params
+        d0.params
     except:
-	d0.params = {}  # create empty dummy params block
+        d0.params = {}  # create empty dummy params block
     if imported:
         print_time( time.time()-t0, "Import")
     else:
@@ -887,7 +890,7 @@ downsampling %s
     try:
         hfar.store_internal_object( h5name='params', obj=d0.hdf5file.retrieve_object(h5name='params') )
     except:
-	print("Not params copied to Output file") 
+        print("Not params copied to Output file") 
     print("parameters and configuration file file copied")
 
     for h5name in ["apexAcquisition.method", "ExciteSweep"]:    # then parameter files

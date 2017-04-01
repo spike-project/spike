@@ -383,7 +383,7 @@ def peakpick(npkd, threshold = None, zoom = None):
         npkd.peaks = pkl
     else:
         raise NPKError("Not implemented of %sD experiment"%npkd.dim, data=npkd)
-    print (threshold)
+    print ('PP Threshold:',threshold)
     return npkd
 
 def peaks2d(npkd, threshold, zoom):
@@ -401,7 +401,7 @@ def peaks2d(npkd, threshold, zoom):
     if npkd.itype != 0:
         buff = buff.real
     
-    # listpk=np.where(((buff > threshold*np.ones(buff.shape))&            # thresholding
+    # listpk=np.where(((buff > gold*np.ones(buff.shape))&            # thresholding
     #                 (buff > np.roll(buff,  1, 0)) &         # laplacian - kind of
     #                 (buff > np.roll(buff, -1, 0)) &
     #                 (buff > np.roll(buff,  1, 1)) &

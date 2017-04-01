@@ -18,7 +18,7 @@ import os.path as op
 import numpy as np
 import tables
 from ..FTICR import FTICRData
-import HDF5File as hf
+from . import HDF5File as hf
 # tables.parameters.NODE_CACHE_SLOTS = 0
 #tables.parameters.CHUNK_CACHE_SIZE = 0*1024*1024
 # tables.parameters.METADATA_CACHE_SIZE  = 10*1024*1024
