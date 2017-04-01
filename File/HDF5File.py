@@ -44,8 +44,9 @@ __file_version__ 0.7 has the ability to update the axes
 __file_version__ 0.6 is first stabilized multiresolution version
 """
 # version is the library version number
-__version__ = "0.9"
+__version__ = "0.901"
 """
+v 0.901  when storing a string 'None' it will be read back as the python object None - no change on the file format
 v 0.9 porting from pytables v2 to v3.x / new list of attributes for FTMS axes / storage for files and objects / better compression
 v 0.8 axes are gathered in one table, it's a more HDF5 way to deal with informations
 v 0.6 Uses tables.parameter to optimise the use of the cache
@@ -520,25 +521,24 @@ python -m spike.File.HDF5File update {0}
         else:
             raise Exception("wrong mode, only 'onfile' and 'memory' allowed")
         if (self.debug > 1): print(type(self.data.buffer))
-        # try:
-        # except:
-        #     raise Exception(" You might be trying to load a file with another architecture 'maybe different resolutions'")
-            
-        
+
+#  Nw axes details
 #        for table in self.hf.walk_nodes("/"+group,"Table"): # get the list of tables in the axes group
 #          values = table.read()
 #           print(values)
 #           exit()
         table = getattr(hfgroup,"axes")
-        values = table.read()
+        values = table.read()   # load all axes
         fields = [i[0] for i in values.dtype.descr]  # rename / rewrite of dtype above
-        for i in range(len (values)):
-            dico = {}
-            for j in range(len(values[i])):
-                dico[fields[j]] = values[i][j]
+        for i in range(len (values)): # for each axis
+            # dico = {}
+            # for j in range(len(values[i])):   # for each entry in the axis table load into "dico"
+            #     dico[fields[j]] = values[i][j]
             ax = FTICR.FTICRAxis()  # create empty axis
-            for j in range(len(values[i])): 
-                setattr(ax, fields[j], values[i][j])    # copy table entries
+            for j in range(len(values[i])):    # for all entries in axis table
+                vv = values[i][j]                       # fetch value
+                if vv == 'None':  vv = None             # the string None codes for the object None !!!
+                setattr(ax, fields[j], vv)              # copy table entries into axis attribute
             setattr(self.data, "axis%d"%(i+1), ax)      # and set axis
         
         self.data.adapt_size()      # axis sizes have to be updated
