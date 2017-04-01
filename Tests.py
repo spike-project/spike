@@ -52,7 +52,7 @@ mod_algo = ('Algo.Cadzow', 'Algo.Linpredic', 'Algo.urQRd', 'Algo.SL0', 'Algo.max
 mod_plugins = ("plugins.Peaks", "plugins.Fitter", "plugins.Bruker_NMR_FT", "plugins.wavelet")
 
 mod_file = ("File.BrukerNMR", "File.GifaFile", 'File.HDF5File', 'File.Apex', 'File.csv', 'File.Solarix')
-mod_basicproc = ("NPKData", "FTICR", "Orbitrap")
+mod_basicproc = ("NPKData", "FTICR", "Orbitrap", 'NPKConfigParser')
 mod_user = ('processing', )
 
 list_of_modules = mod_basicproc + mod_file  + mod_util + mod_algo + mod_plugins  + mod_user
@@ -67,7 +67,7 @@ def directory():
     return testplot.config["DATA_dir"]
 def filename(name):
     "returns the full name of a test dataset located in the test directory"
-    return op.join(testplot.config["DATA_dir"], name)
+    return op.join(directory(), name)
 
 def msg(st, sep = '='):
     '''
@@ -130,7 +130,8 @@ def do_Test():
     '''
     import time
     global list_of_modules
-    subject = "SPIKE tests perfomed on {0} {2}  running on host {1}".format(*os.uname())
+    python = "{0}.{1}.{2}".format(*sys.version_info)
+    subject = "SPIKE tests performed on {1} {3}  running python {0} on host {2}".format(python, *os.uname())
     to_mail = [msg(subject), "Test program version %s"%__version__]
 
     # add spike prefix
@@ -219,8 +220,12 @@ def main():
         testplot.PLOT = True
     else:
         testplot.PLOT = False   # switches off the display for automatic tests
+    # Beware  !! Awful Hack !!
+    # testplot is used to switch display off 
+    # BUT ALSO to monkey patch at Tests run time to store in testplot.config values used by the tests (DATA_dir)
     testplot.config = {}
     testplot.config["DATA_dir"] = DATA_dir
+
 #    print(sys.modules)
     do_Test()
     

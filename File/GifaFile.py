@@ -13,7 +13,7 @@ This module provides a simple access to NMR files in the Gifa format.
 
 """
 
-from __future__ import print_function
+from __future__ import print_function, division
 import re
 import numpy as np
 from .. import NPKData as npkd
@@ -172,11 +172,11 @@ class GifaFile(object):
             if ndata.dim == 1:
                 ndata.axis1.itype = self.itype
             elif ndata.dim == 2:
-                ndata.axis1.itype = self.itype/2
+                ndata.axis1.itype = self.itype//2
                 ndata.axis2.itype = self.itype%2
             if ndata.dim == 3:
-                ndata.axis1.itype = self.itype/4
-                ndata.axis2.itype = (self.itype/2)%2
+                ndata.axis1.itype = self.itype//4
+                ndata.axis2.itype = (self.itype//2)%2
                 ndata.axis3.itype = self.itype%4
             ndata.diffaxis = self.copydiffaxesfromheader()
             self.data = ndata
@@ -309,41 +309,41 @@ class GifaFile(object):
         # compute submatrix blocks
         if self.data.dim == 1:
             h["Szblk1"] = "1024"
-            h["Nbblock1"] = "%d"%(self.data.axis1.size/1024)
+            h["Nbblock1"] = "%d"%(self.data.axis1.size//1024)
         elif self.data.dim == 2:
             sz12 = float(self.data.axis2.size) / self.data.axis1.size
             n2 = 1
-            n1 = BLOCKIO / 4
-            while  ( (float(n2)/ n1) < sz12) and (n1 > 1 ) :
-                n1 = n1/2
+            n1 = BLOCKIO // 4
+            while  ( (float(n2)// n1) < sz12) and (n1 > 1 ) :
+                n1 = n1//2
                 n2 = n2*2
             if self.debug > 0:
                 print("si1 x si2 : %d %d   n1 x n2 : %d %d"%(self.data.axis1.size,self.data.axis2.size,n1,n2))
             h["Szblk1"] = "%d"%n1
             h["Szblk2"] = "%d"%n2
-            h["Nbblock1"] = "%d"%(1+(self.data.axis1.size-1)/n1)
-            h["Nbblock2"] = "%d"%(1+(self.data.axis2.size-1)/n2)
+            h["Nbblock1"] = "%d"%(1+(self.data.axis1.size-1)//n1)
+            h["Nbblock2"] = "%d"%(1+(self.data.axis2.size-1)//n2)
             
         elif self.data.dim == 3:
-            sz12 = float(self.data.axis2.size*self.data.axis3.size) / (self.data.axis1.size*self.data.axis1.size)
-            n1 = BLOCKIO / 4
+            sz12 = float(self.data.axis2.size*self.data.axis3.size) // (self.data.axis1.size*self.data.axis1.size)
+            n1 = BLOCKIO // 4
             n2 = 1
             n3 = 1
             while  ((float(n2*n3)/(n1*n1)) < sz12 ) and (n1 > 1):
-                n1 = n1/2
+                n1 = n1//2
                 n2 = n2*2
             sz12 = float(self.data.axis3.size) / (self.data.axis1.size)
             while  ((float(n3)/ n2) < sz12 ) and (n2 > 1):
-                n2 = n2/2
+                n2 = n2//2
                 n3 = n3*2
             if self.debug > 0:
                 print("si1 x si2 x si3: %d %d %d   n1 x n2 x n3 : %d %d %d"%(self.data.axis1.size, self.data.axis2.size, self.data.axis3.size, n1, n2, n3))
             h["Szblk1"] = "%d"%n1
             h["Szblk2"] = "%d"%n2
             h["Szblk3"] = "%d"%n3
-            h["Nbblock1"] = "%d"%(1+(self.data.axis1.size-1)/n1)
-            h["Nbblock2"] = "%d"%(1+(self.data.axis2.size-1)/n2)
-            h["Nbblock3"] = "%d"%(1+(self.data.axis3.size-1)/n3)
+            h["Nbblock1"] = "%d"%(1+(self.data.axis1.size-1)//n1)
+            h["Nbblock2"] = "%d"%(1+(self.data.axis2.size-1)//n2)
+            h["Nbblock3"] = "%d"%(1+(self.data.axis3.size-1)//n3)
         self.header = h
         
     #----------------------------------------------
@@ -547,7 +547,7 @@ class GifaFile(object):
                 print("2D:", sz1, sz2)
             i1 = 0
             i2 = 0
-            fbuf = np.zeros((BLOCKIO/4,), dtype='float32')
+            fbuf = np.zeros((BLOCKIO//4,), dtype='float32')
             for b1 in xrange(self.nblock1):
                 for b2 in xrange(self.nblock2):
     #                print b1,b2,i1,i2
@@ -573,7 +573,7 @@ class GifaFile(object):
             i1 = 0
             i2 = 0
             i3 = 0
-            fbuf = np.zeros((BLOCKIO/4,), dtype='float32')
+            fbuf = np.zeros((BLOCKIO//4,), dtype='float32')
             print(self.nblock1, self.nblock2, self.nblock3)
             for b1 in xrange(self.nblock1):
                 for b2 in xrange(self.nblock2):

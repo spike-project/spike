@@ -142,7 +142,7 @@ class FTMSAxis(NPKData.Axis):
         return self.htoi(self.mztoh(value))
     #-------------------------------------------------------------------------------
     def deltamz(self,mz_value):
-        "computes the theorical resolution in m/z at m/z location"
+        "computes the theorical maximum resolution in m/z at m/z location"
 
         mz = np.fmin(mz_value, HighestMass)
         return 0.5*(self.itomz( self.mztoi(mz)-1) - self.itomz( self.mztoi(mz)+1) )
@@ -156,6 +156,19 @@ class FTMSAxis(NPKData.Axis):
         """return axis containing Hz values, can be used for display"""
         return self.itoh(self.points_axis())
     Hz_axis = freq_axis     # two names for this function
+    def ppm_error(self, xref, mzref):
+        """
+        computes the error from a list of positions (xref) and the theoretical m/z (mzref)
+        returns an array with errors in ppm
+        """
+        return 1E6*(self.itomz(xref)-mzref)/mzref
+    def ppm(self, xref, mzref):
+        """
+        computes the mean error in ppm from a list of positions (xref) and the theoretical m/z (mzref)
+        uses l1 norm !
+        """
+        shift = self.ppm_error(xref, mzref)
+        return abs(shift).mean()
 #-------------------------------------------------------------------------------
 
 class FTMSData(NPKData.NPKData):

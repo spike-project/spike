@@ -69,16 +69,15 @@ class FTICRAxis(FTMS.FTMSAxis):
         self.highfreq = highfreq
 
         self.attributes.insert(0,"FTICR") # updates storable attributes
-        self.attributes.insert(0,"calibA") # ML1
-        self.attributes.insert(0,"calibB") # ML2
-        self.attributes.insert(0,"calibC") # ML3
+        # self.attributes.insert(0,"calibA") # ML1
+        # self.attributes.insert(0,"calibB") # ML2
+        # self.attributes.insert(0,"calibC") # ML3
         self.attributes.insert(0,"highfreq")
         self.attributes.insert(0,"lowfreq")
         
     #-------------------------------------------------------------------------------
     def report(self):
         "high level reporting"
-
         if self.itype == 0: # Real
             return "FT-ICR report axis at %f kHz,  %d real points,  from physical mz = %8.3f   to m/z = %8.3f  R max (M=400) = %.0f"%  \
             (self.specwidth/1000, self.size, self.lowmass, self.highmass, 400.0/self.deltamz(400.))
@@ -106,8 +105,9 @@ class FTICRAxis(FTMS.FTMSAxis):
         if self.calibC == 0.0:
             m = self.calibA/(self.calibB + h)
         else:
-            delta = self.calibA**2 + 4*self.calibC*(self.calibB + h)
-            m = self.calibA + np.sqrt(delta) / (2 * (self.calibB + h))
+#            delta = self.calibA**2 + 4*self.calibC*(self.calibB + h)
+#            m = self.calibA + np.sqrt(delta) / (2 * (self.calibB + h))
+            m = self.calibA/(2*(self.calibB + h)) + np.sqrt(self.calibA**2 + 4*self.calibB*self.calibC + 4*self.calibC*h)/(2*(self.calibB + h))
         return m
     def mztoh(self, value):
         """

@@ -687,7 +687,7 @@ def Import_2D_proc(filename="2rr", outfile=None):
     if 2ri 2ir 2ii files exist, will imports the (hyper)complex spectrum
 
     """
-    from BrukerSMX import BrukerSMXHandler
+    from .BrukerSMX import BrukerSMXHandler
     if (not op.exists(filename)):
         raise Exception(filename+" : file not found")
     if verbose:     print("importing 2D spectrum")
