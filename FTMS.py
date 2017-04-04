@@ -156,19 +156,6 @@ class FTMSAxis(NPKData.Axis):
         """return axis containing Hz values, can be used for display"""
         return self.itoh(self.points_axis())
     Hz_axis = freq_axis     # two names for this function
-    def ppm_error(self, xref, mzref):
-        """
-        computes the error from a list of positions (xref) and the theoretical m/z (mzref)
-        returns an array with errors in ppm
-        """
-        return 1E6*(self.itomz(xref)-mzref)/mzref
-    def ppm(self, xref, mzref):
-        """
-        computes the mean error in ppm from a list of positions (xref) and the theoretical m/z (mzref)
-        uses l1 norm !
-        """
-        shift = self.ppm_error(xref, mzref)
-        return abs(shift).mean()
 #-------------------------------------------------------------------------------
 
 class FTMSData(NPKData.NPKData):
