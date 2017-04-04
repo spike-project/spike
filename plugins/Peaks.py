@@ -265,7 +265,7 @@ class Peak1DList(PeakList):
         displays 1D peaks
         zoom is in index
         """
-        import spike.Display.testplot as testplot
+        from spike.Display import testplot
         plot = testplot.plot()
         if zoom:
             z0=zoom[0]
