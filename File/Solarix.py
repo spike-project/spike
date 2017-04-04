@@ -152,7 +152,7 @@ def Import_1D(folder, outfile = ""):
         data.axis1.highfreq = float(params["EXC_Freq_High"])
         data.axis1.lowfreq = float(params["EXC_Freq_Low"])
     else:
-        data.axis2.lowfreq, data.axis2.highfreq = l,h
+        data.axis1.lowfreq, data.axis1.highfreq = l,h
     data.axis1.highmass = float(params["MW_high"])
     data.axis1.left_point = 0
     data.axis1.offset = 0.0
