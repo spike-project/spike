@@ -2,7 +2,7 @@
 
 This is the beta version of the **SPIKE** program. A collaborative development for a FT-spectroscopy processing program.
 
-# Release -
+# Release
 This is the version 0.8.3 - 17 April 2016
 
 - **FINALLY files from the previous program version (0.7.x) can now be upgraded and read.** just do
@@ -16,6 +16,9 @@ This is the version 0.8.3 - 17 April 2016
 - MS : sharper lineshape in 2D-FTMS
 
 Complete history in the [release_notes.md](release_notes.md) file.
+
+*The stable version is currently way behind the current development effort - if you want to check the latest development, download the branch* `devel` *instead of* `default`.
+
 
 ## What is SPIKE ? ##
 
@@ -60,7 +63,7 @@ You can find a **Very preliminary** documentation [here](http://spikedoc.bitbuck
 ####Plugin architecture
 
 * allow easy extension of the core program
-* reduces cross dependances
+* reduces cross dependences
 
 ####Complete spectral display using matplotlib
 
@@ -72,6 +75,7 @@ You can find a **Very preliminary** documentation [here](http://spikedoc.bitbuck
 #### **NMR** 
 
 - 1D and 2D are fully supported
+- no nD yet
 
 #### **FT-ICR** 
 
@@ -100,6 +104,7 @@ You can find a **Very preliminary** documentation [here](http://spikedoc.bitbuck
 
 #### As a processing library
 SPIKE is primary meant for being used as a library, code can as simple as :
+
 ```python
 import spike           # insure spike is in your PYTHONPATH
 from spike.File import Solarix 
@@ -136,7 +141,6 @@ SPIKE allows to process datasets interactively from an IPython prompt, and is pe
 * The batch mode supports multiprocessing, both with MPI and natively on multi-core machines (still in-progress)
 * large 2D-FT-ICR are stored in a hierarchical format, easyly displayed with an interactive program.
 * data-sets are handled in the HDF5 standard file-format, which allows virtually unlimited file size ( _tested up to 200 Gb_ ).
-* Version : this is 0.7 beta version
 
 #### running stand-alone programs
 
@@ -191,17 +195,19 @@ To get it, you can simply
 **SPIKE** is originated from the ** _Gifa_ ** program, developed by M-A Delsuc and others in `FORTRAN 77` since the late eighties.
 _Gifa_ has known several mutations, and finally ended as a partial rewrite called **NPK**.
 The [NPK](http://abcis.cbs.cnrs.fr/NPK/) program is based on some of the original `FORTRAN` code, wrapped in Java and Python, which allows to control all the program possibilities from the Python level.
-NPK purely a computing kernel, with no graphical possibilities, and has been used as a kernel embedded in the commercial program NMRNoteBook, commercialized by NMRTEC.
+NPK is purely a computing kernel, with no graphical possibilities, and has been used as a kernel embedded in the commercial program NMRNoteBook, commercialized by NMRTEC.
 
 However, NPK was showing many weaknesses, mostly due to the 32bits organization, and a poor file format. So, when a strong scientific environment became available in Python, a rewrite in pure Python was undertaken. To this initial project, called NPK-V2, many new functionalities were added, and mostly the capability to work in other spectroscopies than NMR.
 
 At some point in 2014, we chose to fork NPK-V2 to SPIKE, and make it public.
 
 ## Citing SPIKE ##
-SPIKE is not published yet, if you happen to use it successfully and wish to cite it, please refer to this site, as well as the following references :
+SPIKE is not fully published yet, if you happen to use it successfully and wish to cite it, please refer to this site, as well as the following references :
 
-  1.	Tramesel, D., Catherinot, V. & Delsuc, M.-A. Modeling of NMR processing, toward efficient unattended processing of NMR experiments. _J Magn Reson_ **188**, 56–67 (2007).
-  2.	van Agthoven, M. A., Chiron, L., Coutouly, M.-A., Delsuc, M.-A. & Rolando, C. Two-Dimensional ECD FT-ICR Mass Spectrometry of Peptides and Glycopeptides. _Anal Chem_ **84**, 5589–5595 (2012).
+  1.    Tramesel, D., Catherinot, V. & Delsuc, M.-A. Modeling of NMR processing, toward efficient unattended processing of NMR experiments. _J Magn Reson_ **188**, 56–67 (2007).
+  2.    van Agthoven, M. A., Chiron, L., Coutouly, M.-A., Delsuc, M.-A. & Rolando, C. Two-Dimensional ECD FT-ICR Mass Spectrometry of Peptides and Glycopeptides. _Anal Chem_ **84**, 5589–5595 (2012).
+  3.    Chiron L., Coutouly M-A., Starck J-P., Rolando C., Delsuc M-A. SPIKE a Processing Software dedicated to Fourier Spectroscopies   https://arxiv.org/abs/1608.06777 (2016)
+
 
 # Developing for SPIKE
 **SPIKE** is an open-source program, this means that external contributions are welcomed.
@@ -312,10 +318,11 @@ Current Active authors for SPIKE are:
 
 - Marc-André Delsuc     `madelsuc -at- unistra.fr`
 - Lionel Chiron         `Lionel.Chiron -at- casc4de.eu`
-- Petar Markov          `petar.markov -at- igbmc.fr`
 - Christian Rolando     `christian.rolando -at- univ-lille1.fr`
 
 Previous authors:
+
+- Petar Markov          `petar.markov -at- igbmc.fr`
 - Marie-Aude Coutouly . `Marie-Aude.COUTOULY - at- datastorm.fr`
 
 Covered code is provided under this license on an "as is" basis, without warranty of any kind, either expressed or implied, including, without limitation, warranties that the covered code is free of defects. The entire risk as to the quality and performance of the covered code is with you. Should any covered code prove defective in any respect, you (not the initial developer or any other contributor) assume the cost of any necessary servicing, repair or correction.
