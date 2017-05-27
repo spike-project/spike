@@ -18,16 +18,19 @@ see details in methods.
 Created by Marc-André on 2011-10-14.
 Copyright (c) 2011 IGBMC. All rights reserved.
 
-modif on 21 - may 2012 - added getword and removing trailing comments
+MAD modif on 21 - may 2012 - added getword and removing trailing comments
+MAD, in April 2017 : adapted (painfully) to python3
 """
 
-from __future__ import print_function
+from __future__ import print_function, division
 import unittest
 import sys
 if sys.version_info[0] < 3:
     from ConfigParser import SafeConfigParser as ConfigParser
+    Python3 = False
 else:
-    from configparser import ConfigParser
+    from configparser import ConfigParser, _UNSET
+    Python3 = True
 
 import re
 
@@ -38,16 +41,28 @@ class NPKConfigParser(ConfigParser):
     will never raise an error on missing values
     """
     _boolean_states = {'1': True, 'on': True, 'false': False, '0': False, 'off': False, 'yes': True, 'no': False, 'true': True}
-    def get(self, section, option, default = None, raw = 0, verbose=False):
-        """read a value from the configuration, with a default value"""
-        if self.has_option(section, option):
-            vv = ConfigParser.get(self, section, option, raw=raw, fallback=None) # returns the string after "option = "
-            vl = re.split('\s*#',vv)        # this removes trailing comments
-            return vl[0]
-        else:
-            if verbose:
-                print("Using default value for {} : {}".format(option,default)) # send message if option not in configfile
-            return default
+    if Python3:
+        def get(self, section, option, default = None, raw = 0, verbose=False, fallback=_UNSET):   # fallback is required here, and unknown in Py2
+            """read a value from the configuration, with a default value"""
+            if self.has_option(section, option):
+                vv = ConfigParser.get(self, section, option, raw=raw, fallback=None) # returns the string after "option = "
+                vl = re.split('\s*#',vv)        # this removes trailing comments
+                return vl[0]
+            else:
+                if verbose:
+                    print("Using default value for {} : {}".format(option,default)) # send message if option not in configfile
+                return default
+    else:
+        def get(self, section, option, default = None, raw = 0, vars = None, verbose=False):
+            """read a value from the configuration, with a default value"""
+            if self.has_option(section, option):
+                vv = ConfigParser.get(self, section, option, raw = raw, vars = vars) # returns the string after "option = "
+                vl = re.split('\s*#',vv)        # this removes trailing comments
+                return vl[0]
+            else:
+                if verbose:
+                    print("Using default value for {} : {}".format(option,default)) # send message if option not in configfile
+                return default
     def getword(self, section, option, default = None, raw = 0, verbose=False):
         "read a value from the configuration, with a default value - takes the first word of the string"
         vv = self.get(section, option, default = str(default), raw = raw, verbose=verbose)
@@ -106,13 +121,12 @@ class Tests(unittest.TestCase):
         self.announce()
         cp = NPKConfigParser()
         cp.read(filename("test.mscf"))
-        print(list(cp.sections()))
-        res = cp.get("import", "apex", verbose=True, default="def_apex")
-        print(res)
-        self.assertEqual(filename("__DATA_test__/ubiquitine_2D_000002.d"), res)              # string
+        print('sections:', list(cp.sections()))
+        fname = cp.get("import", "apex", verbose=True, default="def_apex")
+        self.assertEqual("__DATA_test__/ubiquitine_2D_000002.d", fname)              # string
         self.assertEqual(2500.0, cp.getfloat("import", "highmass", default=123.45))   # float
         self.assertEqual(True, cp.getboolean("processing", "do_modulus", default=False))   # bool
-        self.assertEqual(16*1024*1024*1024, cp.getint("processing", "largest_file", default=123))   # int
+        self.assertEqual(64*1024*1024*1024, cp.getint("processing", "largest_file", default=123))   # int
 
 if __name__ == '__main__':
     unittest.main()

@@ -5,7 +5,7 @@
     Utility to Handle Apex files
 """
 
-from __future__ import print_function
+from __future__ import print_function, division
 
 __author__ = "Marc André Delsuc, Marie-Aude Coutouly <mac@nmrtec.com>"
 __date__ = "July 2011"
@@ -22,6 +22,12 @@ from . import HDF5File as hf
 # tables.parameters.NODE_CACHE_SLOTS = 0
 #tables.parameters.CHUNK_CACHE_SIZE = 0*1024*1024
 # tables.parameters.METADATA_CACHE_SIZE  = 10*1024*1024
+
+if sys.version_info[0] < 3:
+    pass
+else:
+    xrange = range
+
 def read_param(filename):
     """
         Open the given file and retrieve all parameters written initially for apexAcquisition.method
@@ -101,7 +107,7 @@ def Import_1D(folder,outfile=""):
     """
     import array
 
-    if sys.maxint == 2**31-1:   # the flag used by array depends on architecture - here on 32biy
+    if sys.maxsize  == 2**31-1:   # the flag used by array depends on architecture - here on 32biy
         flag = 'l'              # Apex files are in int32
     else:                       # here in 64bit
         flag = 'i'              # strange, but works here.
@@ -163,7 +169,7 @@ def Import_2D(folder,outfile = "",F1specwidth = None):
     """
     import array
 
-    if sys.maxint == 2**31-1:   # the flag used by array depends on architecture - here on 32bit
+    if sys.maxsize  == 2**31-1:   # the flag used by array depends on architecture - here on 32bit
         flag = 'l'              # Apex files are in int32
     else:                       # here in 64bit
         flag = 'i'              # strange, but works here.
@@ -223,8 +229,8 @@ def Import_2D(folder,outfile = "",F1specwidth = None):
 
     data.params = params   # add the parameters to the data-set
 
-    c1 = int(sizeF1/8. +1)
-    c2 = int(sizeF2/8. +1)
+    c1 = int(sizeF1//8. +1)
+    c2 = int(sizeF2//8. +1)
     #print "chunkshape",c1,c2
     #tables.parameters.CHUNK_CACHE_PREEMPT = 1
     #tables.parameters.CHUNK_CACHE_SIZE = c1*c2*8
@@ -262,7 +268,7 @@ def read_2D(sizeF1, sizeF2, filename="ser"):
     """
     import array
 #    import platform # platform seems to be buggy on MacOs, see http://stackoverflow.com/questions/1842544
-    if sys.maxint == 2**31-1:   # the flag used by array depends on architecture - here on 32bit
+    if sys.maxsize  == 2**31-1:   # the flag used by array depends on architecture - here on 32bit
         flag = 'l'              # Apex files are in int32
     else:                       # here in 64bit
         flag = 'i'              # strange, but works here.
@@ -287,7 +293,7 @@ def read_3D(sizeF1, sizeF2, sizeF3, filename="ser"):
     """
     import array
 #    import platform # platform seems to be buggy on MacOs, see http://stackoverflow.com/questions/1842544
-    if sys.maxint == 2**31-1:   # the flag used by array depends on architecture - here on 32biy
+    if sys.maxsize  == 2**31-1:   # the flag used by array depends on architecture - here on 32biy
         flag = 'l'              # Apex files are in int32
     else:                       # here in 64bit
         flag = 'i'              # strange, but works here.
