@@ -2,8 +2,13 @@
 
 This is the beta version of the **SPIKE** program. A collaborative development for a FT-spectroscopy processing program.
 
+
 # Release
 This is the version 0.8.3 - 17 April 2016
+
+*Note that the release is pretty old, it does not mean that we are not active, but rather than too busy to check and build a Release.*
+
+*The up-to-date code is in the `devel` branch.*
 
 - **FINALLY files from the previous program version (0.7.x) can now be upgraded and read.** just do
   -  ```    python -m spike.File.HDF5File update your_file.msh5  ```
