@@ -18,7 +18,7 @@ try:
     ok = True
 except:
 #    raise Exception('This plugin requires the installation of the PyWavelet library ( www.pybytes.com/pywavelets )')
-    print('*** This plugin requires the installation of the PyWavelet library ( www.pybytes.com/pywavelets )')
+    print('*** The wavelet plugin requires the installation of the PyWavelet library ( www.pybytes.com/pywavelets )')
     ok = False
 
 from spike import NPKError
