@@ -1060,7 +1060,7 @@ class NPKData(object):
         self.absmax = 0.0
         return self
     #---------------------------------------------------------------------------
-    def extract(self, *args):
+    def extract(self, *args): # MAD , unit=True):
         """
         extract([[x1, y1]])
         extract([x1, y1], [x2, y2]) or extract([x1, y1, x2, y2])
@@ -1073,28 +1073,36 @@ class NPKData(object):
             * extract(x1,y1) for 1D datasets.
             * extract(x1, y1, x2, y2) for 2D datasets.
         
-        coordinates are given in axis current unit.
-        
+        if unit is True, coordinates are given in axis current unit, otherwise in index
+
         see also : chsize
         """
         limits = flatten(args)
         print ('extract',limits)
+        unit = True
         if len(limits) != 2*self.dim:
             raise NPKError(msg="wrong arguments for extract :"+str(args), data=self)
         if self.dim == 1:
-            self._extract1d(limits)
+            self._extract1d(limits, unit=unit)
         elif self.dim == 2:
-            self._extract2d(limits)
+            self._extract2d(limits, unit=unit)
         elif self.dim == 3:
-            self._extract3d(limits)
+            self._extract3d(limits, unit=unit)
         self.absmax = 0.0
         return self
     #---------------------------------------------------------------------------
-    def _extract1d(self, zoom):
+    def _extract1d(self, zoom, unit):
+        """realize the extract in 1D,
+            unit=True means -interpret zoom coord in index-
+                 False means -interpret zoom coord in current unit-
+        """
         self.check1D()
-        x1, y1 = self.axis1.extract(zoom)
-        self.buffer = self.buffer[x1:y1]
-        self.adapt_size()
+        if unit:
+            x1, y1 = self.axis1.extract(zoom)
+        else:
+            x1,y1 = [min(zoom), max(zoom)]
+        bb = self.get_buffer()
+        self.set_buffer(bb[x1:y1])
         return self
     #---------------------------------------------------------------------------
     def _extract2d(self, zoom):

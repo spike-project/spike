@@ -30,7 +30,7 @@ from . import NPKData
 # simply put a xxx.py in the plugins folder - and define the interface as described in the doc
 from . plugins import load
 
-load()
+load(debug=False)
 
 
 
