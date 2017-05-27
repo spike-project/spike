@@ -72,17 +72,18 @@ class FTMSAxis(NPKData.Axis):
         redefines the axis parameters so that the new axe is extracted for the points [start:end]
         zoom is defined in current axis unit
         """
-        #   before      left----------------------------size
-        #   before      -------------------------------SW
-        #   after             start---------------end
-        #                     left'---------------SW'
-        si = self.size
+        #   before index     leftpoint----------------------------size
+        #   before hz         off-------------------------------off+SW
+        #
+        #   after                 start---------------end
+        #                         off'---------------off'+SW'
         start, end = self.getslice(zoom)
-        # self.specwidth = self.itoh(end-1)
-        # self.left_point += int(start)
-        self.size = int(end)-int(start)
-        self.left_point += int(start)
-        self.specwidth = (self.specwidth*self.size)/si
+        nsize = int(end)-int(start)+1
+        nsw = self.itoh(end)-self.itoh(start)
+        noff = self.itoh(start)
+        self.specwidth = nsw
+        self.offsetfreq = noff
+        self.size = nsize
         return start, end
 
     # The 2 htomz() and mztoh() are used to build all other transfoms
@@ -249,7 +250,7 @@ class FTMSData(NPKData.NPKData):
                 else:
                     ext = ext + [0,self.axes(i+1).size]
             print("extracting :", ext)
-            self.extract(ext)
+            self.extract(ext, unit=False)
         return self
 
     #----------------------------------------------

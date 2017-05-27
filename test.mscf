@@ -42,7 +42,7 @@ do_F1 = True
 # in which case, use_multiprocessing and nb_proc are ignored
 # This test set multiprocessing to True - DOES NOT WORK ON ALL DISTRIBUTION -
 # if processing fails (core dump !), set this to False
-use_multiprocessing = True
+use_multiprocessing = False
 nb_proc = 2
 # do_urqrd : if True, the urQRd denoising is applied in F1
 do_urqrd = False
