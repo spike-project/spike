@@ -6,7 +6,7 @@ This is the beta version of the **SPIKE** program. A collaborative development f
 # Release
 This is the version 0.8.3 - 17 April 2016
 
-*Note that the release is pretty old, it does not mean that we are not active, but rather than too busy to check and build a Release.*
+*Note that this release is pretty old, it does not mean that we are not active, but rather that we are too busy to check and build a Release.*
 
 *The up-to-date code is in the `devel` branch.*
 
