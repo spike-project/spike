@@ -13,7 +13,7 @@ try:
     from mayavi import mlab
     ok = True
 except:
-    print('*** This plugin requires the installation of Mayavi (http://docs.enthought.com/mayavi/mayavi/installation.html)')
+    print('*** The zoom3D plugin requires the installation of Mayavi (http://docs.enthought.com/mayavi/mayavi/installation.html)')
     ok = False
 
 from spike import NPKError
