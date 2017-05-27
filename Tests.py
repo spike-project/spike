@@ -64,7 +64,11 @@ list_of_modules = mod_basicproc + mod_file  + mod_util + mod_algo + mod_plugins 
 # utilities to be called by tests using files in DATA_dir
 def directory():
     "returns the location of the directory containing dataset for tests"
-    return testplot.config["DATA_dir"]
+    try:
+        dd = testplot.config["DATA_dir"]
+    except AttributeError:  # may happen 
+        dd = DATA_dir
+    return dd
 def filename(name):
     "returns the full name of a test dataset located in the test directory"
     return op.join(directory(), name)
@@ -98,7 +102,8 @@ def cleandir():
     files_to_keep = ('ubiquitin_5_scan_res_30000_1.dat','cytoC_ms_1scan_000001.d', 'cytoC_2D_000001.d',
                 'dosy-cluster2-corr.gs2', 'dosy-cluster2.gs2',
                 'proj.gs1', 'ubiquitine_2D_000002.d','Lasalocid-Tocsy', 'Sampling_file.list', 
-                'ubiquitine_2D_000002_Sampling_2k.list',
+                'ubiquitine_2D_000002_Sampling_2k.list','test.mscf',
+                'ubiquitine_2D_000002.msh5','ubiquitine_2D_000002_mr.msh5',   # these two for testing 2D FT-ICR
                 'Sampling_file_aposteriori_cytoCpnas.list','angio_ms_000005.d',
                 'SubsP_220615_2DFT_2k_128k_000001.d')
     for i in glob.glob(filename("*")):
