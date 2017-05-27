@@ -81,6 +81,22 @@ def calib(npk, meas, ref, axis=1, method='l1', verbose=False):
     given a list of measured m/z 'meas' and of theoretical values 'ref'
     the current FTMS experiment is recalibrated optimatly along its axis 'axis' (usefull only in 2D)
     uses the current (2 or 3 parameters) calibration
+
+    method is either 'l1' (robust) or 'l2' (classic)
+
+    The current calibration is copied to a new unused axis called RefAxis
+    """
+    # find axis
+    todo = npk.test_axis(axis)
+    # locates in index measured values
+    xind = computes_index(meas, todo)
+    return icalib(npk, xind, ref, axis=axis, method=method, verbose=verbose)
+    
+def icalib(npk, xind, ref, axis=1, method='l1', verbose=False):
+    """
+    given a list of location in index 'xind' and of theoretical values 'ref'
+    the current FTMS experiment is recalibrated optimatly along its axis 'axis' (usefull only in 2D)
+    uses the current (2 or 3 parameters) calibration
     
     method is either 'l1' (robust) or 'l2' (classic)
     
@@ -88,12 +104,8 @@ def calib(npk, meas, ref, axis=1, method='l1', verbose=False):
     """
     # find axis
     todo = npk.test_axis(axis)
-    print(todo)
     npk.RefAxis = npk.axes(todo).copy()     # for latter comparison
     ax2fit = npk.axes(todo).copy()          # for action
-    # locates in index measured values
-    xind = computes_index(meas, ax2fit)
-    #print (xind)
     # fit
     if verbose:
         print( 'before - mean offset:', ax2fit.ppm(xind, ref), 'ppm')
@@ -104,12 +116,21 @@ def calib(npk, meas, ref, axis=1, method='l1', verbose=False):
     npk.axes(todo).calibA = fitted.calibA
     npk.axes(todo).calibB = fitted.calibB
     npk.axes(todo).calibC = fitted.calibC
-    print( ' after - mean offset:', npk.axes(todo).ppm(xind, ref), 'ppm')
-    print('**',npk.axes(todo).calibA, npk.axes(todo).calibB, npk.axes(todo).calibC)
-    print('**',npk.axis1.calibA, npk.axis1.calibB, npk.axis1.calibC)
+    if verbose:
+        print( ' after - mean offset:', npk.axes(todo).ppm(xind, ref), 'ppm')
+        print('**',npk.axis1.calibA, npk.axis1.calibB, npk.axis1.calibC)
     return npk
 
 def display_calib(self, meas, mzref, axis=1, compare=False):
+    """
+    generates a plot of the current calibration
+    is compare is True, will try to draw the previous calibration curve along with 
+    """
+    todo = self.test_axis(axis)
+    axistodo = self.axes(todo)
+    xref = computes_index(meas, axistodo)
+    return display_icalib(self, xind, mzref, axis=axis, compare=compare)
+def display_icalib(self, xind, mzref, axis=1, compare=False):
     """
     generates a plot of the current calibration
     is compare is True, will try to draw the previous calibration curve along with 
