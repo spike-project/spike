@@ -209,7 +209,7 @@ def write_param(param, filename):
             if not k.startswith('$') and k not in ( 'TITLE', 'JCAMPDX', 'comments', 'END'):
                 out(k)
         # then comments (remove left \n   add one on right)
-        F.write( param['comments'].lstrip()+"\n" ) 
+        F.write( param['comments'].lstrip()+"\n" )
         # then plain $$# entries
         for k in klist:
             if k.startswith('$'):
@@ -381,6 +381,9 @@ def Import_1D(filename="fid", outfile=None):
     size= int(acqu['$TD'])  # get size
     if verbose: print("importing 1D FID, size =",size)
     data = read_1D(size, filename, bytorda=int(acqu['$BYTORDA']))
+    NC = int(acqu['$NC'])   # correct intensity with Bruker "NC" coefficient
+    if NC != 0:
+        data *= 2**(NC)
     d = NPKData(buffer=data)
 # then set parameters
     d.axis1.specwidth = float(acqu['$SW_h'])
@@ -649,6 +652,9 @@ def Import_2D(filename="ser", outfile=None):
     data = np.fromfile(filename, 'i4').astype(float)
     if op.exists(op.join(dire,'1i')):  # reads imaginary part
         data = data + 1j*np.fromfile(filename, 'i4')
+    NC = int(acqu['$NC'])   # correct intensity with Bruker "NC" coefficient
+    if NC != 0:
+        data *= 2**(NC)
     d = NPKData(buffer=data)
     
     data = read_2D(sizeF1, sizeF2, filename,  bytorda=int(acqu['$BYTORDA']))
