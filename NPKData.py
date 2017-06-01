@@ -10,6 +10,7 @@ Created by Marc-André and Marie-Aude on 2010-03-17.
 """
 
 from __future__ import print_function, division
+import os
 import numpy as np
 import numpy.fft as npfft
 import copy
@@ -609,6 +610,13 @@ def NPKData_plugin(name, method, verbose=False):
     
     look at ..plugins for details
     """
+    import inspect
+    from . import plugins
+    curframe = inspect.currentframe()
+    calframe = inspect.getouterframes(curframe, 1)
+    callerfile = calframe[1][1]
+    pluginfile = os.path.splitext(os.path.basename(callerfile))[0]
+
     if not callable(method):
         raise Exception("method should be callable")
     if not isinstance(name, str):
@@ -616,6 +624,7 @@ def NPKData_plugin(name, method, verbose=False):
     setattr(NPKData, name, method)
     if verbose:
         print("   - successfully added .%s() method to NPKData"%name)
+    plugins.codes[pluginfile].append(name)
 
 class NPKData(object):
     """

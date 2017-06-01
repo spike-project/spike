@@ -1,5 +1,4 @@
-"""
-Code to display 2D data-sets in interactive 3D, using Mayavi
+"""Code to display 2D data-sets in interactive 3D, using Mayavi
 
 Original code from Alice Lynch - mai 2016
 
