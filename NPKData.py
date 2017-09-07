@@ -1082,7 +1082,7 @@ class NPKData(object):
             * extract(x1,y1) for 1D datasets.
             * extract(x1, y1, x2, y2) for 2D datasets.
         
-        if unit is True, coordinates are given in axis current unit, otherwise in index
+        coordinates are given in axis current unit
 
         see also : chsize
         """
@@ -1092,33 +1092,31 @@ class NPKData(object):
         if len(limits) != 2*self.dim:
             raise NPKError(msg="wrong arguments for extract :"+str(args), data=self)
         if self.dim == 1:
-            self._extract1d(limits, unit=unit)
+            self._extract1d(limits)
         elif self.dim == 2:
-            self._extract2d(limits, unit=unit)
+            self._extract2d(limits)
         elif self.dim == 3:
-            self._extract3d(limits, unit=unit)
+            self._extract3d(limits)
         self.absmax = 0.0
         return self
     #---------------------------------------------------------------------------
-    def _extract1d(self, zoom, unit):
+    def _extract1d(self, zoom):
         """realize the extract in 1D,
             unit=True means -interpret zoom coord in index-
                  False means -interpret zoom coord in current unit-
         """
         self.check1D()
-        if unit:
-            x1, y1 = self.axis1.extract(zoom)
-        else:
-            x1,y1 = [min(zoom), max(zoom)]
+        x1, y1 = self.axis1.extract(zoom)
         bb = self.get_buffer()
         self.set_buffer(bb[x1:y1])
+        self.adapt_size()
         return self
     #---------------------------------------------------------------------------
     def _extract2d(self, zoom):
         self.check2D()
         zoom = flatten(zoom)
-        x1, y1 = self.axis1.extract( (zoom[0], zoom[1]) )
-        x2, y2 = self.axis2.extract( (zoom[2], zoom[3]) )
+        x1, y1 = self.axis1.extract(zoom[0:2])
+        x2, y2 = self.axis2.extract(zoom[2:4])
         self.buffer = self.buffer[x1:y1, x2:y2]
         self.adapt_size()
         return self

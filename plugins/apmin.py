@@ -16,11 +16,13 @@ import numpy as np
 from spike.NPKData import NPKData_plugin
 from spike.Algo.BC import correctbaseline as cbl
 
-def neg_wing(d, bcorr=False, inwater=False):
+def neg_wing(d, bcorr=False, inwater=False, apt=False):
         """ measure negative wing power of NPKData d 
         
         if bcorr == True, a baseline correction is applied
         if inwater == True, the 10% central zone is just zeroed
+        if apt == False, computes the std() of the negative points  (distance to mean)
+               == True, computes the sum(abs()) of all the points (l_1 norm)
         """
         import numpy as np
         data = d.copy().real().get_buffer()
@@ -42,8 +44,11 @@ def neg_wing(d, bcorr=False, inwater=False):
             else:    # slower linear baseline corr
                 bl = cbl(data, nbchunks=1, secondpower=1, nbcores=None)
                 data -= bl
-        data[data>0.0] = 0.0    # set positive to 0.0
-        val = data.std()        # and compute std()
+        if not apt:
+            data[data>0.0] = 0.0    # set positive to 0.0
+            val = data.std()        # and compute std() as l_2 norm
+        else:
+            val = np.sum( np.abs(data) )  # simply l_1 norm
         return val
 
 def phase_pivot(d, p0, p1, pivot=0.5):
@@ -57,17 +62,23 @@ def phase_pivot(d, p0, p1, pivot=0.5):
     d.phase(lp0, lp1)
     return (lp0, lp1)
 
-def apmin(d, first_order=True, inwater=False, debug=False):
+def apmin(d, first_order=True, inwater=False, baselinecorr=True, apt=False, debug=False):
     """automatic 1D phase correction
     phase by minimizing the negative wing of the 1D spectrum
     
     first_order = False   inhibit optimizing 1st order phase
     inwater = True   does not look to the central zone of the spectrum
+    baselinecorr = True, an advanced baseline correction is applied on the final steps
+    apt = True   (Attached proton test) performs the phasing on up-down spectra, such as APT / DEPT 13C spectra.
     
-    performs a grid search on P0 first then on (P0 P1)    
+    performs a grid/simplex search on P0 first then on (P0 P1)    
     the dataset is returned phased and the values are stored in d.axis1.P0 and d.axis1.P1
 
     P1 is kept to 0 if first_order=False
+    
+    note that if baselinecorr is True
+        - the algo becomes quite slow !
+        - a simple linear baseline correction is always applied anyway anyhow
 
     adapted from NPK v1 
     MAD, may 2016
@@ -81,7 +92,7 @@ def apmin(d, first_order=True, inwater=False, debug=False):
     pivot = (im/d.cpxsize1)
     if debug: print ("Pivot:",pivot)
 # initialize
-    valmin = neg_wing(d, inwater=inwater)
+    valmin = neg_wing(d, bcorr=False, inwater=inwater, apt=apt)
     P0min, P1min = 0,0
     P0minnext, P1minnext = 0,0
     neval=0
@@ -108,7 +119,7 @@ def apmin(d, first_order=True, inwater=False, debug=False):
                     neval = neval+1
                     dd = d.copy()
                     phase_pivot(dd, P0min+dP0, P1min+dP1,pivot)
-                    pw = neg_wing(dd, bcorr=bcorr, inwater=inwater)
+                    pw = neg_wing(dd, bcorr=bcorr, inwater=inwater, apt=apt)
                     if debug: print (" %.2f %.2f %g"%(P0min+dP0, P1min+dP1, pw))
                     if (pw<valmin):
                         moved=1
@@ -134,7 +145,7 @@ def apmin(d, first_order=True, inwater=False, debug=False):
         P0step=P0step/2.0
         P1step=P1step/2.0
         if P0step < 5.0:
-            bcorr = True     # bcorr is expensive, so we make it only at the end
+            bcorr = baselinecorr     # bcorr is expensive, so we make it only at the end if needed
             if debug: print ('bcorr = True')
     (P0,P1) = phase_pivot(d, P0min, P1min, pivot)
     if debug:
