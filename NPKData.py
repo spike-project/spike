@@ -1391,7 +1391,7 @@ class NPKData(object):
         can actually be called without harm, even if no graphic is available, it will just do nothing.
         
         """
-        if not figure:
+        if figure is None:
             from .Display import testplot
             plot = testplot.plot()
             if new_fig:
@@ -1481,7 +1481,7 @@ class NPKData(object):
         if title:
             fig.set_title(title)
         if label: fig.legend()
-        if show and not figure: plot.show()
+        if show and figure is None: plot.show()
         return self
     def f(self,x,y):
         """used by 3D display"""
@@ -1756,7 +1756,7 @@ class NPKData(object):
     def mean(self, zone=None):  # ((F1_limits),(F2_limits))
         """
         computes mean value  in the designed spectral zone
-        Consider array as real even if itype is 1
+        (NEW!) returns a complex if data is complex along fastest axis
         """
         if self.dim == 1:
             if zone is None:
@@ -1765,7 +1765,28 @@ class NPKData(object):
             else:
                 ll = zone[0]
                 ur = zone[1]
-            shift = self.buffer[ll:ur].mean()
+            shift = self.get_buffer()[ll:ur].mean()
+        elif self.dim == 2:
+            if zone is None:
+                ll = 0
+                lr = self.size2
+                ul = 1
+                ur = self.size1
+            else:
+                ll = zone[0][0]
+                lr = zone[0][1]
+                ul = zone[1][0]
+                ur = zone[1][1]
+            shift = self.get_buffer()[ul:ur,ll:lr].mean()
+        return shift
+    #-----------------
+    def center(self):
+        """
+        center the data, so that the sum of points is zero (usefull for FIDs) 
+
+        """
+        if self.dim == 1:
+            self -= self.mean()
         elif self.dim == 2:
             if zone is None:
                 ll = 0
@@ -1779,6 +1800,7 @@ class NPKData(object):
                 ur = zone[1][1]
             shift = self.buffer[ul:ur,ll:lr].mean()
         return shift
+
     #-----------------
     def std(self, zone=None):  # ((F1_limits),(F2_limits))
         """
