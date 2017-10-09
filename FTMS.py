@@ -84,6 +84,7 @@ class FTMSAxis(NPKData.Axis):
         self.specwidth = nsw
         self.offsetfreq = noff
         self.size = nsize
+        self.left_point += start
         return start, end
 
     # The 2 htomz() and mztoh() are used to build all other transfoms
@@ -244,13 +245,18 @@ class FTMSData(NPKData.NPKData):
                 self.trimz(axis=i+1)
         else:               # do only one
             ext = []
+            unitaxis = []
             for i in range(self.dim):
+                unitaxis.append( self.axes(i+1).currentunit )  # save
+                self.axes(i+1).currentunit = 'points'
                 if i+1 == axis:
                     ext = ext + [int(self.axes(i+1).mztoi(self.axes(i+1).highmass)), self.axes(i+1).size]
                 else:
                     ext = ext + [0,self.axes(i+1).size]
             print("extracting :", ext)
-            self.extract(ext, unit=False)
+            self.extract(ext)
+            for i in range(self.dim):
+                self.axes(i+1).currentunit = unitaxis[i]  # restore
         return self
 
     #----------------------------------------------

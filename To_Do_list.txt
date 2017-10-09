@@ -1,6 +1,6 @@
 FEATURES
 ========
-bk.ft() bk.ftf2() bk.ftF1(FnMode)
+bk.ft() bk.ftf2() bk.ftF1(FnMode) à finir
 
 **kw pour display()
 
@@ -28,12 +28,8 @@ check plot / figure in d.display()
 
 BUGS
 ====
-extract et unit fausses en NMR
-
 mp vs MPI
 
 move dowsampling outside processing
 
 correct wrong downsampling in F2
-
-second complex
