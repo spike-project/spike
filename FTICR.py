@@ -215,6 +215,7 @@ class FTICR_Tests(unittest.TestCase):
         print(A.report())
         l1 = int(A.axis1.mztoi(A.axis1.highmass))
         l2 = int(A.axis2.mztoi(A.axis2.highmass))
+        print("l values:",l1,l2)
         A.trimz()
         self.assertEqual(l1, A.axis1.left_point)
         self.assertEqual(l2, A.axis2.left_point)

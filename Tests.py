@@ -152,11 +152,11 @@ def do_Test():
     if not RUN:
         print ("\nDry run - stopping now, without executing the tests")
         sys.exit(0)
-
     msg("First removing leftover files")
-    cleandir()
-    msg("removing .pyc in spike")
-    cleanspike()
+    cleandir()   # (CLEAN is handeld internally )
+    if CLEAN:
+        msg("removing .pyc in spike")
+        cleanspike()
     msg("Running automatic Tests")
     t0 = time.time()
     suite = unittest.defaultTestLoader.loadTestsFromNames( list_of_modules )
@@ -185,7 +185,7 @@ def do_Test():
         for address in list_of_mails:
             mail(address, subject, "\n".join(to_mail) )
     # finally clean dir
-    #cleandir()
+    cleandir()
 
 def main():
 #    import Display.testplot as testplot
