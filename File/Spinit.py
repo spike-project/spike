@@ -171,7 +171,8 @@ def Export_1D(d, filename="data.dat", template="header.xml"):
     dirname = op.dirname(filename)
     if not op.isdir(dirname):
         os.makedirs(dirname)
-    array.astype(">f").tofile(filename)
+    # array.astype(">f").tofile(filename)
+    array.view(np.float_).astype('>f').tofile(filename)
 
 # then set parameters
     headertree = load_header(template)

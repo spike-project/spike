@@ -174,17 +174,17 @@ class PROFILE(QMainWindow):
 
 @dec_class_pr
 @decclassdebugging
-class Dialog(QtGui.QWidget):
+class Dialog(QWidget):
     '''
     Dialog box for saving CSV and PDF files.
     '''
     def __init__(self, data, save, toolbar):
-        QtGui.QWidget.__init__(self)
+        QWidget.__init__(self)
         self.data_profile = data
         self.save = save
         self.toolbar = toolbar
         self.name_dialog = "save profile"                                       # name of the dialog input window
-        self.message_input = "enter name profile"                   # message for input.
+        self.message_input = "enter name profile"                               # message for input.
 
     def open_file_dialog(self, kind_saved):
         """

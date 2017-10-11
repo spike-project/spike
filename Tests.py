@@ -185,7 +185,7 @@ def do_Test():
         for address in list_of_mails:
             mail(address, subject, "\n".join(to_mail) )
     # finally clean dir
-    cleandir()
+    #cleandir()
 
 def main():
 #    import Display.testplot as testplot
