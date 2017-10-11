@@ -1088,6 +1088,7 @@ class NPKData(object):
         """
         limits = flatten(args)
         print ('extract',limits)
+        unit = True
         if len(limits) != 2*self.dim:
             raise NPKError(msg="wrong arguments for extract :"+str(args), data=self)
         if self.dim == 1:
