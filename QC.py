@@ -6,6 +6,9 @@ run_pylint.py
 
 Created by Marc-André on 2011-10-26.
 Copyright (c) 2011 IGBMC. All rights reserved.
+
+python 2 only so far !
+
 """
 
 from __future__ import print_function
