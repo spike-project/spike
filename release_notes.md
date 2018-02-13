@@ -1,8 +1,8 @@
-
+<!-- DO NOT MODIFY this file, it is generated automatically! -->
 # Relase Notes
-#### 0.99 - Oct 2017
+#### 0.99 - Nov 2017
 We have been developping a lot this last year, and published quite a few results.
-The program is now quite stable in all its features.
+The program is now quite stable in most of its features.
 Additions and improvements were added to the repository in the `devel` branch, however we neglected updating the more official `default` branch.
 This release is an effort to bring everything into normal mode, and hopefully, preparing a 1.0 version !
 
@@ -14,42 +14,49 @@ New in 0.99:
     - slightly different optimum parameters (optimal rank slightly smaller, less iterations needed)
 - added the PALMA DOSY processing algo and plugin (NMR).
 - added a Linear Prediction plugin
-- added a calibration plugin (MS)
+- added the first trial for a m/z calibration plugin (MS)
 - added import from SpinIt (NMR)
 - added a primitive set of interactive tools to be used in Jupyter notebooks ( `INTER.py` )
-- added the .center() method
-- added a plugin implementing a subset of Topspin commands (NMR): xf1, xf2, xfb.
+- added the possibility to pass a complete dictionary to matplotlib in the .display() method
+- added the .center() method for NPKData
+- added a plugin implementing a subset of Topspin commands: xf1, xf2, xfb.  (NMR)
 - added an line fitter, still very exploratory, only 1D Lorentzian for the moment
+- added more controls on plots (new_fig and mpldic arguments of .display())
+- added a Spinit importer (preliminary) (NMR)
+- added a compress mode in Solarix importer (MS)
 - added new automatic tests
-- corrected a bug when importing Topspin/Bruker NMR datasets, where $NC was not used.
-- corrected a bug and improved 3 parameters FT-ICR calibration (MS)
-- corrected a bug with contour plots and matplotlib > 1.5.0
+- improved and extended the Bucketing plugin, with extended features
 - improved the baseline correction code
 - improved import/export to Topspin/Bruker NMR files
 - improved automatic phaser .apmin() (NMR)
+- corrected a bug when importing Topspin/Bruker NMR datasets, where $NC was not used. (NMR)
+- corrected a bug and improved 3 parameters FT-ICR calibration (MS)
+- corrected the extract function for NPKData
+- corrected a bug with contour plots and matplotlib > 1.5.0
+- modified (improved?) plugin loading code, with additional plugin documentation
+- modified the way None values are stored into hdf5 files
 - modified .extract() code to work in current axis unit
 - modified .mean() to return complex value is axis is complex
-- modified (improved?) plugin loading code, with additional plugin documentation
-- improved python 3 compatibility. It is not finished yet, but most of the program is python 2/python 3 independent, some parts are still missing, in particular the `processing.py` code used to lauch big FT-ICR 2D processing (because of a weird incompatibility in the ConfigParser)
+- improved python 3 compatibility. It is not finished yet, but most of the program is python 2/python 3 independent, some parts are still missing, in particular the `processing.py` code used to launch big FT-ICR 2D processing (because of a weird incompatibility in the ConfigParser)
 
 
 #### 0.9 - 8 sept 2016
 *never reached the normal distribution - doc partly redundant with 0.8.3*
 
 - added a baseline correction plugins, already quite developed, with 3 different methods
-- added an automatic phasing plugin, `.apmin()` still exploratory
+- added an automatic phasing plugin, `.apmin()` still exploratory (NMR)
 - added a wavelet filtering plugin (requires the PyWavelet library)
-- added a 3D zoom plugin (requires the Mayavi library)
-- added export to Topspin/Bruker files, and added import of processed Topspin files
+- added a 3D zoom plugin (requires the Mayavi library) 
+- added export to Topspin/Bruker files, and added import of processed Topspin files (NMR)
 - added the upgrade of files from previous version
 - added the d.axis?.cpxsize : the size of an axis expressed in spectroscopic points (real of complex)
  different from d.axis?.size which is the size of an axis expressed in data points so
    - d.axis?.cpxsize == d.axis?.size     is axis is real
    - d.axis?.cpxsize == d.axis?.size/2   is axis is complex
 - improved the Peak-Picker (mostly the output capabilities)
-- improved processing.py for nicer spectra, and possibly faster processing
+- improved processing.py for nicer spectra, and possibly faster processing (MS)
 - improved visu2D.py, for a greater stability and improved selection syntax
-- corrected a bug in d.conv_n_p()
+- corrected a bug in d.conv_n_p() (NMR)
 - and many small bugs as well
 
 #### 0.8.3 - April 2016

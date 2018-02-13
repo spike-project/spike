@@ -148,17 +148,17 @@ def wdw(data, axis=1):
     """emulates Bruker window function"""
     def _sine(ssb):
         "computes maxi for sine(ssb)"
-        if ssb == 0:
+        if ssb == "0":
             return 0.5
-        elif ssb == 2:
+        elif ssb == "2":
             return 0.0
-        elif ssb == 3:
+        elif ssb == "3":
             return 0.25
-        elif ssb == 4:
+        elif ssb == "4":
             return 0.333
-        elif ssb == 5:
+        elif ssb == "5":
             return 0.375
-        elif ssb == 6:
+        elif ssb == "6":
             return 0.4
         else:
             return 0.5
@@ -166,14 +166,16 @@ def wdw(data, axis=1):
         "does the work"
         if pp['$WDW'] == '0': # none
             pass
+        elif pp['$WDW'] == '1': # GM
+            data.apod_em(float(pp['$LB']), axis=axis)
         elif pp['$WDW'] == '2': # GM
-            data.apod_gm(pp['$GB'], axis=axis)
+            data.apod_gm(float(pp['$GB']), axis=axis)
         elif pp['$WDW'] == '3': # SINE
             data.apod_sin(_sine(pp['$SSB']), axis=axis)
         elif pp['$WDW'] == '4': # QSINE
             data.apod_sq_sin(_sine(pp['$SSB']), axis=axis)
         elif pp['$WDW'] == '5': # TM
-            data.apod_tm(pp['$TM1'], pp['$TM2'], axis=axis)
+            data.apod_tm(int(pp['$TM1']), int(pp['$TM2']), axis=axis)
         else:
             raise Exception("WDW not implemented")
         return data

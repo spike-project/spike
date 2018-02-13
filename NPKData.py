@@ -1088,7 +1088,6 @@ class NPKData(object):
         """
         limits = flatten(args)
         print ('extract',limits)
-        unit = True
         if len(limits) != 2*self.dim:
             raise NPKError(msg="wrong arguments for extract :"+str(args), data=self)
         if self.dim == 1:
@@ -1366,8 +1365,8 @@ class NPKData(object):
             test = self.axis1.check_zoom(z[0:1]) and self.axis2.check_zoom(z[2:3])
         return test
     def display(self, scale = 1.0, absmax = None, show = False, label = None, new_fig = True, axis = None,
-                mode3D = False, zoom = None, xlabel="_def_", ylabel = "_def_", title = None, figure = None,
-                linewidth=1, color = None):
+                zoom = None, xlabel="_def_", ylabel = "_def_", title = None, figure = None,
+                linewidth=1, color = None, mpldic={}, mode3D = False):
         """
         not so quick and dirty display using matplotlib or mlab - still a first try
         
@@ -1382,11 +1381,13 @@ class NPKData(object):
         axis    used as axis if present, axis length should match experiment length
                 in 2D, should be a pair (xaxis,yaxis)
         new_fig will create a new window if set to True (default) (active only is figure==None)
-        mode3D  use malb 3D display instead of matplotlib contour for 2D display
+                if new_fig is a dict, it will be passed as is to plt.figure()
+        mode3D  obsolete
         zoom    is a tuple defining the zoom window (left,right) or   ((F1_limits),(F2_limits))
                 defined in the current axis unit (points, ppm, m/z etc ....)
         figure  if not None, will be used directly to display instead of using its own
-        linewidth : linewidth for the plots (useful for example when using seaborn)
+        linewidth: linewidth for the plots (useful for example when using seaborn)
+        mpldic: a dictionnary passed as is to the plot command 
         
         can actually be called without harm, even if no graphic is available, it will just do nothing.
         
@@ -1395,7 +1396,10 @@ class NPKData(object):
             from .Display import testplot
             plot = testplot.plot()
             if new_fig:
-                plot.figure()
+                if isinstance(new_fig, dict):
+                    plot.figure(**new_fig)
+                else:
+                    plot.figure()
             fig = plot.subplot(111)
         else:
             fig = figure
@@ -1418,7 +1422,7 @@ class NPKData(object):
             fig.set_xscale(self.axis1.units[self.axis1.currentunit].scale)  # set unit scale (log / linear)
             if self.axis1.units[self.axis1.currentunit].reverse and new_fig:           # set reverse mode
                 fig.invert_xaxis()
-            fig.plot(ax[z1:z2:step], self.buffer[z1:z2:step].clip(mmin,mmax), label=label, linewidth=linewidth, color=color)
+            fig.plot(ax[z1:z2:step], self.buffer[z1:z2:step].clip(mmin,mmax), label=label, linewidth=linewidth, color=color, **mpldic)
             if xlabel == "_def_":
                 xlabel = self.axis1.currentunit
             if ylabel == "_def_":
@@ -1429,7 +1433,7 @@ class NPKData(object):
             z1lo, z1up, z2lo, z2up  = parsezoom(self,zoom)
             if not absmax:  # absmax is the largest point on spectrum, either given from call, or handled internally
                 if not self.absmax:     # compute it if absent  - but do it on zoom window ! as this is a killer for large onfile datasets
-                    absmax = np.nanmax( np.abs(self.buffer[z1lo:z1up:step1,z2lo:z2up:step2]) )
+                    self.absmax = np.nanmax( np.abs(self.buffer[z1lo:z1up:step1,z2lo:z2up:step2]) )
             else:
                 self.absmax = absmax
 #            print absmax, self.absmax
@@ -1450,7 +1454,7 @@ class NPKData(object):
                 if self.level:
                     level = self.level
                 else:
-                    m = absmax/scale
+                    m = self.absmax/scale
 #                    level = (m*0.5, m*0.25, m*0.1, m*0.05)
                     level = (m*0.05, m*0.1, m*0.25, m*0.5)  # correction for matplotlib 1.5.1
                     # print("level ", level)
@@ -1469,7 +1473,7 @@ class NPKData(object):
                 fig.contour(axis[1][z2lo:z2up:step2],
                     axis[0][z1lo:z1up:step1],
                     self.buffer[z1lo:z1up:step1,z2lo:z2up:step2],
-                    level, colors=color, label=label )
+                    level, colors=color, label=label, **mpldic)
             if xlabel == "_def_":
                 xlabel = self.axis2.currentunit
             if ylabel == "_def_":
