@@ -5,6 +5,7 @@ The Spike Package
 
 """
 # from __future__ import absolute_import not needed anymore in 2.7
+from __future__ import print_function
 import os, sys
 import warnings
 
@@ -32,5 +33,7 @@ from . plugins import load
 
 load(debug=False)
 
+def report():
+	print ("coucou")
 
 

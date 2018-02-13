@@ -10,6 +10,8 @@ Analyst, 142(5), 772–779. http://doi.org/10.1039/c6an01902a
 
 see manuscript for details.
 
+Authors:
+Afef Cherni, Emilie Chouzenoux, and Marc-André Delsuc
 
 Licence: CC-BY-NC-SA   https://creativecommons.org/licenses/by-nc-sa/4.0/
 """
@@ -32,7 +34,9 @@ import spike.util.signal_tools
 
 debug = True
 
-version = 1.0
+#version = 1.0
+# february 2018 - added an randomisation of colonne processing for a cleaner progress bar
+version = 1.1
 
 ################# PPXA+ Algo ######################
 def residus(x, K, y):
@@ -434,7 +438,7 @@ def Import_DOSY_proc(fname, nucleus='1H'):
 #################### PALMA setup ###########################
 def process(param):
     " do the elemental processing, used by loops"
-    c, N, valmini, nbiter, lamda, precision, uncertainty = param
+    icol, c, N, valmini, nbiter, lamda, precision, uncertainty = param
     if (c[0] > valmini):
         y = c.get_buffer()
         c = c.palma(N, nbiter=nbiter, lamda=lamda, precision=precision, uncertainty=uncertainty)
@@ -442,7 +446,7 @@ def process(param):
     else:
         c = c.set_buffer(np.zeros(N))
         lchi2 = 0
-    return (c, lchi2)
+    return (icol, c, lchi2)
 
 def do_palma(npkd, miniSNR=32, mppool=None, nbiter=1000, lamda=0.1, uncertainty=1.2, precision=1E-8):
     """
@@ -466,9 +470,9 @@ def do_palma(npkd, miniSNR=32, mppool=None, nbiter=1000, lamda=0.1, uncertainty=
     def palmaiter(npkd):
         "iterator for // processing around palma() using mp.pool.imap()"
         #for c in npkd.xcol(): #
-        for icol in range(npkd.size2):
+        for icol in np.random.permutation(npkd.size2):  # create a randomized range
             c = npkd.col(icol)
-            yield (c, N, valmini, nbiter, lamda, precision, uncertainty)
+            yield (icol, c, N, valmini, nbiter, lamda, precision, uncertainty)
         
     # prepare
     if mppool is not None:
@@ -495,12 +499,12 @@ def do_palma(npkd, miniSNR=32, mppool=None, nbiter=1000, lamda=0.1, uncertainty=
     else:
         result = itertools.imap(process, xarg)
     # collect
-    for icol,res in enumerate(result):
+    for ii, res in enumerate(result):
         # if icol%50 == 0 :
         #     print ("DOSY # %d / %d"%(icol,npkd.size2))
-        pbar.update(icol+1)
+        pbar.update(ii+1)
         sys.stdout.flush()
-        c, lchi2 = res
+        icol, c, lchi2 = res
         chi2[icol] = lchi2
         output.set_col(icol, c)                                                                                                         
     

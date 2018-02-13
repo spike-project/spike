@@ -48,9 +48,8 @@ RUN = True
 
 # Add your module here
 mod_util = ("plugins", 'util.dynsubplot', 'util.debug_tools')  #'util.read_msh5', 
-mod_algo = ('Algo.Cadzow', 'Algo.Linpredic', 'Algo.urQRd', 'Algo.SL0', 'Algo.maxent', 'Algo.BC') 
-mod_plugins = ("plugins.Peaks", "plugins.Fitter", "plugins.Bruker_NMR_FT", "plugins.wavelet")
-
+mod_algo = ('Algo.Cadzow', 'Algo.Linpredic', 'Algo.urQRd', 'Algo.sane', 'Algo.SL0', 'Algo.maxent', 'Algo.BC') 
+mod_plugins = ("plugins.Peaks", "plugins.Fitter", "plugins.Bruker_NMR_FT", "plugins.wavelet", "plugins.Peaks")
 mod_file = ("File.BrukerNMR", "File.GifaFile", 'File.HDF5File', 'File.Apex', 'File.csv', 'File.Solarix')
 mod_basicproc = ("NPKData", "FTICR", "Orbitrap", 'NPKConfigParser')
 mod_user = ('processing', )

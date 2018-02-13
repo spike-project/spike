@@ -66,6 +66,14 @@ The fact that you are presently reading this means that you have had
 knowledge of the CeCILL license and that you accept its terms.
 
 
+PALMA Licence
++++++++++++++
+Authors : Afef Cherni (chernia@igbmc.fr), Marc-André Delsuc (madelsuc@unistra.fr)
+
+This Program are provided under the Licence CeCILL 2.1
+https://opensource.org/licenses/CECILL-2.1
+
+
 progressbar
 +++++++++++
 from Nilton Volpato - LGPL licence,

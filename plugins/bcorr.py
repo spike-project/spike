@@ -16,6 +16,11 @@ from scipy.optimize import leastsq
 from spike import NPKError
 from spike.NPKData import NPKData_plugin
 
+import sys
+if sys.version_info[0] < 3:
+    pass
+else:
+    xrange = range
 #-------------------------------------------------------------------------------
 def _spline_interpolate(buff, xpoints, kind = 3):
     """compute and returns a spline function 
@@ -133,11 +138,11 @@ def bcorr(npkd, method='spline', xpoints=None):
             bf = abs(npkd.get_buffer())
             L = len(bf)
             chunksize = L//N
-            print (chunksize)
+            #print (chunksize)
             xpoints = np.array([i+bf[i:i+chunksize-8].argmin() for i in range(4, L, chunksize)])
             if npkd.itype == 1:
                 xpoints *= 2
-            print (xpoints)
+            #print (xpoints)
     if method=='linear':
         return linear_interpolate(npkd, xpoints)
     elif method=='spline':

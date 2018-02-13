@@ -1,9 +1,24 @@
 #!/usr/bin/env python
 # encoding: utf-8
+
 """A set of tools for computing bucketing for 1D and 2D NMR spectra
 
 
-Created by DELSUC Marc-André on 2015-09-06.
+First version by DELSUC Marc-André on 2015-09-06.
+extended in 2017
+
+This plugin implements the bucketing routines developped in the work
+
+**Automatic differential analysis of NMR experiments in complex samples**
+Laure Margueritte, Petar Markov, Lionel Chiron, Jean-Philippe Starck, Catherine Vonthron-Sénécheau, Mélanie Bourjot, and Marc-André Delsuc
+*Magn. Reson. Chem.*, (2018) **80** (5), 1387. http://doi.org/10.1002/mrc.4683
+
+It implements 1D and 2D bucketing
+each bucket has a constant progammable size in ppm,
+for each buckets, following properties are computes:
+    center, normalized area, max, min, standard deviation, bucket_size
+
+The results are printed in cvs format either on screen or into a file
 """
 
 from __future__ import print_function
@@ -41,28 +56,37 @@ def bucket1d(data, zoom=(0.5, 9.5), bsize=0.04, file=None):
     dcopy = data.copy()   # work now on a real version of the data
     dcopy.real(axis=1)
 
-    s = "# %i buckets with a mean size of %.2f data points\n" % \
+    s = "# %i buckets with a mean size of %.2f data points" % \
         ( round((end-start+bsize)/bsize), bsize/ppm_per_point)
     print(s, file=file)
     if file is not None:    # wants the prompt on the terminal
         print(s)
-    print("# center, bucket, bucket_size\n", file=file)
-    here = min(start,end)
-    here2 = (here-bsize/2)
-    there = max(start,end)
+    print("center, bucket, max, min, std, bucket_size", file=file)
+    there = max(start,end)   # end of the bucket region
+    here = min(start,end)    # running center of the bucket - initialized to begining
+    here2 = (here-bsize/2)   # running beginning of the bucket
     while (here2 < there):
-        ih = round(dcopy.axis1.ptoi(here2))
-        next = (here2+bsize)
-        inext = (round(dcopy.axis1.ptoi(next)))
+        ih = round(dcopy.axis1.ptoi(here2))   # int of running beginning of the bucket
+        next = (here2+bsize)                  # running en of bucket
+        inext = (round(dcopy.axis1.ptoi(next))) # int of running en of bucket
+        if ih<0 or inext<0:
+            break
         integ = dcopy.buffer[inext:ih].sum()
-        print("%.3f, %.5f, %d"%(here, integ/((ih-inext)*bsize), (ih-inext) ), file=file)
+        try:
+            maxv = dcopy.buffer[inext:ih].max()
+            minv = dcopy.buffer[inext:ih].min()
+        except ValueError:
+            maxv = np.NaN     # sum and std returns nan - max returns an error ???
+            minv = np.NaN     # sum and std returns nan - min returns an error ???
+        stdv = dcopy.buffer[inext:ih].std()
+        print("%.3f, %.1f, %.1f, %.1f, %.1f, %d"%(here, integ/((ih-inext)*bsize), maxv, minv, stdv,  (ih-inext) ), file=file)
         here2 = next
         here = (here+bsize)
     return data
 #---------------------------------------------------------------------------
 def bucket2d(data, zoom=((0.5, 9.5),(0.5, 9.5)), bsize=(0.1, 0.1), file=None):
     """
- This tool permits to realize a bucket integration from the current 1D data-set.
+ This tool permits to realize a bucket integration from the current 2D data-set.
  You will have to determine  (all spectral values are in ppm)
    - zoom (F1limits, F2limits),  : the starting and ending ppm of the integration zone in the spectrum
    - bsize (F1,F2): the sizes of the bucket
@@ -95,32 +119,43 @@ def bucket2d(data, zoom=((0.5, 9.5),(0.5, 9.5)), bsize=(0.1, 0.1), file=None):
     dcopy.real(axis=2)
     dcopy.real(axis=1)
 
-    s = "# %i rectangular buckets with a mean size of %.2f x %.2f data points\n" % \
+    s = "# %i rectangular buckets with a mean size of %.2f x %.2f data points" % \
         ( round((end1-start1+bsize1)/bsize1)*round((end2-start2+bsize2)/bsize2), \
         bsize1/ppm_per_point1, bsize2/ppm_per_point2)
     print(s, file=file)
     if file is not None:    # wants the prompt on the terminal
         print(s)
-    print("# centerF1, centerF2, bucket, bucket_size_F1, bucket_size_F2,\n", file=file)
+    print("centerF1, centerF2, bucket, max, min, std, bucket_size_F1, bucket_size_F2", file=file)
     here1 = min(start1, end1)
     here1_2 = (here1-bsize1/2)
     there1 = max(start1, end1)
+#    F = open('toto.txt','w')
     while (here1_2 < there1):
-        ih1 = round(dcopy.axis1.ptoi(here1_2))
+        ih1 = int(round(dcopy.axis1.ptoi(here1_2)))
         next1 = (here1_2+bsize1)
-        inext1 = (round(dcopy.axis1.ptoi(next1)))
-        
+        inext1 = int(round(dcopy.axis1.ptoi(next1)))
+        if ih1<0 or inext1<0:
+            break
         here2 = min(start2, end2)
         here2_2 = (here2-bsize2/2)
         there2 = max(start2, end2)
         while (here2_2 < there2):
-            ih2 = round(dcopy.axis2.ptoi(here2_2))
+            ih2 = int(round(dcopy.axis2.ptoi(here2_2)))
             next2 = (here2_2+bsize2)
-            inext2 = (round(dcopy.axis2.ptoi(next2)))
+            inext2 = int(round(dcopy.axis2.ptoi(next2)))
+            if ih2<0 or inext2<0:
+                break
             integ = dcopy.buffer[inext1:ih1, inext2:ih2].sum()
             area = ((ih1-inext1)*bsize1) * ((ih2-inext2)*bsize2)
-            print("%.3f, %.3f, %.5f, %d, %d"%(here1, here2, integ/area, (ih1-inext1), (ih2-inext2) ), file=file)
-
+            try:
+                maxv = dcopy.buffer[inext1:ih1, inext2:ih2].max()
+                minv = dcopy.buffer[inext1:ih1, inext2:ih2].max()
+            except ValueError:
+                maxv = np.NaN     # sum and std returns nan - max returns an error ???
+                minv = np.NaN     # sum and std returns nan - max returns an error ???
+            stdv = dcopy.buffer[inext1:ih1, inext2:ih2].std()
+            print("%.3f, %.3f, %.1f, %.1f, %.1f, %.1f, %d, %d"%(here1, here2, integ/area, maxv, minv, stdv, (ih1-inext1), (ih2-inext2) ), file=file)
+#            print(here1, here2, here1_2, here2_2, inext1, ih1, inext2, ih2, file=F)
             here2_2 = next2
             here2 = (here2+bsize2)
         here1_2 = next1

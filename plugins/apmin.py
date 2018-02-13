@@ -13,7 +13,7 @@ Copyright (c) 2016 IGBMC. All rights reserved.
 import numpy as np
 #import matplotlib.pyplot as plt
 
-from spike.NPKData import NPKData_plugin
+from spike.NPKData import NPKData, NPKData_plugin
 from spike.Algo.BC import correctbaseline as cbl
 
 def neg_wing(d, bcorr=False, inwater=False, apt=False):
@@ -25,25 +25,23 @@ def neg_wing(d, bcorr=False, inwater=False, apt=False):
                == True, computes the sum(abs()) of all the points (l_1 norm)
         """
         import numpy as np
-        data = d.copy().real().get_buffer()
-        #bcorr(1, int(0.01*get_si1_1d()), (int(0.05*get_si1_1d()),int(0.95*get_si1_1d())))
-        lendata = len(data)
+        dd = d.copy().real()
         if inwater:
-            data[int(0.45*lendata):int(0.55*lendata)]
+            dd[int(0.45*d.size1):int(0.55*d.size1)] = 0.0
         if bcorr:   # complete baseline corr
-            bl = cbl(data, nbchunks=10, secondpower=2, nbcores=None)
-            data -= bl
-        else:       # simple linear corr
-            if True:    # simple linear baseline corr
-                wind = [int(0.05*lendata), int(0.95*lendata)]
-                hwidth = int(0.01*lendata/2)
-                y0 = data[wind[0]-hwidth:wind[0]+hwidth].mean()
-                y1 = data[wind[1]-hwidth:wind[1]+hwidth].mean()
-                bl1 = np.poly1d(np.polyfit(wind, [y0,y1], 1))
-                data -= bl1(np.arange(lendata))
-            else:    # slower linear baseline corr
-                bl = cbl(data, nbchunks=1, secondpower=1, nbcores=None)
-                data -= bl
+            dd.bcorr(method="spline",  xpoints=4)
+
+        data = dd.get_buffer()
+        lendata = len(data)
+
+        if not bcorr:       # simple linear corr
+            wind = [int(0.05*lendata), int(0.95*lendata)]
+            hwidth = int(0.01*lendata/2)
+            y0 = data[wind[0]-hwidth:wind[0]+hwidth].mean()
+            y1 = data[wind[1]-hwidth:wind[1]+hwidth].mean()
+            bl1 = np.poly1d(np.polyfit(wind, [y0,y1], 1))
+            data -= bl1(np.arange(lendata))
+
         if not apt:
             data[data>0.0] = 0.0    # set positive to 0.0
             val = data.std()        # and compute std() as l_2 norm
@@ -96,7 +94,7 @@ def apmin(d, first_order=True, inwater=False, baselinecorr=True, apt=False, debu
     P0min, P1min = 0,0
     P0minnext, P1minnext = 0,0
     neval=0
-    bcorr = False
+    bcorr = baselinecorr #False
 # first coarse
     P0step=10.0
     if first_order:
