@@ -47,8 +47,10 @@ def load(debug=True):
     print( "plugins loaded:\n" + 
            " ".join(["{}, ".format(k) for k in plugins.keys()]) )
     print( "type spike.plugins.report() for a short description")
+    print( "and spike.plugins.report('module_name') for complete documentation on one plugin") 
 
-def report(module=None, mode="short"):
+
+def report(module=None, mode=None):
     """ print a nice report
     mode=choose the verbosity
         "short": only one line (default) 
@@ -59,15 +61,19 @@ def report(module=None, mode="short"):
         todo = sorted(plugins.keys())
     else:
         todo = [module]
+        if mode is None:
+            mode = "full"
     for k in todo:
         doc = plugins[k]
-        if mode != "full":
-            doc = doc.split('\n')[0]  # only first line
+        if mode != 'full':
+            print("%s : %s"%(k, doc.split('\n')[0]))  # only first line
         else:
             print("="*60)
-        print("%s : %s"%(k, doc))
-        if  mode != "short":
+            print("%s : %s"%(k, doc))
+        if  mode != "short" or mode is None:
             print("    implements: "+" ".join(["{}, ".format(c) for c in codes[k]]))
+    if module is None and mode is None:    # add doc if default values
+        print("type spike.plugins.report('module_name') for complete documentation on one plugin") 
 
 def loadone(pluginname, pgfile=None, debug=True):
     """
