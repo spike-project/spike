@@ -86,6 +86,8 @@ class fake(object):
     set_ylabel = ylabel
     def title(self, *args, **key):
         print("-- title :",args[0])
+    def set_title(self, *args, **key):
+        self.title(*args, **key)    
     def suptitle(self, *args, **key):
         print("-- suptitle :",args[0])
     def grid(self, *args, **key):

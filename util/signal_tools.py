@@ -16,7 +16,9 @@ import math
 import scipy.fftpack as fft
 from scipy.signal import firwin2, firwin, convolve, lfilter
 from scipy.optimize import minimize
-from matplotlib import pyplot as plt
+#from matplotlib import pyplot as plt
+from ..Display import testplot
+plt = testplot.plot()
 
 import unittest
 import time
