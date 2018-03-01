@@ -12,6 +12,7 @@ try:
     from mayavi import mlab
     ok = True
 except:
+    raise Exception('This plugin requires the installation of Mayavi (http://docs.enthought.com/mayavi/mayavi/installation.html) )')
     print('*** The zoom3D plugin requires the installation of Mayavi (http://docs.enthought.com/mayavi/mayavi/installation.html)')
     ok = False
 

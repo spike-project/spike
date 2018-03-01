@@ -71,7 +71,7 @@ def report(module=None, mode=None):
             print("="*60)
             print("%s : %s"%(k, doc))
         if  mode != "short" or mode is None:
-            print("    implements: "+" ".join(["{}, ".format(c) for c in codes[k]]))
+            print("    implements: "+" ".join(["{}(), ".format(c) for c in codes[k]]))
     if module is None and mode is None:    # add doc if default values
         print("type spike.plugins.report('module_name') for complete documentation on one plugin") 
 
@@ -97,8 +97,8 @@ def loadone(pluginname, pgfile=None, debug=True):
         plugins[pluginname] = m.__doc__
     except:
         print("*** Importing  << %s >> Failed ***"%pluginname)
-        traceback.print_exc()
-        print("*** Continuing ***")
+        #traceback.print_exc()
+        #print("*** Continuing ***")
 
 class PluginTests(unittest.TestCase):
     def test_plugin(self):
