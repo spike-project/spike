@@ -17,7 +17,7 @@ try:
     import pywt
     ok = True
 except:
-#    raise Exception('This plugin requires the installation of the PyWavelet library ( www.pybytes.com/pywavelets )')
+    raise Exception('This plugin requires the installation of the PyWavelet library ( www.pybytes.com/pywavelets )')
     print('*** The wavelet plugin requires the installation of the PyWavelet library ( www.pybytes.com/pywavelets )')
     ok = False
 
