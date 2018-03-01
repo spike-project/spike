@@ -11,22 +11,25 @@ highmass = 2500
 [processing]
 # input file, if not present, will be created from apex above
 infile = __DATA_test__/ubiquitine_2D_000002.msh5
+
 # optionnal intermediate file name
 # be careful, this one can be larger than both in and out files.
 # if interfile absent, the temporary file will created in the designed temp directory and deleted at the end
 #interfile = __DATA_test__/ubiquitine_temp.msh5
 tempdir = __DATA_test__
+
 # output file
 outfile =  __DATA_test__/ubiquitine_2D_000002_mr.msh5
 
 # file can be internally compressed by removing the weakest value lost in the noise
 compress_outfile = True
 # compress_level is the ratio of noise level that will be discarded, up to 3.0 (3 x sigma) it should be ok.
-# the highest compress_level, the better the compression, but expect some distortions
-compress_level = 3.0
+# the higher compress_level, the better the compression, but expect some distortions
+compress_level = 2.0
 
-#zerofilling = -1 -3
-sizemultipliers = 0.5 0.5
+# two methods for determining final size, zerofilling (only int, 0 means no change), sizemultipliers (floats, 1 means no change)
+# zerofilling = 0 -1
+sizemultipliers = 1 0.5
 
 largest_file = 64G      # largest autorized file - in bytes
 
@@ -44,14 +47,15 @@ do_F1 = True
 # if processing fails (core dump !), set this to False
 use_multiprocessing = False
 nb_proc = 2
+
 # do_urqrd : if True, the urQRd denoising is applied in F1
 do_urqrd = False
 # rank used for urqrd - 2 to 3 times the number of lines expected in columns
 # urQRd processing time is proportionnal to this
-urqrd_rank = 100
+#urqrd_rank = 100
 # urQRd iterations improve the signal, but somehow 
 # urQRd processing time is proportionnal to this one as well
-urqrd_iterations = 2
+#urqrd_iterations = 2
 
 # do_f1demodu : if True, the F1 offset correction will be applied
 do_f1demodu = True
@@ -62,6 +66,7 @@ do_f1demodu = True
 
 # do_modulus : if True, a modulus will be applied at the end of the processing
 do_modulus = True
+
 # do_rem_ridge : if True, vertical ridges will be applied
 do_rem_ridge = True
 
