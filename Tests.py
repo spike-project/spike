@@ -49,7 +49,7 @@ RUN = True
 # Add your module here
 mod_util = ("plugins", 'util.dynsubplot', 'util.debug_tools')  #'util.read_msh5', 
 mod_algo = ('Algo.Cadzow', 'Algo.Linpredic', 'Algo.urQRd', 'Algo.sane', 'Algo.SL0', 'Algo.maxent', 'Algo.BC') 
-mod_plugins = ("plugins.Peaks", "plugins.Fitter", "plugins.Bruker_NMR_FT", "plugins.wavelet", "plugins.Peaks")
+mod_plugins = ("plugins.Peaks", "plugins.Fitter", "plugins.Bruker_NMR_FT", "plugins.Peaks")
 mod_file = ("File.BrukerNMR", "File.GifaFile", 'File.HDF5File', 'File.Apex', 'File.csv', 'File.Solarix')
 mod_basicproc = ("NPKData", "FTICR", "Orbitrap", 'NPKConfigParser')
 mod_user = ('processing', )
@@ -133,9 +133,11 @@ def do_Test():
     Gives total time elapsed.
     '''
     import time
+    import numpy
     global list_of_modules
     python = "{0}.{1}.{2}".format(*sys.version_info)
-    subject = "SPIKE tests performed on {1} {3}  running python {0} on host {2}".format(python, *os.uname())
+    npv = numpy.version.version
+    subject = "SPIKE tests performed on {2} {4} running python {0} / numpy {1} on host {3}".format(python, npv, *os.uname())
     to_mail = [msg(subject), "Test program version %s"%__version__]
 
     # add spike prefix
