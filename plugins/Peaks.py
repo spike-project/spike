@@ -228,8 +228,9 @@ class PeakList(list):
     def largest(self):
         "sort the peaklist in decresing order of intensities"
         self.sort(reverse = True, key = lambda p:p.intens)
-    def __getslice__(self,i,j):
-        return type(self)(list.__getslice__(self,i,j))
+    def getitem(self,i,j):
+        print('getitem')
+        return type(self)(list.getitem(self,i,j))
 class Peak1DList(PeakList):
     """
     store a list of 1D peaks
