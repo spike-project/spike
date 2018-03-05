@@ -211,15 +211,15 @@ class FitTests(unittest.TestCase):
         d.fit()
         if scipy.__version__ > '0.17.0':
             # first fit is not full because of constraints on widthes (third peak)
-            self.assertAlmostEqual(d.peaks.chi2, 121.72613405, places=6)
+            self.assertAlmostEqual(d.peaks.chi2, 121.72613405, places=2)
         d.fit()
-        self.assertAlmostEqual(d.peaks.chi2, 15.0445981291, places=6)    # second is complete
+        self.assertAlmostEqual(d.peaks.chi2, 15.0445981291, places=2)    # second is complete
         # other possibility is centroid
         d.pp(threshold=1000)
         d.centroid()
         d.fit(zoom=(140,200))
-        self.assertAlmostEqual(d.peaks.chi2, 12.4304236435, places=6)    # lower because of zoom.
-        self.assertAlmostEqual( sum(list(d.peaks.pos)), 517.74817237246634, places=5)
+        self.assertAlmostEqual(d.peaks.chi2, 12.4304236435, places=1)    # lower because of zoom.
+        self.assertAlmostEqual( sum(list(d.peaks.pos)), 517.74817237246634, places=2)
 
 NPKData_plugin("simulate", simulate)
 NPKData_plugin("fit", fit)

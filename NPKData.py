@@ -6,7 +6,7 @@ NPKData.py
 
 Implement the basic mechanisms for spectral data-sets
 
-Created by Marc-André and Marie-Aude on 2010-03-17.
+First version created by Marc-André and Marie-Aude on 2010-03-17.
 """
 
 from __future__ import print_function, division
@@ -301,12 +301,16 @@ class Axis(object):
         if self.itype == 1:     # complex axis
             a = 2*(a//2)  # int( 2*round( (self.ctoi(zoom[0])-0.5)/2 ) )     # insure real (a%2==0)
             b = 2*(b//2)  # int( 2*round( (self.ctoi(zoom[1])-0.5)/2 ) )
-        left, right = min(a,b), max(a,b)
+        left, right = min(a,b), max(a,b)+1
         if self.itype == 1:     # complex axis
             right += 1  # insure imaginary
-        if not self.check_zoom( (left,right) ):
-            raise NPKError("%d-%d (points) slice probably outside current axis"%(left,right))
-        return (left,right)
+        l = max(0,left)
+        l = min(self.size-1,l)
+        r = max(1,left)
+        r = min(self.size, right)
+        if (l,r) != (left,right):
+            print("%d-%d (points) slice probably outside current axis, recast to %d-%d"%(left,right,l,r))
+        return (l,r)
             
     def check_zoom(self, zoom):
         """
@@ -427,7 +431,7 @@ class NMRAxis(Axis):
             (self.frequency, self.cpxsize, self.itop(self.size-1), self.itoh(self.size-1), self.itop(0), self.itoh(0))
 
     #-------------------------------------------------------------------------------
-    def extract(self, zoom):
+    def __extract(self, zoom):
         """
         redefines the axis parameters so that the new axis is extracted for the points [start:end] 
         
@@ -436,6 +440,20 @@ class NMRAxis(Axis):
         start, end = self.getslice(zoom)
         self.specwidth = (self.specwidth * (end - start)) /self.size
         self.offset = self.offset + self.specwidth * (self.size - end)/self.size
+        self.size = end-start
+        return (start, end)
+    #-------------------------------------------------------------------------------
+    def extract(self, zoom):
+        """
+        redefines the axis parameters so that the new axis is extracted for the points [start:end] 
+        
+        zoom is given in current unit - does not modify the Data, only the axis definition
+        """
+        start, end = self.getslice(zoom)
+        new_specwidth = self.itoh(start+1)-self.itoh(end)  # check itoh() for the +1
+        new_offset = self.itoh(end-1)
+        self.specwidth = new_specwidth
+        self.offset = new_offset
         self.size = end-start
         return (start, end)
     #-------------------------------------------------------------------------------
@@ -489,7 +507,8 @@ class NMRAxis(Axis):
     def itoh(self,value):
         """
         returns Hz value (h) from point value (i)
-        """        
+        """
+        # N points define N-1 intervals ! hence the -1 in itoh() and htoi()
         hz_value =   (self.size-value-1)*self.specwidth / (self.size-1) + self.offset
         return hz_value
     def freq_axis(self):
@@ -1089,7 +1108,8 @@ class NPKData(object):
         limits = flatten(args)
         print ('extract',limits)
         if len(limits) != 2*self.dim:
-            raise NPKError(msg="wrong arguments for extract :"+str(args), data=self)
+            raise NPKError("slice should be defined as coordinate pair (left,right) in axis' current unit : " + " - ".join(self.unit), data=self)
+#            raise NPKError(msg="wrong number of arguments for extract, should be 2 per dimension", data=self)
         if self.dim == 1:
             self._extract1d(limits)
         elif self.dim == 2:
@@ -1100,9 +1120,7 @@ class NPKData(object):
         return self
     #---------------------------------------------------------------------------
     def _extract1d(self, zoom):
-        """realize the extract in 1D,
-            unit=True means -interpret zoom coord in index-
-                 False means -interpret zoom coord in current unit-
+        """performs the extract in 1D,
         """
         self.check1D()
         x1, y1 = self.axis1.extract(zoom)

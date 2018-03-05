@@ -72,20 +72,18 @@ class FTMSAxis(NPKData.Axis):
         redefines the axis parameters so that the new axe is extracted for the points [start:end]
         zoom is defined in current axis unit
         """
-        #   before index     leftpoint----------------------------size
-        #   before hz         off-------------------------------off+SW
+        #   before index       leftpoint----------------------------size
+        #   before hz     off---------------------------------------off+SW
         #
-        #   after                 start---------------end
-        #                         off'---------------off'+SW'
+        #   after                    start---------------end
+        #   index                    leftpoint'----------size'
+        #   Hz             off---------------------------off+SW'
         start, end = self.getslice(zoom)
-        nsize = int(end)-int(start)+1
-        nsw = self.itoh(end)-self.itoh(start)
-        noff = self.itoh(start)
-        self.specwidth = nsw
-        self.offsetfreq = noff
-        self.size = nsize
+        new_specwidth = self.itoh(end-1) - self.offsetfreq   # check itoh() for the -1
+        self.specwidth = new_specwidth
+        self.size = end-start
         self.left_point += start
-        return start, end
+        return (start, end)
 
     # The 2 htomz() and mztoh() are used to build all other transfoms
     # they are different in Orbitrap and FTICR and should be redefined there

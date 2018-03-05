@@ -4,7 +4,7 @@
 """
     Utility to import and export data in text and csv files
 
-    all functions compress transparently if the filenales end with .gz
+    all functions compress transparently if the filenames end with .gz
     Marc-André adapted from some Lionel code
 """
 
@@ -14,20 +14,24 @@ __author__ = "Marc André Delsuc"
 __date__ = "april 2014"
 
 import numpy as np
+from numpy.compat import asbytes, asstr
 import unittest
 import os
 import gzip
 
-def save(data,filename, delimiter=',', fmt='%.9g'):
-    "save 1D data in txt, single column, no unit - with attributes as pseudo comments "
+def do_open(filename,flag):
+    "opens regular and gz files"
     if filename.endswith('.gz'):
-        do_open = gzip.open
+        return gzip.open(filename,flag)
     else:
-        do_open = open
-    with do_open(filename, 'w') as F:
-        F.write("# %s \n"%data.axis1.report())  # first description
+        return open(filename,flag)
+
+def save(data,filename, delimiter=',', fmt='%.18E'):
+    "save 1D data in txt, single column, no unit - with attributes as pseudo comments "
+    with do_open(filename, 'wb') as F:
+        F.write(asbytes("# %s \n"%data.axis1.report()))  # first description
         for att in data.axis1.attributes:       # then attributes
-            F.write("#$%s%s%s\n"%(att, delimiter, getattr(data.axis1,att)))
+            F.write(asbytes("#$%s%s%s\n"%(att, delimiter, getattr(data.axis1,att))))
         np.savetxt(F, data.get_buffer(), delimiter=delimiter, fmt=fmt)
 
 def load(filename, column=0, delimiter=','):
@@ -41,15 +45,12 @@ def load(filename, column=0, delimiter=','):
     """
     buf = []
     att = {}
-    if filename.endswith('.gz'):
-        do_open = gzip.open
-    else:
-        do_open = open
     with do_open(filename, 'r') as F:
-        for l in F:
-            fields = l.split(delimiter)
-            if l.startswith('#'):    # first comments
-                if l.startswith('#$'):  #  #$key value  for parameters
+        for ll in F:
+            l = asbytes(ll)
+            fields = l.split(asbytes(delimiter))
+            if l.startswith(asbytes('#')):    # first comments
+                if l.startswith(asbytes('#$')):  #  #$key value  for parameters
                     k = fields[0][2:]
                     v = fields[1].rstrip()
                     try:
@@ -62,21 +63,17 @@ def load(filename, column=0, delimiter=','):
                 buf.append( float( fields[column] ) )
     return np.array(buf), att
 
-def save_unit(data, filename, delimiter=',', fmt='%.9g'):
+def save_unit(data, filename, delimiter=',', fmt='%.18E'):
     """save 1D data in csv,
     in 2 columns, with attributes as pseudo comments
     """
     step = data.axis1.itype+1
     ax = data.axis1.unit_axis()[::step]
     y = data.get_buffer()
-    if filename.endswith('.gz'):
-        do_open = gzip.open
-    else:
-        do_open = open
-    with do_open(filename, 'w') as F:
-        F.write("# %s \n"%data.axis1.report())
+    with do_open(filename, 'wb') as F:
+        F.write(asbytes("# %s \n"%data.axis1.report()))
         for att in data.axis1.attributes:       # then attributes
-            F.write("#$%s%s%s\n"%(att, delimiter, getattr(data.axis1,att)))
+            F.write(asbytes("#$%s%s%s\n"%(att, delimiter, getattr(data.axis1,att))))
         np.savetxt(F, np.c_[ax,y], fmt=fmt, delimiter=delimiter)
     
 def Import_1D(filename, column=0, delimiter=','):
@@ -98,7 +95,8 @@ def Import_1D(filename, column=0, delimiter=','):
         d = FTICRData(buffer=buf)
     if "Orbitrap" in att.keys():
         d = OrbiData(buffer=buf)
-    for k,v in att.items():
+    for kk,v in att.items():
+        k = asstr(kk)
         if k in d.axis1.attributes:
             setattr(d.axis1, k, v)
         else:
@@ -133,6 +131,6 @@ class csvTests(unittest.TestCase):
         rr = Import_1D(filename("test2.csv.gz"),column=1)
         self.assertAlmostEqual((r-rr).get_buffer().max(), 0.0)
         self.assertEqual(r.axis1.currentunit, rr.axis1.currentunit)
-#        os.unlink(filename("test2.csv.gz"))
+        os.unlink(filename("test2.csv.gz"))
 if __name__ == '__main__':
     unittest.main()
