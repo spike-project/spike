@@ -9,16 +9,16 @@ This program makes the processing of a 2D-FTICR dataset
 First version by Marc-Andre on 2011-09-23.
 """
 
-from __future__ import print_function
+from __future__ import print_function, division
 import sys, os, time
 import unittest
 import numpy as np
 from numpy import fft as npfft
 import tables
 from scipy.signal import decimate, lfilter, cheby1, medfilt, medfilt2d
-import itertools
 import multiprocessing as mp
 import pickle
+import functools
 
 from .NPKConfigParser import NPKConfigParser
 from .FTICR import *
@@ -28,13 +28,19 @@ Import_2D = {'Apex': Import_2D_Apex,'Solarix': Import_2D_Solarix }
 from .NPKData import copyaxes
 from .File.HDF5File import HDF5File, determine_chunkshape
 from .util import progressbar as pg
+from .util import widgets
 from .util import mpiutil as mpiutil
 from .NPKData import as_cpx
 from .util.simple_logger2 import TeeLogger
 
-debug = 1   # debugging level, 0 means no debugging
+debug = 0   # debugging level, 0 means no debugging
 interfproc = False
 
+if sys.version_info[0] < 3:
+    from itertools import imap
+else:
+    imap = map
+    xrange = range
 
 '''
 Processing for performing urQRd  on 2D FTICR datasets.
@@ -71,9 +77,12 @@ def _unpickle_method(func_name, obj, cls):
         else:
             break
     return func.__get__(obj, cls)
-import copy_reg
+try:
+    import copy_reg as copyreg
+except:
+    import copyreg
 import types
-copy_reg.pickle(types.MethodType, _pickle_method, _unpickle_method)
+copyreg.pickle(types.MethodType, _pickle_method, _unpickle_method)
 # end of the trick
 #####################################################
 
@@ -115,7 +124,7 @@ def pred_sizes_zf(d0, zf = 0, sizemin = SIZEMIN):
     r = []      # will build into r
     for i in range(d0.dim):
         r.append( dopow2(d0.axes(i+1).size, zf, sizemin)) # apply l() for each axes
-    if debug > 0: print(r, reduce(lambda x, y:x*y, r)/1024/1024, 'Mpoint')     # report if debug
+    if debug > 0: print(r, functools.reduce(lambda x, y:x*y, r)//1024//1024, 'Mpoint')     # report if debug
     return tuple(r) 
    
 def pred_sizes(d0, szmult = (1,1), sizemin = SIZEMIN):
@@ -138,7 +147,7 @@ def pred_sizes(d0, szmult = (1,1), sizemin = SIZEMIN):
     r = []      # will build into r
     for i in range(d0.dim):
         r.append( dosize(d0.axes(i+1).size, szmult[i], sizemin)) # apply l() for each axes
-    if debug > 0: print(r, reduce(lambda x, y:x*y, r)/1024/1024, 'Mpoint')     # report if debug
+    if debug > 0: print(r, functools.reduce(lambda x, y:x*y, r)//1024//1024, 'Mpoint')     # report if debug
     return tuple(r) 
 
 def comp_sizes(d0,  zflist=None, szmlist=None, largest = LARGESTDATA, sizemin = SIZEMIN, vignette = True):
@@ -172,7 +181,7 @@ def comp_sizes(d0,  zflist=None, szmlist=None, largest = LARGESTDATA, sizemin = 
             szres.append( pred_sizes_zf(d0, zf) )
     for (si1,si2) in szres:     # then verify
         while si1*si2 > largest:    # in size
-            si2 /= 2
+            si2 //= 2
             print("Warning, reducing SI2 to %s"%si2)
         sz = (si1,si2)
         if not sz in sizes:     # insure this size is not here yet ! 
@@ -181,9 +190,9 @@ def comp_sizes(d0,  zflist=None, szmlist=None, largest = LARGESTDATA, sizemin = 
 #        sz = (sizemin, sizemin)
         sz1,sz2 = sizes[-1]     # takes last entry
         while sz1 >= sizemin:
-            sz1 /= 2
+            sz1 //= 2
         while sz2 >= sizemin:
-            sz2 /= 2
+            sz2 //= 2
         if not (sz1,sz2) in sizes:
             sizes.append( (2*sz1, 2*sz2) )
     if debug>0: print("sizes to process", sizes)
@@ -233,6 +242,14 @@ def apod(d, size, axis = 0):
     else:
         do_apod(axis)
     return d
+def hmclear(d):
+    """
+    given a 1D spectrum d, set to zeros all points betwen freq 0 and highmass
+    helps compression
+    """
+    ihm = int(d.axis1.mztoi(d.axis1.highmass))
+    d.buffer[:ihm] = 0.0
+    return d
 
 def iterargF2(dinp, size, scan):
     "an iterator used by the F2 processing to allow multiprocessing or MPI set-up"
@@ -251,10 +268,8 @@ def do_proc_F2mp(dinp, doutp, parameter):
     "do the F2 processing in MP"    
     size = doutp.axis2.size
     scan = min(dinp.size1, doutp.size1)      # min() because no need to do extra work !
-    widgets = ['Processing F2: ', pg.Percentage(), ' ', pg.Bar(marker='-',left='[',right=']'), pg.ETA()]
-    pbar= pg.ProgressBar(widgets=widgets, maxval=scan) #, fd=sys.stdout)
-    print("############  in do_proc_F2 #########")
-    print(doutp.report())
+    F2widgets = ['Processing F2: ', widgets.Percentage(), ' ', widgets.Bar(marker='-',left='[',right=']'), widgets.ETA()]
+    pbar= pg.ProgressBar(widgets=F2widgets, maxval=scan).start() #, fd=sys.stdout)
     xarg = iterargF2(dinp, size, scan )      # construct iterator for main loop
     if parameter.mp:  # means multiprocessing //
         res = Pool.imap(_do_proc_F2, xarg)
@@ -267,7 +282,7 @@ def do_proc_F2mp(dinp, doutp, parameter):
             doutp.set_row(i,r)
             pbar.update(i+1)
     else:       # plain non //
-        res = itertools.imap(_do_proc_F2, xarg)
+        res = imap(_do_proc_F2, xarg)
         for i,r in enumerate(res):
             doutp.set_row(i,r)
             pbar.update(i+1)
@@ -278,8 +293,8 @@ def do_proc_F2(dinp, doutp, parameter):
     size = doutp.axis2.size
     scan = min(dinp.size1, doutp.size1)      # min() because no need to do extra work !
     #scan = dinp.size1 # when was it done? 
-    widgets = ['Processing F2: ', pg.Percentage(), ' ', pg.Bar(marker='-',left='[',right=']'), pg.ETA()]
-    pbar= pg.ProgressBar(widgets=widgets, maxval=scan) #, fd=sys.stdout)
+    F2widgets = ['Processing F2: ', widgets.Percentage(), ' ', widgets.Bar(marker='-',left='[',right=']'), widgets.ETA()]
+    pbar= pg.ProgressBar(widgets=F2widgets, maxval=scan).start() #, fd=sys.stdout)
     print("############  in do_proc_F2 #########")
     print("dinp.axis1.itype ", dinp.axis1.itype) 
     print("dinp.axis2.itype ", dinp.axis2.itype)
@@ -296,6 +311,8 @@ def do_proc_F2(dinp, doutp, parameter):
         r = dinp.row(i)
         apod(r, size)
         r.rfft()    
+        if parameter.compress_outfile:
+            r = hmclear(r)
         doutp.set_row(i,r)
         pbar.update(i+1)
         if interfproc:
@@ -309,11 +326,9 @@ def do_proc_F1(dinp, doutp, parameter):
     "scan all cols of dinp, apply proc() and store into doutp"
     size = doutp.axis1.size
     scan = min(dinp.size2, doutp.size2)      # min() because no need to do extra work !
-    widgets = ['Processing F1: ', pg.Percentage(), ' ', pg.Bar(marker = '-',left='[',right=']'), pg.ETA()]
-    pbar= pg.ProgressBar(widgets = widgets, maxval = scan) #, fd=sys.stdout)
+    F1widgets = ['Processing F1: ', widgets.Percentage(), ' ', widgets.Bar(marker = '-',left='[',right=']'), widgets.ETA()]
+    pbar= pg.ProgressBar(widgets = F1widgets, maxval = scan).start() #, fd=sys.stdout)
     for i in xrange(scan):
-        # if i%(scan/16) == 0:                    # print avancement
-        #     print "proc col %d / %d"%(i,scan)
         c = dinp.col(i)
         apod(c, size)
         c.rfft()    
@@ -329,6 +344,7 @@ def do_proc_F1(dinp, doutp, parameter):
         if parameter.compress_outfile :
             threshold = parameter.compress_level * b.std()
             c.zeroing(threshold)
+            c = hmclear(c)
         doutp.set_col(i,c)
         pbar.update(i)
     pbar.finish()
@@ -337,12 +353,10 @@ def do_proc_F1_modu(dinp, doutp, parameter):
     "as do_proc_F1, but applies hypercomplex modulus() at the end"
     size = 2*doutp.axis1.size
     scan =  min(dinp.size2, doutp.size2)
-    widgets = ['Processing F1 modu: ', pg.Percentage(), ' ', pg.Bar(marker = '-',left = '[',right=']'), pg.ETA()]
-    pbar = pg.ProgressBar(widgets=widgets, maxval=scan) #, fd=sys.stdout)
+    F1widgets = ['Processing F1 modu: ', widgets.Percentage(), ' ', widgets.Bar(marker = '-',left = '[',right=']'), widgets.ETA()]
+    pbar = pg.ProgressBar(widgets=F1widgets, maxval=scan).start() #, fd=sys.stdout)
     d = FTICRData( buffer = np.zeros((2*doutp.size1,2)) )     # 2 columns - used for hypercomplex modulus 
     for i in xrange( scan):
-        # if i%(scan/16) == 0:                    # print avancement
-        #     print "proc col %d / %d"%(i,scan)
         d.chsize(2*doutp.size1, 2)     # 2 columns - used for hypercomplex modulus 
         for off in (0,1):
             p = dinp.col(2*i+off)
@@ -366,6 +380,7 @@ def do_proc_F1_modu(dinp, doutp, parameter):
         if parameter.compress_outfile :
             threshold = parameter.compress_level * b.std()
             c.zeroing(threshold)
+            c = hmclear(c)
         doutp.set_col(i,c)
         pbar.update(i+1)
     pbar.finish()
@@ -373,16 +388,31 @@ def do_proc_F1_modu(dinp, doutp, parameter):
 def _do_proc_F1_demodu_modu(data):
     "given a pair of columns, return the processed demodued FTed modulused column"
     c0, c1, shift, size, parameter = data
+    if c0.buffer.max() == 0 and c1.buffer.max() == 0:     # empty data - short-cut !
+        return np.zeros(size//2)
     d = FTICRData(buffer = np.zeros((c0.size1, 2)))     # 2 columns - used for hypercomplex modulus 
     d.set_col(0,  c0 )
     d.set_col(1,  c1 )
     d.axis1.itype = 0
     d.axis2.itype = 1
+    #  if NUS - load sampling and fill with zeros
+    if parameter.samplingfile is not None:      # NUS ?
+        d.axis1.load_sampling(parameter.samplingfile)   # load it
+        samp = d.axis1.get_sampling() # and store it aside
+        if parameter.samplingfile_fake:    # samplingfile_fake allows to fake NUS on complete data-sets
+            d.set_buffer(d.get_buffer()[samp])     # throw points
+        d.zf()                          # add missing points by padding with zeros
     # perform freq_f1demodu demodulation
     d.f1demodu(shift)
-    # clean thru urqrd
+    # clean thru urqrd or sane
     if parameter.do_urqrd:
         d.urqrd(k=parameter.urqrd_rank, iterations=parameter.urqrd_iterations, axis=1)
+    if parameter.do_sane:
+        d.sane(rank=parameter.sane_rank, iterations=parameter.sane_iterations, axis=1)
+    if parameter.samplingfile is not None:      # NUS ?
+        if parameter.do_pgsane:
+            d.chsize(size, d.size2)
+            d.pg_sane(iterations=parameter.pgsane_iterations, rank=parameter.pgsane_rank, sampling=samp, Lthresh=parameter.pgsane_threshold, axis=1, size=size)
 
     # finally do FT
     apod(d, size, axis = 1)
@@ -415,8 +445,8 @@ def do_proc_F1_demodu_modu(dinp, doutp, parameter):
     "as do_proc_F1, but applies demodu and then complex modulus() at the end"
     size = 2*doutp.axis1.size
     scan =  min(dinp.size2, doutp.size2)
-    widgets = ['Processing F1 demodu-modulus: ', pg.Percentage(), ' ', pg.Bar(marker='-',left = '[',right = ']'), pg.ETA()]
-    pbar= pg.ProgressBar(widgets = widgets, maxval = scan) #, fd=sys.stdout)
+    F1widgets = ['Processing F1 demodu-modulus: ', widgets.Percentage(), ' ', widgets.Bar(marker='-',left = '[',right = ']'), widgets.ETA()]
+    pbar= pg.ProgressBar(widgets = F1widgets, maxval = scan).start() #, fd=sys.stdout)
 
     if parameter.freq_f1demodu == 0:   # means not given in .mscf file -> compute from highmass
         hshift = dinp.axis2.lowfreq   # frequency shift in points, computed from lowfreq of excitation pulse - assumiing the pulse was from high to low !
@@ -424,6 +454,15 @@ def do_proc_F1_demodu_modu(dinp, doutp, parameter):
         hshift = parameter.freq_f1demodu
     shift = doutp.axis1.htoi(hshift)
     rot = dinp.axis1.htoi( hshift )       # rot correction is applied in the starting space
+    # sampling
+    if parameter.samplingfile is not None:                      #    NUS 
+        dinp.axis1.load_sampling(parameter.samplingfile)       # load sampling file, and compute rot in non-NUS space
+        cdinp = dinp.col(0)
+        cdinp.zf()
+        rot = cdinp.axis1.htoi( hshift )
+#        print( "11111111", shift, rot)
+        del(cdinp)
+    if debug>0: print("LEFT_POINT", shift)
     doutp.axis1.offsetfreq = hshift
 
     xarg = iterarg(dinp, rot, size, parameter)      # construct iterator for main loop
@@ -450,7 +489,7 @@ def do_proc_F1_demodu_modu(dinp, doutp, parameter):
             pickle.dump(pb, output) # for Qt progressbar
             output.close()
     else:       # plain non //
-        res = itertools.imap(_do_proc_F1_demodu_modu, xarg)
+        res = imap(_do_proc_F1_demodu_modu, xarg)
         for i,buf in enumerate(res):
             doutp.buffer[:,i] = buf
 #            doutp.set_col(i,p)
@@ -472,10 +511,22 @@ def do_process2D(dinp, datatemp, doutp, parameter):
     # in F2
     t00 = time.time()
     if parameter.do_F2:
+        print("######### processing in F2")
+        print("""------ From:
+%s
+------ To:
+%s
+"""%(dinp.report(), datatemp.report()) )
         do_proc_F2mp(dinp, datatemp, parameter)
         print_time(time.time()-t00, "F2 processing time")
     # in F1
     if parameter.do_F1:
+        print("######### processing in F1")
+        print("""------ From
+%s
+------ To:
+%s
+"""%(datatemp.report(), doutp.report()) )
         t0 = time.time()
         if parameter.do_f1demodu and parameter.do_modulus:
             do_proc_F1_demodu_modu(datatemp, doutp, parameter)
@@ -495,11 +546,15 @@ def downsample2D(data, outp, n1, n2, compress=False, compress_level=3.0):
     - set to zero all entries below 3*sigma if compress is True
     ** Not fully tested on non powers of 2 **
     """
+    if debug>0: print("in downsample2D : %s x %s"%(n1,n2))
     for i in xrange(0, data.size1, n1):
-        temp = np.zeros(data.size2/n2)
+        temp = np.zeros(data.size2//n2)
         for j in xrange(n1):
             if n2>1:
-                yy = decimate(data.row(i+j).buffer, n2, ftype = "fir")   # filter along F2
+                try:
+                    yy = decimate(data.row(i+j).buffer, int(n2), ftype = "fir", zero_phase=True)   # filter along F2
+                except TypeError:  # The zero_phase keyword was added in scipy 0.18.0.
+                    yy = decimate(data.row(i+j).buffer, int(n2), ftype = "fir")   # filter along F2
             else:
                 yy = data.row(i+j).buffer
             temp += yy
@@ -510,7 +565,7 @@ def downsample2D(data, outp, n1, n2, compress=False, compress_level=3.0):
                 b = b[ b-b.mean()<3*b.std() ]
             threshold = compress_level * b.std()    # compress_level * b.std()  is 3*sigma by default
             temp[abs(temp)<threshold] = 0.0
-        outp.buffer[i/n1,:] = temp
+        outp.buffer[i//n1,:] = temp
     copyaxes(data, outp)
     outp.adapt_size()
     return outp
@@ -535,7 +590,14 @@ class Proc_Parameters(object):
         self.do_f1demodu = True
         self.do_urqrd = False
         self.urqrd_rank = 20
-        self.urqrd_iterations = 1
+        self.urqrd_iterations = 3
+        self.do_sane = False
+        self.sane_rank = 20
+        self.sane_iterations = 1
+        self.do_pgsane = False
+        self.pgsane_rank = 10
+        self.pgsane_iterations = 10
+        self.pgsane_threshold = 2.0   # this was previously hard-coded to 2.0
         self.zflist = None
         self.szmlist = None
         self.mp = False
@@ -548,6 +610,8 @@ class Proc_Parameters(object):
         self.outfile = None
         self.compress_outfile = True
         self.compress_level = 1.0
+        self.samplingfile = None
+        self.samplingfile_fake = False
         self.tempdir = "/tmp"
         self.largest = LARGESTDATA
         self.freq_f1demodu = 0.0
@@ -565,14 +629,23 @@ class Proc_Parameters(object):
         self.compress_outfile = cp.getboolean( "processing", "compress_outfile", str(self.compress_outfile))
         self.compress_level = cp.getfloat( "processing", "compress_level", self.compress_level)
         self.tempdir = cp.get( "processing", "tempdir", ".")                            # dir for temporary file
+        self.samplingfile = cp.get( "processing", "samplingfile")
+        self.samplingfile_fake = cp.getboolean( "processing", "samplingfile_fake", str(self.samplingfile_fake))
         self.largest = cp.getint( "processing", "largest_file", 8*LARGESTDATA)            # largest allowed file
-        self.largest = self.largest/8                                                   # in byte in the configfile, internally in word
+        self.largest = self.largest//8                                                   # in byte in the configfile, internally in word
         self.do_modulus = cp.getboolean( "processing", "do_modulus", str(self.do_modulus))   # do_modulus
         self.do_f1demodu = cp.getboolean( "processing", "do_f1demodu", str(self.do_f1demodu))       # do_f1demodu
         self.freq_f1demodu = cp.getfloat( "processing", "freq_f1demodu")        # freq for do_f1demodu
         self.do_urqrd = cp.getboolean( "processing", "do_urqrd", str(self.do_urqrd))    # do_urqrd
         self.urqrd_rank = cp.getint( "processing", "urqrd_rank", self.urqrd_rank)       # do_urqrd
         self.urqrd_iterations = cp.getint( "processing", "urqrd_iterations", self.urqrd_iterations)       #
+        self.do_sane = cp.getboolean( "processing", "do_sane", str(self.do_sane))
+        self.sane_rank = cp.getint( "processing", "sane_rank", self.sane_rank)
+        self.sane_iterations = cp.getint( "processing", "sane_iterations", self.sane_iterations)
+        self.do_pgsane = cp.getboolean( "processing", "do_pgsane", str(self.do_pgsane))    # do_pgsane
+        self.pgsane_rank = cp.getint( "processing", "pgsane_rank", self.pgsane_rank)       # do_pgsane
+        self.pgsane_iterations = cp.getint( "processing", "pgsane_iterations", self.pgsane_iterations)       # do_pgsane
+        self.pgsane_threshold = cp.getfloat( "processing", "pgsane_threshold", self.pgsane_threshold)       # do_pgsane
         self.do_rem_ridge = cp.getboolean( "processing", "do_rem_ridge", str(self.do_rem_ridge))
         self.mp = cp.getboolean( "processing", "use_multiprocessing", str(self.mp))
         self.nproc = cp.getint( "processing", "nb_proc", self.nproc)
@@ -589,7 +662,7 @@ class Proc_Parameters(object):
         szmlist =  cp.get( "processing", "sizemultipliers", self.szmlist)                          #  get szm levels
         if szmlist:
             self.szmlist = [float(i) for i in szmlist.split()]                          # got a string, change in a list of values
-            print(self.szmlist)
+            if debug>0: print("szmlist:", self.szmlist)
         else:
             self.szmlist = None
         # verifications
@@ -604,6 +677,14 @@ class Proc_Parameters(object):
         for f1, f2 in ((self.infile, self.interfile), (self.interfile,self.outfile), (self.infile, self.outfile)):
             if f1 == f2:
                 raise Exception("input and output files have the same name : %s - this is not possible"%f1)
+        if self.do_sane and self.do_urqrd:
+            raise Exception("Sane and urQRd are self excluding")
+        if self.samplingfile and self.do_urqrd:
+            raise Exception("urQRd cannot be applied on a NUS data-set")
+        if self.samplingfile and self.do_sane:
+            raise Exception("sane cannot be applied on a NUS data-set - use pg_sane")
+        if not self.samplingfile and self.do_pgsane:
+            raise Exception("PG_Sane can only be applied on a NUS data-set")
         if (self.zflist!=None) and (self.szmlist!=None):
             raise Exception("Please define only one value : zerofilling or sizes multipliers")
         if self.mp and mpiutil.MPI_size > 1:
@@ -702,7 +783,14 @@ def main(argv = None):
     processing.py [ configuration_file.mscf ]
     if no argument is given, the standard file : process.mscf is used.
     """
-    logflux = TeeLogger(erase=True)
+    import datetime as dt
+    stdate = dt.datetime.strftime(dt.datetime.now(),"%Y-%m-%d_%Hh%M")
+    logflux = TeeLogger(erase=True, log_name="processing_%s.log"%stdate)
+    print("Processing 2D FT-MS data -", dt.datetime.strftime(dt.datetime.now(),"%Y-%h-%d %Hh%M"))
+    print("""
+=============================
+    reading configuration
+=============================""")
     global Pool     # This global will hold the multiprocessing.Pool if needed
     Pool = None
     t0 = time.time()
@@ -739,6 +827,10 @@ def main(argv = None):
     ######## determine files and load inputfile
     ### input file either raw to be imported or already imported
     imported = False
+    print("""
+=============================
+    preparating files
+=============================""")
     if not os.path.exists(param.infile):
         print("importing %s into %s"%(".", param.infile))  #To be corrected MAD
         d0 = Import_2D[param.format](param.apex, param.infile)
@@ -767,9 +859,9 @@ def main(argv = None):
         d0 = load_input(param.infile)
     d0.check2D()    # raise error if not a 2D
     try:
-	d0.params
+        d0.params
     except:
-	d0.params = {}  # create empty dummy params block
+        d0.params = {}  # create empty dummy params block
     if imported:
         print_time( time.time()-t0, "Import")
     else:
@@ -831,7 +923,7 @@ def main(argv = None):
     ###### Do processing
     print("""
 =============================
-processing FT
+    FT processing
 =============================""")
     t0 = time.time()
     do_process2D(d0, datatemp, d1, param) # d0 original, d1 processed
@@ -852,6 +944,10 @@ processing FT
     logflux.log.flush()     # flush logfile
     ### downsample result
     if param.do_F1:
+        print("""
+=============================
+    downsampling
+=============================""")
         downprevious = d1       # used to downsample by step   downprevious -downto-> down
         t0 = time.time()
         for (i, (sizeF1, sizeF2)) in enumerate(allsizes):
@@ -859,12 +955,8 @@ processing FT
                 print("downsampling not available for level %d : %d x %d -> %d x %d"%((i+1), downprevious.size1, downprevious.size2, sizeF1, sizeF2))
                 continue
             zflevel = "level %d"%(i+1)
-            print("""
-================
-downsampling %s
-================""" % zflevel)
             group = 'resol%d'%(i+2)     # +2 because we poped the first value
-            if debug > 0: print("downsampling", group, (sizeF1, sizeF2))
+            print("downsampling %s - %s  (%d x %d)" % (zflevel, group, sizeF1, sizeF2) )
             down = FTICRData( dim = 2 )   # create dummy 2D
             copyaxes(d1, down)        # copy axes from d1 to down
             down.axis1.size = sizeF1
@@ -872,7 +964,7 @@ downsampling %s
             #create_branch(hfar, group, d1)
             hfar.create_from_template(down, group)
             if debug > 0: print(down)
-            downsample2D(downprevious, down, int(downprevious.size1/sizeF1), int(downprevious.size2/sizeF2), compress=param.compress_outfile)
+            downsample2D(downprevious, down, downprevious.size1//sizeF1, downprevious.size2//sizeF2, compress=param.compress_outfile)
             downprevious = down
         print_time(time.time()-t0, "Downsampling time")
     print("== Processing finished  ==")
@@ -880,15 +972,17 @@ downsampling %s
     logflux.log.flush()     # flush logfile
     ### clean and close output files
     # copy attached to outputfile
-    print("==  cleaning and closing  ==")
-
+    print("""
+=============================
+    cleaning and closing
+=============================""")
     # copy files and parameters
     hfar.store_internal_file(filename=configfile, h5name="config.mscf", where='/attached')  # first mscf
     try:
         hfar.store_internal_object( h5name='params', obj=d0.hdf5file.retrieve_object(h5name='params') )
     except:
-	print("Not params copied to Output file") 
-    print("parameters and configuration file file copied")
+        print("No params copied to Output file") 
+    print("parameters and configuration file copied")
 
     for h5name in ["apexAcquisition.method", "ExciteSweep"]:    # then parameter files
         try:
@@ -904,7 +998,7 @@ downsampling %s
     # then logfile
     logflux.log.flush()     # flush logfile
     hfar.store_internal_file(filename=logflux.log_name, h5name="processing.log", where='/attached')
-    print("log file file copied")
+    print("log file copied")
     # and close
     d0.hdf5file.close()
     hfar.close()

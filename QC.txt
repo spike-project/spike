@@ -2,130 +2,144 @@
 -------------------------------------------------------
   Note/10   File                          Error Warning
 -------------------------------------------------------
-   9.00  plugins/fastclean.py                        0
-   8.18  Display/testplot.py                         0
-   7.85  File/csv.py                                 1
-   7.83  Algo/urQRd_util/pickle_instance.py          0
-   7.61  util/mpiutil.py                             3
-   7.14  plugins/test.py                             0
-   7.05  QC.py                                       5
-   7.02  File/GifaFile.py                           24
-   6.94  util/counter.py                             3
-   6.85  visu2D.py                                   2
-   6.78  util/progressbar.py                   1     7 
-   6.67  Visu/old/fticrvisuUi.py                    43
-   6.50  util/near_prime.py                          0
-   6.47  plugins/rem_ridge.py                        2
-   6.36  NPKError.py                                 1
-   6.28  FTMS.py                                     5
-   6.25  File/Thermo.py                              4
-   6.00  Display/__init__.py                         0
-   6.00  Visu/init/__init__.py                       0
-   6.00  Visu/single/__init__.py                     0
-   6.00  File/__init__.py                            0
-   6.00  util/__init__.py                            0
-   6.00  Algo/urQRd_util/versions.py                 1
-   6.00  Visu/__init__.py                            0
-   6.00  Algo/__init__.py                            0
-   5.93  plugins/bcorr.py                      2     1 
-   5.88  Algo/CS_transformations.py                  1
-   5.69  FTICR.py                                    6
-   5.64  Visu/init/old/fticrvisuUiold.py            38
-   5.61  util/ConfigForm.py                    2    28 
-   5.39  Visu/init/fticrvisuUi.py                   66
-   5.24  util/simple_logger2.py                      3
-   5.13  doc/insert_hide.py                          4
-   5.00  util/debug/MPI_test_attr.py                 5
+   8.95  plugins/fastclean.py                        0
+   8.32  util/progressbar.py                        12
+   8.00  Display/testplot.py                         0
+   7.74  util/widgets.py                            12
+   7.73  Algo/urQRd_util/pickle_instance.py          0
+   7.59  util/mpiutil.py                             3
+   7.57  plugins/Bruker_NMR_FT.py                    3
+   7.17  QC.py                                       1
+   6.96  File/GifaFile.py                           23
+   6.88  util/counter.py                             3
+   6.67  plugins/test.py                             0
+   6.59  visu2D.py                                   2
+   6.49  plugins/Linear_prediction.py                2
+   6.43  Algo/urQRd_util/versions.py                 0
+   6.40  Visu/old/fticrvisuUi.py               1    43 
+   6.37  plugins/FTMS_calib.py                       6
+   6.32  util/near_prime.py                          0
+   6.16  plugins/PALMA.py                            6
+   6.04  File/csv.py                           1     0 
+   6.00  NPKError.py                                 1
+   5.85  util/ConfigForm.py                         26
+   5.84  Algo/CS_transformations.py                  1
+   5.82  plugins/bcorr.py                            2
+   5.76  File/Thermo.py                              2
+   5.69  FTMS.py                               2     4 
+   5.56  FTICR.py                                    6
+   5.50  plugins/rem_ridge.py                        3
+   5.50  plugins/__init__.py                         3
+   5.45  File/BrukerSMX.py                           6
+   5.33  __init__.py                                 1
+   5.32  Visu/init/fticrvisuUi.py                   67
+   5.00  Display/__init__.py                         0
+   5.00  Visu/init/__init__.py                       0
+   5.00  Visu/single/__init__.py                     0
+   5.00  File/__init__.py                            0
+   5.00  util/__init__.py                            0
+   5.00  plugins/zoom3D.py                           2
+   5.00  Visu/__init__.py                            0
+   5.00  Algo/__init__.py                            0
 -------------------------------------------------------
-   4.80  processing.py                         1    30 
-   4.73  File/HDF5File.py                      3    46 
-   4.69  Algo/Cadzow.py                        1     2 
-   4.61  NPKData.py                            3    51 
-   4.54  Tests.py                                    7
-   4.51  Algo/Cadzow_mpi2.py                         4
-   4.44  Visu/paramzoom.py                           0
-   4.44  plugins/sg.py                               2
-   4.26  File/mzXML.py                               3
-   4.18  Orbitrap.py                                 5
-   4.17  SPIKE_usage_eg/eg_mva_2D.py                 4
-   4.17  util/shift_comments.py                      5
-   4.14  Algo/maxent.py                             13
-   4.06  util/log_all.py                             2
-   4.00  util/log_stdout.py                          0
-   3.87  Algo/SL0_test.py                      2     4 
-   3.65  util/hashcheck.py                           2
-   3.64  util/progrbarUi.py                          5
-   3.64  File/Apex.py                          4    14 
-   3.61  Visu/old/fticrvisupopUi.py                  6
-   3.42  plugins/__init__.py                   2     3 
-   3.40  Visu/graphic_tools.py                      24
-   3.39  Visu/interface_actions.py             2    44 
-   3.33  dev_setup.py                               15
-   3.33  NPKConfigParser.py                         10
-   3.26  util/readwrite_tools.py               1     1 
-   3.08  __init__.py                                 7
-   3.02  Algo/urQRd_util/Config.py                   2
-   2.80  Visu/label_2D.py                      2    29 
-   2.67  Visu/convert.py                       2    10 
-   2.64  Algo/Laplace.py                             5
-   2.64  Algo/rQRd.py                          2     3 
-   2.59  File/BrukerSMX.py                          17
-   2.57  Algo/BC.py                            1     4 
-   2.51  Algo/SL0.py                                 3
-   2.50  plugins/urQRd.py                           11
-   2.42  util/log_stderr.py                          4
-   2.40  plugins/Peaks.py                      6    21 
-   2.35  util/ValErr.py                              3
-   2.30  Algo/Linpredic.py                           9
-   2.23  Visu/zoom_plot.py                          32
-   2.22  Algo/urQRd_util/__init__.py                 4
-   2.22  version.py                                  0
-   2.18  File/Solarix.py                       8    22 
-   2.17  Algo/Cadzow_mpi.py                    3    16 
-   2.14  Visu/zooming.py                       2    38 
-   2.06  plugins/Bruker_NMR_FT.py              9     2 
-   2.00  Algo/urQRd.py                         1     4 
-   1.88  util/progrbar.py                            4
-   1.61  SPIKE_usage_eg/Orbitrap_eg.py         1     1 
-   1.41  Visu/Load.py                          3    11 
-   1.11  SPIKE_usage_eg/eg_cadzow.py                 2
-   1.06  util/debug_tools.py                   2     8 
-   1.03  Visu/Saving.py                              7
-   0.93  Algo/urQRd_util/read_mass_spec.py     3    17 
-   0.91  Display/fakeplot.py                        24
-   0.63  Visu/profile_popup.py                10    24 
-   0.61  Visu/interface.py                          22
-   0.38  util/signal_tools.py                 12    20 
-   0.19  util/simple_logger.py                       5
+   4.71  NPKData.py                            5    49 
+   4.63  Visu/init/old/fticrvisuUiold.py       3    39 
+   4.63  util/simple_logger2.py                      3
+   4.62  util/debug/MPI_test_attr.py                 5
+   4.47  doc/insert_hide.py                          4
+   4.32  Visu/paramzoom.py                           0
+   4.29  File/HDF5File.py                      8    44 
+   4.29  Tests.py                                    7
+   4.27  plugins/Fitter.py                          10
+   4.24  processing.py                         6    26 
+   4.23  plugins/sg.py                               2
+   4.13  Algo/Cadzow.py                        1     2 
+   4.12  Orbitrap.py                                 5
+   4.05  File/Spinit.py                        2    11 
+   4.03  Algo/maxent.py                             14
+   4.00  util/shift_comments.py                      5
+   3.78  NPKConfigParser.py                          9
+   3.67  File/mzXML.py                               2
+   3.50  Algo/Cadzow_mpi2.py                   3     2 
+   3.44  Algo/SL0_test.py                      3     2 
+   3.44  util/progrbarUi.py                          5
+   3.41  Algo/BC.py                            1     4 
+   3.33  util/log_stdout.py                          0
+   3.33  util/hashcheck.py                           2
+   3.32  Visu/interface_actions.py             2    45 
+   3.29  Visu/graphic_tools.py                      24
+   3.23  util/log_all.py                             2
+   3.03  File/Apex.py                          4    14 
+   2.91  plugins/Bucketing.py                        4
+   2.88  plugins/wavelet.py                         11
+   2.88  Algo/rQRd.py                          1     3 
+   2.75  Visu/label_2D.py                      2    29 
+   2.75  Visu/profile_popup.py                 3    25 
+   2.74  dev_setup.py                               15
+   2.62  util/readwrite_tools.py               1     1 
+   2.57  Visu/convert.py                       2    10 
+   2.57  plugins/urQRd.py                           12
+   2.50  util/compat.py                              9
+   2.45  Algo/Linpredic.py                          10
+   2.41  Algo/SL0.py                                 3
+   2.39  Algo/Laplace.py                             5
+   2.33  plugins/Peaks.py                      5    19 
+   2.33  SPIKE_usage_eg/Orbitrap_eg.py               1
+   2.12  util/ValErr.py                              3
+   2.09  Visu/zoom_plot.py                          32
+   2.09  Visu/Pyside_PyQt4.py                       15
+   2.05  Algo/sane.py                               14
+   1.90  Algo/urQRd_util/Config.py                   2
+   1.79  Visu/zooming.py                       2    39 
+   1.79  File/Solarix.py                       8    22 
+   1.61  Algo/Cadzow_mpi.py                    4    16 
+   1.56  util/log_stderr.py                          4
+   1.54  Algo/urQRd.py                         1     4 
+   1.25  Algo/urQRd_util/__init__.py                 4
+   1.12  Algo/urQRd_util/read_mass_spec.py     2    17 
+   1.11  Visu/Load.py                          3    11 
+   0.87  SPIKE_usage_eg/eg_mva_2D.py           1     4 
+   0.81  Display/fakeplot.py                        24
+   0.67  util/progrbar.py                            4
+   0.65  util/debug_tools.py                   2     8 
+   0.59  util/signal_tools.py                 14    21 
+   0.40  File/BrukerNMR.py                     9    27 
 *******************************************************
-   0.00  util/mail_error_logger.py             4    23 
-   0.00  Algo/urQRd_util/algo_debug.py               1
+   0.00  Visu/Saving.py                              7
    0.00  doc/__init__.py                             0
-  -0.51  File/BrukerNMR.py                    18    32 
-  -1.05  Visu/move_window.py                   1    27 
-  -1.20  Visu/canvas_event.py                  2    81 
-  -1.25  Visu/display.py                       1    37 
-  -1.33  doc/conf.py                                 2
-  -1.71  Algo/savitzky_golay.py                      5
-  -2.89  SPIKE_usage_eg/examples.py            2     2 
-  -3.21  Visu/single/select_tools.py                25
-  -3.46  SPIKE_usage_eg/eg_mva.py              3     4 
-  -3.81  util/mail.py                          5    11 
-  -4.00  Visu/Matplotlib_QtCanvas.py                 3
-  -5.00  Visu/Matplotlib_generictools.py             8
-  -6.00  util/sendgmail.py                     4    24 
-  -7.50  Visu/Pyside_PyQt4.py                  6    13 
- -10.36  Visu/util/Ui2Py.py                        121
- -13.53  Visu/zoom_tools.py                         32
-  -14.67  Visu/init/fticrvisupopUi.py          11     4 
-  -15.00  SPIKE_usage_eg/FTICR_eg.py           11     2 
-  -15.00  Visu/canvas.py                        4    25 
+  -0.21  Visu/interface.py                          23
+  -0.32  SPIKE_usage_eg/FTICR_eg.py            1     2 
+  -0.57  util/simple_logger.py                       5
+  -0.57  plugins/sane.py                            20
+  -0.80  Visu/move_window.py                        28
+  -1.14  Visu/old/fticrvisupopUi.py            3     7 
+  -1.25  version.py                                  0
+  -1.37  Visu/canvas_event.py                  2    82 
+  -1.43  Visu/display.py                       1    38 
+  -1.45  INTER.py                              2    15 
+  -1.72  doc/conf.py                                 2
+  -1.89  plugins/apmin.py                           42
+  -2.43  util/mail_error_logger.py             7    23 
+  -2.60  Algo/savitzky_golay.py                1     4 
+  -3.53  SPIKE_usage_eg/eg_cadzow.py           1     2 
+  -3.78  SPIKE_usage_eg/examples.py            2     2 
+  -4.07  Visu/single/select_tools.py                26
+  -4.80  SPIKE_usage_eg/eg_mva.py              3     4 
+  -5.00  Algo/urQRd_util/algo_debug.py               1
+  -7.14  Visu/Matplotlib_generictools.py             8
+  -7.50  Visu/Matplotlib_QtCanvas.py                 3
+  -7.80  util/mail.py                          8    11 
+  -10.26  util/sendgmail.py                     7    22 
+ -10.72  Visu/util/Ui2Py.py                        121
+  -13.81  Visu/canvas.py                        3    26 
+  -15.52  Visu/init/fticrvisupopUi.py          11     4 
+ -19.38  Visu/zoom_tools.py                         33
 -------------------------------------------------------
 
-Overall aggregated note value is :  4.02/10
+Overall aggregated note value is :  3.83/10
 
-score is 34 / 63 / 19  (top / med / low)
-Mean - Median note values are :  2.38/10 -  3.33/10
+score is 39 / 64 / 27  (top / med / low)
+Mean - Median note values are :  2.20/10 -  3.29/10
   Median is below 5.0 - let's try to improve it
-Total number of errors : 163 on a total of 116 files
+Total number of errors : 154 on a total of 130 files
 -------------------------------------------------------

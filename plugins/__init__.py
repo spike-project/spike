@@ -25,25 +25,57 @@ then, any NPKData will inherit the myname() method
 For the moment, only NPKData plugins are handled.
 
 """
-from __future__ import print_function
+from __future__ import print_function #
 import imp
 import traceback
 import unittest
-
-plugins = []  # contains plugin modules loaded so far
+from collections import defaultdict
 import glob, os
-from ..NPKData import NPKData_plugin
+#from ..NPKData import NPKData_plugin
 
-def load():
+plugins = {}  # contains plugin modules loaded so far
+codes = defaultdict(list)  # loaded at plugin injection with all codes
+
+def load(debug=True):
     "the load() function is called at initialization, and loads all files found in the plugins folder"
 # import all python code found here ( __path__[0] ) except me !
     for pgfile in sorted( glob.glob( os.path.join(__path__[0],"*.py") ) ):
         b = os.path.basename(pgfile)    # code.py
         pgmod = os.path.splitext(b)[0]  # code
         if not b.startswith('_'):
-            loadone(pgmod, pgfile)
-                
-def loadone(pluginname, pgfile=None):
+            loadone(pgmod, pgfile, debug=debug)
+    print( "plugins loaded:\n" + 
+           " ".join(["{}, ".format(k) for k in plugins.keys()]) )
+    print( "type spike.plugins.report() for a short description")
+    print( "and spike.plugins.report('module_name') for complete documentation on one plugin") 
+
+
+def report(module=None, mode=None):
+    """ print a nice report
+    mode=choose the verbosity
+        "short": only one line (default) 
+        "detailed": with list of all added methods
+        "full": prints the whole plugin doc
+    """
+    if module is None:
+        todo = sorted(plugins.keys())
+    else:
+        todo = [module]
+        if mode is None:
+            mode = "full"
+    for k in todo:
+        doc = plugins[k]
+        if mode != 'full':
+            print("%s : %s"%(k, doc.split('\n')[0]))  # only first line
+        else:
+            print("="*60)
+            print("%s : %s"%(k, doc))
+        if  mode != "short" or mode is None:
+            print("    implements: "+" ".join(["{}(), ".format(c) for c in codes[k]]))
+    if module is None and mode is None:    # add doc if default values
+        print("type spike.plugins.report('module_name') for complete documentation on one plugin") 
+
+def loadone(pluginname, pgfile=None, debug=True):
     """
     loads the plugin "pluginname" found in file pgfile
     if pgfile is None, the file is found in the plugins folder (without the .py extension)
@@ -52,19 +84,21 @@ def loadone(pluginname, pgfile=None):
     direc = __path__[0] # plugins folder
     if pgfile is None:
         pgfile = os.path.join(direc, pluginname + ".py")
-    print("Importing plugin << %s >>"%pluginname)
+    if debug: print("---- Importing  << %s >>"%pluginname)
     try:
-        plugins.remove(pluginname)
-        print("WARNING existing plugin %s is overwritten"%pluginname)
-    except    ValueError:
+        plugins[pluginname]
+        if debug: print("WARNING existing plugin %s is overwritten"%pluginname)
+    except    KeyError:
         pass
     try:
         m = imp.load_source(pluginname, pgfile)
-        plugins.append(pluginname)
+        doc = m.__doc__.split('\n')[0]    # print first line of documentation
+        if debug: print("     "+doc)
+        plugins[pluginname] = m.__doc__
     except:
-        print("*** Failed ***")
-        traceback.print_exc()
-        print("*** Continuing ***")
+        print("*** Importing  << %s >> Failed ***"%pluginname)
+        #traceback.print_exc()
+        #print("*** Continuing ***")
 
 class PluginTests(unittest.TestCase):
     def test_plugin(self):

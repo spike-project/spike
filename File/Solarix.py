@@ -7,13 +7,13 @@ Solarix.py
     Utility to Handle Solarix files
 
 Created by mac on 2013-05-24.
+updated may 2017 to python 3, added compress option
+
 Copyright (c) 2013 __NMRTEC__. All rights reserved.
 """
 
-from __future__ import print_function
+from __future__ import print_function, division
 
-__author__ = "Marc André Delsuc, Marie-Aude Coutouly <mac@nmrtec.com>"
-__date__ = "July 2011"
 
 import sys
 import os
@@ -30,6 +30,11 @@ from time import time
 from .. import NPKData as npkd
 from ..FTICR import FTICRData
 from ..File import HDF5File as hf
+
+if sys.version_info[0] < 3:
+    pass
+else:
+    xrange = range
 
 def read_param(parfilename):
     """
@@ -120,13 +125,13 @@ def locate_ExciteSweep(folder):
         raise Exception( "You don't have any ExciteSweep file in the  %s folder, please double check the path"%folder )
     return L[0]
 #-----------------------------------------
-def Import_1D(folder, outfile = ""):
+def Import_1D(folder, outfile = "", compress=False):
     """
     Entry point to import 1D spectra
     It returns a FTICRData
     It writes a HDF5 file if an outfile is mentionned
     """
-    if sys.maxint == 2**31-1:   # the flag used by array depends on architecture - here on 32biy
+    if sys.maxsize  == 2**31-1:   # the flag used by array depends on architecture - here on 32biy
         flag = 'l'              # Apex files are in int32
     else:                       # here in 64bit
         flag = 'i'              # strange, but works here.
@@ -152,7 +157,7 @@ def Import_1D(folder, outfile = ""):
         data.axis1.highfreq = float(params["EXC_Freq_High"])
         data.axis1.lowfreq = float(params["EXC_Freq_Low"])
     else:
-        data.axis2.lowfreq, data.axis2.highfreq = l,h
+        data.axis1.lowfreq, data.axis1.highfreq = l,h
     data.axis1.highmass = float(params["MW_high"])
     data.axis1.left_point = 0
     data.axis1.offset = 0.0
@@ -166,7 +171,7 @@ def Import_1D(folder, outfile = ""):
     data.params = params   # add the parameters to the data-set
         
     if (outfile): # Creates the fticrdata with no array, just infos for the table
-        HF = hf.HDF5File(outfile,"w")
+        HF = hf.HDF5File(outfile,"w", compress=compress)
         HF.create_from_template(data)
         HF.store_internal_object(params, h5name='params')    # store params in the file
         # then store files xx.methods 
@@ -186,13 +191,15 @@ def Import_1D(folder, outfile = ""):
     return data
 #-----------------------------------------
 
-def Import_2D(folder, outfile = "", F1specwidth = None):
+def Import_2D(folder, outfile = "", F1specwidth = None, compress=False):
     """
     Entry point to import 2D spectra
     It returns a FTICRData
     It writes a HDF5 file if an outfile is mentionned
+    
+    compression (compress=True) is efficient, but takes a lot of time.
     """
-    if sys.maxint == 2**31-1:   # the flag used by array depends on architecture - here on 32bit
+    if sys.maxsize  == 2**31-1:   # the flag used by array depends on architecture - here on 32bit
         flag = 'l'              # Apex files are in int32
     else:                       # here in 64bit
         flag = 'i'              # strange, but works here.
@@ -262,6 +269,8 @@ def Import_2D(folder, outfile = "", F1specwidth = None):
     #tables.parameters.CHUNK_CACHE_SIZE = c1*c2*8
     if (outfile): # Creates the fticrdata with no array, just infos for the table
         HF = hf.HDF5File(outfile,"w")
+        if compress:
+            HF.set_compression(True)
         HF.create_from_template(data)
         HF.store_internal_object(params, h5name='params')    # store params in the file
         # then store files xx.methods and scan.xml
@@ -293,7 +302,7 @@ def read_2D(sizeF1, sizeF2, filename = "ser"):
     uses array
     """
 #    import platform # platform seems to be buggy on MacOs, see http://stackoverflow.com/questions/1842544
-    if sys.maxint == 2**31-1:   # the flag used by array depends on architecture - here on 32bit
+    if sys.maxsize  == 2**31-1:   # the flag used by array depends on architecture - here on 32bit
         flag = 'l'              # Apex files are in int32
     else:                       # here in 64bit
         flag = 'i'              # strange, but works here.
@@ -317,7 +326,7 @@ def read_3D(sizeF1, sizeF2, sizeF3, filename="ser"):
     uses array
     """
 #    import platform # platform seems to be buggy on MacOs, see http://stackoverflow.com/questions/1842544
-    if sys.maxint == 2**31-1:   # the flag used by array depends on architecture - here on 32biy
+    if sys.maxsize  == 2**31-1:   # the flag used by array depends on architecture - here on 32biy
         flag = 'l'              # Apex files are in int32
     else:                       # here in 64bit
         flag = 'i'              # strange, but works here.

@@ -3,18 +3,18 @@
 # Do not edit
 ProgramName = 'SPIKE'
 VersionName = 'Development version - beta'
-version = '0.8.3'
-revision = '304'
-rev_date = '17-04-2016'
+version = '0.99.0'
+revision = '369'
+rev_date = '06-03-2018'
 
 def report():
     "prints version name when SPIKE starts"
-    print '''
+    print( '''
     ========================
-          %s
+          {0}
     ========================
-    Version     : %s
-    Date        : %s
-    Revision Id : %s
-    ========================'''%(ProgramName, version, rev_date, revision)
+    Version     : {1}
+    Date        : {2}
+    Revision Id : {3}
+    ========================'''.format(ProgramName, version, rev_date, revision))
 report()

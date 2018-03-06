@@ -1,7 +1,7 @@
 #!/usr/bin/env python 
 # encoding: utf-8
 
-# plugin for urqrd
+"plugin for the urQRd denoising method"
 
 from __future__ import print_function
 import unittest
@@ -10,6 +10,12 @@ from spike.NPKData import NPKData_plugin,  as_cpx, as_float, _base_fft,\
             _base_ifft, _base_rfft, _base_irfft
 from spike.Algo.urQRd import urQRd
 from spike.util.signal_tools import filtering
+
+import sys #
+if sys.version_info[0] < 3:
+    pass
+else:
+    xrange = range
 
 def urqrd(npkd, k, orda = None, iterations = 1, axis=0):
     """
