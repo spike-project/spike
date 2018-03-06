@@ -24,12 +24,12 @@ FAKE = True
 
 class fake(object):
     """fake figure object"""
-    def __init__(self):
+    def __init__(self, *args, **key):
         global current
         current += 1
         print("******* figure %d *****"%current)
     def figure(self, *args, **key):
-        return fake()
+        return fake(*args, **key)
     def plot(self, *args, **key):
         x = args[0]
         label = key.get("label","")
@@ -68,6 +68,10 @@ class fake(object):
         print("-- yscale",args)
     def xscale(self, *args, **key):
         print("-- xscale",args)
+    def set_xscale(self, *args, **key):
+        self.xscale(*args, **key)
+    def set_yscale(self, *args, **key):
+        self.yscale(*args, **key)
     def text(self, *args, **key):
         print("-- text :",args)
     def legend(self, *args, **key):
@@ -82,6 +86,8 @@ class fake(object):
     set_ylabel = ylabel
     def title(self, *args, **key):
         print("-- title :",args[0])
+    def set_title(self, *args, **key):
+        self.title(*args, **key)    
     def suptitle(self, *args, **key):
         print("-- suptitle :",args[0])
     def grid(self, *args, **key):

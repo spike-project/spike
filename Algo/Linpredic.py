@@ -17,10 +17,17 @@ Removed the "for loops" so as to speed up using numpy capabilities.
 Copyright (c) 2010 IGBMC. All rights reserved.
 """
 from __future__ import print_function
+from __future__ import division
 import numpy as np
 import random
 import time
 import unittest
+import sys #
+if sys.version_info[0] < 3:
+    pass
+else:
+    xrange = range
+
 
 def predict(data, ar, length):
     """
@@ -60,10 +67,10 @@ def  burgr(m,  x):
       x  - real data vector to approximate.
     """
     N = len(x)-1
-    f  = np.array(x[:])
+    f = np.array(x[:])
     b = np.array(x[:])
     Ak = np.zeros(m+1); Ak[0] = 1.0 
-    Dk= (2.0 * f[:N+1]**2).sum()-(f[ 0 ] **2+ b[ N ] **2)
+    Dk = 2.0*( f[:N+1]**2 ).sum() - (f[0]**2 + b[N]**2)
 
     for k in range(m):
         mu= (np.roll(f,-(k+1))*b)[:N-k].sum() 
@@ -71,8 +78,8 @@ def  burgr(m,  x):
         # update Ak
         t1 = Ak+mu*np.roll(Ak[::-1],k+2)
         t2 = mu*Ak+np.roll(Ak[::-1],k+2)
-        limk = (k + 1)/2
-        limkr = int(round((k + 1)/2.0))
+        limk = (k + 1)//2
+        limkr = k//2 + 1    #     int(round((k + 1)/2.0)) # was ok in python2 but round() has a different behavior in python3 !
         Ak[:limk+1] = t1[:limk+1]
         Ak[limk+1:k+2] = np.roll(t2[::-1],limkr)[:len(Ak[limk:k+1])]
         #update f and b
@@ -125,7 +132,7 @@ def burgc (lprank, data):
         pow1 = pow1*temp
         ar_[k] = save1
 
-        khalf = (k+1)/2
+        khalf = (k+1)//2
         for j in range(1,khalf+1):
                 kj = k+1-j
                 save2 = ar_[j-1]
@@ -151,7 +158,7 @@ class LinpredTests(unittest.TestCase):
         x = np.arange(longtest)
         original = np.cos( x * 0.01 ) + 0.75*np.cos( x * 0.2 ) + 0.5*np.cos( x * 0.05 ) + 0.25*np.cos( x * 0.11 ) + 0.1*np.random.randn(longtest)
         originalj = original + 1j*np.sin( x * 0.01 ) + 0.75j*np.sin( x * 0.2 ) + 0.5j*np.sin( x * 0.05 ) + 0.25j*np.sin( x * 0.11 ) + 0.1j*np.random.randn(longtest)
-        return originalj
+        return original,originalj
 
     def test_burg(self):
         """ - testing burg algo - """
@@ -159,17 +166,35 @@ class LinpredTests(unittest.TestCase):
         plt = testplot.plot()
         self.announce()        
         mlength=12      # ideal is 2*number of signal - here should 8, 12 gives "a little room"" to noise, and seems better
-        original=self.curvetest()
+        original, originalj = self.curvetest()
+        # Real
         plt.plot(original,label='noisy original')
         coeffs = burgr(mlength,  original)
         m = len(coeffs)
         predicted = predict(original, coeffs, 180)
-#        self.assertEqual(180, len(predicted))
+        self.assertEqual(180, len(predicted))
         plt.plot(predicted, label='extended')
         denoised = denoise(original, coeffs)
-#        self.assertTrue( np.sum(abs(original-denoised)) / np.sum(abs(original)) <0.2 )
+        self.assertTrue( np.sum(abs(original-denoised)) / np.sum(abs(original)) <0.2 )
+        print( np.sum(abs(original-denoised)) / np.sum(abs(original)) )
         plt.plot(denoised, label='denoised')
+        plt.title('Real')
         plt.legend()
+        # Cpx
+        plt.figure()
+        plt.plot(originalj.real, label='noisy original')
+        coeffs = burgc(mlength,  originalj)
+        m = len(coeffs)
+        predicted = predict(originalj, coeffs, 180)
+        self.assertEqual(180, len(predicted))
+        plt.plot(predicted.real, label='extended')
+        denoised = denoise(originalj, coeffs)
+        self.assertTrue( np.sum(abs(originalj-denoised)) / np.sum(abs(originalj)) <0.2 )
+        print( np.sum(abs(originalj-denoised)) / np.sum(abs(originalj)) )
+        plt.plot(denoised.real, label='denoised')
+        plt.title('Complex')
+        plt.legend()
+
         plt.show()
 
 if __name__ == "__main__":

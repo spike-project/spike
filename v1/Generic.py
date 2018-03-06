@@ -24,11 +24,14 @@ import time
 import re
 import os
 import sys
-import Nucleus
-import Param
-from Kore import *
+from . import Nucleus
+from . import Param
+from .Kore import *
 import unittest
-import ConfigParser
+try:
+    import ConfigParser
+except:
+    import configparser as ConfigParser
 
 def get_npk_path():
     #print os.getcwd()
@@ -100,11 +103,7 @@ def dict_dump(dict,fname):
     one entry per line with the following syntax :
     entry=value
     """
-    try:
-        fout = open(fname, 'w')
-    except:
-        print("Error while opening file :", sys.exc_info()[0])
-        raise
+    fout = open(fname, 'w')
 
     fout.write("#Property list file, created :"+time.strftime("%a, %d %b %Y %H:%M:%S %Z", time.localtime())+"\n")
 
@@ -165,7 +164,7 @@ def change_key_dict(patternOut, patternIn, p_in_arg):
                 p[j]=p_in_arg[i]
     if verbose:
         print(p)
-        raise "stop"
+        raise Exception("stop")
     return(p)
 
 
@@ -279,7 +278,7 @@ def get_itype(dim=0):
         t2 = (get_itype_3d()-4*t1)/2
         return (t1,t2,t3)
     else:
-        raise "wrong value for dim"
+        raise Exception( "wrong value for dim")
 #---------------------------------------------------------------------------
 def set_itype(type):
     """ set the complex state of the data buffer
@@ -291,26 +290,26 @@ def set_itype(type):
     if dim == 1:
         (t1)=type
         if (t1<0 or t1>1):
-            raise "wrong value for type value"
+            raise Exception( "wrong value for type value")
         itype(t1)
     elif (dim == 2):
         (t1,t2)=type
         if (t1<0 or t1>1):
-            raise "wrong value for F1 type value"
+            raise Exception( "wrong value for F1 type value")
         if (t2<0 or t2>1):
-            raise "wrong value for F2 type value"
+            raise Exception( "wrong value for F2 type value")
         itype(2*t1+t2)
     elif (dim == 3):
         (t1,t2,t3)=type
         if (t1<0 or t1>1):
-            raise "wrong value for F1 type value"
+            raise Exception( "wrong value for F1 type value")
         if (t2<0 or t2>1):
-            raise "wrong value for F2 type value"
+            raise Exception( "wrong value for F2 type value")
         if (t3<0 or t3>1):
-            raise "wrong value for F3 type value"
+            raise Exception( "wrong value for F3 type value")
         itype(4*t1+2*t2+t3)
     else:
-        raise "wrong value for dim"
+        raise Exception( "wrong value for dim")
     
 #---------------------------------------------------------------------------
 def apsl_cp(  pki, sz):
@@ -367,11 +366,11 @@ def apsl():
     nfrst = 4
     dim = get_dim()
     if ( dim != 1 ):
-        raise "On 1D only"
+        raise Exception( "On 1D only")
     if ( get_itype_1d() != 1 ):
-        raise "On complex data only"
+        raise Exception( "On complex data only")
     if ( get_si1_1d() < 500 ):
-        raise "size too small for operation"
+        raise Exception( "size too small for operation")
 
 
     # find at least $npk peaks on a smoothed version of the spectrum - insure that size is unchanged !
@@ -527,11 +526,11 @@ def ap2d(apfunc,  axis = "F2"):
     ret = ""
 
     if ( get_dim() != 2 ):
-        raise "On 2D only"
+        raise Exception( "On 2D only")
     if ( get_itype_2d() != 3 ):
-        raise "On hypercomplex data only"
+        raise Exception( "On hypercomplex data only")
     if ( get_si1_2d() < 250 or get_si2_2d() < 500 ):
-        raise "Size too small for operation"
+        raise Exception( "Size too small for operation")
 
     # evaluate noise
     evaln( get_si1_2d()*0.06, get_si2_2d()*0.01,
@@ -718,9 +717,9 @@ def apmin():
     """
     dim = get_dim()
     if ( dim != 1 ):
-        raise "On 1D only"
+        raise Exception( "On 1D only")
     if ( get_itype_1d() != 1 ):
-        raise "On complex data only"
+        raise Exception( "On complex data only")
 
 # initialize
     put("data")
@@ -748,7 +747,7 @@ def apmin():
             im = geta_pk1d_f(i+1)
         
     if (im == 0):
-        raise "error in getting largest point"
+        raise Exception( "error in getting largest point")
     else:
         pivot = (im/get_si1_1d())
 #    print "Pivot:",pivot
@@ -853,7 +852,7 @@ def spec_noise(n=10):
         if ( getdata ):
             get("data")
     else:
-        raise "reste a faire en 3D"
+        raise Exception( "reste a faire en 3D")
 
     if ( so_far != 0 ):
         noise( so_far )
@@ -873,7 +872,7 @@ def signal_noise(left=1,right=1,n=10):
     if right==1:
         right=get_si1_1d()
     if (left>=right):
-        raise "wrong argument to signal_noise()"
+        raise Exception( "wrong argument to signal_noise()")
 
     if (get_itype_1d() != 0):
         put("data")
@@ -906,7 +905,7 @@ def left_shift(shift_size,axis='F1'):
             chsize( get_si1_2d(), get_si2_2d()- shift_size)
         reverse(axis)
     elif (get_dim() == 3):
-        raise 'not done yet'
+        raise Exception( 'not done yet')
 
 #---------------------------------------------------------------------------
 def right_shift(shift_size,axis='F1'):
@@ -924,7 +923,7 @@ def right_shift(shift_size,axis='F1'):
             chsize( get_si1_2d(), get_si2_2d() + shift_size)
         reverse(axis)
     elif (get_dim() == 3):
-        raise 'not done yet'
+        raise Exception( 'not done yet')
 
 
 #---------------------------------------------------------------------------
@@ -1003,10 +1002,10 @@ def ft_tppi( axis = "F1" ):
                 itype( get_itype_3d() - 2)
                 print("Forcing Real form in F2")
         else:
-            raise "wrong axis"
+            raise Exception( "wrong axis")
         rft(axis)
     else:
-        raise "Not implemented in 1D, use ft_seq instead"
+        raise Exception( "Not implemented in 1D, use ft_seq instead")
 
 
 #---------------------------------------------------------------------------
@@ -1016,7 +1015,7 @@ def ft_n_p( axis = "F1" ):
         conv_n_p()
         ft_sh()
     else:
-        raise "in 2D only"
+        raise Exception( "in 2D only")
 
 #---------------------------------------------------------------------------
 def ft_sh( axis = "F1" ):
@@ -1040,7 +1039,7 @@ def ft_sh( axis = "F1" ):
         revf(axis)
         ft(axis)
     else:
-        raise "not implemented in 1D, use ft_sim instead"
+        raise Exception( "not implemented in 1D, use ft_sim instead")
 
 #---------------------------------------------------------------------------
 def ft_sh_tppi( axis = "F1" ):
@@ -1061,16 +1060,16 @@ def ft_sh_tppi( axis = "F1" ):
                 itype( get_itype_3d() + 2 )
                 print("Forcing Complex form in F2")
         else:
-            raise "Wrong axis"
+            raise Exception( "Wrong axis")
         ft( axis);
     else:
-        raise "Not implemeted in 1D"
+        raise Exception( "Not implemeted in 1D")
 
 #---------------------------------------------------------------------------
 def ft_phase_modu( axis = "F1" ):
     """F1-Fourier transform for phase-modulated 2D"""
     if ( get_dim() != 2 ):
-        raise "implemented only in 2D"
+        raise Exception( "implemented only in 2D")
     else:
         itype(1)
         flip()
@@ -1094,7 +1093,7 @@ def expbroad(  lb, axis = "F1" ):
             elif ( axis == "F12" or axis == "F21" ):
                 em( lb, lb)
             else:
-                raise "Wrong axis"
+                raise Exception( "Wrong axis")
 
         elif ( get_dim() == 3 ):
             if ( axis == "F1" ):
@@ -1112,7 +1111,7 @@ def expbroad(  lb, axis = "F1" ):
             elif ( axis == "F123" ):
                 em( lb, lb, lb)
             else:
-                raise "Wrong dimension"
+                raise Exception( "Wrong dimension")
 
 #---------------------------------------------------------------------------
 def gaussbroad(  lb, axis = "F1" ):
@@ -1129,7 +1128,7 @@ def gaussbroad(  lb, axis = "F1" ):
             elif ( axis == "F12" or axis == "F21" ):
                 gm( lb, lb)
             else:
-                raise "Wrong axis"
+                raise Exception( "Wrong axis")
 
         elif ( get_dim() == 3 ):
             if ( axis == "F1" ):
@@ -1147,7 +1146,7 @@ def gaussbroad(  lb, axis = "F1" ):
             elif ( axis == "F123" ):
                 gm( lb, lb, lb)
             else:
-                raise "Wrong dimension"
+                raise Exception( "Wrong dimension")
 
 #---------------------------------------------------------------------------
 def gaussenh( gg, ll, axis = "F1"):
@@ -1168,7 +1167,7 @@ def gaussenh( gg, ll, axis = "F1"):
                 gm( gg, gg)
                 em( -ll*gg, -ll*gg)
             else:
-                raise "wrong axis"
+                raise Exception( "wrong axis")
         elif ( get_dim() == 3 ):
             if ( axis == "F1" ):
                 gm(gg,0,0)
@@ -1192,7 +1191,7 @@ def gaussenh( gg, ll, axis = "F1"):
                 gm( gg, gg, gg)
                 em( -ll*gg, -ll*gg, -ll*gg)
             else:
-                raise "wrong axis"
+                raise Exception( "wrong axis")
 
 #---------------------------------------------------------------------------
 def apodise(  apod, axis = "F1" ):
@@ -1210,7 +1209,7 @@ def apodise(  apod, axis = "F1" ):
     debug = 0
     if not type(apod) == types.StringType:
         print(apod)
-        raise "argument should be an NPK executable string\n\n"+apodise.__doc__
+        raise Exception( "argument should be an NPK executable string\n\n"+apodise.__doc__)
     if ( get_dim() == 1 ):
             if debug: print("apod 1D "+apod)
             exec(apod)
@@ -1246,7 +1245,7 @@ def apodise(  apod, axis = "F1" ):
             dim(2)
             mult1d('F1')
         else:
-            raise "wrong axis"
+            raise Exception( "wrong axis")
     elif (  get_dim() == 3 ):
         axis = axis.upper()
         if (axis == 'F3'):
@@ -1292,7 +1291,7 @@ def apodise(  apod, axis = "F1" ):
             dim(2)
             mult1d('F1')
         else:
-            raise "wrong axis"
+            raise Exception( "wrong axis")
 
 #---------------------------------------------------------------------------
 def apodise_f(  apod, axis = "F1" ):
@@ -1352,9 +1351,9 @@ def apodise_f(  apod, axis = "F1" ):
             dim(2)
             apply("window")
         else:
-            raise "error with axis"
+            raise Exception( "error with axis")
     else:
-        raise "not implemented yet !"
+        raise Exception( "not implemented yet !")
 
 #---------------------------------------------------------------------------
 def apodise_p(  apod, axis = "F1" ):
@@ -1396,7 +1395,7 @@ def apodise_p(  apod, axis = "F1" ):
             elif ( apod == "DO_NOTHING"):
                 pass
             else:
-                raise ("Internal error in Apodisation -> " + apod)
+                raise Exception( ("Internal error in Apodisation -> " + apod))
             i=i+1
 
     elif ( get_dim() == 2 or get_dim()== 3 ):
@@ -1441,7 +1440,7 @@ def apodise_p(  apod, axis = "F1" ):
             elif ( apod == "DO_NOTHING"):
                 pass
             else:
-                raise ("Internal error in Apodisation -> " + apod)
+                raise Exception( ("Internal error in Apodisation -> " + apod))
             i=i+1
 
 
@@ -1488,22 +1487,22 @@ def bucket(start=0.5, end=9.5, bsize=0.04, file='bucket.cvs'):
 
 #    alert2 ('You will have';round(($end-$start+$bsz)/$bsz); 'buckets') ('with a mean size of';round(100*$si1_1d*$bsz*$freq_1d/$specw_1d)/100;'data points')
     if get_dim() != 1:
-        raise('Available on 1D data only')
+        raise Exception(('Available on 1D data only'))
     com_max()
     if (geta_max(1) == 0.0):
-        raise "Empty data-set !"
+        raise Exception( "Empty data-set !")
     if (bsize < 0):
-        raise "Negative bucket size not allowed"
+        raise Exception( "Negative bucket size not allowed")
     if (start-bsize/2 < itop(get_si1_1d(),1,1)):
-        raise "Starting point outside spectrum"
+        raise Exception( "Starting point outside spectrum")
     if (end+bsize/2 > itop(1,1,1)):
-        raise "Ending point outside spectrum"
+        raise Exception( "Ending point outside spectrum")
     if  ((end-start)/bsize < 10):
-        raise "Integration zone too small or Bucket too large"
+        raise Exception( "Integration zone too small or Bucket too large")
     put('data')
     if (bsize < (get_specw_1d/get_freq_1d/get_si1_1d)):
         get('data')
-        raise "Bucket size smaller than digital resolution !"
+        raise Exception( "Bucket size smaller than digital resolution !")
     mkreal()
     int1d()
     fout = open(file)
@@ -1613,7 +1612,7 @@ def audittrail( auditfile, phtx, *argl ):
         postline = "</li>\n"
         writemode = 1
     else:
-        raise "wrong key error in audit trail"
+        raise Exception( "wrong key error in audit trail")
 
     if ( writemode ):
         if ( auditfile is not None ):
@@ -1647,7 +1646,7 @@ def audittrail( auditfile, phtx, *argl ):
 def derivative(  n, sm ):
     """@sig public void derivative( int n, int sm )"""
     if ( get_dim() != 1 ):
-        raise "derivative is available in 1D only"
+        raise Exception( "derivative is available in 1D only")
     shift = int(sm/2)+1
     for i in range(1,sm+1):
         smooth(2)
@@ -1832,7 +1831,7 @@ def hilbert(  axis = "F1"):
     """
     if ( get_dim() == 1 ):
         if ( get_itype_1d() == 1 ):
-            raise "Wrong data format in hilbert()"
+            raise Exception( "Wrong data format in hilbert()")
         si = get_si1_1d();
         chsize( 2*power2(get_si1_1d() - 2));
         iftbis()
@@ -1845,7 +1844,7 @@ def hilbert(  axis = "F1"):
         axis = axis.upper()
         if ( axis == "F1" or axis == "F12" ):
             if ( get_itype_2d() == 2 or get_itype_2d() == 3 ):
-                raise "Wrong data format in hilbert()"
+                raise Exception( "Wrong data format in hilbert()")
             si = get_si1_2d();
             chsize( 2*power2(get_si1_2d()-2), get_si2_2d())
             iftbis("F1")
@@ -1856,7 +1855,7 @@ def hilbert(  axis = "F1"):
                 chsize(2*si, get_si2_2d())
         if ( axis == "F2" or axis == "F12" ):
             if ( get_itype_2d() == 1 or get_itype_2d() == 3):
-                raise "Wrong data mode in hilbert.g"
+                raise Exception( "Wrong data mode in hilbert.g")
             si = get_si2_2d()
             chsize( get_si1_2d(), 2*power2(get_si2_2d()-2))
             iftbis("F2")
@@ -1888,7 +1887,7 @@ def invhilbert(  axis = "F1" ):
     """
     if ( get_dim() == 1 ):
         if ( get_itype_1d() == 0 ):
-            raise "wrong data format in invhilbert()"
+            raise Exception( "wrong data format in invhilbert()")
         si = get_si1_1d()
         chsize(2*power2(get_si1_1d()-2))
         ift()
@@ -1900,7 +1899,7 @@ def invhilbert(  axis = "F1" ):
         axis = axis.upper()
         if ( axis == "F1" or axis == "F12" ):
             if ( get_itype_2d() < 2 ):
-                raise "wrong data format in invhilbert()"
+                raise Exception( "wrong data format in invhilbert()")
             si = get_si1_2d()
             chsize( 2*power2(get_si1_2d()-2), get_si2_2d())
             ift("F1")
@@ -1910,7 +1909,7 @@ def invhilbert(  axis = "F1" ):
 
         if ( axis == "F2" or axis == "F12" ):
             if ( get_itype_2d() % 2 == 0 ):
-                raise "wrong data format in invhilbert()"
+                raise Exception( "wrong data format in invhilbert()")
             si = get_si2_2d()
             chsize( get_si1_1d(), 2*power2(get_si2_2d()-2))
             ift("F2")
@@ -1925,7 +1924,7 @@ def  plane_size(axis='F1'):
     returns (si1,si2) the size of the plane orthogonal to axis from the joined dataset
     """
     if (get_c_dim() != 3):
-        raise 'only on 3D data'
+        raise Exception( 'only on 3D data')
     ax=axis.upper()
     if (ax == 'F1'):
         return (get_c_sizef2(),get_c_sizef3())
@@ -1934,7 +1933,7 @@ def  plane_size(axis='F1'):
     elif (ax ==  'F3'):
         return (get_c_sizef1(),get_c_sizef2())
     else:
-        raise 'wrong axis'
+        raise Exception( 'wrong axis')
  
 #---------------------------------------------------------------------------
 def filec_status():
@@ -1994,16 +1993,16 @@ def proc3d( sourcefile, destinationfile, plane_to_process, commands, context):
     infile = sourcefile
     join(infile)
     if (get_c_dim() != 3):
-        raise 'available on 3D data only' 
+        raise Exception( 'available on 3D data only' )
 
     outfile = destinationfile
 
     if (infile == outfile):
-        raise 'input file and output file must be different'
+        raise Exception( 'input file and output file must be different')
 
     axis = plane_to_process.upper()
     if (not (axis in ('F1','F2','F3'))):
-        raise 'error with axis'
+        raise Exception( 'error with axis')
 
     ancdim = get_dim()
 
@@ -2012,7 +2011,7 @@ def proc3d( sourcefile, destinationfile, plane_to_process, commands, context):
     join(infile)
     (si1,si2)=plane_size(axis)
     getc(axis,1,1,1,si1,si2)
-    exec commands in context
+    exec(commands, context)
 #    exec commands in context
     (it1,it2) = get_itype(2)
     si1ap=get_si1_2d()
@@ -2068,7 +2067,7 @@ def proc3d( sourcefile, destinationfile, plane_to_process, commands, context):
         print("### IN : %s, OUT %s, plane %d / %d"%(infile,outfile,i,iter))
         join(infile)
         getc(axis,i,1,1,si1,si2)
-        exec commands in context
+        exec(commands, context)
         join(outfile)
         putc(axis,i,1,1,si1ap,si2ap)
 
@@ -2101,9 +2100,9 @@ def tocomplex(  axis = "F1"):
             elif ( get_itype_2d() == 2 ):
                 hilbert("F2")
         else:
-            raise "Wrong argument in tocomplex()"
+            raise Exception( "Wrong argument in tocomplex()")
     else:
-        raise "Wrong dimension in tocomplex()"
+        raise Exception( "Wrong dimension in tocomplex()")
 
 #---------------------------------------------------------------------------
 def toreal(  axis = "F1" ):
@@ -2128,9 +2127,9 @@ def toreal(  axis = "F1" ):
             elif ( get_itype_2d() == 3 ):
                 real("F12")
         else:
-            raise "Wrong argument in toreal"
+            raise Exception( "Wrong argument in toreal")
     else:
-        raise "Wrong dimension in toreal"
+        raise Exception( "Wrong dimension in toreal")
 
 
 #---------------------------------------------------------------------------
@@ -2155,7 +2154,7 @@ def flat_solvent(  param, delay=0.0 ):
     elif ( get_dim() == 2 ):
         i = get_si2_2d()
     else:
-        raise "Not implemented in 3D"
+        raise Exception( "Not implemented in 3D")
 
     if ( get_dim() == 1 ):
         svspecw = get_specw_1d()
@@ -2241,11 +2240,11 @@ def burg_mirror(  n, bsz ):
 #---------------------------------------------------------------------------
 def burg_back(  nsz ):
     if ( get_dim() != 1 ):
-        raise "Available in 1D only"
+        raise Exception( "Available in 1D only")
     if ( nsz <= get_si1_1d()):
-        raise "Wrong size"
+        raise Exception( "Wrong size")
     if ( nsz != int(nsz/2)*2 ):
-        raise "size should be even"
+        raise Exception( "size should be even")
     itype(1)
     reverse()
     burg(int(nsz))
@@ -2256,27 +2255,27 @@ def burg_back(  nsz ):
 #---------------------------------------------------------------------------
 def burg2d_back(  axis, nsz):
     if ( get_dim() != 2 ):
-        raise "Available in 2D only"
+        raise Exception( "Available in 2D only")
     else:
         axis = axis.upper()
         if ( nsz != int(nsz/2)*2):
-            raise "size should be even"
+            raise Exception( "size should be even")
         if ( axis == "F1" ):
             if ( nsz <= get_si1_2d()):
-                raise "Wrong size"
+                raise Exception( "Wrong size")
             osz = get_si1_2d()
             chsize( nsz, get_si2_2d())
             ext = "col"
             imax = get_si2_2d()
         elif ( axis == "F2" ):
             if ( nsz <= get_si2_2d()):
-                raise "Wrong size"
+                raise Exception( "Wrong size")
             osz = get_si2_2d()
             chsize( get_si1_1d(), nsz )
             ext = "row"
             imax = get_si1_1d()
         else:
-            raise "Wrong axis for LP"
+            raise Exception( "Wrong axis for LP")
 
         if ( ext == "row" ):
             for i in range(1,imax+1):
@@ -2309,7 +2308,7 @@ def burg2d_mirror(  axis, n, bsz):
     axis = axis.upper()
     if ( axis == "F1" ):
         if ( bsz <= get_si1_2d()):
-            raise "Wrong size"
+            raise Exception( "Wrong size")
         if ( n == -1 ):
             msz = get_si1_2d()
         else:
@@ -2320,7 +2319,7 @@ def burg2d_mirror(  axis, n, bsz):
         chsize( bsz, get_si2_2d())
     elif ( axis == "F2" ):
         if ( bsz <= get_si2_2d() ):
-            raise "Wrong size"
+            raise Exception( "Wrong size")
         if ( n == -1 ):
             msz = get_si2_2d()
         else:
@@ -2330,7 +2329,7 @@ def burg2d_mirror(  axis, n, bsz):
         osz = get_si2_2d()
         chsize( get_si1_1d(), bsz )
     else:
-        raise "wrong axis in burg2d_mirror.g"
+        raise Exception( "wrong axis in burg2d_mirror.g")
 
     dim(2)
     if ( cmd == "row" ):
@@ -2370,7 +2369,7 @@ def burg2d(  axis = "F1", nsz = None ):
     """
     writec("toto.gf2")
     if ( get_dim() != 2 ):
-        raise "available in 2D only"
+        raise Exception( "available in 2D only")
     axis = axis.upper()
     if ( nsz is None ):
         if ( axis == "F1"):
@@ -2380,20 +2379,20 @@ def burg2d(  axis = "F1", nsz = None ):
 
     if ( axis == "F1" ):
         if ( nsz <= get_si1_2d() ):
-            raise "Wrong size"
+            raise Exception( "Wrong size")
         osz = get_si1_2d()
         chsize( int(nsz), get_si2_2d())
         ext = "col"
         imax = get_si2_2d()
     elif ( axis == "F2" ):
         if ( nsz <= get_si2_2d() ):
-            raise "Wrong size"
+            raise Exception( "Wrong size")
         osz = get_si2_2d()
         chsize( get_si1_1d(), int(nsz) )
         ext = "row"
         imax = get_si1_2d()
     else:
-        raise "Wrong axis for LP"
+        raise Exception( "Wrong axis for LP")
     if ( ext == "col" ):
         print(get_order())
         for i in range(1,imax+1):
@@ -2446,7 +2445,7 @@ def dc_offset(  zone):
             put("row",i)
         return s/get_si1_2d()
     else:
-        raise "dc-offset.g reste a faire"
+        raise Exception( "dc-offset.g reste a faire")
 
 
 #---------------------------------------------------------------------------
@@ -2467,7 +2466,7 @@ def bcorr_quest(  p = 4, axis = "F1"):
     """
     if ( get_dim() == 1 ):
         if ( p < 0 or p > get_si1_1d()/2):
-            raise "wrong value for QUEST order"
+            raise Exception( "wrong value for QUEST order")
         si = get_si1_1d()
         sip2 = int(2*power2(si-2))
         it = get_itype_1d()
@@ -2491,7 +2490,7 @@ def bcorr_quest(  p = 4, axis = "F1"):
         axis = axis.upper()
         if ( axis == "F1" or axis == "F12" ):
             if ( p < 0 or p > get_si1_2d()/2 ):
-                raise "wrong value for QUEST order"
+                raise Exception( "wrong value for QUEST order")
 
             si = get_si1_2d()
             sip2 = 2*power2(si-2)
@@ -2514,7 +2513,7 @@ def bcorr_quest(  p = 4, axis = "F1"):
 
         if ( axis == "F2" or axis == "F12" ):
             if ( p < 0 or p > get_si2_2d()):
-                raise "wrong value for QUEST mode"
+                raise Exception( "wrong value for QUEST mode")
 
             si = get_si2_2d()
             sip2 = 2*power2(si-2)
@@ -2535,7 +2534,7 @@ def bcorr_quest(  p = 4, axis = "F1"):
                 ft("F2")
             chsize( get_si1_2d(), si)
     else:
-        raise "reste a faire en 3D"
+        raise Exception( "reste a faire en 3D")
 
 
 #---------------------------------------------------------------------------
@@ -2568,7 +2567,7 @@ def bcorr_offset( spec_n=30, axis = "F1"):
                 dim(2)
                 put("row",i)
     else:
-        raise "reste a faire"
+        raise Exception( "reste a faire")
 
 #---------------------------------------------------------------------------
 def add_files( list_of_files, list_of_coefficients=[] ):
@@ -2582,7 +2581,7 @@ def add_files( list_of_files, list_of_coefficients=[] ):
     else:
         coef_loc=list_of_coefficients
     if len(list_loc) != len(coef_loc):
-        raise "the two lists should be of the same length"
+        raise Exception( "the two lists should be of the same length")
     # check first
     read(list_loc.pop())
     dloc = get_dim()
@@ -2592,7 +2591,7 @@ def add_files( list_of_files, list_of_coefficients=[] ):
     for i in range(len(coef_loc)):
         read(list_loc.pop())
         if (dloc != get_dim()):
-            raise "datasets are not all of the same dimension"
+            raise Exception( "datasets are not all of the same dimension")
         mult(coef_loc.pop())
         adddata()
         put("data")
@@ -2605,7 +2604,7 @@ def shear( slope, pivot ):
         pivot is the position of the invariant column (0 is left, 1 is right)"""
 
     if ( get_dim() != 2 ):
-        raise "To be applied on 2D only"
+        raise Exception( "To be applied on 2D only")
 
     si = get_si1_2d()
     sisi = 2*power2(si-2)
@@ -2665,7 +2664,7 @@ def tilt( slope, pivot ):
     realized by a frequency shift of all the F2 spectra
     pivot is the position of the invariant row (0 is bottom, 1 is top)"""
     if ( get_dim() != 2 ):
-        raise "To be applied on 2D only"
+        raise Exception( "To be applied on 2D only")
 
     si = get_si2_2d()
     sisi = 2*power2(si-2)
@@ -2747,7 +2746,7 @@ def SymmetrizeCosy(algorithm="mean"):
     elif (algorithm.upper()=="CONTINUOUS"):
         symetrize(3)
     else:
-        raise "algorithm not available"
+        raise Exception( "algorithm not available")
 
 #then return
     if (axe != "none"):
@@ -2768,7 +2767,7 @@ def SymmetrizeJRes(algorithm="mean"):
     elif (algorithm.upper()=="MIN"):
         mindata()
     else:
-        raise "algorithm not available"
+        raise Exception( "algorithm not available")
 
 #---------------------------------------------------------------------------
 def SymmetrizeInadequate(algorithm="mean"):
@@ -2794,14 +2793,14 @@ def local_proj( axis="F1", algo="M", f1_left=0, f2_left=0, f1_right=0, f2_right=
     """
 
     if ( get_dim() != 2 ):
-            raise "To be applied on 2D only"
+            raise Exception( "To be applied on 2D only")
     # handle defaut values
     if f1_left==0 : f1_left=1
     if f2_left==0 : f2_left=1
     if f1_right==0 : f1_right=get_si1_2d()
     if f2_right==0 : f2_right=get_si2_2d()
     if not algo in ("M","S"):
-        raise "Wrong algorithme for local_proj()"
+        raise Exception( "Wrong algorithme for local_proj()")
     if axis.upper() == "F1":
         dim(2)  # sets 1D buffer
         row(1)
@@ -2839,7 +2838,7 @@ def local_proj( axis="F1", algo="M", f1_left=0, f2_left=0, f1_right=0, f2_right=
         get("data")
         extract(f1_left,f1_right)
     else:
-        raise "Wrong axis in local_proj()"
+        raise Exception( "Wrong axis in local_proj()")
 
 #---------------------------------------------------------------------------
 def local_proj_3d( axis="F1", algo="M", f1_left=0, f2_left=0, f3_left=0, f1_right=0, f2_right=0, f3_right=0):
@@ -2863,7 +2862,7 @@ def local_proj_3d( axis="F1", algo="M", f1_left=0, f2_left=0, f3_left=0, f1_righ
     ; see also :  proj3d_all PROJ proj_loc JOIN proc3d
     """
     if (get_c_dim()!=3):
-        raise 'Works only on a JOINed 3D'
+        raise Exception( 'Works only on a JOINed 3D')
     # handle defaut values
     if f1_left==0 : f1_left=1
     if f2_left==0 : f2_left=1
@@ -2886,7 +2885,7 @@ def local_proj_3d( axis="F1", algo="M", f1_left=0, f2_left=0, f3_left=0, f1_righ
         (s01, s02, p01) = (f1_left, f2_left, f3_left)   # starting points
         (sn1, sn2, pn1) = (f1_right, f2_right, f3_right)   # end points
     else:
-       raise "Wrong axis"
+       raise Exception( "Wrong axis")
     siz = (pn1-p01+1)   # nb of planes
     dim(2)
     chsize(sn1-s01+1, sn2-s02+1)
@@ -2896,7 +2895,7 @@ def local_proj_3d( axis="F1", algo="M", f1_left=0, f2_left=0, f3_left=0, f1_righ
     elif (algo[0] == 'M') :
        todo = "adddata()"
     else:
-       raise "wrong algorithm"
+       raise Exception( "wrong algorithm")
 
     try:
         if (algo[1] == 'A'):
@@ -2934,11 +2933,8 @@ def pkwrite_p(filepeak):
     format is not fully compatible with the format used in Gifa 5, as the coordinates are ouput in index
     it will write the 1D, 2D or 3D peak table, depending on get_dim()
     """
-    try:
-        fout = open(filepeak, 'w')
-    except:
-        print("Error while opening file :", sys.exc_info()[0])
-        raise
+    fout = open(filepeak, 'w')
+
     pph2 = get_specw_2_2d() / get_si2_2d()
     ppp2 = pph2 / get_freq_2_2d()
     pph1 = get_specw_1_2d() / get_si1_2d()
@@ -2967,7 +2963,7 @@ def pkwrite_p(filepeak):
             fout.write("\n")
     elif (get_dim() == 3):
         fout.close()
-        raise "reste a faire"
+        raise Exception( "reste a faire")
 
     fout.close()
 
@@ -2985,7 +2981,7 @@ def pksym_p(mode="add",tol=10):
     first try...
     """
     if (get_dim() !=2):
-        raise "works only on 2D data-sets"
+        raise Exception( "works only on 2D data-sets")
     print("   nbr de pics:", get_npk2d())
     t = time.clock()
     print("----------debut du timer")
@@ -3017,7 +3013,7 @@ def peak1d_integ(index,factor=0.1,  thresh=0, slope=0.001):
     """
     dim(1)
     if (index<0 or index>get_si1_1d()):
-        raise "Wrong index value"
+        raise Exception( "Wrong index value")
     toreal()
     top=val1d(index)
     level = max(thresh,top*factor)
@@ -3068,7 +3064,7 @@ def spectral_zone(left, right, axis="F1", left_unit="ppm", right_unit="ppm"):
             iaxis=2
             si = get_si2_2d()
         else:
-            raise "Error with axis in spectral_zone"
+            raise Exception( "Error with axis in spectral_zone")
 
         if (left_unit == 'ppm'):
             l = (ptoi(left,2,iaxis))
@@ -3078,7 +3074,7 @@ def spectral_zone(left, right, axis="F1", left_unit="ppm", right_unit="ppm"):
         elif (left_unit == 'index'):
             l = left
         else:
-            raise "Error with left unit"
+            raise Exception( "Error with left unit")
 
         if (right_unit == 'ppm'):
             r = (ptoi(right,2,iaxis))
@@ -3088,15 +3084,15 @@ def spectral_zone(left, right, axis="F1", left_unit="ppm", right_unit="ppm"):
         elif (right_unit == 'index'):
             r = right
         else:
-            raise "Error with righ unit"
+            raise Exception( "Error with righ unit")
 
         l = int(max(1,round(l)))
         r = int(min(si,round(r)))
         if (l > r):
-            raise ("Wrong spectral zone coordinates : "+ repr(l) + " " + repr(r))
+            raise Exception("Wrong spectral zone coordinates : "+ repr(l) + " " + repr(r))
 
         if ((r-l) < 8):
-            raise "spectral zone too small"
+            raise Exception( "spectral zone too small")
 
         if (l != 1 or r != si):
             if (axis == "F1"):
@@ -3111,7 +3107,7 @@ def aparm():
     computes phase correction form a reconstruction of the beginning of the FID
     """
     if (get_dim() != 1):
-        raise "aparm works only in 1D"
+        raise Exception( "aparm works only in 1D")
     put("data")     # keep a copy of the spectrum aside
     ift()           # and compute the fid
     if (get_si1_1d() > 256):
@@ -3154,7 +3150,7 @@ def writet(filename):
     try:
         fout = open(filename,'w')
     except:
-        raise filename," cannot be opened"
+        raise Exception(filename," cannot be opened")
     dim(1)
     fout.write("#text data file, created by NPK :"+time.strftime("%a, %d %b %Y %H:%M:%S %Z", time.localtime())+"\n")
     fout.write("#dim=1\n")
@@ -3174,10 +3170,8 @@ def load(filename):
     skip # and ; comments
 
     """
-    try:
-        fin = open(filename)
-    except:
-        raise filename," cannot be accessed"
+    fin = open(filename)
+
     # read file
     list = []
     f=fin.read()
@@ -3210,7 +3204,7 @@ def config_getboolean(config, section, option, default="OFF", raw=0, vars=vars):
     """read a boolean value from the configuration, with a default value"""
     v = config_get(config, section, option, default=default, raw=raw, vars=vars)
     if v.lower() not in ConfigParser.SafeConfigParser._boolean_states:
-        raise ValueError, 'Not a boolean: %s' % v
+        raise (ValueError, 'Not a boolean: %s' % v)
     return ConfigParser.SafeConfigParser._boolean_states[v.lower()]
 
 #----------------------------------------------

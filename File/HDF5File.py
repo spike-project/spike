@@ -21,11 +21,20 @@ import tempfile
 import json
 import tables
 from tables.nodes import filenode
-import ConfigParser
+
+if sys.version_info[0] < 3:
+    import ConfigParser
+else:
+    import configparser as ConfigParser
+    xrange = range
+
 
 # File_version is written into the file and tag the file itself 
 # to be changed only if the file format changes
-__file_version__ = "0.9"
+if sys.version_info[0] < 3:
+    __file_version__ = "0.9"
+else:
+    __file_version__ = b"0.9"
 """
 __file_version__ 0.9 new list of attributes for FTMS axes
     additional files are now stored along the data in "attached" group.
@@ -35,8 +44,9 @@ __file_version__ 0.7 has the ability to update the axes
 __file_version__ 0.6 is first stabilized multiresolution version
 """
 # version is the library version number
-__version__ = "0.9"
+__version__ = "0.901"
 """
+v 0.901  when storing a string 'None' it will be read back as the python object None - no change on the file format
 v 0.9 porting from pytables v2 to v3.x / new list of attributes for FTMS axes / storage for files and objects / better compression
 v 0.8 axes are gathered in one table, it's a more HDF5 way to deal with informations
 v 0.6 Uses tables.parameter to optimise the use of the cache
@@ -125,9 +135,7 @@ class HDF5File(object):
         self.nparray = None
         self.chunks = None
         self.filters = None    # for compressing : tables.Filters(complevel=1, complib='zlib')
-        if compress:
-            self.set_compression()
-
+        self.set_compression(compress)
         if access not in ("w", "r", "rw", "a", "r+"):
             raise Exception(access + " : acces key not valid")
         if os.path.isfile(self.fname):
@@ -205,10 +213,13 @@ class HDF5File(object):
 WARNING
 The file {0} is from version {1} while this program handles file version {2}.
 You have to upgrade your msh5 file applying the update function.
-to do this run the following command ( adapt to your local spike setup ) :
+to do this run the following spike command:
+
+spike.File.HDF5File.update("{0}")
+
+or by running the following program: ( adapt to your local spike setup ) :
 
 python -m spike.File.HDF5File update {0}
-
 """.format(self.fname, info["File_Version"],__file_version__)
             raise Exception(msg)
         return True
@@ -268,7 +279,7 @@ python -m spike.File.HDF5File update {0}
         if h5name is None:
             h5name = os.path.basename(filename)
         node = self.open_internal_file(h5name, 'w', where=where)
-        with open(filename, 'r') as F:
+        with open(filename, 'rb') as F:
             node.write( F.read() )
         node.close()
     #----------------------------------------------
@@ -291,7 +302,8 @@ python -m spike.File.HDF5File update {0}
             - so works only on values, lists, dictionary, etc... but not functions or methods
         """
         node = filenode.new_node(self.hf, where=where, name=h5name, filters=tables.Filters(complevel=1, complib='zlib'))
-        json.dump(obj, node)
+        js = json.dumps(obj, ensure_ascii=True)
+        node.write(js.encode())
         node.close()
     #----------------------------------------------
     def retrieve_object(self, h5name, where='/', access='r'):
@@ -300,8 +312,9 @@ python -m spike.File.HDF5File update {0}
         """
         v  = self.hf.get_node(where=where, name=h5name)
         F = filenode.open_node(v,'r')
-        obj = json.load(F)
+        js = F.read()
         F.close()
+        obj = json.loads(js.decode())
         return obj
     ###############################################
     def set_compression(self, On=False):
@@ -496,6 +509,7 @@ python -m spike.File.HDF5File update {0}
         from  .. import FTICR
         if (self.debug > 0): print(group)
         hfgroup = getattr(self.hf.root, group)
+        #print('############ ', dir(hfgroup))
         try:
             hbuf = hfgroup.data
         except:
@@ -507,25 +521,24 @@ python -m spike.File.HDF5File update {0}
         else:
             raise Exception("wrong mode, only 'onfile' and 'memory' allowed")
         if (self.debug > 1): print(type(self.data.buffer))
-        # try:
-        # except:
-        #     raise Exception(" You might be trying to load a file with another architecture 'maybe different resolutions'")
-            
-        
+
+#  Nw axes details
 #        for table in self.hf.walk_nodes("/"+group,"Table"): # get the list of tables in the axes group
 #          values = table.read()
 #           print(values)
 #           exit()
         table = getattr(hfgroup,"axes")
-        values = table.read()
+        values = table.read()   # load all axes
         fields = [i[0] for i in values.dtype.descr]  # rename / rewrite of dtype above
-        for i in range(len (values)):
-            dico = {}
-            for j in range(len(values[i])):
-                dico[fields[j]] = values[i][j]
+        for i in range(len (values)): # for each axis
+            # dico = {}
+            # for j in range(len(values[i])):   # for each entry in the axis table load into "dico"
+            #     dico[fields[j]] = values[i][j]
             ax = FTICR.FTICRAxis()  # create empty axis
-            for j in range(len(values[i])): 
-                setattr(ax, fields[j], values[i][j])    # copy table entries
+            for j in range(len(values[i])):    # for all entries in axis table
+                vv = values[i][j]                       # fetch value
+                if vv == 'None':  vv = None             # the string None codes for the object None !!!
+                setattr(ax, fields[j], vv)              # copy table entries into axis attribute
             setattr(self.data, "axis%d"%(i+1), ax)      # and set axis
         
         self.data.adapt_size()      # axis sizes have to be updated
@@ -582,7 +595,7 @@ python -m spike.File.HDF5File update {0}
         """
         import array
     #    import platform # platform seems to be buggy on MacOs, see http://stackoverflow.com/questions/1842544
-        if sys.maxint == 2**31-1:   # the flag used by array depends on architecture - here on 32biy
+        if sys.maxsize  == 2**31-1:   # the flag used by array depends on architecture - here on 32biy
             flag = 'l'              # Apex files are in int32
         else:                       # here in 64bit
             flag = 'i'              # strange, but works here.
@@ -723,7 +736,7 @@ python -m spike.File.HDF5File update {0}
         Read the generic_table and return the informations
         """
         infos = self.hf.root.generic_table.read()
-        print("******************* \n %s is a %s file created by %s on %s with code version %s.\n HDF5 version is %s and API version is %s.\n Last modification has been made %s \n********************"% ( self.fname, infos[0]['Method'], infos[0]['Owner'], infos[0]['Creation_Date'], infos[0]['Version'], infos[0]['HDF5_Version'], infos[0]['File_Version'], infos[0]['Last_Modification_Date']))
+        print("******************* \n %s is a %s file created by %s on %s with file version %s.\n HDF5 version is %s and API version is %s.\n Last modification has been made %s \n********************"% ( self.fname, infos[0]['Method'], infos[0]['Owner'], infos[0]['Creation_Date'], infos[0]['File_Version'], infos[0]['HDF5_Version'], infos[0]['Version'], infos[0]['Last_Modification_Date']))
 
 ################################################
 # Update functions
@@ -872,6 +885,7 @@ class HDF5_Tests(unittest.TestCase):
         cls.DataFolder = filename('cytoC_2D_000001.d')
         cls.name_file1 = filename("test_file.msh5")
         cls.name_file2 = filename("test_file2.msh5")
+        cls.name_chunk = filename("test_chunk.msh5")
         # Testing the creation of a HDF5 file according to a given nparray - and creating for next tests
         data_init = 10*np.random.random((2048, 32*1024))  # example of buffer (numpy array) from which you might create a HDF5 file
         threshold = data_init.std()
@@ -890,24 +904,24 @@ class HDF5_Tests(unittest.TestCase):
         B = hdf5.data
         hdf5.close()
     #----------------------------------------------
-    def _test_create_from_fticr(self):
+    def test_create_from_fticr(self):
         "Test routine that creates a HDF5 file according to a given FTICRData"
         self.announce()
-        import Apex  as ap
+        from . import Apex  as ap
         fticrdata = ap.Import_2D(self.DataFolder)
         h5f = HDF5File(self.name_file2, "w", fticrd = fticrdata, debug =1, compress=True)
         h5f.close()
     #----------------------------------------------
-    def __test_nparray_to_fticr(self):
+    def test_nparray_to_fticr(self):
         "Test routine that creates a HDF5 file according to a given nparray and returns the buffer (FTICRData)"
         self.announce()
         data_init = 10*np.random.random((2048, 65536)) 
         B = nparray_to_fticrd(self.name_file2, data_init)
         print(B.axis1.size)
     #----------------------------------------------
-    def _test_axes_update(self):
+    def test_axes_update(self):
         "Test routine that overloads the parameter from an axis"
-        import Apex  as ap
+        from . import Apex  as ap
         self.announce()
         import time
         
@@ -915,11 +929,11 @@ class HDF5_Tests(unittest.TestCase):
         d.axes_update(axis = 2, infos = {'highmass':4200.00, 'itype':1})
         d.close()
     #----------------------------------------------
-    def _test_chunkshape(self):
+    def _test_chunkshape(self):     # just TOO SLOWWW
         "Test routine that creates , processes Data according to chunkshapes"
         self.announce()
         from time import time
-        from Apex import Import_2D
+        from .Apex import Import_2D
    
         # Dim1 = 8192
         # Dim2 = 16384
@@ -968,7 +982,7 @@ class HDF5_Tests(unittest.TestCase):
         print("modulus", time()-t0, "secondes")
         print("calcul", time()-t00, "secondes")
     #----------------------------------------------
-    def _test_filenodes(self):
+    def test_filenodes(self):
         "Test routines that work with filenodes"
         self.announce()
         # 1st objects
@@ -992,7 +1006,7 @@ class HDF5_Tests(unittest.TestCase):
         for i in range(17):
             l = F.readline()
         self.assertEqual(l.strip(),
-            "<scan><count>15</count><minutes>0.4828</minutes><tic>1.398E7</tic><maxpeak>3.108E5</maxpeak></scan>")
+            b"<scan><count>15</count><minutes>0.4828</minutes><tic>1.398E7</tic><maxpeak>3.108E5</maxpeak></scan>")
         with self.assertRaises(Exception):
             G = h5f.open_internal_file(h5name="foo.bar")
         F.close()

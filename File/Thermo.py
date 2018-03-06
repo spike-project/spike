@@ -90,7 +90,10 @@ class Thermo_Tests(unittest.TestCase):
     """ A FAIRE """
     def setUp(self):
         from ..Tests import filename, directory
-        import ConfigParser
+        try:
+            import ConfigParser
+        except:
+            import configparser as ConfigParser
         rootfiles = os.getcwd()        
         self.verbose = 1    # verbose > 0 switches messages on
     def announce(self):

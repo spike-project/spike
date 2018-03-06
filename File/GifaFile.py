@@ -13,7 +13,7 @@ This module provides a simple access to NMR files in the Gifa format.
 
 """
 
-from __future__ import print_function
+from __future__ import print_function, division
 import re
 import numpy as np
 from .. import NPKData as npkd
@@ -21,10 +21,17 @@ from ..NPKError import NPKError
 import unittest
 import os
 
+import sys #
+if sys.version_info[0] < 3:
+    pass
+else:
+    xrange = range
+
 HEADERSIZE = 4096   # the size of the ascii header
 BLOCKIO = 4096      # the size of the chunk written to disk
 
 __version__ = "0.3"
+# ported to python 3 jan 2017
 # MAD&MAC 12 12 2011 :  nasty bug in reading 2D which let one point to zero - introduced in previous modif
 # MAD 13 07 2010 :   2D read in windows
 #                   speed-up of read thanks to Numpy
@@ -69,7 +76,7 @@ class GifaFile(object):
                 raise Exception(access + " : acces key not valid")
             self.file = open(fname, access) # open file at once  - CR change file to open Python 2.6
             if access == "r":
-                self.fileB = open(fname, "rb") # CR "b" for Windows
+                self.fileB = open(fname, "rb") # CR "b" for Windows  - MAD and python3
         else:       # if not string, assume a File object
             try:
                 self.fname = fname.name
@@ -78,13 +85,13 @@ class GifaFile(object):
             self.file = fname
             self.fileB = fname
         if access == "r":     # check if it is a real one
-            l = self.file.readline()
-            hsz = re.match('HeaderSize\s*=\s*(\d+)', l)
+            l = self.fileB.readline(32)
+            hsz = re.match('HeaderSize\s*=\s*(\d+)', l.decode())
             if not hsz:
                 self.file.close()
                 raise Exception("file %s not valid"%fname)
             self.headersize = int(hsz.group(1))
-            self.file.seek(0)   # and rewind.
+            self.fileB.seek(0)   # and rewind.
         if access == "w":
             self.headersize = HEADERSIZE
         self.header = None
@@ -165,11 +172,11 @@ class GifaFile(object):
             if ndata.dim == 1:
                 ndata.axis1.itype = self.itype
             elif ndata.dim == 2:
-                ndata.axis1.itype = self.itype/2
+                ndata.axis1.itype = self.itype//2
                 ndata.axis2.itype = self.itype%2
             if ndata.dim == 3:
-                ndata.axis1.itype = self.itype/4
-                ndata.axis2.itype = (self.itype/2)%2
+                ndata.axis1.itype = self.itype//4
+                ndata.axis2.itype = (self.itype//2)%2
                 ndata.axis3.itype = self.itype%4
             ndata.diffaxis = self.copydiffaxesfromheader()
             self.data = ndata
@@ -192,8 +199,9 @@ class GifaFile(object):
         return a dictionnary of the file header
         internal use
         """
-        self.file.seek(0)   # rewind.
-        buf = self.file.read(self.headersize)
+        self.fileB.seek(0)   # rewind.
+        buf = self.fileB.read(self.headersize).decode()
+        self.fileB.seek(0)   # rewind.
         dic = {}
         for line in buf.split("\n"): # go through lines in buf
             lsp = re.split(r'(?<!\\)=', line, 1)   #matches = but not
@@ -210,7 +218,7 @@ class GifaFile(object):
         internal use
         """
         l = ("%-12s = %s\n")%(key, self.header[key])
-        self.fileB.write(l) # CR write in binary mode to presserve the UNIX EOL character
+        self.fileB.write(l.encode())    #  CR write in binary mode to presserve the UNIX EOL character - MAD now general in py3
         if self.debug > 0 : print(l, end=' ')
         return len(l)
     #----------------------------------------------
@@ -301,41 +309,41 @@ class GifaFile(object):
         # compute submatrix blocks
         if self.data.dim == 1:
             h["Szblk1"] = "1024"
-            h["Nbblock1"] = "%d"%(self.data.axis1.size/1024)
+            h["Nbblock1"] = "%d"%(self.data.axis1.size//1024)
         elif self.data.dim == 2:
             sz12 = float(self.data.axis2.size) / self.data.axis1.size
             n2 = 1
-            n1 = BLOCKIO / 4
-            while  ( (float(n2)/ n1) < sz12) and (n1 > 1 ) :
-                n1 = n1/2
+            n1 = BLOCKIO // 4
+            while  ( (float(n2)// n1) < sz12) and (n1 > 1 ) :
+                n1 = n1//2
                 n2 = n2*2
             if self.debug > 0:
                 print("si1 x si2 : %d %d   n1 x n2 : %d %d"%(self.data.axis1.size,self.data.axis2.size,n1,n2))
             h["Szblk1"] = "%d"%n1
             h["Szblk2"] = "%d"%n2
-            h["Nbblock1"] = "%d"%(1+(self.data.axis1.size-1)/n1)
-            h["Nbblock2"] = "%d"%(1+(self.data.axis2.size-1)/n2)
+            h["Nbblock1"] = "%d"%(1+(self.data.axis1.size-1)//n1)
+            h["Nbblock2"] = "%d"%(1+(self.data.axis2.size-1)//n2)
             
         elif self.data.dim == 3:
-            sz12 = float(self.data.axis2.size*self.data.axis3.size) / (self.data.axis1.size*self.data.axis1.size)
-            n1 = BLOCKIO / 4
+            sz12 = float(self.data.axis2.size*self.data.axis3.size) // (self.data.axis1.size*self.data.axis1.size)
+            n1 = BLOCKIO // 4
             n2 = 1
             n3 = 1
             while  ((float(n2*n3)/(n1*n1)) < sz12 ) and (n1 > 1):
-                n1 = n1/2
+                n1 = n1//2
                 n2 = n2*2
             sz12 = float(self.data.axis3.size) / (self.data.axis1.size)
             while  ((float(n3)/ n2) < sz12 ) and (n2 > 1):
-                n2 = n2/2
+                n2 = n2//2
                 n3 = n3*2
             if self.debug > 0:
                 print("si1 x si2 x si3: %d %d %d   n1 x n2 x n3 : %d %d %d"%(self.data.axis1.size, self.data.axis2.size, self.data.axis3.size, n1, n2, n3))
             h["Szblk1"] = "%d"%n1
             h["Szblk2"] = "%d"%n2
             h["Szblk3"] = "%d"%n3
-            h["Nbblock1"] = "%d"%(1+(self.data.axis1.size-1)/n1)
-            h["Nbblock2"] = "%d"%(1+(self.data.axis2.size-1)/n2)
-            h["Nbblock3"] = "%d"%(1+(self.data.axis3.size-1)/n3)
+            h["Nbblock1"] = "%d"%(1+(self.data.axis1.size-1)//n1)
+            h["Nbblock2"] = "%d"%(1+(self.data.axis2.size-1)//n2)
+            h["Nbblock3"] = "%d"%(1+(self.data.axis3.size-1)//n3)
         self.header = h
         
     #----------------------------------------------
@@ -349,13 +357,13 @@ class GifaFile(object):
         self.fileB.seek(0) #CR not neccesary, better to be carefull
         len_so_far = 0
         l = "HeaderSize   = %d\n"%HEADERSIZE
-        self.fileB.write(l)
+        self.fileB.write(l.encode())
         len_so_far = len_so_far+len(l)
         # then the other
         for k in self.header.keys():
             len_so_far = len_so_far + self.write_header_line(k)
         # then flush buffer up to Headersize
-        self.fileB.write( "0"*(HEADERSIZE-len_so_far) )
+        self.fileB.write( b"0"*(HEADERSIZE-len_so_far) )
         
     #----------------------------------------------
     def load_header(self):
@@ -539,7 +547,7 @@ class GifaFile(object):
                 print("2D:", sz1, sz2)
             i1 = 0
             i2 = 0
-            fbuf = np.zeros((BLOCKIO/4,), dtype='float32')
+            fbuf = np.zeros((BLOCKIO//4,), dtype='float32')
             for b1 in xrange(self.nblock1):
                 for b2 in xrange(self.nblock2):
     #                print b1,b2,i1,i2
@@ -565,7 +573,7 @@ class GifaFile(object):
             i1 = 0
             i2 = 0
             i3 = 0
-            fbuf = np.zeros((BLOCKIO/4,), dtype='float32')
+            fbuf = np.zeros((BLOCKIO//4,), dtype='float32')
             print(self.nblock1, self.nblock2, self.nblock3)
             for b1 in xrange(self.nblock1):
                 for b2 in xrange(self.nblock2):

@@ -65,7 +65,7 @@ class NavigToolbar(NavigationToolbar):
         if action.find('save') == 0:
             kind_saved = action[4:]
             print("kind_saved ", kind_saved)
-            if self.data_profile.axis1.units == 'm/z':
+            if self.data_profile.axis1.currentunits == 'm/z':
                 act.triggered.connect(partial(self.dial.open_file_dialog, kind_saved))                 # Opens window dialog box
             else:
                 print("can be saved only in m/z mode.")
@@ -163,28 +163,28 @@ class PROFILE(QMainWindow):
             axis_profile = self.axes_mz(self.data_profile.axes(1))                                          # m/z axis x values
         elif self.data_profile.along == 'y':
             axis_profile = self.axes_mz(self.data_profile.axes(2))                                          # m/z axis y values
-        if self.data_profile.axis1.units == 'm/z':
+        if self.data_profile.axis1.currentunits == 'm/z':
             print("makes plot for m/z format ")
             self.axes.set_xlabel('m/z')
             self.axes.plot(axis_profile, self.data_profile.buffer, self.kind_line)                          # Plots the data in m/z in the popup window
-        elif self.data_profile.axis1.units == 'points':
+        elif self.data_profile.axis1.currentunits == 'points':
             self.axes.set_xlabel('points')
             self.axes.plot(self.data_profile.buffer, self.kind_line)                                        # Plots the data in points in the popup window
         self.canvas.draw()                                                                          # print in the canvas.
 
 @dec_class_pr
 @decclassdebugging
-class Dialog(QtGui.QWidget):
+class Dialog(QWidget):
     '''
     Dialog box for saving CSV and PDF files.
     '''
     def __init__(self, data, save, toolbar):
-        QtGui.QWidget.__init__(self)
+        QWidget.__init__(self)
         self.data_profile = data
         self.save = save
         self.toolbar = toolbar
         self.name_dialog = "save profile"                                       # name of the dialog input window
-        self.message_input = "enter name profile"                   # message for input.
+        self.message_input = "enter name profile"                               # message for input.
 
     def open_file_dialog(self, kind_saved):
         """
@@ -216,5 +216,5 @@ if __name__ == "__main__":
     data.ref_mass = 344.0974
     data.ref_freq = 419620.0
     data.highmass = 1000.0
-    data.units = "m/z"
+    data.currentunits = "m/z"
     profile_popup(data)

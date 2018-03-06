@@ -1,8 +1,7 @@
 #!/usr/bin/env python 
 # encoding: utf-8
 
-"""
-set of function for Peak detections and display
+"""set of function for Peak detections and display - 1D and 2D
 
 Very First functionnal - Not finished !
 
@@ -68,7 +67,7 @@ Sept 2015 M-A Delsuc
 from __future__ import print_function
 import numpy as np
 import unittest
-
+###
 from spike import NPKError
 from spike.NPKData import NPKData_plugin, NPKData, flatten, parsezoom
 from spike.util.counter import timeit
@@ -107,6 +106,7 @@ class Peak1D(Peak):
     width_err   ...
     """
     report_format = "{}, {}, {:.2f}, {:.2f}"
+    full_format = "{}, "*8
     def __init__(self, Id, label, intens, pos):
         super(Peak1D, self).__init__(Id, label, intens)
         self.pos = float(pos)
@@ -123,16 +123,23 @@ class Peak1D(Peak):
         order is "id, label, position, intensity"
 
         printed parameters are : 
-        Id label positions intens width
-        and default format used is "{}, {}, {:.2f}, {:.2f}"   (so width is not shown)
+        Id label positions intens width intens_err pos_err width_err
+        and default format used is "{}, {}, {:.2f}, {:.2f}"   (so only the four first parameters are shown)
         format field can enforce another format:
             you can use any formating syntax. So for instance the following format
-            "{1} :   {3:.2f}  F1: {1:.7f} +/- {4:.2f}"
+            "{1} :   {3:.2f}  F1: {2:.7f} +/- {4:.2f}"
             will remove the Id, show position with 7 digits after the comma, and will show width
         """
         if format is None:
             format = self.report_format
-        return format.format( self.Id, self.label, f(self.pos), self.intens, self.width )
+        return format.format( self.Id, self.label, f(self.pos), self.intens, self.width,  self.pos_err, self.intens_err, self.width_err)
+    def _report(self, f=_identity):
+        """
+        full report for 1D Peaks
+        list is : Id, label, pos intens, widthF1, width, pos_err, intens_err, width_err
+        """
+        return self.report(f=f, format=self.full_format)
+        
 class Peak2D(Peak):
     """a class to store a single 2D peak
     defines in addition to Peak
@@ -142,6 +149,7 @@ class Peak2D(Peak):
     widthF1_err   ...
     """
     report_format = "{}, {}, {:.2f}, {:.2f}, {:.2f}"
+    full_format = "{}, "*12
     def __init__(self, Id, label, intens, posF1, posF2 ):
         super(Peak2D, self).__init__(Id, label, intens)
         self.posF1 = posF1
@@ -150,6 +158,8 @@ class Peak2D(Peak):
         self.widthF2 = 0.0
         self.posF1_err = 0.0
         self.posF2_err = 0.0
+        self.widthF1_err = 0.0
+        self.widthF2_err = 0.0
     def report(self, f1=_identity, f2=_identity, format=None):
         """
         print the peak list
@@ -172,7 +182,13 @@ class Peak2D(Peak):
         """
         if format is None:
             format = self.report_format
-        return format.format( self.Id, self.label, f1(self.posF1), f2(self.posF2), self.intens, self.widthF1, self.widthF2 )
+        return format.format( self.Id, self.label, f1(self.posF1), f2(self.posF2), self.intens, self.widthF1, self.widthF2, self.posF1_err, self.posF2_err, self.intens_err, self.widthF1_err, self.widthF2_err )
+    def _report(self, f1=_identity, f2=_identity):
+        """
+        full report for 2D Peaks
+        list is : Id, label, posF1, posF2, intens, widthF1, widthF2, posF1_err, posF2_err, intens_err, widthF1_err, widthF2_err
+        """
+        return self.report(f1=f1, f2=f2, format=self.full_format)
 
 class PeakList(list):
     """
@@ -198,7 +214,7 @@ class PeakList(list):
             keys = kwds.keys()
             keys.sort()
             extras = ", ".join(["%s=%s" % (k, kwds[k]) for k in keys])
-            raise ValueError, "unrecognized keyword args: %s" % extras
+            raise(ValueError, "unrecognized keyword args: %s" % extras)
     @property
     def intens(self):
         "returns a numpy array of the intensities"
@@ -212,8 +228,9 @@ class PeakList(list):
     def largest(self):
         "sort the peaklist in decresing order of intensities"
         self.sort(reverse = True, key = lambda p:p.intens)
-    def __getslice__(self,i,j):
-        return type(self)(list.__getslice__(self,i,j))
+    def getitem(self,i,j):
+        print('getitem')
+        return type(self)(list.getitem(self,i,j))
 class Peak1DList(PeakList):
     """
     store a list of 1D peaks
@@ -238,12 +255,18 @@ class Peak1DList(PeakList):
         print ("# %d in Peak list"%len(self), file=file)
         for pk in self:
             print(pk.report(f=f, format=format), file=file)
+    def _report(self, f=_identity, file=None):
+        """return full report for 1D peak list
+        list is : Id, label, pos, intens, width,  pos_err, intens_err, width_err
+        """
+        lst = [pk._report(f=f) for pk in self ]
+        return "\n".join(lst)
     def display(self, peak_label=False, zoom=None, show=False, f=_identity, color = None, markersize=None):
         """
         displays 1D peaks
         zoom is in index
         """
-        import spike.Display.testplot as testplot
+        from spike.Display import testplot
         plot = testplot.plot()
         if zoom:
             z0=zoom[0]
@@ -286,6 +309,12 @@ class Peak2DList(PeakList):
         print ("# %d in Peak list"%len(self), file=file)
         for pk in self:
             print(pk.report(f1=f1, f2=f2, format=format), file=file)
+    def _report(self, f=_identity, file=None):
+        """return full report for 2D peak list
+        list is : Id, label, posF1, posF2, intens, widthF1, widthF2, posF1_err, posF2_err, intens_err, widthF1_err, widthF2_err
+        """
+        lst = [pk._report(f1=f1, f2=f2) for pk in self ]
+        return "\n".join(lst)
     def display(self, axis = None, peak_label=False, zoom=None, show=False, f1=_identity, f2=_identity, color=None, markersize=6):
         """
         displays 2D peak list
@@ -337,9 +366,9 @@ def peakpick(npkd, threshold = None, zoom = None):
         zoom is in currentunit (same syntax as in display)
         None means the whole data
     """
+    if threshold is None:
+        threshold = 3*np.std( npkd.get_buffer().real )
     if npkd.dim == 1:
-        if threshold is None:
-            threshold = 3*npkd.std()
         listpkF1, listint = peaks1d(npkd, threshold=threshold, zoom=zoom)
                             #     Id, label, intens, pos        
         pkl = Peak1DList( ( Peak1D(i, str(i), intens, pos) \
@@ -347,8 +376,6 @@ def peakpick(npkd, threshold = None, zoom = None):
                         threshold=threshold, source=npkd )
         npkd.peaks = pkl
     elif npkd.dim == 2:
-        if threshold is None:
-            threshold = 3*npkd.std()
         listpkF1, listpkF2, listint = peaks2d(npkd, threshold=threshold, zoom=zoom)
                             #     Id, label, intens, posF1, posF2 
         pkl = Peak2DList( ( Peak2D(i, str(i), intens, posF1, posF2) \
@@ -357,10 +384,9 @@ def peakpick(npkd, threshold = None, zoom = None):
         npkd.peaks = pkl
     else:
         raise NPKError("Not implemented of %sD experiment"%npkd.dim, data=npkd)
-    print (threshold)
+    print ('PP Threshold:',threshold)
     return npkd
-        
-    
+
 def peaks2d(npkd, threshold, zoom):
     '''
     code for NPKData 2D peak picker
@@ -374,9 +400,9 @@ def peaks2d(npkd, threshold, zoom):
     print("z1lo, z1up, z2lo, z2up ", z1lo, z1up, z2lo, z2up)
     buff = npkd.get_buffer()[z1lo:z1up, z2lo:z2up]            # take the zoom window
     if npkd.itype != 0:
-        buff = abs(buff)
+        buff = buff.real
     
-    # listpk=np.where(((buff > threshold*np.ones(buff.shape))&            # thresholding
+    # listpk=np.where(((buff > gold*np.ones(buff.shape))&            # thresholding
     #                 (buff > np.roll(buff,  1, 0)) &         # laplacian - kind of
     #                 (buff > np.roll(buff, -1, 0)) &
     #                 (buff > np.roll(buff,  1, 1)) &
@@ -446,9 +472,10 @@ def centroid1d(npkd, npoints=3):
     noff = (int(npoints)-1)/2
     if (2*noff+1 != npoints) or (npoints<3):
         raise NPKError("npoints must odd and >2 ",data=npkd)
+    buff = npkd.get_buffer().real
     for pk in npkd.peaks:
         xdata = range(int(round(pk.pos-noff)), int(round(pk.pos+noff+1)))
-        ydata = npkd.get_buffer()[xdata]
+        ydata = buff[xdata]
         try:
             popt, pcov = curve_fit(center, xdata, ydata, p0=[pk.pos, pk.intens, 1.0] ) # fit
         except RuntimeError:

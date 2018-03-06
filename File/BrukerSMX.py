@@ -2,107 +2,101 @@
 """
 Code to handle 2rr submatrix Bruker file format
 
+used internally by BrukerNMR, not for final use
+
 Original code from L.Chiron
 adapted my M-A Delsuc
 """
 from __future__ import print_function
-import numpy as np
-from time import time
-import os
+
 import os.path as op
+import numpy as np
 from . import BrukerNMR as Bruker
 
 debug = False
 class BrukerSMXHandler(object):
     '''
     Reads/writes Bruker 2rr files
-    
+
     Writing not fully implemented
 
-    '''    
+    '''
     def __init__(self, addrproc):
         """
         Creates an object that holds everything
-        addrproc the address of data the directory : eg   /here/expname/12/pdata/1 
+        addrproc the address of data the directory : eg   /here/expname/12/pdata/1
         """
         self.addrproc = op.abspath(addrproc)
         self.addr_expno = op.dirname(op.dirname(addrproc))
         #####
         self.acqu = Bruker.read_param( Bruker.find_acqu(self.addr_expno) )
         self.proc = Bruker.read_param( Bruker.find_proc(self.addrproc, down=False) )
-        if op.exists( op.join(self.addrproc, '1r') ) or op.exists( op.join(self.addr_expno, 'fid') ):
-            self.dim = 1
-        elif op.exists( op.join(self.addrproc, '2rr') )  or op.exists( op.join(self.addr_expno, 'ser') ):
-            self.dim = 2
-        else:
-            raise Exception('Cannot determine data dimension')
-        if self.dim == 2:
-            self.acqu2 = Bruker.read_param( Bruker.find_acqu2(self.addr_expno) )
-            self.proc2 = Bruker.read_param( Bruker.find_proc2(self.addrproc, down=False) )
-            self.si1 = int(self.proc2['$SI'])
-            self.si2 = int(self.proc['$SI'])
-            self.xd1 = int(self.proc2['$XDIM'])
-            self.xd2 = int(self.proc['$XDIM'])
-            if debug:
-                for att in ("addrproc", "addr_expno", 'si1', "si2", "xd1", "xd2"):
-                    print("%s : %s"%(att,getattr(self,att)) )
-    def load(self):
+
+        self.acqu2 = Bruker.read_param( Bruker.find_acqu2(self.addr_expno) )
+        self.proc2 = Bruker.read_param( Bruker.find_proc2(self.addrproc, down=False) )
+        self.si1 = int(self.proc2['$SI'])
+        self.si2 = int(self.proc['$SI'])
+        self.xd1 = int(self.proc2['$XDIM'])
+        self.xd2 = int(self.proc['$XDIM'])
+
+        if debug:
+            for att in ("addrproc", "addr_expno", 'si1', "si2", "xd1", "xd2"):
+                print("%s : %s"%(att,getattr(self,att)) )
+
+    def read_smx(self):
         '''
-        Reads the data file (1D or 2D) and keeps it in self.data_1d for 1D
-        in self.data_2d_2rr and self.data_2d_2ri for 2D.
+        Reads the 2D "smx" (2rr 2ri 2ir 2ii) files and keeps it in self.data_2d_2xx
+        data taken as integers.
         '''
-        if op.exists(op.join(self.addr_expno,'fid')):
-            self.read_1D()
-        elif op.exists(op.join(self.addr_expno,'ser')):
-            self.read_2D()
+        if debug:   print ("reading 2D")
+        self.prepare_mat()
+        for name in ('2rr','2ir','2ri','2ii'):
 
-    def read_1D(self):
-        "not implemented - use File.BrukerNMR instead"
-        raise Exception("not implmented - use File.BrukerNMR instead")
-    def read_2D(self):
+            fn = op.join(self.addrproc, name)
+            dataname = "data_2d_"+name          # result stored in object as data_2d_2xx
+
+            if op.exists(fn):
+                if debug:   print ("read", name)
+                mat =  self.read_file(fn)
+                setattr(self, dataname, self.reorder_subm(mat) )
+            else:
+                setattr(self, dataname, None)
+        if debug:
+            print ("2rr.shape ", self.data_2d_2rr.shape)
+            print ("read finished")
+
+    def write_smx(self):
         '''
-        Reads the 2D "fid" file and keeps it in self.data
-        data taken as integers. 
+        writes the prepared self.data_2d_2xx (x in {r,i} ) into 2xx files
+
+        should have been prepared elsewhere
+        missing data are not written
         '''
-        if debug:   print ("read 2D")
-        self.data_DIM = '2d'
-
-        fn = op.join(self.addrproc,'2rr')
-        self.data_2d_2rr = self.reorder_subm(np.fromfile(fn, 'i4'))
-
-        fn = op.join(self.addrproc,'2ri')
-        if op.exists(fn):
-            if debug:   print ("read 2ri")
-            self.data_2d_2ri = self.reorder_subm(np.fromfile(fn, 'i4'))
-        else:
-            self.data_2d_2ri = None
-
-        fn = op.join(self.addrproc,'2ir')
-        if op.exists(fn):
-            if debug:   print ("read 2ir")
-            self.data_2d_2ir = self.reorder_subm(np.fromfile(fn, 'i4'))
-        else:
-            self.data_2d_2ir = None
-        fn = op.join(self.addrproc,'2ri')
-        if op.exists(fn):
-            if debug:   print ("read 2ii")
-            self.data_2d_2ii = self.reorder_subm(np.fromfile(fn, 'i4'))
-        else:
-            self.data_2d_2ii = None
-
+        if debug:
+            print ("writing 2D")
+            print ("2rr.shape ", self.data_2d_2rr.shape)
+        self.prepare_mat()
+        for name in ('2rr','2ir','2ri','2ii'):
+            try:
+                dataset = getattr(self,  'data_2d_' + name)
+            except:
+                continue    # go to next if not found
+            else:   # or do the stuff
+                if dataset is not None:
+                    fn = op.join(self.addrproc, name)
+                    data = self.reorder_bck_subm(dataset)
+                    self.write_file(data, fn)
+                    if debug:   print (name, " written")
         if debug:   print ("read finished")
-                    
+
     def prepare_mat(self):
         '''
         sub_per_dim : [nb of submatrices in t1, nb of submatrices in t2]
-        self.proc['$SI'] : dimension 2 of the 2D data. 
-        self.proc2['$SI'] : dimension 1 of the 2D data. 
-        self.acqu['$XDIM'] : size submatrix
+        self.si2 == self.proc['$SI'] : dimension 2 of the 2D data.
+        self.si1 == self.proc2['$SI'] : dimension 1 of the 2D data.
+        self.xd2 == self.acqu['$XDIM'] : size submatrix in F2
+        self.xd1 == self.acqu2['$XDIM'] : size submatrix in F1
         '''
-        if debug:   print ("prepare matrix")
-        self.rdata = np.empty((self.si1, self.si2)) #, dtype = 'complex128')
-        if debug:
-            print ("rdata.shape ",self.rdata.shape)
         self.dim_mat = (self.si1, self.si2)
         self.dim_sub_mat = (self.xd1, self.xd2)
         zipshape = zip(self.dim_mat, self.dim_sub_mat)
@@ -120,11 +114,10 @@ class BrukerSMXHandler(object):
         Reorder flat matrix back to sbmx Bruker data.
         self.sub_per_dim : [nb of submatrices in t1, nb of submatrices in t2]
         self.nsubs : total number of submatrices
-        self.proc['$SI'] : shape of the 2D data. 
+        self.proc['$SI'] : shape of the 2D data.
         self.acqu['$XDIM'] : size submatrix
         """
         if debug:   print ("reorder matrix back")
-        self.prepare_mat()
         interm = data.reshape(self.dim_mat)
         mat = []
         for sub_num, sub_idx in enumerate(np.ndindex(tuple(self.sub_per_dim))):
@@ -139,16 +132,12 @@ class BrukerSMXHandler(object):
         Reorder sbmx binary Bruker data to flat matrix.
         self.sub_per_dim : [nb of submatrices in t1, nb of submatrices in t2]
         self.nsubs : total number of submatrices
-        self.proc['$SI'] : shape of the 2D data. 
+        self.proc['$SI'] : shape of the 2D data.
         self.acqu['$XDIM'] : size submatrix
         """
         if debug:    print ("reorder matrix")
-        self.prepare_mat()
-        #longmat = int(self.proc['$SI']), int(self.proc2['$XDIM'])*self.sub_per_dim[1]
-        # print "data.shape ",data.shape
-        # print "longmat ",self.long_mat
-        interm = data.reshape(self.long_mat)      
-        mat = []
+        rdata = np.empty((self.si1, self.si2)) #, dtype = 'complex128')
+        interm = data.reshape(self.long_mat)
         for sub_num, sub_idx in enumerate(np.ndindex(tuple(self.sub_per_dim))):
             zipshape = zip(sub_idx, self.dim_sub_mat)
             sub_slices = [slice(i * j, (i + 1) * j) for i, j in zipshape ]
@@ -157,20 +146,27 @@ class BrukerSMXHandler(object):
             # print "self.rdata[sub_slices].shape ",self.rdata[sub_slices].shape
             # print "interm[slt1, slt2].shape ",interm[slt1, slt2].shape
             # print "self.rdata[sub_slices].shape",self.rdata[sub_slices].shape
-            self.rdata[sub_slices] = interm[slt2, slt1]
-        data = self.rdata
-        return data
+            rdata[sub_slices] = interm[slt2, slt1]
+        return rdata
 
+    def read_file(self, filename):
+        '''
+        data read as integers.
+        '''
+        if self.proc['$BYTORDP'] == '0':
+            fmt = '<i4'       # little endian
+        else:
+            fmt = '>i4'      # big endian
+        d = np.fromfile(filename, fmt)
+        return d
     def write_file(self, data, filename):
         '''
-        data written as integers. 
+        data written as integers.
         '''
-        f = open(filename, 'wb')
         if self.proc['$BYTORDP'] == '0':
-            f.write(data.astype('<i4').tostring()) # little endian
+            fmt = '<i4'       # little endian
         else:
-            f.write(data.astype('>i4').tostring()) # big endian
-        f.close()
-        print ("rewrote ", filename)
-
+            fmt = '>i4'      # big endian
+        with open(filename, 'wb') as f:
+            f.write(data.astype(fmt).tostring())
 

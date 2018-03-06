@@ -4,7 +4,7 @@
 """
     Utility to Handle NMR Bruker files
 
-partitly based on NPK v1 code
+partly based on NPK v1 code
 """
 
 from __future__ import print_function
@@ -19,9 +19,11 @@ import re
 import struct
 import time
 import unittest
+import shutil
+
 import numpy as np
 
-from ..NPKData import NPKData
+from ..NPKData import NPKData, LaplaceAxis
 
 debug = False
 verbose = False   # change this for vebose importers
@@ -207,7 +209,7 @@ def write_param(param, filename):
             if not k.startswith('$') and k not in ( 'TITLE', 'JCAMPDX', 'comments', 'END'):
                 out(k)
         # then comments (remove left \n   add one on right)
-        F.write( param['comments'].lstrip()+"\n" ) 
+        F.write( param['comments'].lstrip()+"\n" )
         # then plain $$# entries
         for k in klist:
             if k.startswith('$'):
@@ -261,31 +263,18 @@ def read_2D(sizeF1, sizeF2, filename="ser", bytorda=1):
                 #     setval(i1+1,i2+i3+1,ibuf[i3])      # copy to 2D buffer
     return npkbuf
 ################################################################
-def read_3D(sizeF1, sizeF2, sizeF3, filename="ser", bytorda=1):
-    """
-    Reads in a Bruker 3D fid
-
-    sizeF1 x sizeF2 is the number of fid
-    sizeF3 is the number of data-points in the fid
-
-    should be on file.
-    """
-    raise Exception("Not performed yet")
-# read binary
-    if bytorda == 0:
-        fmt = "<64i"
-    else:
-        fmt = ">64i"   # > is used to keep the normal endianess
-    f=open(filename,"rb")
-    for i1 in range(sizeF1):
-        for i2 in range(sizeF2):
-            for i3 in range(0,sizeF3,64): # read by 64 steps
-                buf = f.read(256)
-                ibuf = struct.unpack(fmt,buf)
-                bufsz = min(64, sizeF3-i3)
-                for i4 in range(bufsz):
-                    setval(i1+1,i2+1,i3+i4+1,ibuf[i4])      # copy to 3D buffer
-    f.close()
+# def read_3D(sizeF1, sizeF2, sizeF3, filename="ser", bytorda=1):
+#     """
+#     Reads in a Bruker 3D fid
+# 
+#     Not available yet
+#     
+#     sizeF1 x sizeF2 is the number of fid
+#     sizeF3 is the number of data-points in the fid
+# 
+#     should be on file.
+#     """
+#     raise Exception("Not available yet")
 
 ################################################################
 def zerotime(acqu):
@@ -392,6 +381,9 @@ def Import_1D(filename="fid", outfile=None):
     size= int(acqu['$TD'])  # get size
     if verbose: print("importing 1D FID, size =",size)
     data = read_1D(size, filename, bytorda=int(acqu['$BYTORDA']))
+    NC = int(acqu['$NC'])   # correct intensity with Bruker "NC" coefficient
+    if NC != 0:
+        data *= 2**(NC)
     d = NPKData(buffer=data)
 # then set parameters
     d.axis1.specwidth = float(acqu['$SW_h'])
@@ -438,35 +430,53 @@ def Import_1D_proc(filename="1r"):
     d.params = pardic   # add the parameters to the data-set
     return d
 ################################################################
+# functions for exporting Topspin files
+################################################################
+def write_file(bytordp, data, filename):
+    '''
+    data written as integers.
+    '''
+    if bytordp == '0':
+        fmt = '<i4'       # little endian
+    else:
+        fmt = '>i4'      # big endian
+    with open(filename, 'wb') as f:
+        f.write(data.astype(fmt).tostring())
+
 def Export_proc(d, filename, template=None ):
     """
     Exports a 1D or a 2D npkdata to a  Bruker 1r / 2rr file, using templname as a template
     
-    fname and templname are procno : here/my_experiment/expno/pdata/procno/
-    and the files are created in the fname directory
-    a pdata/procno should already exists as a template
+    filename and template are procno : datadir/my_experiment/expno/pdata/procno/
+    and the files are created in the filename directory
+    a pdata/procno should already exists in template for templating
     
-    if d contains metadat parameters from Bruker, there will be used,
+    if d contains metadata parameters from Bruker, there will be used,
     however all files common to fname and templname expno will not be updated
     
     if fname and templname are exactly the same, (or templname is None)
-        the proc and procs files will be overwriten
+        only 1r / 2rr proc and procs files will be overwriten
     """
+    from .BrukerSMX import BrukerSMXHandler
     #---------
     if d.dim>2:
         raise Exception('Not implemented yet')
     if template is None:
         template = filename
+    template = op.normpath(template)
+    filename = op.normpath(filename)
 
     if (not op.exists(template)):
         raise Exception(template+" : file not found")
     if verbose:   print('Export %dD spectrum to %s using %s'%(d.dim,filename,template))
 
-    SMX = BrukerSMXWriter(d, filename, template)
-
+    
     # check and build dir trees from bottom
     fexpno = op.dirname(op.dirname(filename))
-    texpno = SMX.addr_expno
+    texpno = op.dirname(op.dirname(template))
+    if debug:
+        print ('texpno', texpno)
+        print ('fexpno', fexpno)
     escratch = False    # indicates expno Bruker dir tree has to be created from scratch
     pscratch = False    # indicates procno Bruker dir tree has to be created from scratch
     if not op.exists(fexpno):
@@ -485,7 +495,7 @@ def Export_proc(d, filename, template=None ):
                 shutil.copy( f, op.join(filename, op.basename(f)))
     # now we create Bruker parameter files if creating from scratch and f contains meta data
     # we provide a user warning if it is not possible
-    if escratch:
+    if escratch:    # here we create acqu/acqus files
         warn = False
         if d.dim == 1:
             pnamelist = ('acqu',)
@@ -493,15 +503,15 @@ def Export_proc(d, filename, template=None ):
             pnamelist = ('acqu','acqu2')
         for pname in pnamelist:    # create parameter files
             try:
-                par = d.params[pname]
-            except AttributeError, KeyError:
+                par = d.params[pname]   # check is dataset contains Bruker parameters (either from import or from hdf5 files)
+            except(AttributeError, KeyError):
                 warn = True
             else:
                 write_param(par, op.join(fexpno, pname) )
                 write_param(par, op.join(fexpno, pname+'s') )
         if warn:
             print("Warning, acqu/acqus files have not been updated")
-    if fscratch:    # here we create acqu/acqus files
+    if pscratch:    # here we create proc/procs files
         warn = False
         if d.dim == 1:
             pnamelist = ('proc',)
@@ -510,14 +520,15 @@ def Export_proc(d, filename, template=None ):
         for pname in pnamelist:    # create parameter files
             try:
                 par = d.params[pname]
-            except AttributeError, KeyError:
+            except(AttributeError, KeyError):
                 warn = True
             else:
                 write_param(par, op.join(filename, pname) )
                 write_param(par, op.join(filename, pname+'s') )
         if warn:
             print("Warning, proc/procs files have not been updated")
-    # load template params
+
+    # load template params - now populated
     proc = read_param(find_proc(template, down=False))
     acqu = read_param(find_acqu(texpno))
     if d.dim == 2:
@@ -548,13 +559,16 @@ def Export_proc(d, filename, template=None ):
         write_param(proc, op.join(filename, 'procs') )
     if d.dim == 2:
         proc['$SI'] = str(d.axis2.cpxsize)
-        proc2['$SI'] = str(d.axis1.cpxsize)
         proc['$SF'] = str(d.axis2.frequency)
-        proc2['$SF'] = str(d.axis1.frequency)
         proc['$SW_p'] = str(d.axis2.specwidth)
-        proc2['$SW_p'] = str(d.axis1.specwidth)
         proc['$OFFSET'] = str(revoffset(d.axis2.offset, acqu, proc))
-        proc2['$OFFSET'] = str(revoffset(d.axis1.offset, acqu2, proc2))
+        proc2['$SI'] = str(d.axis1.cpxsize)
+        if isinstance(d.axis1, LaplaceAxis):  # if DOSY
+            print('Warning, storing DOSY parameters to Topspin dataset still not fully tested !')
+        else:                                               # else 2D NMR
+            proc2['$SF'] = str(d.axis1.frequency)
+            proc2['$SW_p'] = str(d.axis1.specwidth)
+            proc2['$OFFSET'] = str(revoffset(d.axis1.offset, acqu2, proc2))
         proc['$YMAX_p'] = str(buffinal.max())
         proc['$YMIN_p'] = str(buffinal.min())
         write_param(proc, op.join(filename, 'proc') )
@@ -565,34 +579,30 @@ def Export_proc(d, filename, template=None ):
     # create binary files
     if d.dim == 1:
         if d.axis1.itype == 0:
-            writebin(op.join(filename, '1r'), buffinal)
+            write_file(proc['$BYTORDP'], op.join(filename, '1r'), buffinal)
         else:
-            writebin(op.join(filename, '1r'), buffinal[::2])
-            writebin(op.join(filename, '1r'), buffinal[1::2])
+            write_file(proc['$BYTORDP'], op.join(filename, '1r'), buffinal[::2])
+            write_file(proc['$BYTORDP'], op.join(filename, '1r'), buffinal[1::2])
     if d.dim == 2:
+        SMX = BrukerSMXHandler(filename)
         if d.axis2.itype == 0:
             if d.axis1.itype == 0:
-                writebin(op.join(filename, '2rr'), buffinal)
+                SMX.data_2d_2rr = buffinal
             else:
-                writebin(op.join(filename, '1r'), buffinal[::2])
-                writebin(op.join(filename, '1r'), buffinal[1::2])
+                SMX.data_2d_2rr = buffinal[::2, :]
+                SMX.data_2d_2ir = buffinal[1::2, :]     # TO BE CHECKED
+        if d.axis2.itype == 1:
+            if d.axis1.itype == 0:
+                SMX.data_2d_2rr = buffinal[:, ::2]
+                SMX.data_2d_2ri = buffinal[:, 1::2]
+            else:
+                SMX.data_2d_2rr = buffinal[::2, ::2]
+                SMX.data_2d_2ir = buffinal[1::2, ::2]
+                SMX.data_2d_2ri = buffinal[::2, 1::2]
+                SMX.data_2d_2ii = buffinal[1::2, 1::2]
+        SMX.write_smx()
 
-    print('PASSED')
-    exit()
-
-
-    data = np.fromfile(filename, 'i4').astype(float)
-    if op.exists(op.join(dire,'1i')):  # reads imaginary part
-        data = data + 1j*np.fromfile(filename, 'i4')
-    d = NPKData(buffer=data)
-# then set parameters
-    d.axis1.specwidth = float(acqu['$SW_h'])
-    d.axis1.frequency = float(acqu['$SFO1'])
-    d.frequency = d.axis1.frequency
-    d.axis1.offset = offset(acqu, proc)
-    d.axis1.zerotime = zerotime(acqu)
-    pardic = {"acqu": acqu, "proc": proc} # create ad-hoc parameters
-    d.params = pardic   # add the parameters to the data-set
+    if debug: print(filename, 'file written')
     return d
 
 ################################################################
@@ -642,6 +652,9 @@ def Import_2D(filename="ser", outfile=None):
     data = np.fromfile(filename, 'i4').astype(float)
     if op.exists(op.join(dire,'1i')):  # reads imaginary part
         data = data + 1j*np.fromfile(filename, 'i4')
+    NC = int(acqu['$NC'])   # correct intensity with Bruker "NC" coefficient
+    if NC != 0:
+        data *= 2**(NC)
     d = NPKData(buffer=data)
     
     data = read_2D(sizeF1, sizeF2, filename,  bytorda=int(acqu['$BYTORDA']))
@@ -676,15 +689,16 @@ def Import_2D(filename="ser", outfile=None):
 
 def Import_2D_proc(filename="2rr", outfile=None):
     """
-    Imports a 2D Bruker ser
-    
+    Imports a 2D Bruker 2rr files
+    if 2ri 2ir 2ii files exist, will imports the (hyper)complex spectrum
+
     """
-    from BrukerSMX import BrukerSMXHandler
+    from .BrukerSMX import BrukerSMXHandler
     if (not op.exists(filename)):
         raise Exception(filename+" : file not found")
     if verbose:     print("importing 2D spectrum")
     SMX = BrukerSMXHandler(op.dirname(filename))
-    SMX.read_2D()
+    SMX.read_smx()
     datar = SMX.data_2d_2rr.astype('float')     # loads 2rr anyhow
 
     if SMX.data_2d_2ir is not None:             # complex in F2
@@ -702,8 +716,11 @@ def Import_2D_proc(filename="2rr", outfile=None):
     if SMX.data_2d_2ri is not None:     # swap if was concatenated
         d.swap(axis='F1')
 # then set parameters
-    d.axis1.specwidth = float(SMX.acqu2['$SW_h'])
     d.axis1.frequency = float(SMX.acqu2['$SFO1'])
+    try:
+        d.axis1.specwidth = float(SMX.acqu2['$SW_h'])
+    except KeyError:    # this happens on certain versions
+        d.axis1.specwidth = float(SMX.acqu2['$SW'])*d.axis1.frequency
     d.axis2.specwidth = float(SMX.acqu['$SW_h'])
     d.axis2.frequency = float(SMX.acqu['$SFO1'])
     d.frequency = d.axis2.frequency

@@ -6,10 +6,11 @@ NPKData.py
 
 Implement the basic mechanisms for spectral data-sets
 
-Created by Marc-André and Marie-Aude on 2010-03-17.
+First version created by Marc-André and Marie-Aude on 2010-03-17.
 """
 
-from __future__ import print_function
+from __future__ import print_function, division
+import os
 import numpy as np
 import numpy.fft as npfft
 import copy
@@ -20,8 +21,14 @@ import re
 import time
 import warnings
 
-import version
-from NPKError import NPKError
+from . import version
+from . NPKError import NPKError
+
+import sys #
+if sys.version_info[0] < 3:
+    pass
+else:
+    xrange = range
 
 ########################################################################
 # series of utilities
@@ -37,7 +44,7 @@ def hypercomplex_modulus(arr, size1, size2):
         arr = np.array([[1, 4],[3, 7],[1, 9],[5, 7]])
         is an hypercomplex with size1 = 2 and size2 = 2
     """
-    b = np.zeros((size1/2, size2/2))
+    b = np.zeros((size1//2, size2//2))
     brr = arr[::2, ::2]
     bri = arr[::2, 1::2]
     bir = arr[1::2, ::2]
@@ -256,7 +263,7 @@ class Axis(object):
         size == cpxsize if axis is real
         size == 2*cpxsize if axis is complex
         """
-        return self.size/(self.itype+1)
+        return self.size//(self.itype+1)
     def report(self):
         if self.sampling:
             return "size : %d   sampled from %d   itype %d   unit %s"%(self.size, max(self.sampling), self.itype, self.currentunit)
@@ -289,18 +296,21 @@ class Axis(object):
         """
         if len(zoom) != 2:
             raise NPKError("slice should be defined as coordinate pair (left,right) in axis' current unit %s"%self.currentunit)
+        a = int( round( self.ctoi(zoom[0]) ) )
+        b = int( round( self.ctoi(zoom[1]) ) )
         if self.itype == 1:     # complex axis
-            a = int( 2*round( (self.ctoi(zoom[0])-0.5)/2 ) )     # insure real (a%2==0)
-            b = int( 2*round( (self.ctoi(zoom[1])-0.5)/2 ) )
-        else:
-            a = int( round( self.ctoi(zoom[0]) ) )
-            b = int( round( self.ctoi(zoom[1]) ) )
-        left, right = min(a,b), max(a,b)
+            a = 2*(a//2)  # int( 2*round( (self.ctoi(zoom[0])-0.5)/2 ) )     # insure real (a%2==0)
+            b = 2*(b//2)  # int( 2*round( (self.ctoi(zoom[1])-0.5)/2 ) )
+        left, right = min(a,b), max(a,b)+1
         if self.itype == 1:     # complex axis
             right += 1  # insure imaginary
-        if not self.check_zoom( (left,right) ):
-            raise NPKError("%d-%d (points) slice probably outside current axis"%(left,right))
-        return (left,right)
+        l = max(0,left)
+        l = min(self.size-1,l)
+        r = max(1,left)
+        r = min(self.size, right)
+        if (l,r) != (left,right):
+            print("%d-%d (points) slice probably outside current axis, recast to %d-%d"%(left,right,l,r))
+        return (l,r)
             
     def check_zoom(self, zoom):
         """
@@ -418,10 +428,10 @@ class NMRAxis(Axis):
             (self.frequency, self.size, self.itop(self.size-1), self.itoh(self.size-1), self.itop(0), self.itoh(0))
         else:
             return "NMR axis at %f MHz,  %d complex pairs,  from %f ppm (%f Hz) to %f ppm  (%f Hz)"%  \
-            (self.frequency, self.size/2, self.itop(self.size-1), self.itoh(self.size-1), self.itop(0), self.itoh(0))
+            (self.frequency, self.cpxsize, self.itop(self.size-1), self.itoh(self.size-1), self.itop(0), self.itoh(0))
 
     #-------------------------------------------------------------------------------
-    def extract(self, zoom):
+    def __extract(self, zoom):
         """
         redefines the axis parameters so that the new axis is extracted for the points [start:end] 
         
@@ -430,6 +440,20 @@ class NMRAxis(Axis):
         start, end = self.getslice(zoom)
         self.specwidth = (self.specwidth * (end - start)) /self.size
         self.offset = self.offset + self.specwidth * (self.size - end)/self.size
+        self.size = end-start
+        return (start, end)
+    #-------------------------------------------------------------------------------
+    def extract(self, zoom):
+        """
+        redefines the axis parameters so that the new axis is extracted for the points [start:end] 
+        
+        zoom is given in current unit - does not modify the Data, only the axis definition
+        """
+        start, end = self.getslice(zoom)
+        new_specwidth = self.itoh(start+1)-self.itoh(end)  # check itoh() for the +1
+        new_offset = self.itoh(end-1)
+        self.specwidth = new_specwidth
+        self.offset = new_offset
         self.size = end-start
         return (start, end)
     #-------------------------------------------------------------------------------
@@ -483,7 +507,8 @@ class NMRAxis(Axis):
     def itoh(self,value):
         """
         returns Hz value (h) from point value (i)
-        """        
+        """
+        # N points define N-1 intervals ! hence the -1 in itoh() and htoi()
         hz_value =   (self.size-value-1)*self.specwidth / (self.size-1) + self.offset
         return hz_value
     def freq_axis(self):
@@ -604,6 +629,13 @@ def NPKData_plugin(name, method, verbose=False):
     
     look at ..plugins for details
     """
+    import inspect
+    from . import plugins
+    curframe = inspect.currentframe()
+    calframe = inspect.getouterframes(curframe, 1)
+    callerfile = calframe[1][1]
+    pluginfile = os.path.splitext(os.path.basename(callerfile))[0]
+
     if not callable(method):
         raise Exception("method should be callable")
     if not isinstance(name, str):
@@ -611,6 +643,7 @@ def NPKData_plugin(name, method, verbose=False):
     setattr(NPKData, name, method)
     if verbose:
         print("   - successfully added .%s() method to NPKData"%name)
+    plugins.codes[pluginfile].append(name)
 
 class NPKData(object):
     """
@@ -1055,7 +1088,7 @@ class NPKData(object):
         self.absmax = 0.0
         return self
     #---------------------------------------------------------------------------
-    def extract(self, *args):
+    def extract(self, *args): # MAD , unit=True):
         """
         extract([[x1, y1]])
         extract([x1, y1], [x2, y2]) or extract([x1, y1, x2, y2])
@@ -1068,14 +1101,15 @@ class NPKData(object):
             * extract(x1,y1) for 1D datasets.
             * extract(x1, y1, x2, y2) for 2D datasets.
         
-        coordinates are given in axis current unit.
-        
+        coordinates are given in axis current unit
+
         see also : chsize
         """
         limits = flatten(args)
         print ('extract',limits)
         if len(limits) != 2*self.dim:
-            raise NPKError(msg="wrong arguments for extract :"+str(args), data=self)
+            raise NPKError("slice should be defined as coordinate pair (left,right) in axis' current unit : " + " - ".join(self.unit), data=self)
+#            raise NPKError(msg="wrong number of arguments for extract, should be 2 per dimension", data=self)
         if self.dim == 1:
             self._extract1d(limits)
         elif self.dim == 2:
@@ -1085,18 +1119,21 @@ class NPKData(object):
         self.absmax = 0.0
         return self
     #---------------------------------------------------------------------------
-    def _extract1d(self, zoom ):
+    def _extract1d(self, zoom):
+        """performs the extract in 1D,
+        """
         self.check1D()
         x1, y1 = self.axis1.extract(zoom)
-        self.buffer = self.buffer[x1:y1]
+        bb = self.get_buffer()
+        self.set_buffer(bb[x1:y1])
         self.adapt_size()
         return self
     #---------------------------------------------------------------------------
-    def _extract2d(self, zoom ):
+    def _extract2d(self, zoom):
         self.check2D()
         zoom = flatten(zoom)
-        x1, y1 = self.axis1.extract( (zoom[0], zoom[1]) )
-        x2, y2 = self.axis2.extract( (zoom[2], zoom[3]) )
+        x1, y1 = self.axis1.extract(zoom[0:2])
+        x2, y2 = self.axis2.extract(zoom[2:4])
         self.buffer = self.buffer[x1:y1, x2:y2]
         self.adapt_size()
         return self
@@ -1346,8 +1383,8 @@ class NPKData(object):
             test = self.axis1.check_zoom(z[0:1]) and self.axis2.check_zoom(z[2:3])
         return test
     def display(self, scale = 1.0, absmax = None, show = False, label = None, new_fig = True, axis = None,
-                mode3D = False, zoom = None, xlabel="_def_", ylabel = "_def_", title = None, figure = None,
-                linewidth=1, color = None):
+                zoom = None, xlabel="_def_", ylabel = "_def_", title = None, figure = None,
+                linewidth=1, color = None, mpldic={}, mode3D = False):
         """
         not so quick and dirty display using matplotlib or mlab - still a first try
         
@@ -1362,20 +1399,25 @@ class NPKData(object):
         axis    used as axis if present, axis length should match experiment length
                 in 2D, should be a pair (xaxis,yaxis)
         new_fig will create a new window if set to True (default) (active only is figure==None)
-        mode3D  use malb 3D display instead of matplotlib contour for 2D display
+                if new_fig is a dict, it will be passed as is to plt.figure()
+        mode3D  obsolete
         zoom    is a tuple defining the zoom window (left,right) or   ((F1_limits),(F2_limits))
                 defined in the current axis unit (points, ppm, m/z etc ....)
         figure  if not None, will be used directly to display instead of using its own
-        linewidth : linewidth for the plots (useful for example when using seaborn)
+        linewidth: linewidth for the plots (useful for example when using seaborn)
+        mpldic: a dictionnary passed as is to the plot command 
         
         can actually be called without harm, even if no graphic is available, it will just do nothing.
         
         """
-        if not figure:
+        if figure is None:
             from .Display import testplot
             plot = testplot.plot()
             if new_fig:
-                plot.figure()
+                if isinstance(new_fig, dict):
+                    plot.figure(**new_fig)
+                else:
+                    plot.figure()
             fig = plot.subplot(111)
         else:
             fig = figure
@@ -1398,7 +1440,7 @@ class NPKData(object):
             fig.set_xscale(self.axis1.units[self.axis1.currentunit].scale)  # set unit scale (log / linear)
             if self.axis1.units[self.axis1.currentunit].reverse and new_fig:           # set reverse mode
                 fig.invert_xaxis()
-            fig.plot(ax[z1:z2:step], self.buffer[z1:z2:step].clip(mmin,mmax), label=label, linewidth=linewidth, color=color)
+            fig.plot(ax[z1:z2:step], self.buffer[z1:z2:step].clip(mmin,mmax), label=label, linewidth=linewidth, color=color, **mpldic)
             if xlabel == "_def_":
                 xlabel = self.axis1.currentunit
             if ylabel == "_def_":
@@ -1409,7 +1451,7 @@ class NPKData(object):
             z1lo, z1up, z2lo, z2up  = parsezoom(self,zoom)
             if not absmax:  # absmax is the largest point on spectrum, either given from call, or handled internally
                 if not self.absmax:     # compute it if absent  - but do it on zoom window ! as this is a killer for large onfile datasets
-                    absmax = np.nanmax( np.abs(self.buffer[z1lo:z1up:step1,z2lo:z2up:step2]) )
+                    self.absmax = np.nanmax( np.abs(self.buffer[z1lo:z1up:step1,z2lo:z2up:step2]) )
             else:
                 self.absmax = absmax
 #            print absmax, self.absmax
@@ -1430,8 +1472,9 @@ class NPKData(object):
                 if self.level:
                     level = self.level
                 else:
-                    m = absmax/scale
-                    level = (m*0.5, m*0.25, m*0.1, m*0.05)
+                    m = self.absmax/scale
+#                    level = (m*0.5, m*0.25, m*0.1, m*0.05)
+                    level = (m*0.05, m*0.1, m*0.25, m*0.5)  # correction for matplotlib 1.5.1
                     # print("level ", level)
                     # print("m ",  m)
                     if xlabel == "" and ylabel == "":
@@ -1448,7 +1491,7 @@ class NPKData(object):
                 fig.contour(axis[1][z2lo:z2up:step2],
                     axis[0][z1lo:z1up:step1],
                     self.buffer[z1lo:z1up:step1,z2lo:z2up:step2],
-                    level, colors=color, label=label )
+                    level, colors=color, label=label, **mpldic)
             if xlabel == "_def_":
                 xlabel = self.axis2.currentunit
             if ylabel == "_def_":
@@ -1460,7 +1503,7 @@ class NPKData(object):
         if title:
             fig.set_title(title)
         if label: fig.legend()
-        if show and not figure: plot.show()
+        if show and figure is None: plot.show()
         return self
     def f(self,x,y):
         """used by 3D display"""
@@ -1725,7 +1768,7 @@ class NPKData(object):
                 t = np.arange(self.size1)*freq/self.axis1.specwidth
                 self.buffer += amp*np.cos(np.pi*t)
             else:
-                t = np.arange(self.size1/2)*freq/self.axis1.specwidth
+                t = np.arange(self.size1//2)*freq/self.axis1.specwidth
                 self.buffer += as_float( amp*np.exp(1j*np.pi*t) )
         else:
             raise NotImplementedError
@@ -1735,7 +1778,7 @@ class NPKData(object):
     def mean(self, zone=None):  # ((F1_limits),(F2_limits))
         """
         computes mean value  in the designed spectral zone
-        Consider array as real even if itype is 1
+        (NEW!) returns a complex if data is complex along fastest axis
         """
         if self.dim == 1:
             if zone is None:
@@ -1744,7 +1787,28 @@ class NPKData(object):
             else:
                 ll = zone[0]
                 ur = zone[1]
-            shift = self.buffer[ll:ur].mean()
+            shift = self.get_buffer()[ll:ur].mean()
+        elif self.dim == 2:
+            if zone is None:
+                ll = 0
+                lr = self.size2
+                ul = 1
+                ur = self.size1
+            else:
+                ll = zone[0][0]
+                lr = zone[0][1]
+                ul = zone[1][0]
+                ur = zone[1][1]
+            shift = self.get_buffer()[ul:ur,ll:lr].mean()
+        return shift
+    #-----------------
+    def center(self):
+        """
+        center the data, so that the sum of points is zero (usefull for FIDs) 
+
+        """
+        if self.dim == 1:
+            self -= self.mean()
         elif self.dim == 2:
             if zone is None:
                 ll = 0
@@ -1758,6 +1822,7 @@ class NPKData(object):
                 ur = zone[1][1]
             shift = self.buffer[ul:ur,ll:lr].mean()
         return shift
+
     #-----------------
     def std(self, zone=None):  # ((F1_limits),(F2_limits))
         """
@@ -1890,7 +1955,7 @@ class NPKData(object):
         if it == 1:
             raise NPKError("Dataset should be real along given axis", data=self)
         if self.dim ==1:
-            self.buffer = as_float(self.buffer[:self.size1/2] + 1j*self.buffer[self.size1/2:]).copy()
+            self.buffer = as_float(self.buffer[:self.size1//2] + 1j*self.buffer[self.size1//2:]).copy()
         elif self.dim == 2:
             if todo == 1:
                 for i in xrange(self.size2):
@@ -1925,8 +1990,8 @@ class NPKData(object):
             raise NPKError("Dataset should be complex along given axis", data=self)
         if self.dim ==1:
             cop = as_cpx(self.buffer).copy()
-            self.buffer[:self.size1/2] = cop.real
-            self.buffer[self.size1/2:] = cop.imag
+            self.buffer[:self.size1//2] = cop.real
+            self.buffer[self.size1//2:] = cop.imag
         elif self.dim == 2:
             if todo == 1:
                 for i in xrange(self.size2):
@@ -1984,7 +2049,7 @@ class NPKData(object):
             if not(self.axis2.itype==1 and self.axis1.itype==0):
                 raise NPKError("wrong axis itype", data=self)
             self.unswap(axis=2)       # separate real and imag
-            self.buffer.resize((2*self.size1,self.size2/2)) # then change size
+            self.buffer.resize((2*self.size1,self.size2//2)) # then change size
             self.axis2.itype = 0
             self.axis1.itype = 1
         elif self.dim == 3:
@@ -2010,7 +2075,7 @@ class NPKData(object):
             if not(self.axis2.itype==0 and self.axis1.itype==1):
                 raise NPKError("wrong axis itype", data=self)
             #print "resize"
-            self.buffer.resize((self.size1/2,self.size2*2)) # then change size
+            self.buffer.resize((self.size1//2,self.size2*2)) # then change size
             #print "adapt_size"
             self.adapt_size()
             #print "swap"
@@ -2075,7 +2140,7 @@ class NPKData(object):
         it = self.axes(todo).itype
         if it == 0:
             raise NPKError(msg="no phase correction on real data-set", data=self)
-        size = self.axes(todo).size/2       # compute correction in e
+        size = self.axes(todo).size//2       # compute correction in e
         if ph1==0:  # we can optimize a little
             e = np.exp(1J*m.radians(float(ph0))) * np.ones( size, dtype=complex)   # e = exp(j ph0)
         else:
@@ -2128,7 +2193,7 @@ class NPKData(object):
                 z = m.radians(p0 + i*p1)
                 e[i] = m.cos(z) + 1J*m.sin(z)           # e_i = exp(j ph0 + i)
         #c = np.empty( size,dtype=complex)
-        for i in xrange(self.axis2.size/2):
+        for i in xrange(self.axis2.size//2):
             #c[:,2*i] = e * (self.buffer[:,2*i] + 1j*self.buffer[:,2*i+1])
             c = e * (self.buffer[:,2*i] + 1j*self.buffer[:,2*i+1])
             self.buffer[:,2*i] = c.real
@@ -2312,7 +2377,7 @@ class NPKData(object):
                     self.buffer[:,i] = r.buffer[:]
         elif self.dim == 3:
             print("A FAIRE")
-            
+        return self
     #---------------------------------------------------------------------------
     def transpose(self, axis=0):
         """
@@ -2327,9 +2392,12 @@ class NPKData(object):
         """
         todo = self.test_axis(axis)
         if self.dim == 2:
-            if np.isInt(self.size1/2) :
-                print("Ok")
-            
+            self.set_buffer( self.get_buffer().T )
+            self.axis1, self.axis2 = self.axis2, self.axis1
+            self.adapt_size()
+        else:
+            raise NPKError("Operation not available", self)
+        return self
     #---------------------------------------------------------------------------
     def reverse(self, axis=0):
         """
@@ -2457,7 +2525,7 @@ class NPKData(object):
         sw = self.axes(todo).specwidth
         size = self.axes(todo).size
         if it == 1: # means complex
-            size = size/2
+            size = size//2
         e = np.kaiser(size, beta)
         if it == 1:
             e = as_float((1 + 1.0j)*e)
@@ -2472,7 +2540,7 @@ class NPKData(object):
         sw = self.axes(todo).specwidth
         size = self.axes(todo).size
         if it == 1: # means complex
-            size = size/2
+            size = size//2
         e = np.hamming(size)
         if it == 1:
             e = as_float((1 + 1.0j)*e)
@@ -2487,7 +2555,7 @@ class NPKData(object):
         sw = self.axes(todo).specwidth
         size = self.axes(todo).size
         if it == 1: # means complex
-            size = size/2
+            size = size//2
         e = np.hanning(size)
         if it == 1:
             e = as_float((1 + 1.0j)*e)
@@ -2503,7 +2571,7 @@ class NPKData(object):
         sw = self.axes(todo).specwidth
         size = self.axes(todo).size
         if it == 1: # means complex
-            size = size/2
+            size = size//2
         e = np.exp(-(gb*np.arange(size)/sw)**2)
         if it == 1:
             e = as_float((1 + 1.0j)*e)
@@ -2523,9 +2591,9 @@ class NPKData(object):
         it = self.axes(todo).itype
         size = self.axes(todo).size
         if it == 1: # means complex
-            #size = size/2
-            tm1 = min(size,2*(tm1/2)+1)
-            tm2 = 2*(tm2/2)+1
+            #size = size//2
+            tm1 = min(size,2*(tm1//2)+1)
+            tm2 = 2*(tm2//2)+1
         ftm1 = tm1
         ftm2 = size-tm2+1
         e = np.zeros(size)
@@ -2562,7 +2630,7 @@ class NPKData(object):
         sw = self.axes(todo).specwidth
         size = self.axes(todo).size
         if it == 1: # means complex
-            size = size/2
+            size = size//2
         e = np.exp(-lb*np.arange(size)/sw)
         if it == 1:
             e = as_float((1 + 1.0j)*e)
@@ -2581,7 +2649,7 @@ class NPKData(object):
         it = self.axes(todo).itype
         size = self.axes(todo).size
         if it == 1:
-            size = size/2
+            size = size//2
         s = 2*(1-maxi)
         zz = m.pi/((size-1)*s)
         yy = m.pi*(s-1)/s         #yy has the dimension of a phase
@@ -2606,7 +2674,7 @@ class NPKData(object):
         it = self.axes(todo).itype
         size = self.axes(todo).size
         if it == 1:
-            size = size/2
+            size = size//2
         s = 2*(1-maxi)
         zz = m.pi/((size-1)*s)
         yy = m.pi*(s-1)/s         #yy has the dimension of a phase
@@ -2711,14 +2779,14 @@ class NPKData(object):
                 print ("real data, nothing to do")
             else:   # do something
                 if self.axis1.itype == 1 and self.axis2.itype == 0: # along F1 only
-                    b = np.zeros((self.size1/2, self.size2))    # create new smaller array
+                    b = np.zeros((self.size1//2, self.size2))    # create new smaller array
                     for i in xrange(0,self.size1,2):    # new version is about x3 faster
                         dr = self.buffer[i,:]
                         di = self.buffer[i+1,:]
-                        b[i/2,:] = np.sqrt(dr**2 + di**2)        # and copy modulus in b 
+                        b[i//2,:] = np.sqrt(dr**2 + di**2)        # and copy modulus in b 
                     self.axis1.itype = 0                        # finally update axis
                 elif self.axis1.itype == 0 and self.axis2.itype == 1: # along F2 only
-                    b = np.zeros((self.size1,self.size2/2))
+                    b = np.zeros((self.size1,self.size2//2))
                     for i in xrange(self.size1):
                         d = as_cpx(self.buffer[i,:])    # copy() not needed in F2
                         b[i,:] = np.sqrt(np.real(d*d.conj()))

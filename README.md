@@ -1,28 +1,14 @@
 # README #
 
-This is the beta version of the **SPIKE** program. A collaborative development for a FT-spectroscopy processing program.
-
+The **SPIKE** program. A collaborative development for a FT-spectroscopy processing program.
 
 # Release
-This is the version 0.8.3 - 17 April 2016
+This is the version 0.99.0 - March 2018
 
-*Note that this release is pretty old, it does not mean that we are not active, but rather that we are too busy to check and build a Release.*
-
-*The up-to-date code is in the `devel` branch.*
-
-- **FINALLY files from the previous program version (0.7.x) can now be upgraded and read.** just do
-  -  ```    python -m spike.File.HDF5File update your_file.msh5  ```
-- improved support for parallel processing
-  - processing.py (2D FTMS) now includes parallel processing in F2 (helping in certain cases)
-  - standard test now includes testing for `multiprocessing` - *DOES NOT WORK ON ALL DISTRIBUTION* if it is your case, modify test.mscf to: `use_multiprocessing = False`  
-- a new `cpxsize` property, associated to axes and dataset, which counts complex and real entries; helps even developping macros
-- improved plugins, automatic baseline, noise measure, 
-- NMR : BrukerNMR now imports TopSpin processed dataset (1r, 2rr)
-- MS : sharper lineshape in 2D-FTMS
+MANY improvements and corrections have been made, and where available in the `devel` brach.
+There are now available in the default release.
 
 Complete history in the [release_notes.md](release_notes.md) file.
-
-*The stable version is currently way behind the current development effort - if you want to check the latest development, download the branch* `devel` *instead of* `default`.
 
 
 ## What is SPIKE ? ##
@@ -30,6 +16,8 @@ Complete history in the [release_notes.md](release_notes.md) file.
 **SPIKE** is a program that allows the processing, the display and the analysis of data-sets obtained from various Fourier-Transform spectroscopies. The name stands for **S**pectrometry **P**rocessing **I**nnovative **KE**rnel.
 
 It allows the processing of **1D** and **2D** FT spectroscopies, implementing Real, Complex and HyperComplex n-dimensionnal Fourier Transform, as well as many other functionalities.
+
+It is written in python (tested in python 2.7 and 3.5) and can be used as a set of tools, using for instance `jupyter notebook` as an interactive front-end.
 
 To our knowledge, it is the first program freely available allowing the processing, display and analysis of 2D-FT-ICR (Fourier Transform Ion Cyclotron Resonance).
 
@@ -39,7 +27,26 @@ However, considering the amount of efforts already present in this code, we deci
 We believe that even in this partial development stage, this program might prove useful for certain usages.
 
 ## Documentation
-You can find a **Very preliminary** documentation [here](http://spikedoc.bitbucket.org/)
+Documentation is way behind the code, and certain parts are presenteing obsolete features.
+This is the main reason for geing 0.99 rather than 1.00 version !
+
+You can find the **Very preliminary** documentation [here](http://spikedoc.bitbucket.org/)
+
+On the other hand, the in-line python documentation is rather complete and up to date.
+
+## Citing SPIKE ##
+If you happen to use SPIKE successfully please cite it, and refer to this site, as well as the following possible references :
+
+- first publication of the program itself - *rejected from Anal. Chem. Reviewer 1 said "too much NMR", Reviewer 2 said "too much MS", !!*
+    1.    Chiron L., Coutouly M-A., Starck J-P., Rolando C., Delsuc M-A. SPIKE a Processing Software dedicated to Fourier Spectroscopies   https://arxiv.org/abs/1608.06777 (2016)
+- first version of the python set-up on which the current SPIKE is partially based
+    2.    Tramesel, D., Catherinot, V. & Delsuc, M.-A. Modeling of NMR processing, toward efficient unattended processing of NMR experiments. _J Magn Reson_ **188**, 56–67 (2007).
+- first version of the 2D FT-ICR-MS processing
+    3.    van Agthoven, M. A., Chiron, L., Coutouly, M.-A., Delsuc, M.-A. & Rolando, C. Two-Dimensional ECD FT-ICR Mass Spectrometry of Peptides and Glycopeptides. _Anal Chem_ **84**, 5589–5595 (2012).
+- presentation of the automation possibilities in NMR
+    4. Margueritte, L., Markov, P., Chiron, L., Starck, J.-P., Vonthron Sénécheau, C., Bourjot, M., & Delsuc, M.-A. (2018). Automatic differential analysis of NMR experiments in complex samples. Magn. Reson. Chem., 80(5), 1387. http://doi.org/10.1002/mrc.4683
+
+ref 1) is a general purpose reference, the other ones are more specific.
 
 ## SPIKE proposes the following features
 
@@ -117,6 +124,7 @@ from spike.File import Solarix
 dd = Solarix.Import_1D('FTICR-Files/ESI_pos_Ubiquitin_000006.d')  # Import create a basic SPIKE object
 
 dd.hamming().zf(2).rfft().modulus()    # we have a simple piped processing scheme
+  # here doing apodisation - zerofilling (doubling the size) - FT and modulus.
 
 dd.unit = "m/z"
 dd.display(zoom=(500,2000))     # display the spectrum for m/z ranging from 500 to 2000
@@ -137,15 +145,15 @@ sys.path.append('the_dir_where_you_put_spike_distrib')
 ```
 
 #### interactive mode
-SPIKE allows to process datasets interactively from an IPython prompt, and is perfectly working in `IPython Notebook` 
+SPIKE allows to process datasets interactively from an jupyter (IPython) prompt, and is perfectly working in `jupyter notebook` or even `jupyter lab`
 
-* Look at the examples files ( `eg_*.py` ) for examples and some documentation.
+* Look at the examples files ( `eg_*.py` and `*.ipynb` ) for examples and some documentation.
   ( * not fully up to data * )
 * display is performed using the `Matplotlib` library.
 * large 2D-FT-ICR are handled in batch using the `processing.py` batch program, controlled by parameter file called `*.mscf`
 * The batch mode supports multiprocessing, both with MPI and natively on multi-core machines (still in-progress)
 * large 2D-FT-ICR are stored in a hierarchical format, easyly displayed with an interactive program.
-* data-sets are handled in the HDF5 standard file-format, which allows virtually unlimited file size ( _tested up to 200 Gb_ ).
+* data-sets are handled in the HDF5 standard file-format, which allows virtually unlimited file size ( _tested up to 500 Gb_ ).
 
 #### running stand-alone programs
 
@@ -177,7 +185,8 @@ A more complete documentation is available [here](https://spikedoc.bitbucket.org
 
 
 ## How do I get SPIKE ? ##
-SPIKE is written in pure Python 2.7, and relies on several external libraries.
+SPIKE is written in pure Python, and relies on several external libraries.
+It is compatible and fully tested with both python 2.7 and python 3.5
 
 It requires the following non-standard Python libraries :
 
@@ -205,14 +214,6 @@ NPK is purely a computing kernel, with no graphical possibilities, and has been 
 However, NPK was showing many weaknesses, mostly due to the 32bits organization, and a poor file format. So, when a strong scientific environment became available in Python, a rewrite in pure Python was undertaken. To this initial project, called NPK-V2, many new functionalities were added, and mostly the capability to work in other spectroscopies than NMR.
 
 At some point in 2014, we chose to fork NPK-V2 to SPIKE, and make it public.
-
-## Citing SPIKE ##
-SPIKE is not fully published yet, if you happen to use it successfully and wish to cite it, please refer to this site, as well as the following references :
-
-  1.    Tramesel, D., Catherinot, V. & Delsuc, M.-A. Modeling of NMR processing, toward efficient unattended processing of NMR experiments. _J Magn Reson_ **188**, 56–67 (2007).
-  2.    van Agthoven, M. A., Chiron, L., Coutouly, M.-A., Delsuc, M.-A. & Rolando, C. Two-Dimensional ECD FT-ICR Mass Spectrometry of Peptides and Glycopeptides. _Anal Chem_ **84**, 5589–5595 (2012).
-  3.    Chiron L., Coutouly M-A., Starck J-P., Rolando C., Delsuc M-A. SPIKE a Processing Software dedicated to Fourier Spectroscopies   https://arxiv.org/abs/1608.06777 (2016)
-
 
 # Developing for SPIKE
 **SPIKE** is an open-source program, this means that external contributions are welcomed.

@@ -75,12 +75,12 @@ def debugs_activate(*args):
     mwind.moverectD_debug = False
     mwind.moverect_debug = False
     ### interface_actions
-    interact.coord_profile_y_debug = False
-    interact.coord_profile_x_debug = False
-    interact.coord_profile_debug = False
-    interact.selectL_debug = False
-    interact.afffile_debug = False
-    interact.take_lineEdit_xy_format_debug = False
+    interact.coord_profile_y_debug = True
+    interact.coord_profile_x_debug = True
+    interact.coord_profile_debug = True
+    interact.selectL_debug = True
+    interact.afffile_debug = True
+    interact.take_lineEdit_xy_format_debug = True
     interact.swap_from_mz_debug = True
     interact.swap_pt_mz_debug = True
 

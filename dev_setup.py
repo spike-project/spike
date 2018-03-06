@@ -13,7 +13,7 @@ from __future__ import print_function
 
 ProgramName = "SPIKE"
 VersionName = "Development version - beta"
-VersionInfo = ["0", "8", "3"]   # Major - Minor - Micro
+VersionInfo = ["0", "99", "0"]   # Major - Minor - Micro
 
 # Major.minor.micro (int) + name eg SPIKE_2_19_5
 # N.M.L
@@ -25,29 +25,94 @@ VersionInfo = ["0", "8", "3"]   # Major - Minor - Micro
 
 # Release Notes in md syntax !
 release_notes="""
-# Release Notes
+# Relase Notes
+#### 0.99 - April 2018 - temp release branch
+We have been developping a lot this last year, and published quite a few results.
+The program is now quite stable in most of its features.
+Additions and improvements were added to the repository in the `devel` branch, however we neglected updating the more official `default` branch.
+This release is an effort to bring everything into normal mode, and hopefully, preparing a 1.0 version !
+
+New in 0.99:
+
+- SPIKE is now fully compatible with python 2 AND python 3
+- added the SANE noise denoising algorithm and plugin.
+    - an improvement to urQRd
+    - more faithfull to small signal intensity
+    - slightly different optimum parameters (optimal rank slightly smaller, less iterations needed)
+- added the handling of NUS 2D FTICR acquisition
+- added the PALMA DOSY processing algo and plugin (NMR).
+- added a Linear Prediction plugin
+- added the first trial for a m/z calibration plugin (MS)
+- added import from SpinIt (NMR)
+- added a primitive set of interactive tools to be used in Jupyter notebooks ( `INTER.py` )
+- added the possibility to pass a complete dictionary to matplotlib in the .display() method
+- added the .center() method for NPKData
+- added a plugin implementing a subset of Topspin commands: xf1, xf2, xfb.  (NMR)
+- added an line fitter, still very exploratory, only 1D Lorentzian for the moment
+- added more controls on plots (new_fig and mpldic arguments of .display())
+- added a Spinit importer (preliminary) (NMR)
+- added a compress mode in Solarix importer (MS)
+- added new automatic tests
+- improved and extended the Bucketing plugin, with extended features
+- improved the baseline correction code
+- improved import/export to Topspin/Bruker NMR files
+- improved automatic phaser .apmin() (NMR)
+- improved the plugin mechanism - with added documentation
+- corrected the extract() method which was broken
+- corrected a bug when importing Topspin/Bruker NMR datasets, where $NC was not used. (NMR)
+- corrected a bug and improved 3 parameters FT-ICR calibration (MS)
+- corrected the extract function for NPKData
+- corrected a bug with contour plots and matplotlib > 1.5.0
+- modified (improved?) plugin loading code, with additional plugin documentation
+- modified the way None values are stored into hdf5 files
+- modified .extract() code to work in current axis unit
+- modified .mean() to return complex value is axis is complex
+- improved python 3 compatibility. It is not finished yet, but most of the program is python 2/python 3 independent, some parts are still missing, 
+
+- known bugs
+  - NPKData.extract() method not fully tested
+  - NPKData.save_csv() is buggy in python 3
+
+#### 0.9 - 8 sept 2016
+*never reached the normal distribution - doc partly redundant with 0.8.3*
+
+- added a baseline correction plugins, already quite developed, with 3 different methods
+- added an automatic phasing plugin, `.apmin()` still exploratory (NMR)
+- added a wavelet filtering plugin (requires the PyWavelet library)
+- added a 3D zoom plugin (requires the Mayavi library) 
+- added export to Topspin/Bruker files, and added import of processed Topspin files (NMR)
+- added the upgrade of files from previous version
+- added the d.axis?.cpxsize : the size of an axis expressed in spectroscopic points (real of complex)
+ different from d.axis?.size which is the size of an axis expressed in data points so
+   - d.axis?.cpxsize == d.axis?.size     is axis is real
+   - d.axis?.cpxsize == d.axis?.size/2   is axis is complex
+- improved the Peak-Picker (mostly the output capabilities)
+- improved processing.py for nicer spectra, and possibly faster processing (MS)
+- improved visu2D.py, for a greater stability and improved selection syntax
+- corrected a bug in d.conv_n_p() (NMR)
+- and many small bugs as well
 
 #### 0.8.3 - April 2016
-- ALL
-  - a new `cpxsize` property, associated to axes and dataset, which counts complex and real entries
-  - display and peak display now accept a color and markersize arguments
-  - improved plugins, plugins with a filename starting with _ do not load
-  - automatic baseline correction algorithms have been improved ( `Algo/BC.py` )
-  - `finnoiselevel()` set of functions has been rewritten ( `util/signal_tools.py` )
-  - standard test now includes testing for `multiprocessing` - *DOES NOT WORK ON ALL DISTRIBUTION* if it is your case,
-    set `use_multiprocessing = False` in test.mscf
+- ALL spectro.
+    - added a new `cpxsize` property, associated to axes and dataset, which counts complex and real entries
+    - added: display and peak display now accept a color and markersize arguments
+    - improved plugins, plugins with a filename starting with _ do not load
+    - improved: automatic baseline correction algorithms have been improved ( `Algo/BC.py` )
+    - `finnoiselevel()` set of functions has been rewritten ( `util/signal_tools.py` )
+    - standard test now includes testing for `multiprocessing` - *DOES NOT WORK ON ALL DISTRIBUTION* if it is your case,
+      set `use_multiprocessing = False` in test.mscf
 - NMR
-  - BrukerNMR now imports TopSpin processed dataset (1r, 2rr)
-  - conv_n_p() was wrong and has been corrected
-  - `gm_apod()` was wrong and has been corrected_
-  - corrected an error in GifaFile access under Windows
-  - improved and corrected Laplace axes - for a new DOSY module to come...
+    - added: BrukerNMR now imports TopSpin processed dataset (1r, 2rr)
+    - improved: and corrected Laplace axes - for a new DOSY module to come...
+    - corrected: conv_n_p() was wrong and has been corrected
+    - corrected: `gm_apod()` was wrong and has been corrected_
+    - corrected: an error in GifaFile access under Windows
 - MS
- - processing.py (2D FTMS) now includes parallel processing in F2 (helping in certain cases)
- - and gives sharper lineshape thanks to kaiser() apodisation
- - files from the previous program version (0.7.x) can now be upgraded and read. just do
-    ```    python -m spike.File.HDF5File update your_file.msh5  ```
- - improved .report() for FTMS datasets
+   - processing.py (2D FTMS) now includes parallel processing in F2 (helping in certain cases)
+   - and gives sharper lineshape thanks to kaiser() apodisation
+   - files from the previous program version (0.7.x) can now be upgraded and read. just do
+      ```    python -m spike.File.HDF5File update your_file.msh5  ```
+   - improved .report() for FTMS datasets
 
 #### 0.8.2 - 2 Feb 2016
  - corrected a bug in processing when running under MPI parallel 
@@ -166,6 +231,7 @@ from datetime import date
 def generate_notes(fname):
     "write the release notes file"
     with open(fname,'w') as F:
+        F.write("<!-- DO NOT MODIFY this file, it is generated automatically! -->")
         F.write(release_notes)
 def generate_version():
     """generates version string, revision id and data"""
@@ -208,14 +274,14 @@ def generate_file(fname):
     f.write(r"""
 def report():
     "prints version name when SPIKE starts"
-    print '''
+    print( '''
     ========================
-          %s
+          {0}
     ========================
-    Version     : %s
-    Date        : %s
-    Revision Id : %s
-    ========================'''%(ProgramName, version, rev_date, revision)
+    Version     : {1}
+    Date        : {2}
+    Revision Id : {3}
+    ========================'''.format(ProgramName, version, rev_date, revision))
 report()
 """)
     #print 'SPIKE version', version, 'date',date "
@@ -288,6 +354,7 @@ Revision Id  :  %s
 =====================
 """%(version, revision))
     generate_file("version.py")
+    generate_file_rev("version_rev.py")
     generate_notes("release_notes.md")
 #    plier()
     # then tests

@@ -72,18 +72,18 @@ class FTMSAxis(NPKData.Axis):
         redefines the axis parameters so that the new axe is extracted for the points [start:end]
         zoom is defined in current axis unit
         """
-        #   before      left----------------------------size
-        #   before      -------------------------------SW
-        #   after             start---------------end
-        #                     left'---------------SW'
-        si = self.size
+        #   before index       leftpoint----------------------------size
+        #   before hz     off---------------------------------------off+SW
+        #
+        #   after                    start---------------end
+        #   index                    leftpoint'----------size'
+        #   Hz             off---------------------------off+SW'
         start, end = self.getslice(zoom)
-        # self.specwidth = self.itoh(end-1)
-        # self.left_point += int(start)
-        self.size = int(end)-int(start)
-        self.left_point += int(start)
-        self.specwidth = (self.specwidth*self.size)/si
-        return start, end
+        new_specwidth = self.itoh(end-1) - self.offsetfreq   # check itoh() for the -1
+        self.specwidth = new_specwidth
+        self.size = end-start
+        self.left_point += start
+        return (start, end)
 
     # The 2 htomz() and mztoh() are used to build all other transfoms
     # they are different in Orbitrap and FTICR and should be redefined there
@@ -142,7 +142,7 @@ class FTMSAxis(NPKData.Axis):
         return self.htoi(self.mztoh(value))
     #-------------------------------------------------------------------------------
     def deltamz(self,mz_value):
-        "computes the theorical resolution in m/z at m/z location"
+        "computes the theorical maximum resolution in m/z at m/z location"
 
         mz = np.fmin(mz_value, HighestMass)
         return 0.5*(self.itomz( self.mztoi(mz)-1) - self.itomz( self.mztoi(mz)+1) )
@@ -243,13 +243,18 @@ class FTMSData(NPKData.NPKData):
                 self.trimz(axis=i+1)
         else:               # do only one
             ext = []
+            unitaxis = []
             for i in range(self.dim):
+                unitaxis.append( self.axes(i+1).currentunit )  # save
+                self.axes(i+1).currentunit = 'points'
                 if i+1 == axis:
                     ext = ext + [int(self.axes(i+1).mztoi(self.axes(i+1).highmass)), self.axes(i+1).size]
                 else:
                     ext = ext + [0,self.axes(i+1).size]
             print("extracting :", ext)
             self.extract(ext)
+            for i in range(self.dim):
+                self.axes(i+1).currentunit = unitaxis[i]  # restore
         return self
 
     #----------------------------------------------

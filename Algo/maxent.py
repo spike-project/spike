@@ -110,7 +110,7 @@ class TransferFunction(object):
         """
         self.init_transform()
     #-------------------------------
-    @counting
+    #@counting
     def t_transform(self,datain):
         """
         default method for transform
@@ -118,7 +118,7 @@ class TransferFunction(object):
         """
         return np.convolve(datain, self.convol_kernel, mode="full")     # increases size
     #-------------------------------
-    @counting
+    #@counting
     def transform(self,datain):
         """
         default method for transform
@@ -302,7 +302,7 @@ class MaxEnt(object):
         else:
             return S
     #-------------------------------
-    @counting
+    #@counting
     def Q(self, im):
         """
         the Q function returns the value of -Q for a given image
@@ -385,7 +385,7 @@ class MaxEnt(object):
             self.lamb = newlambda
         if self.debug>0:
             self.llamb.append(self.lamb)
-    @counting
+    #@counting
     def concentring(self):
         "used when no valid step is found"
         # set as a function to allow counting

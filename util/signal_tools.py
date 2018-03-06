@@ -8,7 +8,7 @@ Various tools for performing signal processing (SNR calculation,
     synthetic Fids with noise, noise level etc... )
 '''
 
-from __future__ import print_function
+from __future__ import print_function, division
 import numpy as np
 from numpy.fft import rfft as nprfft, irfft as npirfft
 from numpy import pi
@@ -16,7 +16,9 @@ import math
 import scipy.fftpack as fft
 from scipy.signal import firwin2, firwin, convolve, lfilter
 from scipy.optimize import minimize
-from matplotlib import pyplot as plt
+#from matplotlib import pyplot as plt
+from ..Display import testplot
+plt = testplot.plot()
 
 import unittest
 import time
@@ -121,8 +123,8 @@ class SIGNAL_NOISE(object):
         '''
         Uses Fid truncated
         '''
-        self.fid[self.lenfid/self.trunc:] = 0 # truncate
-        self.fid0[self.lenfid/self.trunc:] = 0 # truncate
+        self.fid[self.lenfid//self.trunc:] = 0 # truncate
+        self.fid0[self.lenfid//self.trunc:] = 0 # truncate
     
     def full():
         '''
@@ -264,6 +266,66 @@ class SIGNAL_NOISE(object):
             
         return SNR_dB(processed_fid, fid_ref)
 
+def fid_signoise_type(nbpeaks,lendata, noise, noisetype):
+    "Obsolete"
+    LB = 1.11       # linewidth
+    Freq = [(i+1+np.sqrt(10))*pi*500.0j for i in range(nbpeaks)]  # frequencies
+    Amp = [(i+1)*20 for i in range(nbpeaks)]    # amplitudes
+
+    data0 = np.zeros(lendata,dtype=complex)
+    x = np.arange(lendata*1.0)/lendata          #  time series
+    for i in range(nbpeaks):
+        data0 +=  Amp[i] * np.exp(Freq[i]*x) * np.exp(-LB*x)
+
+    if noisetype == "additive":
+        dataadd = data0 + noise*(np.random.randn(x.size) + 1j*np.random.randn(x.size))  # additive complex noise
+        data = dataadd
+
+    elif noisetype == "multiplicative":
+        Anoise = noise/2
+        Fnoise = noise/200
+        for i in range(nbpeaks):
+            nAmp = Amp[i] + Anoise*np.random.randn(x.size)
+            nFreq = Freq[i] + Fnoise*np.random.randn(x.size)
+            data +=  nAmp * np.exp(nFreq*x) * np.exp(-LB*x)
+        
+    elif noisetype == "sampling":
+        xn = x + 0.5*np.random.randn(x.size)/lendata          #  time series with noisy jitter
+        data = np.zeros(lendata,dtype = complex)
+        for i in range(nbpeaks):
+            data +=  Amp[i] * np.exp(Freq[i]*xn) * np.exp(-LB*xn)
+        
+    elif noisetype == "missing points":
+        miss = np.random.randint(2, size=len(x))
+        dataadd = data0*miss
+        data = dataadd
+    else:
+        raise Exception("unknown noise type")
+    return data
+
+def fid_signoise(nbpeaks, ampl, lengthfid, noise, shift = 0, shape = "triangular", seed = True):
+    '''
+    Obsolete
+
+    Build fid with triangular spectrum from number of peaks : nbpeaks, amplitude : ampl,
+    the length of the fid : lengthfid, and the noise level : noise.
+    if shape is "triangular", uses ampl as minimum amplitude.
+    if shape is "list", uses the given list to make the amplitudes.
+    The seed of random generator can be activated or deactivated with boolean 'seed'
+    '''
+    if seed:
+        np.random.seed(11232)
+    LB = 1  # linewidth
+    x = np.arange(lengthfid*1.0)/lengthfid        
+    fid0 = 1j*np.zeros_like(x)      # complex fid
+    omeg = 430.1*1j
+    for i in range(1, nbpeaks + 1):
+        if shape == "triangular":
+            fid0 +=  i*ampl*np.exp(omeg*(i)*x)*np.exp(-LB*x)*np.exp(1j*shift*x)   #
+        elif shape == 'list':
+            fid0 +=  ampl[i-1]*np.exp(omeg*(i)*x)*np.exp(-LB*x)*np.exp(1j*shift*x)
+    fid = fid0 + noise*(np.random.randn(x.size) + 1j*np.random.randn(x.size)) # additive noise 
+    return fid
 
 def findnoiselevel(fid, nbseg = 20):
     """
@@ -281,7 +343,7 @@ def findnoiselevel(fid, nbseg = 20):
     if nbseg < 4:
         noiselev = levels[0]
     else:
-        noiselev = np.mean(levels[0:nbseg/4])
+        noiselev = np.mean(levels[0:nbseg//4])
     return noiselev
 
 def findnoiselevel_2D(data_array, nbseg = 20):

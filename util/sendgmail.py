@@ -18,7 +18,7 @@ from email import Encoders
 import os
 
 gmail_user = "gmalert67@gmail.com"
-gmail_pwd = "igbmcalert"
+gmail_pwd = "IGBMCAlert67"
 
 def add_to_msg(msg, f):
     part = MIMEBase('application', 'octet-stream')

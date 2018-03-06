@@ -6,6 +6,9 @@ run_pylint.py
 
 Created by Marc-André on 2011-10-26.
 Copyright (c) 2011 IGBMC. All rights reserved.
+
+python 2 only so far !
+
 """
 
 from __future__ import print_function
@@ -86,7 +89,6 @@ def find_depedencies(reader):
 
 def run_pylint(fich):
     "run pylint on the given file and return synthetic results (note, error, reorder, warning)"
-    import re
     from pylint import lint
     from pylint.reporters.text import TextReporter
 #    pyl = lint.Run(args)
@@ -97,7 +99,7 @@ def run_pylint(fich):
     errors = 0
     warn = 0
     reorder = 0
-    note = 0
+    note = 0.0
     for l in pylint_output:
         if l.startswith('E0001'):
             errors = 10000  # indicates crash
@@ -111,7 +113,7 @@ def run_pylint(fich):
         elif l.startswith('R') and l.split()[0] != 'Raw':
             reorder += 1
         elif l.startswith('Your code has been rated'):
-            m = re.match('Your code has been rated at (-?\d+.\d.)/10', l)
+            m = re.match(r'Your code has been rated at (-?\d+.\d.)/10', l)
             note = float(m.group(1))
         # elif l.find('External dependencies') !=-1:
         #     print "##############"
