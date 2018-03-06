@@ -34,6 +34,7 @@ This release is an effort to bring everything into normal mode, and hopefully, p
 
 New in 0.99:
 
+- SPIKE is now fully compatible with python 2 AND python 3
 - added the SANE noise denoising algorithm and plugin.
     - an improvement to urQRd
     - more faithfull to small signal intensity
@@ -67,6 +68,10 @@ New in 0.99:
 - modified .extract() code to work in current axis unit
 - modified .mean() to return complex value is axis is complex
 - improved python 3 compatibility. It is not finished yet, but most of the program is python 2/python 3 independent, some parts are still missing, 
+
+- known bugs
+  - NPKData.extract() method not fully tested
+  - NPKData.save_csv() is buggy in python 3
 
 #### 0.9 - 8 sept 2016
 *never reached the normal distribution - doc partly redundant with 0.8.3*
