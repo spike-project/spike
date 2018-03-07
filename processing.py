@@ -265,7 +265,7 @@ def _do_proc_F2(data):
     return r
 
 def do_proc_F2mp(dinp, doutp, parameter):
-    "do the processing in MP"    
+    "do the F2 processing in MP"    
     size = doutp.axis2.size
     scan = min(dinp.size1, doutp.size1)      # min() because no need to do extra work !
     F2widgets = ['Processing F2: ', widgets.Percentage(), ' ', widgets.Bar(marker='-',left='[',right=']'), widgets.ETA()]
@@ -289,7 +289,7 @@ def do_proc_F2mp(dinp, doutp, parameter):
     pbar.finish()
     
 def do_proc_F2(dinp, doutp, parameter):
-    "scan all rows of dinp, apply proc() and store into doutp"
+    "do the F2 processing - serial code"
     size = doutp.axis2.size
     scan = min(dinp.size1, doutp.size1)      # min() because no need to do extra work !
     #scan = dinp.size1 # when was it done? 

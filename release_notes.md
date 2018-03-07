@@ -1,6 +1,6 @@
 <!-- DO NOT MODIFY this file, it is generated automatically! -->
 # Relase Notes
-#### 0.99 - Nov 2017
+#### 0.99 - April 2018 - temp release branch
 We have been developping a lot this last year, and published quite a few results.
 The program is now quite stable in most of its features.
 Additions and improvements were added to the repository in the `devel` branch, however we neglected updating the more official `default` branch.
@@ -12,6 +12,7 @@ New in 0.99:
     - an improvement to urQRd
     - more faithfull to small signal intensity
     - slightly different optimum parameters (optimal rank slightly smaller, less iterations needed)
+- added the handling of NUS 2D FTICR acquisition
 - added the PALMA DOSY processing algo and plugin (NMR).
 - added a Linear Prediction plugin
 - added the first trial for a m/z calibration plugin (MS)
@@ -29,6 +30,8 @@ New in 0.99:
 - improved the baseline correction code
 - improved import/export to Topspin/Bruker NMR files
 - improved automatic phaser .apmin() (NMR)
+- improved the plugin mechanism - with added documentation
+- corrected the extract() method which was broken
 - corrected a bug when importing Topspin/Bruker NMR datasets, where $NC was not used. (NMR)
 - corrected a bug and improved 3 parameters FT-ICR calibration (MS)
 - corrected the extract function for NPKData
@@ -37,8 +40,7 @@ New in 0.99:
 - modified the way None values are stored into hdf5 files
 - modified .extract() code to work in current axis unit
 - modified .mean() to return complex value is axis is complex
-- improved python 3 compatibility. It is not finished yet, but most of the program is python 2/python 3 independent, some parts are still missing, in particular the `processing.py` code used to launch big FT-ICR 2D processing (because of a weird incompatibility in the ConfigParser)
-
+- improved python 3 compatibility. It is not finished yet, but most of the program is python 2/python 3 independent, some parts are still missing, 
 
 #### 0.9 - 8 sept 2016
 *never reached the normal distribution - doc partly redundant with 0.8.3*
