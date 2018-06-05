@@ -81,8 +81,8 @@ class LOAD(object):
         ''' 
         self.NBRES = 0          # number of resolutions
         f = HDF5File(self.param.multresfile, 'r')           # Reads the Hdf5 file
-        for gp in f.hf.walkGroups("/"):     # all groups in file
-            for nd in gp._f_listNodes():    # all nodes in group
+        for gp in f.hf.walk_groups("/"):     # all groups in file
+            for nd in gp._f_list_nodes():    # all nodes in group
                 if nd._v_name == 'data':    # if node is named "data" it is a dataset
                     self.d.append( f.get_data(gp._v_name) )     # resolutions for C window
                     self.d_interm.append( f.get_data(gp._v_name) )     # resolutions for D window
