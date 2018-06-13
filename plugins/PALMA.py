@@ -241,7 +241,7 @@ def auto_damp_width(d):
     return dmin, dmax
 
 #----------------------------------------------------
-def calibdosy(litdelta, bigdelta, recovery=0.0, seq_type='ste', nucleus='1H', maxgrad=50.0, maxtab=50.0, gradshape=1.0, unbalancing=0.2):
+def calibdosy(litdelta, bigdelta, recovery=0.0, seq_type='ste', nucleus='1H', maxgrad=50.0, maxtab=50.0, gradshape=1.0, unbalancing=0.2, os_tau=None, os_version=1):
     """
     returns the DOSY calibrating factor from the parameters
     
@@ -259,7 +259,10 @@ def calibdosy(litdelta, bigdelta, recovery=0.0, seq_type='ste', nucleus='1H', ma
         ste_2echoes : ste compensated for convection
         bpp_ste_2echoes : bpp_ste compensated for convection
         oneshot : the oneshot sequence from Pelta, Morris, Stchedroff, Hammond, 2002, Magn.Reson.Chem. 40, p147
-        
+            uses unbalancing=0.2, os_tau=None, os_version=1
+            unbalancing is called alpha in the publication
+            os_tau is called tau in the publication
+            os_version=1 corresponds to equation(1) / os_version=2 to (2)
       nucleus enum "1H","2H","13C","15N","17O","19F","31P" / default 1H
        the observed nucleus
 
@@ -270,7 +273,7 @@ def calibdosy(litdelta, bigdelta, recovery=0.0, seq_type='ste', nucleus='1H', ma
        Maximum Amplificator Gradient Intensity, in G/cm    / default 50.0
 
      maxtab float
-       Maximum Tabulated Gradient Value in the tabulated file. / default 100.0
+       Maximum Tabulated Gradient Value in the tabulated file. / default 50.0
        Bruker users with gradient list in G/cm (difflist) use maxgrad here
        Bruker users with gradient list in % use 100 here
        Varian users use 32768 here
@@ -285,6 +288,8 @@ def calibdosy(litdelta, bigdelta, recovery=0.0, seq_type='ste', nucleus='1H', ma
 
     """
 # MAD : modified august-sept 2007 - corrected ste; added oneshot; added PGSE
+# MAD : modified june 2018 - corrected oneshot
+
 
     g = (maxgrad / maxtab)*1E-4 # now in Tesla/cm
     aire = g*gradshape*litdelta
@@ -317,7 +322,12 @@ def calibdosy(litdelta, bigdelta, recovery=0.0, seq_type='ste', nucleus='1H', ma
     elif seq_type == 'bpp_ste_2echoes':
         K = (K * (bigdelta + ((4 * litdelta)/3) + ((3 * recovery)/2))) # cm 2 sec-1 pour Q
     elif seq_type == 'oneshot':
-        K = (K * (bigdelta + litdelta * (unbalancing * unbalancing - 2) / 6 + recovery * (unbalancing * unbalancing - 1) / 2))
+        if os_version == 1:
+            K = (K * (bigdelta + litdelta * (unbalancing**2 - 2) / 6 + os_tau * (unbalancing**2 - 1) / 2))
+        elif os_version == 2:
+            K = (K * (bigdelta + litdelta * (unbalancing**2 + 3*unbalancing - 2) / 6 + os_tau * (unbalancing**2 + 2*unbalancing - 1) / 2))
+        else:
+            raise Exception('Unknown sequence: '+str(seq_type)+str(os_version))
     elif seq_type == 'pgse':
         K = (K * bigdelta + (2 * litdelta)/3)
     else:
@@ -463,9 +473,15 @@ def do_palma(npkd, miniSNR=32, mppool=None, nbiter=1000, lamda=0.1, uncertainty=
 
     """
     import multiprocessing as mp
-    import itertools
     from spike.util import progressbar as pg
     from spike.util import widgets
+    import sys #
+    if sys.version_info[0] < 3:
+        import itertools
+        imap = itertools.imap
+    else:
+        imap = map
+
     # local functions
     def palmaiter(npkd):
         "iterator for // processing around palma() using mp.pool.imap()"
@@ -497,7 +513,7 @@ def do_palma(npkd, miniSNR=32, mppool=None, nbiter=1000, lamda=0.1, uncertainty=
     if paral:
         result = mppool.imap(process, xarg)
     else:
-        result = itertools.imap(process, xarg)
+        result = imap(process, xarg)
     # collect
     for ii, res in enumerate(result):
         # if icol%50 == 0 :
