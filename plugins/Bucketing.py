@@ -57,7 +57,7 @@ def bucket1d(data, zoom=(0.5, 9.5), bsize=0.04, file=None):
     dcopy.real(axis=1)
 
     s = "# %i buckets with a mean size of %.2f data points" % \
-        ( round((end-start+bsize)/bsize), bsize/ppm_per_point)
+        ( int(round((end-start+bsize)/bsize)), bsize/ppm_per_point)
     print(s, file=file)
     if file is not None:    # wants the prompt on the terminal
         print(s)
@@ -66,9 +66,9 @@ def bucket1d(data, zoom=(0.5, 9.5), bsize=0.04, file=None):
     here = min(start,end)    # running center of the bucket - initialized to begining
     here2 = (here-bsize/2)   # running beginning of the bucket
     while (here2 < there):
-        ih = round(dcopy.axis1.ptoi(here2))   # int of running beginning of the bucket
+        ih = int(round(dcopy.axis1.ptoi(here2)))   # int of running beginning of the bucket
         next = (here2+bsize)                  # running en of bucket
-        inext = (round(dcopy.axis1.ptoi(next))) # int of running en of bucket
+        inext = int((round(dcopy.axis1.ptoi(next)))) # int of running en of bucket
         if ih<0 or inext<0:
             break
         integ = dcopy.buffer[inext:ih].sum()
@@ -120,7 +120,7 @@ def bucket2d(data, zoom=((0.5, 9.5),(0.5, 9.5)), bsize=(0.1, 0.1), file=None):
     dcopy.real(axis=1)
 
     s = "# %i rectangular buckets with a mean size of %.2f x %.2f data points" % \
-        ( round((end1-start1+bsize1)/bsize1)*round((end2-start2+bsize2)/bsize2), \
+        ( int(round((end1-start1+bsize1)/bsize1)*round((end2-start2+bsize2)/bsize2)), \
         bsize1/ppm_per_point1, bsize2/ppm_per_point2)
     print(s, file=file)
     if file is not None:    # wants the prompt on the terminal
