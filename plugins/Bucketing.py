@@ -68,7 +68,7 @@ def bucket1d(data, zoom=(0.5, 9.5), bsize=0.04, file=None):
     while (here2 < there):
         ih = int(round(dcopy.axis1.ptoi(here2)))   # int of running beginning of the bucket
         next = (here2+bsize)                  # running en of bucket
-        inext = int((round(dcopy.axis1.ptoi(next)))) # int of running en of bucket
+        inext = int(round(dcopy.axis1.ptoi(next))) # int of running en of bucket
         if ih<0 or inext<0:
             break
         integ = dcopy.buffer[inext:ih].sum()

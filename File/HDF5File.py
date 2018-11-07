@@ -113,7 +113,7 @@ class HDF5File(object):
         will retrieve it
     data are stored using JSON, so anything compatible will do  
     """
-    def __init__(self, fname, access = 'r', info = None, nparray = None, fticrd = None, compress=False, debug = 0):
+    def __init__(self, fname, access = 'r', info = None, nparray = None, fticrd = None, compress=False, debug = 0, verbose=False):
         """
         access:
             r: Read-only; no data can be modified.
@@ -145,7 +145,7 @@ class HDF5File(object):
                 print("open in read mode")
             self.access = access
             self.hf = tables.open_file(self.fname, self.access)
-            self.get_file_infos()
+            if verbose: self.get_file_infos()
         elif access == "w":
             if (self.debug > 0):
                 print("Open HDF5 File with writing rights")
@@ -177,19 +177,19 @@ class HDF5File(object):
                 print("open in modifying mode r+")
             self.access = "r+"
             self.hf = tables.open_file(self.fname, self.access)
-            self.get_file_infos()
+            if verbose: self.get_file_infos()
         elif access == "rw":
             if (self.debug > 0):
                 print("open in modifying mode rw")
             self.access = "r+"
             self.hf = tables.open_file(self.fname, self.access)
-            self.get_file_infos()
+            if verbose: self.get_file_infos()
         elif access == "a":
             if (self.debug > 0):
                 print("open in modifying mode a")
             self.access = "a"
             self.hf = tables.open_file(self.fname, self.access)
-            self.get_file_infos()
+            if verbose: self.get_file_infos()
         else:
             raise " Internal error in HDF5 creation - This should never happen"
             #self.f.close()

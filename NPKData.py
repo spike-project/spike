@@ -2157,11 +2157,11 @@ class NPKData(object):
     #-------------------------------------------------------------------------------
     def f1demodu(self, shift, axis=1):
         """
-        'demodulate' a given 1D FID by multiplying it with the complex serie exp(i 2 pi shift)
+        'demodulate' a given 2D with FID along F1 by multiplying it with the complex serie exp(j 2 pi shift)
         this has the effect of shifting the frequency by 'shift' expressed in Hz
         
-        if self is a 1D it is assumed to be complex
-        if self is & 2D it is assumed to have only 
+        Only for 2D.
+        it is assumed to have complex pairs in even and odd columns
         faked by calling flipphase()
         """
         self.flipphase(0.0, 180.0*shift)
