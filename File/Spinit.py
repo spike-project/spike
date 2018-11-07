@@ -21,13 +21,12 @@ import unittest
 import shutil
 import xml.etree.ElementTree as ET
 
-
 import numpy as np
 
 from ..NPKData import NPKData
 
 debug = False
-verbose = False   # change this for verbose importers
+verbose = True   # change this for verbose importers
 
 ################################################################
 def load_header(filename="header.xml"):
@@ -93,20 +92,29 @@ def read_1D(size, filename="data.dat"):
     uses struct
     does not check endianess
     """
+    print("size is ", size)
     fmt = ">%df"
     si = size
-    rl = np.empty((si))
-    im = np.empty((si))
-    with open(filename,"rb") as F:
-        buf = F.read(8*si)
-    ibuf = struct.unpack(fmt%(2*si), buf)  # upack the string as pairs of float
+    rl = np.empty((si/2))
+    im = np.empty((si/2))
+    print("****** bits number is  {0} ".format(8*si))
+    dt = np.dtype(">f")
+    ibuf = np.fromfile(filename, dt)
+    # with open(filename,"rb") as F:
+    #     buf = F.read(8*si)
+    # ibuf = struct.unpack(fmt%(2*si), buf)  # unpack the string as pairs of float
+    print("passing in complex")
+    print("rl.size ",rl.size)
+    print("im.size ",im.size)
+    print("ibuf.size ",ibuf.size)
     rl[:] = ibuf[::2]
     im[:] = ibuf[1::2]
     npkbuf = rl + 1j*im
+    print("complex is OK")
     return npkbuf
     
 ################################################################
-def read_2D(sizeF1, sizeF2, filename="data.dat",):
+def read_2D(sizeF1, sizeF2, filename="data.dat"):
     return npkbuf
 
 ################################################################
@@ -143,6 +151,7 @@ def Import_1D(filename="data.dat"):
     size= int(acqu['ACQUISITION_MATRIX_DIMENSION_1D'])  # get size
     if verbose: print("importing 1D FID, size =",size)
     data = read_1D(size, filename)
+    print("After read_1D, size is : ", data.size)
     d = NPKData(buffer=data)
 #    d.revf()
 # then set parameters
@@ -157,9 +166,10 @@ def Import_1D(filename="data.dat"):
     return d
 
 ################################################################
-def Export_1D(d, filename="data.dat", template="header.xml"):
+def Export_1D(d, filename="data.dat", template="header.xml", kind=None):
     """
     export a 1D NPKData as a spinit
+    kind: 1DFID, 1DSPEC
     """
     if d.dim >1:
         raise Exception("not implemented yet for Dim>1")
@@ -183,6 +193,11 @@ def Export_1D(d, filename="data.dat", template="header.xml"):
     modify_val(headertree, 'OBSERVED_FREQUENCY', str(d.axis1.frequency*1E6) )
     modify_val(headertree, 'SR', str(d.axis1.offset+d.axis1.specwidth/2) )
     print ('    **SR is wrong ! to-be-changed**')
+    try:
+        STATE = [str(d.axis1.state),"0", "0", "0"]
+    except:
+        STATE = d.params['header']['STATE']
+    modify_val(headertree, 'STATE',  STATE)
     modify_val(headertree, 'DIGITAL_FILTER_SHIFT', str(d.axis1.zerotime) )
     headerfile = op.join( dirname, "header.xml")
     headertree.write(headerfile)

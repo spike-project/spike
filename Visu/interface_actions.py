@@ -45,10 +45,16 @@ class INTERACT(object):
         '''
         resolutions list made from self.data
         '''
-        self.LISTR = ['resol'+ str(i) for i in xrange(self.data.NBRES, 0, -1)]
+        try:
+            self.LISTR = ['resol'+ str(i) for i in xrange(self.data.NBRES, 0, -1)]
+        except:
+            self.LISTR = ['resol'+ str(i) for i in range(self.data.NBRES, 0, -1)]
         self.LISTRMAX = self.LISTR[0]                                                               # maximal resolution
         self.LISTD = self.data.d                                                                    # list of the different resolutions
-        self.LISTDNAME = ['d' + str(i) for i in xrange(self.data.NBRES, 0, -1)]                     # d1 biggest resolution..
+        try:
+            self.LISTDNAME = ['d' + str(i) for i in xrange(self.data.NBRES, 0, -1)]                     # d1 biggest resolution..
+        except:
+            self.LISTDNAME = ['d' + str(i) for i in range(self.data.NBRES, 0, -1)]                     # d1 biggest resolution..
     
     def _name_number(self, name, nb):
         '''
