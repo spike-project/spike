@@ -31,7 +31,7 @@ import numpy as np
 from ..NPKData import NPKData, NPKData_plugin
 
 debug = False
-verbose = True   # change this for verbose importers
+verbose = False   # change this for verbose importers
 
 ################################################################
 def load_header(filename="header.xml"):
@@ -318,7 +318,7 @@ def Import_1D(filename="data.dat"):
         raise Exception(filename+" : file not found")
     dire=op.dirname(filename)
     acqu = read_param(op.join(dire,'header.xml'))
-    size= int(acqu['ACQUISITION_MATRIX_DIMENSION_1D'])  # get size
+    size= int(acqu['MATRIX_DIMENSION_1D'])  # get size
     if verbose: print("importing 1D FID, size =",size)
     data = read_1D(size, filename)
     print("After read_1D, size is : ", data.size)
@@ -343,13 +343,19 @@ def Import_2D(filename="data.dat"):
     """
     if (not op.exists(filename)):
         raise Exception(filename + " : file not found")
-    dire=op.dirname(filename)
+    dire = op.dirname(filename)
     acqu = read_param(op.join(dire,'header.xml'))
-    size1= int(acqu['ACQUISITION_MATRIX_DIMENSION_2D'])  # get size
-    size2= int(acqu['ACQUISITION_MATRIX_DIMENSION_1D'])  # get size
+    size1 = int(acqu['MATRIX_DIMENSION_2D'])  # get size
+    size2 = int(acqu['MATRIX_DIMENSION_1D'])  # get size
     if verbose:
-        print("size1 ",size1)
-        print("size2 ",size2)
+        print("size1", size1)
+        print("size2", size2)
+    
+    if int(acqu['MATRIX_DIMENSION_3D']) != 1:
+        print("MATRIX_DIMENSION_3D != 1, ignoring")
+    if int(acqu['MATRIX_DIMENSION_4D']) != 1:
+        print("MATRIX_DIMENSION_4D != 1, ignoring")
+        
     data = read_2D(size1, size2, filename)
     print (data.shape)
     d = NPKData(buffer=data, dim=2)
@@ -399,7 +405,7 @@ def Export_1D(d, filename="data.dat", template="header.xml", kind=None):
     headertree = load_header(template)
     modify_val(headertree, 'MODALITY', "NMR" )
     modify_val(headertree, 'ACCU_DIM', "1" )
-    modify_val(headertree, 'ACQUISITION_MATRIX_DIMENSION_1D', str(d.axis1.cpxsize) )
+    modify_val(headertree, 'MATRIX_DIMENSION_1D', str(d.axis1.cpxsize) )
     modify_val(headertree, 'SPECTRAL_WIDTH', str(d.axis1.specwidth) )
     modify_val(headertree, 'OBSERVED_FREQUENCY', str(d.axis1.frequency*1E6) )
     modify_val(headertree, 'SR', str(d.axis1.offset+d.axis1.specwidth/2) )
@@ -426,6 +432,9 @@ def Export_2D(d,  filename="data.dat", template="header.xml", kind=None, debug=0
     headertree = load_header(template)
     modify_val(headertree, 'MATRIX_DIMENSION_1D', str(d.axis2.cpxsize) ) 
     modify_val(headertree, 'MATRIX_DIMENSION_2D', str(d.axis1.size) ) 
+    modify_val(headertree, 'MATRIX_DIMENSION_3D', "1" ) 
+    modify_val(headertree, 'MATRIX_DIMENSION_4D', "1" ) 
+       
     ####
     mode = get_acquisition_mode(d.params['header'])   # retrieving acquisition mode
     if debug>0: print("mode is ", mode)
@@ -445,6 +454,8 @@ def Export_2D(d,  filename="data.dat", template="header.xml", kind=None, debug=0
  
     headerfile = op.join( dirname, "header.xml")
     headertree.write(headerfile)                   # writes in the headerfile
+    if debug>0: headertree.write('spinit2D_header.xml')
+
 
 if __name__ == '__main__':
     unittest.main()
