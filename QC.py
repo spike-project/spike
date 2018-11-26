@@ -11,15 +11,16 @@ python 2 only so far !
 
 """
 
-from __future__ import print_function
+from __future__ import print_function, division
 from subprocess import Popen, PIPE
 
 import sys
 import re
+from codecs import encode, decode
 #import glob
 
 CMD = "pylint"
-ARGS = ["--rcfile=rcpylint"]
+ARGS = ["--rcfile=rcfile3"]
 
 def msg(string, sep='='):
     "print string in a box"
@@ -33,7 +34,7 @@ def tracked_files(excluded=('none',)):
     """
     import fnmatch
     hgall = Popen(["hg", "stat", "-A"], stdout=PIPE).communicate()[0]
-    lines = [l for l in hgall.split("\n")]
+    lines = [l for l in hgall.split(b"\n")]
     hg = []
     modif = []
     for line in lines:
@@ -41,9 +42,9 @@ def tracked_files(excluded=('none',)):
         cont = False
         if len (sp) < 1:      # exit on conditions
             continue
-        if sp[0] not in ('C', 'M'):
+        if sp[0] not in (b'C', b'M'):
             continue
-        fname = sp[1]
+        fname = decode(sp[1])
         for pat in excluded:
             if fnmatch.fnmatch(fname, pat): # find pattern
                 print("excluding", fname)
@@ -51,8 +52,8 @@ def tracked_files(excluded=('none',)):
         if cont:
             continue
         hg.append(fname)
-        if sp[0] in ('M'):
-            modif.append(sp[1])
+        if sp[0] in (b'M'):
+            modif.append(decode(sp[1]))
     return (hg, modif)
 class WritableObject(object):
     "dummy input/output stream for pylint"
@@ -74,6 +75,8 @@ class WritableObject(object):
             return self.content.pop(0)
         else:
             raise(StopIteration)
+    def __next__(self):
+        return self.next()
 def find_depedencies(reader):
     "goes thru the pylint report reader, gather dependencies, and return as a set"
     dep = set()
@@ -138,12 +141,13 @@ def process(files):
 def processmp(files):
     "apply pylint to files in a multiprocessing manner"
     import multiprocessing as mproc
-    pool = mproc.Pool(4)
+    pool = mproc.Pool()
     # msg("Checking files")
     stats = {}
     todo = [ f for f in files if f.endswith('.py')]
-    res = pool.imap(run_pylint, todo)
+    res = pool.imap_unordered(run_pylint, todo)
     for f in todo:
+        print("checked %s"%f)
         stats[f] = res.next()
     return stats
 def report(stats, modif):
@@ -200,7 +204,7 @@ def report(stats, modif):
 #    assert(len(stats)==ncode)
     text.append( "-"*nchar )
     mnote = mean/ncode
-    median = stats[kstats[ncode/2]][0]
+    median = stats[kstats[ncode//2]][0]
     aggreg = 0.5*mnote + 0.5*(10*ptop + 5*pmed)/ncode
     text.append( "\nOverall aggregated note value is : {:5.2f}/10\n".format(aggreg) )
     text.append( "score is {} / {} / {}  (top / med / low)".format(ptop, pmed, plow ))
@@ -248,7 +252,7 @@ def main(excluded = ['.hgignore',], files = 'hg'):
     message()
 
 if __name__ == '__main__':
-    sys.exit( main( excluded = ('v1/*','util/dynsubplot.py','Miscellaneous/*') ) )
+    sys.exit(main(excluded=('v1/*', 'util/dynsubplot.py', 'Miscellaneous/*')))
     # excluding dynsubplot.py because the add_class method is just too confusing to pylint
 #    sys.exit( main( files=glob.glob('*.py')+glob.glob('*/*.py') ) )
 

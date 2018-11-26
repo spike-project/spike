@@ -10,10 +10,11 @@ Created by Marc-Andre' on 2010-07-20.
 """
 
 from __future__ import print_function
+from codecs import encode, decode
 
 ProgramName = "SPIKE"
-VersionName = "Development version - beta"
-VersionInfo = ["0", "99", "0"]   # Major - Minor - Micro
+VersionName = "Development version"
+VersionInfo = ["0", "99", "1"]   # Major - Minor - Micro
 
 # Major.minor.micro (int) + name eg SPIKE_2_19_5
 # N.M.L
@@ -26,6 +27,16 @@ VersionInfo = ["0", "99", "0"]   # Major - Minor - Micro
 # Release Notes in md syntax !
 release_notes="""
 # Relase Notes
+#### 0.99.1 - November 2018
+- added the sane algorithm
+- added the pg-sane algorithm
+- added the NPKData.set_unit(unit) method for pipelining
+- added the NPKData.load_sampling(axis) method for pipelining
+- improved spinit support
+- corrected a few bugs
+  - NPKData.save_csv() now works in python 3
+  - NPKData.copy() is now more robust
+
 #### 0.99 - April 2018 - temp release branch
 We have been developping a lot this last year, and published quite a few results.
 The program is now quite stable in most of its features.
@@ -33,7 +44,6 @@ Additions and improvements were added to the repository in the `devel` branch, h
 This release is an effort to bring everything into normal mode, and hopefully, preparing a 1.0 version !
 
 New in 0.99:
-
 - SPIKE is now fully compatible with python 2 AND python 3
 - added the SANE noise denoising algorithm and plugin.
     - an improvement to urQRd
@@ -243,7 +253,7 @@ def generate_version():
         revision = re.search(r'^Revision: (\d*)', svn, re.MULTILINE).group(1)
     elif UsingHG:
         hg = Popen(["hg", "summary"], stdout=PIPE).communicate()[0]
-        revision = re.search(r'^parent: ([\d]*):', hg, re.MULTILINE).group(1)
+        revision = re.search(r'^parent: ([\d]*):', decode(hg), re.MULTILINE).group(1)
     else:
         revision = "Undefined"
     # date   dd-mm-yyyy
@@ -274,17 +284,16 @@ def generate_file(fname):
     f.write(r"""
 def report():
     "prints version name when SPIKE starts"
-    print( '''
+    return '''
     ========================
           {0}
     ========================
     Version     : {1}
     Date        : {2}
     Revision Id : {3}
-    ========================'''.format(ProgramName, version, rev_date, revision))
-report()
+    ========================'''.format(ProgramName, version, rev_date, revision)
+print(report())
 """)
-    #print 'SPIKE version', version, 'date',date "
     f.close()
 def generate_file_rev(fname):
     """
@@ -312,15 +321,15 @@ except:
     f.write(r"""
 def report():
     "prints version name when SPIKE starts"
-    print '''
+    return '''
     ========================
-          %s
+          {0}
     ========================
-    Version     : %s
-    Date        : %s
-    Revision Id : %s
-    ========================'''%(ProgramName, version, rev_date, revision)
-report()
+    Version     : {1}
+    Date        : {2}
+    Revision Id : {3}
+    ========================'''.format(ProgramName, version, rev_date, revision)
+print(report())
 """)
     #print 'SPIKE version', version, 'date',date "
     f.close()

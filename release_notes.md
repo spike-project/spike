@@ -1,5 +1,15 @@
 <!-- DO NOT MODIFY this file, it is generated automatically! -->
 # Relase Notes
+#### 0.99.1 - November 2018
+- added the sane algorithm
+- added the pg-sane algorithm
+- added the NPKData.set_unit(unit) method for pipelining
+- added the NPKData.load_sampling(axis) method for pipelining
+- improved spinit support
+- corrected a few bugs
+  - NPKData.save_csv() now works in python 3
+  - NPKData.copy() is now more robust
+
 #### 0.99 - April 2018 - temp release branch
 We have been developping a lot this last year, and published quite a few results.
 The program is now quite stable in most of its features.
@@ -7,7 +17,7 @@ Additions and improvements were added to the repository in the `devel` branch, h
 This release is an effort to bring everything into normal mode, and hopefully, preparing a 1.0 version !
 
 New in 0.99:
-
+- SPIKE is now fully compatible with python 2 AND python 3
 - added the SANE noise denoising algorithm and plugin.
     - an improvement to urQRd
     - more faithfull to small signal intensity
@@ -41,6 +51,10 @@ New in 0.99:
 - modified .extract() code to work in current axis unit
 - modified .mean() to return complex value is axis is complex
 - improved python 3 compatibility. It is not finished yet, but most of the program is python 2/python 3 independent, some parts are still missing, 
+
+- known bugs
+  - NPKData.extract() method not fully tested
+  - NPKData.save_csv() is buggy in python 3
 
 #### 0.9 - 8 sept 2016
 *never reached the normal distribution - doc partly redundant with 0.8.3*

@@ -871,6 +871,13 @@ class NPKData(object):
             ax = self.axes(i+1)
             ax.currentunit = currentunit
     unit = property(_gunits, _sunits)
+    def set_unit(self, currentunit):
+        """
+        a method equivalent to the unit property
+        can be used in processing pipelines
+        """
+        self._sunits(currentunit)
+        return self
     #------------------------------------------------
     def check(self, warn = False):
         """
@@ -948,6 +955,12 @@ class NPKData(object):
         Data = type(self)   # NPKData get subclassed, so subclass creator is to be used
         c = Data(buffer = self.buffer.copy())
         copyaxes(self,c)
+        c.debug = self.debug
+        c.frequency = self.frequency
+        c.absmax = self.absmax
+        c.noise = self.noise
+        c.name = self.name
+        c.level = self.level
         try:
             c.params = copy.deepcopy(self.params)
         except AttributeError:
@@ -1086,6 +1099,11 @@ class NPKData(object):
             if zf2: self._chsize3d(self.size1, self.size2*zf2, self.size3)
             if zf1: self._chsize3d(self.size1*zf1, self.size2, self.size3)
         self.absmax = 0.0
+        return self
+    def load_sampling(self, filename, axis=1):
+        "equivalent to the axis.load_sampling() method - can be pipelined"
+        todo = self.test_axis(axis)
+        self.axes(todo).load_sampling(filename)
         return self
     #---------------------------------------------------------------------------
     def extract(self, *args): # MAD , unit=True):
@@ -1231,6 +1249,11 @@ class NPKData(object):
         Data = type(self)   # NPKData get subclassed, so subclass creator is to be used
         c = Data(buffer = self.buffer[:,i].copy())
         c.axis1 = self.axis1.copy()
+        try:
+            c.params = copy.deepcopy(self.params)
+        except AttributeError:
+            pass
+            # warning('params is missing')
         return c
     #----------------------------------------------
     def set_col(self, i, d1D):
@@ -1272,6 +1295,11 @@ class NPKData(object):
         Data = type(self)   # NPKData get subclassed, so subclass creator is to be used
         r = Data(buffer = self.buffer[i,:].copy())
         r.axis1 = self.axis2.copy()
+        try:
+            r.params = copy.deepcopy(self.params)
+        except AttributeError:
+            pass
+            # warning('params is missing')
         return r
     #----------------------------------------------
     def set_row(self, i, d1D):

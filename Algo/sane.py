@@ -567,7 +567,7 @@ class sane_Tests(unittest.TestCase):
                         noisetype = "additive", 
                         nb_iterat = 1 )
         self.assertAlmostEqual(iSNR, 6, 0)
-        self.assertTrue(fSNR > 29)
+        self.assertTrue(fSNR > 28)
     def test_sane_iter_trick(self):
         '''
         Makes sane with trick and varying the number of iterations.
