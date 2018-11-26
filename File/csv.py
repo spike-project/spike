@@ -37,8 +37,8 @@ def save(data,filename, delimiter=',', fmt='%.18E'):
 def load(filename, column=0, delimiter=','):
     """
     load 1D data from txt or csv file,
-    attribute are in pseuo-coments startin with #$
-    value are in columns, separated by delimiter - only the columun given in arg will be loaded
+    attribute are in pseudo-comments starting with #$
+    value are in columns, separated by delimiter - only the column given in arg will be loaded
     column = 0 is fine for text files
     column = 1 is fine for csv files with currentunit
     returns a numpy buffer and an attribute dictionary
@@ -51,8 +51,8 @@ def load(filename, column=0, delimiter=','):
             fields = l.split(asbytes(delimiter))
             if l.startswith(asbytes('#')):    # first comments
                 if l.startswith(asbytes('#$')):  #  #$key value  for parameters
-                    k = fields[0][2:]
-                    v = fields[1].rstrip()
+                    k = asstr(fields[0][2:])
+                    v = asstr(fields[1]).rstrip()
                     try:
                         v = float(v)        # eventually turn it into number
                     except ValueError:
@@ -93,7 +93,7 @@ def Import_1D(filename, column=0, delimiter=','):
         d = NPKData(buffer=buf)
     elif "FTICR" in att.keys():
         d = FTICRData(buffer=buf)
-    if "Orbitrap" in att.keys():
+    elif "Orbitrap" in att.keys():
         d = OrbiData(buffer=buf)
     for kk,v in att.items():
         k = asstr(kk)
