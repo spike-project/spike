@@ -27,14 +27,17 @@ import unittest
 
 from spike import NPKError
 from spike.NPKData import NPKData_plugin, NPKData
+from spike.util.signal_tools import findnoiselevel
 
 #---------------------------------------------------------------------------
-def bucket1d(data, zoom=(0.5, 9.5), bsize=0.04, file=None):
+def bucket1d(data, zoom=(0.5, 9.5), bsize=0.04, pp=False, thresh=10, file=None):
     """
  This tool permits to realize a bucket integration from the current 1D data-set.
- You will have to determine  (all spectral values are in ppm)
+ You will have to give  (all spectral values are in ppm)
    - zoom (low,high),  : the starting and ending ppm of the integration zone in the spectrum
    - bsize: the size of the bucket
+   - pp: if True, the number of peaks in the bucket is also added
+        - peaks are detected if intensity is larger that thresh*noise
    - file: the filename to which the result is written
 
 
@@ -55,13 +58,20 @@ def bucket1d(data, zoom=(0.5, 9.5), bsize=0.04, file=None):
 
     dcopy = data.copy()   # work now on a real version of the data
     dcopy.real(axis=1)
+    if pp:
+        noise = findnoiselevel( dcopy.get_buffer() )
+        dcopy.pp(thresh*noise)
+        peaklist = dcopy.peaks.pos
 
     s = "# %i buckets with a mean size of %.2f data points" % \
         ( int(round((end-start+bsize)/bsize)), bsize/ppm_per_point)
     print(s, file=file)
     if file is not None:    # wants the prompt on the terminal
         print(s)
-    print("center, bucket, max, min, std, bucket_size", file=file)
+    if pp:
+        print("center, bucket, max, min, std, peaks_nb, bucket_size", file=file)
+    else:
+        print("center, bucket, max, min, std, bucket_size", file=file)
     there = max(start,end)   # end of the bucket region
     here = min(start,end)    # running center of the bucket - initialized to begining
     here2 = (here-bsize/2)   # running beginning of the bucket
@@ -79,17 +89,23 @@ def bucket1d(data, zoom=(0.5, 9.5), bsize=0.04, file=None):
             maxv = np.NaN     # sum and std returns nan - max returns an error ???
             minv = np.NaN     # sum and std returns nan - min returns an error ???
         stdv = dcopy.buffer[inext:ih].std()
-        print("%.3f, %.1f, %.1f, %.1f, %.1f, %d"%(here, integ/((ih-inext)*bsize), maxv, minv, stdv,  (ih-inext) ), file=file)
+        if pp:
+            pk = np.where((peaklist>=inext)&(peaklist<ih))
+            print("%.3f, %.1f, %.1f, %.1f, %.1f, %d, %d"%(here, integ/((ih-inext)*bsize), maxv, minv, stdv, len(pk[0]), (ih-inext) ), file=file)
+        else:
+            print("%.3f, %.1f, %.1f, %.1f, %.1f, %d"%(here, integ/((ih-inext)*bsize), maxv, minv, stdv, (ih-inext) ), file=file)
         here2 = next
         here = (here+bsize)
     return data
 #---------------------------------------------------------------------------
-def bucket2d(data, zoom=((0.5, 9.5),(0.5, 9.5)), bsize=(0.1, 0.1), file=None):
+def bucket2d(data, zoom=((0.5, 9.5),(0.5, 9.5)), bsize=(0.1, 0.1), pp=False, thresh=10, file=None):
     """
  This tool permits to realize a bucket integration from the current 2D data-set.
- You will have to determine  (all spectral values are in ppm)
+ You will have to give the following values:  (all spectral values are in ppm)
    - zoom (F1limits, F2limits),  : the starting and ending ppm of the integration zone in the spectrum
    - bsize (F1,F2): the sizes of the bucket
+   - pp: if True, the number of peaks in the bucket is also added
+        - peaks are detected if intensity is larger that thresh*noise
    - file: the filename to which the result is written
 
 
@@ -118,6 +134,10 @@ def bucket2d(data, zoom=((0.5, 9.5),(0.5, 9.5)), bsize=(0.1, 0.1), file=None):
     dcopy = data.copy()   # work now on a real version of the data
     dcopy.real(axis=2)
     dcopy.real(axis=1)
+    if pp:
+        noise = findnoiselevel( dcopy.get_buffer() )
+        dcopy.pp(thresh*noise)
+        peaklist = dcopy.peaks
 
     s = "# %i rectangular buckets with a mean size of %.2f x %.2f data points" % \
         ( int(round((end1-start1+bsize1)/bsize1)*round((end2-start2+bsize2)/bsize2)), \
@@ -125,7 +145,10 @@ def bucket2d(data, zoom=((0.5, 9.5),(0.5, 9.5)), bsize=(0.1, 0.1), file=None):
     print(s, file=file)
     if file is not None:    # wants the prompt on the terminal
         print(s)
-    print("centerF1, centerF2, bucket, max, min, std, bucket_size_F1, bucket_size_F2", file=file)
+    if pp:
+        print("centerF1, centerF2, bucket, max, min, std, peaks_nb, bucket_size_F1, bucket_size_F2", file=file)
+    else:
+        print("centerF1, centerF2, bucket, max, min, std, bucket_size_F1, bucket_size_F2", file=file)
     here1 = min(start1, end1)
     here1_2 = (here1-bsize1/2)
     there1 = max(start1, end1)
@@ -154,7 +177,14 @@ def bucket2d(data, zoom=((0.5, 9.5),(0.5, 9.5)), bsize=(0.1, 0.1), file=None):
                 maxv = np.NaN     # sum and std returns nan - max returns an error ???
                 minv = np.NaN     # sum and std returns nan - max returns an error ???
             stdv = dcopy.buffer[inext1:ih1, inext2:ih2].std()
-            print("%.3f, %.3f, %.1f, %.1f, %.1f, %.1f, %d, %d"%(here1, here2, integ/area, maxv, minv, stdv, (ih1-inext1), (ih2-inext2) ), file=file)
+            if pp:
+                pk1 = [pk for pk in peaklist if (pk.posF1>=inext1 and pk.posF1<ih1) ] # peaks in F1
+                pk12 = [pk for pk in pk1 if (pk.posF2>=inext2 and pk.posF2<ih2) ]
+                print("%.3f, %.3f, %.1f, %.1f, %.1f, %.1f, %d, %d, %d"% \
+                    (here1, here2, integ/area, maxv, minv, stdv, len(pk12), (ih1-inext1), (ih2-inext2) ), file=file)
+            else:
+                print("%.3f, %.3f, %.1f, %.1f, %.1f, %.1f, %d, %d"% \
+                    (here1, here2, integ/area, maxv, minv, stdv, (ih1-inext1), (ih2-inext2) ), file=file)
 #            print(here1, here2, here1_2, here2_2, inext1, ih1, inext2, ih2, file=F)
             here2_2 = next2
             here2 = (here2+bsize2)
