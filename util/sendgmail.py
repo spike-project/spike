@@ -4,18 +4,23 @@
 #!/usr/bin/python
 '''
 Sending informations about result etc with Gmail
-Using mail gmalert67@gmail.com
-with password igbmcalert
 recipient (to) and attached document (attach) can be a list
 '''
 
 from __future__ import print_function
 import smtplib
-from email.MIMEMultipart import MIMEMultipart
-from email.MIMEBase import MIMEBase
-from email.MIMEText import MIMEText
-from email import Encoders
 import os
+import sys
+if sys.version_info[0] < 3:
+  from email.MIMEMultipart import MIMEMultipart
+  from email.MIMEBase import MIMEBase
+  from email.MIMEText import MIMEText
+  from email import Encoders
+else:
+  from email import encoders as Encoders
+  from email.mime.base import MIMEBase
+  from email.mime.text import MIMEText
+  from email.mime.multipart import MIMEMultipart
 
 gmail_user = "gmalert67@gmail.com"
 gmail_pwd = "IGBMCAlert67"

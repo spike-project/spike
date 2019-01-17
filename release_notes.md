@@ -1,5 +1,14 @@
 <!-- DO NOT MODIFY this file, it is generated automatically! -->
 # Relase Notes
+#### 0.99.2 - January 2019
+- added the .set_unit() method
+- added number of local peaks in bucketing
+- improved Bruker importer and added support for NEO/TopSpin 4.0 files
+- improved importing DOSY processed with TopSpin
+- corrected a bug for min value in bucketing
+- changed pylint/QC defaults -> new values (and corrected a bad bug)
+- cleaned the code a little
+
 #### 0.99.1 - November 2018
 - added the sane algorithm
 - added the pg-sane algorithm

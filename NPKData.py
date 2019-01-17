@@ -875,8 +875,16 @@ class NPKData(object):
         """
         a method equivalent to the unit property
         can be used in processing pipelines
+        if currentunit is a list/tuple, each entries are applied to the different axes
         """
-        self._sunits(currentunit)
+        if type(currentunit) not in (tuple, list) :  # just apply unit to all axes
+            self._sunits(currentunit)
+        else:
+            if self.dim != len(currentunit):
+                raise NPKError('dimension do not match')
+            for i,u in zip(range(self.dim),currentunit):
+                ax = self.axes(i+1)
+                ax.currentunit = u          
         return self
     #------------------------------------------------
     def check(self, warn = False):
@@ -1519,7 +1527,7 @@ class NPKData(object):
                 fig.contour(axis[1][z2lo:z2up:step2],
                     axis[0][z1lo:z1up:step1],
                     self.buffer[z1lo:z1up:step1,z2lo:z2up:step2],
-                    level, colors=color, label=label, **mpldic)
+                    level, colors=color, **mpldic)
             if xlabel == "_def_":
                 xlabel = self.axis2.currentunit
             if ylabel == "_def_":

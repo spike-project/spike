@@ -26,7 +26,7 @@ import numpy as np
 from ..NPKData import NPKData, LaplaceAxis
 
 debug = False
-verbose = False   # change this for vebose importers
+VERBOSE = False   # change this for verbose importers by default
 ################################################################
 def find_acqu_proc_gene(dir, acqulist):
     """
@@ -123,7 +123,7 @@ def read_param(filename="acqus"):
     
     arrayed values are stored in python array
     
-    comments (lines starting with $$) are stored in the special entrey [comments]
+    comments (lines starting with $$) are stored in the special entry [comments]
     
     M-A Delsuc jan 2006
     oct 2006 : added support for array
@@ -131,8 +131,8 @@ def read_param(filename="acqus"):
     debug = 0
     with open(filename) as fin:
         # read file
-        dict = {}
-        dict['comments']=""
+        dico = {}
+        dico['comments']=""
         f=fin.read()
         fin.close()
         ls= f.split("\n")
@@ -142,7 +142,7 @@ def read_param(filename="acqus"):
             v = v.strip()
             if debug: print("-",v,"-")
             if (re.search(r"^\$\$",v)):  # print comments
-                dict['comments']=dict['comments']+"\n"+v
+                dico['comments']=dico['comments']+"\n"+v
             else:
                 m=re.match(r"##(.*)= *\(0\.\.([0-9]*)\)(.*)$",v )   # match arrays
                 if (m is not None):
@@ -159,26 +159,52 @@ def read_param(filename="acqus"):
                     if debug: print(key,numb,len(array),array)
                     if ((int(numb)+1) != len(array)):   # (0..9) is 10 entries !
                         raise "size mismatch in array"
-                    dict[key] = array
+                    dico[key] = array
                     continue
                 m=re.match(r"##(.*)= *<(.*)>",v )   #match string
                 if (m is not None): 
                     if debug: print("STRING",v)
                     (key,val) = m.group(1,2)
-                    dict[key] = "<"+val+">"
+                    dico[key] = "<"+val+">"
                     continue
                 m=re.match(r"##(.*)= *(.*)$",v )   #match value
                 if (m is not None):
                     if debug: print("VAL",v)
                     (key,val) = m.group(1,2)
-                    dict[key] = val
+                    dico[key] = val
                     continue
+# add title
+    dico['title'] = read_title(filename)
+# find topspin version
+    version = 'unknown'
+    try:
+        version = dico['TITLE']
+    except:
+        pass
+    if '2.' in version:
+        dico['ORIGIN'] = 'TOPSPIN2'
+    elif '3.' in version:
+        dico['ORIGIN'] = 'TOPSPIN3'
+    elif '4.' in version:
+        dico['ORIGIN'] = 'TOPSPIN4'
+
 # debug code
     if debug:
-        for i in dict.keys():
-            print(i+" = "+str(dict[i]))
-    return dict
-
+        for i in dico.keys():
+            print(i+" = "+str(dico[i]))
+    return dico
+################################################################
+def read_title(filename):
+    """
+    infer and load title of imported experiment
+    """
+    proc = find_proc(dir=op.dirname(filename), down=('acqu' in filename))
+    ftitle = op.join(op.dirname(proc),'title')
+    try:
+        title = open(ftitle,'r').read()
+    except FileNotFoundError:
+        title = "-"
+    return title
 ################################################################
 def write_param(param, filename):
     """
@@ -218,36 +244,55 @@ def write_param(param, filename):
         out('END')
         
 ################################################################
-def read_1D(size, filename="fid", bytorda=1):
+def read_1D(size, filename="fid", bytorda=1, dtypa=0, uses='numpy'):
     """
     Reads in a Bruker 1D fid as a numpy float array
     
     size is the number of data-points in the fid
-    uses struct
+    uses struct or numpy / numpy is non-standard but ~2x faster
+    dtypa   = 0 => int4
+            = 2 => float8
     does not check endianess
     """
 # read binary
-    if bytorda == 0:
-        fmt = "<%di"
+    if dtypa == 2:
+        fmt = "d"
+        nfmt = "f8"
+        mlt = 8
     else:
-        fmt = ">%di"   # > is used to keep the normal endianess
-    with open(filename,"rb") as F:
-        buf = F.read(4*size)
-        ibuf = struct.unpack(fmt%(size), buf)  # upack the string as integers
-    npkbuf = np.empty(size, dtype=np.float64)
-    npkbuf[:] = ibuf[:]
+        fmt = "i"
+        nfmt="i4"
+        mlt = 4
+    if bytorda == 0:
+        fmt = "<%d" + fmt
+    else:
+        fmt = ">%d" + fmt
+    if uses == 'struct':
+        with open(filename,"rb") as F:
+            buf = F.read(mlt*size)
+            ibuf = struct.unpack(fmt%(size), buf)  # upack the string as integers
+        npkbuf = np.empty(size, dtype=np.float64)
+        npkbuf[:] = ibuf[:]
+    elif uses == 'numpy':
+        npkbuf = np.fromfile(filename, nfmt).astype(float)
     return npkbuf
     
 ################################################################
-def read_2D(sizeF1, sizeF2, filename="ser", bytorda=1):
+def read_2D(sizeF1, sizeF2, filename="ser", bytorda=1, dtypa=0, uses='struct'):
     """
     Reads in a Bruker 2D fid as a numpy float array
 
     sizeF1 is the number of fid
     sizeF2 is the number of data-points in the fid
     """
+    if uses != "struct":
+        raise Eception('Only mode "struct" is implmented')
     npkbuf = np.empty((sizeF1, sizeF2), dtype=np.float64)
 # read binary
+    if dtypa == 0:
+        fmt = "256i"
+    else:
+        fmt = "256i"
     if bytorda == 0:
         fmt = "<256i"
     else:
@@ -369,7 +414,7 @@ def revoffset(offset, acqu, proc):
         OFF = 0.0
     return OFF
 ################################################################
-def Import_1D(filename="fid", outfile=None):
+def Import_1D(filename="fid", outfile=None, verbose=VERBOSE):
     """
     Imports a 1D Bruker fid as a NPKData
     
@@ -379,8 +424,8 @@ def Import_1D(filename="fid", outfile=None):
     dire=op.dirname(filename)
     acqu = read_param(find_acqu(dire))
     size= int(acqu['$TD'])  # get size
-    if verbose: print("importing 1D FID, size =",size)
-    data = read_1D(size, filename, bytorda=int(acqu['$BYTORDA']))
+    if verbose: print("imported 1D FID, size =%d\n%s"%(size, acqu['title']))
+    data = read_1D(size, filename, bytorda=int(acqu['$BYTORDA']), dtypa=int(acqu['$DTYPA']))
     NC = int(acqu['$NC'])   # correct intensity with Bruker "NC" coefficient
     if NC != 0:
         data *= 2**(NC)
@@ -401,9 +446,10 @@ def Import_1D(filename="fid", outfile=None):
         raise Exception("Not implemented yet")
     pardic = {"acqu": acqu, "proc": proc} # create ad-hoc parameters
     d.params = pardic   # add the parameters to the data-set
+    if verbose: print("imported 1D FID, size =%d\n%s"%(size, acqu['title']))
     return d
 ################################################################
-def Import_1D_proc(filename="1r"):
+def Import_1D_proc(filename="1r", verbose=VERBOSE):
     """
     Imports a 1D Bruker 1r processed file as a NPKData
     if 1i exists imports the complex spectrum
@@ -411,11 +457,10 @@ def Import_1D_proc(filename="1r"):
     """
     if (not op.exists(filename)):
         raise Exception(filename+" : file not found")
-    dire=op.dirname(filename)
+    dire = op.dirname(filename)
     proc = read_param(find_proc(dire, down=False))
     diracq = op.dirname(op.dirname(op.dirname(filename)))
     acqu = read_param(find_acqu(diracq))
-    if verbose:     print("importing 1D spectrum")
     data = np.fromfile(filename, 'i4').astype(float)
     if op.exists(op.join(dire,'1i')):  # reads imaginary part
         data = data + 1j*np.fromfile(filename, 'i4')
@@ -428,6 +473,7 @@ def Import_1D_proc(filename="1r"):
     d.axis1.zerotime = zerotime(acqu)
     pardic = {"acqu": acqu, "proc": proc} # create ad-hoc parameters
     d.params = pardic   # add the parameters to the data-set
+    if verbose:     print("1D spectrum imported\n%s"%(proc['title']))
     return d
 ################################################################
 # functions for exporting Topspin files
@@ -443,7 +489,7 @@ def write_file(bytordp, data, filename):
     with open(filename, 'wb') as f:
         f.write(data.astype(fmt).tostring())
 
-def Export_proc(d, filename, template=None ):
+def Export_proc(d, filename, template=None,  verbose=VERBOSE):
     """
     Exports a 1D or a 2D npkdata to a  Bruker 1r / 2rr file, using templname as a template
     
@@ -634,7 +680,7 @@ def FnMODE(acqu, proc):
         r = 0
     return r
     
-def Import_2D(filename="ser", outfile=None):
+def Import_2D(filename="ser", outfile=None, verbose=VERBOSE):
     """
     Imports a 2D Bruker ser
     
@@ -649,13 +695,13 @@ def Import_2D(filename="ser", outfile=None):
     sizeF1= int(acqu2['$TD'])  # get size
     sizeF2= int(acqu['$TD'])  # get size
 
-    data = np.fromfile(filename, 'i4').astype(float)
-    if op.exists(op.join(dire,'1i')):  # reads imaginary part
-        data = data + 1j*np.fromfile(filename, 'i4')
-    NC = int(acqu['$NC'])   # correct intensity with Bruker "NC" coefficient
-    if NC != 0:
-        data *= 2**(NC)
-    d = NPKData(buffer=data)
+    # data = np.fromfile(filename, 'i4').astype(float)
+    # if op.exists(op.join(dire,'1i')):  # reads imaginary part
+    #     data = data + 1j*np.fromfile(filename, 'i4')
+    # NC = int(acqu['$NC'])   # correct intensity with Bruker "NC" coefficient
+    # if NC != 0:
+    #     data *= 2**(NC)
+    # d = NPKData(buffer=data)
     
     data = read_2D(sizeF1, sizeF2, filename,  bytorda=int(acqu['$BYTORDA']))
     d = NPKData(buffer=data)
@@ -685,9 +731,11 @@ def Import_2D(filename="ser", outfile=None):
         "proc": proc, \
         "proc2": proc2} # create ad-hoc parameters
     d.params = pardic   # add the parameters to the data-set
+    if verbose:
+        print("imported 2D FID, size = %d x %d\n%s"%(sizeF1, sizeF2, acqu['title']))
     return d
 
-def Import_2D_proc(filename="2rr", outfile=None):
+def Import_2D_proc(filename="2rr", outfile=None,  verbose=VERBOSE):
     """
     Imports a 2D Bruker 2rr files
     if 2ri 2ir 2ii files exist, will imports the (hyper)complex spectrum
@@ -736,10 +784,12 @@ def Import_2D_proc(filename="2rr", outfile=None):
         "proc": SMX.proc, \
         "proc2": SMX.proc2} # create ad-hoc parameters
     d.params = pardic   # add the parameters to the data-set
+    if verbose:
+        print("imported 2D spectrum, size = %d x %d\n%s"%(data.shape(0), data.shape(1), acqu['title']))
     return d
 
 ################################################################
-def Import_3D(filename="ser",outfile=""):
+def Import_3D(filename="ser",outfile="", verbose=VERBOSE):
     """
     Imports a 3D Bruker ser
     
@@ -788,6 +838,8 @@ def Import_3D(filename="ser",outfile=""):
         "proc2": proc2, \
         "proc3": proc3} # create ad-hoc parameters
     d.params = pardic   # add the parameters to the data-set
+    if verbose:
+        print("imported 3D FID, size = %d x %d x %d\n%s"%(sizeF1, sizeF2, sizeF3, acqu['title']))
     return d
 
 ################################################################

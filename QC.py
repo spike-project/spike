@@ -124,6 +124,7 @@ def run_pylint(fich):
         #     print "##############"
     if errors == 10000:    # means crash
         note = -100
+#    print(fich, note, errors, warn, reorder)
     return (note, errors, warn, reorder )
 
 def process(files):
@@ -145,7 +146,7 @@ def processmp(files):
     # msg("Checking files")
     stats = {}
     todo = [ f for f in files if f.endswith('.py')]
-    res = pool.imap_unordered(run_pylint, todo)
+    res = pool.imap(run_pylint, todo)
     for f in todo:
         print("checked %s"%f)
         stats[f] = res.next()
@@ -164,7 +165,7 @@ def report(stats, modif):
     pmed = 0
     plow = 0
     errtot = 0
-    kstats = sorted(stats.keys(), key = lambda x: stats[x][0])
+    kstats = sorted(list(stats.keys()), key = lambda x: stats[x][0])
     for k in reversed(kstats):
         note = stats[k][0]
         err = stats[k][1]
@@ -228,7 +229,7 @@ def message():
         print(a, end=' ')
     print("filename.py")
     
-def main(excluded = ['.hgignore',], files = 'hg'):
+def main(excluded = ['.hgignore'], files = 'hg'):
     """does the work
     excluded is a list of excluded file pattern
     files is the list of files to analyse, if files == 'hg' (defaullt) then files are taken from a mercurial repository.
@@ -252,7 +253,7 @@ def main(excluded = ['.hgignore',], files = 'hg'):
     message()
 
 if __name__ == '__main__':
-    sys.exit(main(excluded=('v1/*', 'util/dynsubplot.py', 'Miscellaneous/*')))
+    sys.exit(main(excluded=('v1/*', 'util/dynsubplot.py', 'Miscellaneous/*', 'Visu/*', 'SPIKE_usage_eg/previous-to-clean/*')))
     # excluding dynsubplot.py because the add_class method is just too confusing to pylint
 #    sys.exit( main( files=glob.glob('*.py')+glob.glob('*/*.py') ) )
 
