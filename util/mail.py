@@ -3,10 +3,18 @@
 
 from __future__ import print_function
 import smtplib
-from email.MIMEMultipart import MIMEMultipart
-from email.MIMEBase import MIMEBase
-from email.MIMEText import MIMEText
-from email import Encoders
+import sys
+if sys.version_info[0] < 3:
+  from email.MIMEMultipart import MIMEMultipart
+  from email.MIMEBase import MIMEBase
+  from email.MIMEText import MIMEText
+  from email import Encoders
+else:
+  from email import encoders as Encoders
+  from email.mime.base import MIMEBase
+  from email.mime.text import MIMEText
+  from email.mime.multipart import MIMEMultipart
+
 import os.path as op
 import unittest
 ###
@@ -48,7 +56,7 @@ class GMAIL(object):
            part.set_payload(open(self.attach, 'rb').read())
            Encoders.encode_base64(part)
            part.add_header('Content-Disposition',
-                   'attachment; filename = "%s"' % os.path.basename(self.attach))
+                   'attachment; filename = "%s"' % op.basename(self.attach))
            msg.attach(part)
         ##############
         mailServer = smtplib.SMTP("smtp.gmail.com", 587)

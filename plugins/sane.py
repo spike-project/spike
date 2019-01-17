@@ -24,21 +24,17 @@ associated publications
 """
 
 from __future__ import print_function
-
+import sys #
 import unittest
-import numpy as np
-from numpy.fft import fft, ifft, rfft, irfft
 
-from spike.NPKData import NPKData_plugin,  as_cpx, as_float, _base_fft,\
+from spike.NPKData import NPKData_plugin, as_cpx, as_float, _base_fft,\
             _base_ifft, _base_rfft, _base_irfft
 from spike.Algo.sane import sane
-from spike.util.signal_tools import filtering
-
-import sys #
 if sys.version_info[0] < 3:
     pass
 else:
     xrange = range
+
 
 def sane_plugin(npkd, rank, orda=None, iterations=1, axis=0, trick=True, optk=False, ktrick=False):
     """
@@ -67,26 +63,25 @@ def sane_plugin(npkd, rank, orda=None, iterations=1, axis=0, trick=True, optk=Fa
             buff = as_cpx(_base_ifft(_base_rfft(npkd.buffer)))       # real case, go to analytical signal
         else:   #complex
             buff = npkd.get_buffer()                       # complex case, makes complex
-        sane_result = sane( buff, rank, orda = orda, trick = trick, iterations = iterations) # performs denoising
+        sane_result = sane(buff, rank, orda=orda, trick=trick, iterations=iterations) # performs denoising
         if npkd.axis1.itype == 0:   # real
             buff = _base_irfft(_base_fft(as_float(sane_result)))      # real case, comes back to real
             npkd.set_buffer(buff)
         else:
             npkd.buffer = as_float(sane_result)             # complex case, makes real
     elif npkd.dim == 2:
-         todo = npkd.test_axis(axis)
-         if todo == 2:
-             for i in xrange(npkd.size1):
-                 r = npkd.row(i).sane(rank=rank, orda=orda, iterations=iterations)
-                 npkd.set_row(i,r)
-         elif todo == 1:
-             for i in xrange(npkd.size2):
-                 r = npkd.col(i).sane(rank=rank, orda=orda, iterations=iterations)
-                 npkd.set_col(i,r)
+        todo = npkd.test_axis(axis)
+        if todo == 2:
+            for i in xrange(npkd.size1):
+                r = npkd.row(i).sane(rank=rank, orda=orda, iterations=iterations)
+                npkd.set_row(i,r)
+        elif todo == 1:
+            for i in xrange(npkd.size2):
+                r = npkd.col(i).sane(rank=rank, orda=orda, iterations=iterations)
+                npkd.set_col(i,r)
     elif npkd.dim == 3:
-         raise Exception("not implemented yet")
+        raise Exception("not implemented yet")
     return npkd
-
 
 
 NPKData_plugin("sane", sane_plugin)

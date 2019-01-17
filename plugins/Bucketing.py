@@ -172,10 +172,10 @@ def bucket2d(data, zoom=((0.5, 9.5),(0.5, 9.5)), bsize=(0.1, 0.1), pp=False, thr
             area = ((ih1-inext1)*bsize1) * ((ih2-inext2)*bsize2)
             try:
                 maxv = dcopy.buffer[inext1:ih1, inext2:ih2].max()
-                minv = dcopy.buffer[inext1:ih1, inext2:ih2].max()
+                minv = dcopy.buffer[inext1:ih1, inext2:ih2].min()
             except ValueError:
                 maxv = np.NaN     # sum and std returns nan - max returns an error ???
-                minv = np.NaN     # sum and std returns nan - max returns an error ???
+                minv = np.NaN     # sum and std returns nan - min returns an error ???
             stdv = dcopy.buffer[inext1:ih1, inext2:ih2].std()
             if pp:
                 pk1 = [pk for pk in peaklist if (pk.posF1>=inext1 and pk.posF1<ih1) ] # peaks in F1

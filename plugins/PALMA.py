@@ -411,7 +411,7 @@ def dcalibdosy(npk, nucleus='1H'):
     npk.axis1.dfactor = calibdosy(litdelta, bigdelta, recovery, seq_type=seq_type, nucleus=nucleus)
     return npk
 
-def Import_DOSY(fname, nucleus=None):
+def Import_DOSY(fname, nucleus=None, verbose=False):
     """
     Import and calibrate DOSY data-set from a Bruker ser file
     """
@@ -426,9 +426,11 @@ def Import_DOSY(fname, nucleus=None):
         d.chsize(sz1=l)
         d.axis1.qvalues = d.axis1.qvalues[:l]
     d.calibdosy()
+    if verbose:
+        print("imported 2D DOSY, size = %d x %d\n%s"%(d.axis1.size, d.axis2.size, d.params['acqu']['title']))
     return d
 
-def Import_DOSY_proc(fname, nucleus='1H'):
+def Import_DOSY_proc(fname, nucleus='1H', verbose=False):
     """
     Import and calibrate DOSY data-set from a Bruker 2rr file
     """
@@ -436,13 +438,22 @@ def Import_DOSY_proc(fname, nucleus='1H'):
     d.axis1 = LaplaceAxis(size=d.size1)
     dire=op.dirname(op.dirname(op.dirname(fname)))   # up to expno
     d.axis1.load_qvalues(op.join(dire,"difflist"))
-    if d.axis1.size != len(d.axis1.qvalues):
-        l = min(d.axis1.size, len(d.axis1.qvalues))
-        print ("WARNING in Import_DOSY_proc(), size missmatch data is %d while difflist is %d"%(d.axis1.size, len(d.axis1.qvalues)))
-        print("truncating to %d"%(l,))
-        d.chsize(sz1=l)
-        d.axis1.qvalues = d.axis1.qvalues[:l]
+    # if d.axis1.size != len(d.axis1.qvalues):
+    #     l = min(d.axis1.size, len(d.axis1.qvalues))
+    #     print ("WARNING in Import_DOSY_proc(), size missmatch data is %d while difflist is %d"%(d.axis1.size, len(d.axis1.qvalues)))
+    #     print("truncating to %d"%(l,))
+    #     d.chsize(sz1=l)
+    #     d.axis1.qvalues = d.axis1.qvalues[:l]
     d.calibdosy()
+    # In Topspin, the diffusion axis parameters are faked as ppm - lets decode them from proc2
+    Dmax = 10**(float(d.params['proc2']['$OFFSET'])+12)  # 12 to change from m2/s to µm2/s
+    width = float(d.params['proc2']['$SW_p'])/float(d.params['proc2']['$SF'])
+    Dmin = Dmax*(10**(-width))
+    d.reverse(axis=1)
+    d.axis1.dmin = Dmin
+    d.axis1.dmax = Dmax
+    if verbose:
+        print("imported 2D DOSY spectrum, size = %d x %d\n%s"%(d.axis1.size, d.axis2.size, d.params['acqu']['title']))
     return d
 
 #################### PALMA setup ###########################
