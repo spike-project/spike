@@ -3,7 +3,7 @@
 The **SPIKE** program. A collaborative development for a FT-spectroscopy processing program.
 
 # Release
-This is the version 0.99.0 - March 2018
+This is the version 0.99.2 - January 2019
 
 MANY improvements and corrections have been made, and where available in the `devel` brach.
 There are now available in the default release.
