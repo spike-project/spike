@@ -46,8 +46,8 @@ def load(debug=True):
             loadone(pgmod, pgfile, debug=debug)
     print( "plugins loaded:\n" + 
            " ".join(["{}, ".format(k) for k in plugins.keys()]) )
-    print( "type spike.plugins.report() for a short description")
-    print( "and spike.plugins.report('module_name') for complete documentation on one plugin") 
+    print( "\nspike.plugins.report() for a short description of each plugins")
+    print( "spike.plugins.report('module_name') for complete documentation on one plugin") 
 
 
 def report(module=None, mode=None):
@@ -73,7 +73,7 @@ def report(module=None, mode=None):
         if  mode != "short" or mode is None:
             print("    implements: "+" ".join(["{}(), ".format(c) for c in codes[k]]))
     if module is None and mode is None:    # add doc if default values
-        print("type spike.plugins.report('module_name') for complete documentation on one plugin") 
+        print("spike.plugins.report('module_name') for complete documentation on one plugin") 
 
 def loadone(pluginname, pgfile=None, debug=True):
     """
@@ -97,8 +97,9 @@ def loadone(pluginname, pgfile=None, debug=True):
         plugins[pluginname] = m.__doc__
     except:
         print("*** Importing  << %s >> Failed ***"%pluginname)
-        #traceback.print_exc()
-        #print("*** Continuing ***")
+        if debug:
+            traceback.print_exc()
+            print("*** Continuing ***")
 
 class PluginTests(unittest.TestCase):
     def test_plugin(self):

@@ -618,9 +618,25 @@ class Proc_Parameters(object):
         
         if configfile:
             self.load(configfile)
-
+    def from_json(self, jsontxt):
+        "updates attributes from json text input"
+        dic = json.loads(jsontxt)
+        for k,v in dic.items():
+            setattr(self, k, v)
+        self.verify()
+    def to_json(self):
+        "creates a json output of self"
+        out = {}
+        for i in dir(self):
+            if not i.startswith('_'):
+                v = getattr(self,i)
+                if not callable(v):
+                    out[i] =  v
+        return json.dumps(out)
     def load(self, cp):
         "load from cp config file - should have been opened with ConfigParser() first"
+        if cp.has_option("processing", "sizemulipliers"):   # that nasty bug was around once.
+            raise Exception('Error on the name of sizemultiplier parameter, sizemuliplier instead of sizemultiplier')
         self.apex =    cp.get( "import", "apex")                                        # input file
         self.format =    cp.get( "import", "format")                                    # used format Apex or Solarix
         self.infile =  cp.get( "processing", "infile")                                  # input file
@@ -665,9 +681,9 @@ class Proc_Parameters(object):
             if debug>0: print("szmlist:", self.szmlist)
         else:
             self.szmlist = None
-        # verifications
-        if cp.has_option("processing", "sizemulipliers"):   # that nasty bug was around once.
-            raise Exception('Error on the name of sizemultiplier parameter, sizemuliplier instead of sizemultiplier')
+        self.verify()
+    def verify(self):
+        "performs internal coherence of parameters"
         if not self.do_F1 and not self.do_F2:
             raise Exception("no processing !")
         if self.interfile is None and not (self.do_F1 and self.do_F2):

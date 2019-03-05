@@ -1,5 +1,18 @@
-<!-- DO NOT MODIFY this file, it is generated automatically! -->
+<!-- DO NOT MODIFY this file, it is generated automatically from dev_setup ! -->
 # SPIKE Relase Notes
+#### 0.99.3 - March 2019
+- Development of Interactive tools, to be used within Jupyter - *should be extended in further releases* -
+    - a tool for displaying multiresolution  2D FT-ICR-MS data-sets
+    - simple interface in Jupyter for 1D NMR
+    - (that part is not tested in python 2)
+- `scale="auto"` in 2D display, choose a level `autoscalethresh` (default is 3) times above the noise floor.
+- added `gaussenh` apodisation plugin for one-command gaussian enhancement.
+- improved display of FTMS spectra
+- improved `findnoiselevel` and `findnoiselevel_2D`
+- modified `absmax` in NPKData - now a property
+- added phase parameters to NMRAxis: `.P0` and `.P1` 
+- removed the old Visu2D program - use the jupyter notebook rather !
+
 #### 0.99.2 - January 2019
 - added number of local peaks in bucketing
 - improved Bruker importer and added support for NEO/TopSpin 4.0 files
