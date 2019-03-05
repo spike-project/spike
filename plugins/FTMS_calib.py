@@ -160,7 +160,7 @@ setattr(FTMSAxis, "imzmeas", np.empty(10))  # template for index of measured m/z
 def display_calib(npkd,  axis=1, compare=False):
     """
     generates a plot of the current calibration
-    is compare is True, will try to draw the previous calibration curve along with 
+    if compare is True, will try to draw the previous calibration curve along with the current one
     """
     todo = npkd.test_axis(axis)
     axistodo = npkd.axes(todo)

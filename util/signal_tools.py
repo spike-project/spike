@@ -22,7 +22,7 @@ plt = testplot.plot()
 
 import unittest
 import time
-from ..NPKData import NPKData
+#from .. import NPKData
 
 def filtering(sig, window = None):
     '''
@@ -337,7 +337,7 @@ def findnoiselevel(fid, nbseg = 20):
     """
     less = len(fid)%nbseg     # rest of division of length of data by nb of segment
     restpeaks = fid[less:]   # remove the points that avoid to divide correctly the data in segment of same size.
-    newlist = np.array(np.hsplit(restpeaks, nbseg))    #Cutting in segments
+    newlist = np.array(np.split(restpeaks, nbseg))    #Cutting in segments
     levels = newlist.std(axis = 1)
     levels.sort()
     if nbseg < 4:
@@ -346,9 +346,21 @@ def findnoiselevel(fid, nbseg = 20):
         noiselev = np.mean(levels[0:nbseg//4])
     return noiselev
 
-def findnoiselevel_2D(data_array, nbseg = 20):
+def findnoiselevel_2D(data_array, nbseg=20, nbrow=200):
     """
+    measure noise level on a 2D spectrum
+    """
+    si1 = data_array.shape[0]
+    if si1 > nbrow:
+        plist = np.random.permutation(si1)[:nbrow]
+    else:
+        plist = range(si1)
+    levels = [findnoiselevel(data_array[p,:], nbseg=nbseg) for p in plist]
+    return np.mean(levels)
 
+def _findnoiselevel_2D(data_array, nbseg = 20):
+    """
+    obsolete
     """
     dim_array = data_array.size
     x = np.random.randint(dim_array, size = dim_array[0])
