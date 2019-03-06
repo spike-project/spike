@@ -50,7 +50,7 @@ def get_contour_data(ax):
 def bokeh_display(npkd, scale=1.0, autoscalethresh=3.0, absmax=None, show=False, title=None, label=None, xlabel="_def_", 
         ylabel="_def_", axis=None, image=False, mode3D=False, zoom=None, mpldic={}, 
         dbkdic={}, dfigdic={}, linewidth=1, color=None, plot_width=600, plot_height=400, 
-        sizing_mode=None, tools="pan, box_zoom, box_select, reset, save"):
+        sizing_mode=None, redraw=False, tools="pan, box_zoom, box_select, reset, save"):
     """
         Display using bokeh instead of matplotlib
         
@@ -133,6 +133,8 @@ def bokeh_display(npkd, scale=1.0, autoscalethresh=3.0, absmax=None, show=False,
         dfig['color'] = color
         dfig.update(dfigdic)
         p.line(**dfig)
+        npkd.bokeh_fig = dfig
+        npkd.bokeh_plot = p
 
     elif npkd.dim == 2 and image:
     # If image is set to True (Default False) - used to display 2D NMR FID as images
@@ -165,6 +167,8 @@ def bokeh_display(npkd, scale=1.0, autoscalethresh=3.0, absmax=None, show=False,
         dfig['legend'] = label
         dfig.update(dfigdic)
         p.image(**dfig)
+        npkd.bokeh_fig = dfig
+        npkd.bokeh_plot = p
 
     elif npkd.dim == 2 and not image:
     # When image is False, contour plots are generated for display.
@@ -190,17 +194,24 @@ def bokeh_display(npkd, scale=1.0, autoscalethresh=3.0, absmax=None, show=False,
         if ylabel is not None:
             dbk['y_axis_label'] = ylabel
         dbk.update(dbkdic)
-        p = bk.figure(**dbk)
         xs, ys, col = get_contour_data(ax)
-        dfig = {}
-        dfig['xs'] = xs
-        dfig['ys'] = ys
-        dfig['color'] = col
-        dfig.update(dfigdic)
-        p.multi_line(**dfig)
-    npkd.bokeh_fig = p
+        if redraw:
+            npkd.bokeh_fig['xs'] = xs
+            npkd.bokeh_fig['ys'] = ys
+        else:
+            p = bk.figure(**dbk)
+            xs, ys, col = get_contour_data(ax)
+            dfig = {}
+            dfig['xs'] = xs
+            dfig['ys'] = ys
+            dfig['color'] = col
+            dfig.update(dfigdic)
+            p.multi_line(**dfig)
+            npkd.bokeh_fig = dfig
+            npkd.bokeh_plot = p
+        del fig, ax
     if show:
-        bk.show(p)
+        bk.show(npkd.bokeh_plot)
         return npkd
 
 NPKData_plugin("bokeh", bokeh_display)
