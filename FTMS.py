@@ -63,6 +63,13 @@ class FTMSAxis(NPKData.Axis):
 
     #-------------------------------------------------------------------------------
     @property
+    def borders(self):
+        """the (min, max) available windows, used typically for display"""
+        if self.currentunit == 'm/z':
+            return (int(self.mztoi(self.highmass)), self.size-1)
+        else:
+            return (0, self.size-1)
+    @property
     def lowmass(self):
         """highest mass of interest - defined by the Nyquist frequency limit"""
         return self.itomz(self.size-1)

@@ -23,6 +23,7 @@ import warnings
 
 from . import version
 from . NPKError import NPKError
+from .util.signal_tools import findnoiselevel_2D
 
 import sys #
 if sys.version_info[0] < 3:
@@ -257,6 +258,10 @@ class Axis(object):
         self.sampling_info = {}
         self.attributes = ["itype", "sampling"]    # storable attributes
     @property
+    def borders(self):
+        """the (min, max) available windows, used typically for display"""
+        return (0, self.size-1)
+    @property
     def cpxsize(self):
         """returns size of complex entries
         this is different from size, 
@@ -308,8 +313,8 @@ class Axis(object):
         l = min(self.size-1,l)
         r = max(1,left)
         r = min(self.size, right)
-        if (l,r) != (left,right):
-            print("%d-%d (points) slice probably outside current axis, recast to %d-%d"%(left,right,l,r))
+#        if (l,r) != (left,right):
+#            print("%d-%d (points) slice probably outside current axis, recast to %d-%d"%(left,right,l,r))
         return (l,r)
             
     def check_zoom(self, zoom):
@@ -413,6 +418,8 @@ class NMRAxis(Axis):
         self.offset = offset        # position in Hz of the rightmost point
         self.frequency = frequency  # carrier frequency, in MHz
         self.zerotime = 0.0         # position (in points) on the time zero
+        self.P0 = 0.0      # phase parameters
+        self.P1 = 0.0
         self.NMR = "NMR"
         self.units["ppm"] = Unit(name="ppm", converter=self.itop, bconverter=self.ptoi, reverse=True)
         self.units["Hz"]= Unit(name="Hz", converter=self.itoh, bconverter=self.htoi, reverse=True)
@@ -461,12 +468,12 @@ class NMRAxis(Axis):
         """
         returns time value (s) from point value
         """
-        return 0.5*value/self.specwidth
+        return 0.5*(value-2*self.zerotime)/self.specwidth 
     def stoi(self,value):
         """
         returns point value (i) from time value (s)
         """
-        return 2.0*value*self.specwidth
+        return 2.0*value*self.specwidth + 2*self.zerotime
     #-------------------------------------------------------------------------------
     def itop(self,value):
         """
@@ -592,8 +599,7 @@ def parsezoom(npkd, zoom):
         if zoom is not None:
             z1lo, z1up = npkd.axis1.getslice(zoom)
         else:
-            z1lo = 0
-            z1up = npkd.size1-1
+            z1lo, z1up = npkd.axis1.borders
         return (z1lo, z1up)
     elif npkd.dim == 2:
         if zoom is not None:        # should ((F1_limits),(F2_limits))
@@ -601,10 +607,8 @@ def parsezoom(npkd, zoom):
             z1lo, z1up = npkd.axis1.getslice((zz[0],zz[1]))
             z2lo, z2up = npkd.axis2.getslice((zz[2],zz[3]))
         else:
-            z1lo=0
-            z1up=npkd.size1-1
-            z2lo=0
-            z2up=npkd.size2-1
+            z1lo, z1up = npkd.axis1.borders
+            z2lo, z2up = npkd.axis2.borders
         #print("z1lo, z1up, z2lo, z2up in parsezoom",  z1lo, z1up, z2lo, z2up)
         return (z1lo, z1up, z2lo, z2up)
     else:
@@ -690,7 +694,7 @@ class NPKData(object):
         from .File.GifaFile import GifaFile
         self.debug = debug
         self.frequency = 400.0
-        self.absmax = 0.0
+        self._absmax = 0.0
         self.noise = 0.0
         self.name = None
         self.level = None
@@ -778,7 +782,7 @@ class NPKData(object):
         elif dt == 'float':
             self.axes(self.dim).itype = 0
         self.buffer = buff
-        self.absmax = 0.0
+        self._absmax = 0.0
         self.adapt_size()
         self.check()
         return self
@@ -965,7 +969,7 @@ class NPKData(object):
         copyaxes(self,c)
         c.debug = self.debug
         c.frequency = self.frequency
-        c.absmax = self.absmax
+        c._absmax = self._absmax
         c.noise = self.noise
         c.name = self.name
         c.level = self.level
@@ -1059,7 +1063,7 @@ class NPKData(object):
             self._chsize2d(sz1,sz2)
         else:
             self._chsize3d(sz1,sz2,sz3)
-        self.absmax = 0.0
+        self._absmax = 0.0
         return self
     #---------------------------------------------------------------------------
     def zf(self, zf1=None, zf2=None, zf3=None, ):
@@ -1106,7 +1110,7 @@ class NPKData(object):
             if zf3: self._chsize3d(self.size1, self.size2, self.size3*zf3)
             if zf2: self._chsize3d(self.size1, self.size2*zf2, self.size3)
             if zf1: self._chsize3d(self.size1*zf1, self.size2, self.size3)
-        self.absmax = 0.0
+        self._absmax = 0.0
         return self
     def load_sampling(self, filename, axis=1):
         "equivalent to the axis.load_sampling() method - can be pipelined"
@@ -1142,7 +1146,7 @@ class NPKData(object):
             self._extract2d(limits)
         elif self.dim == 3:
             self._extract3d(limits)
-        self.absmax = 0.0
+        self._absmax = 0.0
         return self
     #---------------------------------------------------------------------------
     def _extract1d(self, zoom):
@@ -1188,7 +1192,7 @@ class NPKData(object):
         see also :  minus, zeroing
         """
         self.buffer[self.buffer<0] = 0.0
-        self.absmax = 0.0
+        self._absmax = 0.0
         return self
     #---------------------------------------------------------------------------
     def minus(self):
@@ -1418,16 +1422,18 @@ class NPKData(object):
         elif self.dim == 2:
             test = self.axis1.check_zoom(z[0:1]) and self.axis2.check_zoom(z[2:3])
         return test
-    def display(self, scale = 1.0, absmax = None, show = False, label = None, new_fig = True, axis = None,
+    def display(self, scale = 1.0, autoscalethresh=3.0, absmax = None, show = False, label = None, new_fig = True, axis = None,
                 zoom = None, xlabel="_def_", ylabel = "_def_", title = None, figure = None,
                 linewidth=1, color = None, mpldic={}, mode3D = False):
         """
         not so quick and dirty display using matplotlib or mlab - still a first try
         
-        scale   allows to increase the vertical scale of display
-        absmax  overwrite the value for the largest point, which will not be computed
-            display is scaled so that the largest point is first computed (and stored in absmax),
-            and then the value at absmax/scale is set full screen 
+        scale   allows to increase the vertical scale of display,
+                in 2D if "auto" will compute a scale so the first level is located at at autoscalethresh sigma
+        autoscalethresh used for scale="auto"
+        absmax  overwrite the value for the largest point, which will not be computed 
+            display is scaled so that the largest point is first computed (and stored in _absmax),
+            and then the value at _bsmax/scale is set full screen 
         show    will call plot.show() at the end, allowing every declared display to be shown on-screen
                 useless in ipython
         label   add a label text to plot
@@ -1457,25 +1463,24 @@ class NPKData(object):
             fig = plot.subplot(111)
         else:
             fig = figure
+        self.mplfigure = fig
         if self.dim == 1:
-            if not absmax:  # absmax is the largest point on spectrum, either given from call, or handled internally
-                if not self.absmax:     # compute it if absent
-                    #print "computing absmax...",
-                    self.absmax = np.nanmax( np.abs(self.buffer) )
-            else:
-                self.absmax = absmax
-            mmin = -self.absmax/scale
-            mmax = self.absmax/scale
+            if not absmax:  # _absmax is the largest point on spectrum, either given from call, or handled internally
+                absmax = self.absmax
+            mmin = -absmax/scale
+            mmax = absmax/scale
             step = self.axis1.itype+1
-
+            if scale == "auto":
+                scale = 1.0
             z1, z2 = parsezoom(self,zoom)
             if axis is None:
                 ax = self.axis1.unit_axis()
             else:
                 ax = axis
             fig.set_xscale(self.axis1.units[self.axis1.currentunit].scale)  # set unit scale (log / linear)
-            if self.axis1.units[self.axis1.currentunit].reverse and new_fig:           # set reverse mode
-                fig.invert_xaxis()
+            if self.axis1.units[self.axis1.currentunit].reverse:           # set reverse mode
+                if not fig.xaxis_inverted(): # not yet
+                    fig.invert_xaxis()
             fig.plot(ax[z1:z2:step], self.buffer[z1:z2:step].clip(mmin,mmax), label=label, linewidth=linewidth, color=color, **mpldic)
             if xlabel == "_def_":
                 xlabel = self.axis1.currentunit
@@ -1486,29 +1491,21 @@ class NPKData(object):
             step1 = self.axis1.itype+1
             z1lo, z1up, z2lo, z2up  = parsezoom(self,zoom)
             if not absmax:  # absmax is the largest point on spectrum, either given from call, or handled internally
-                if not self.absmax:     # compute it if absent  - but do it on zoom window ! as this is a killer for large onfile datasets
-                    self.absmax = np.nanmax( np.abs(self.buffer[z1lo:z1up:step1,z2lo:z2up:step2]) )
-            else:
-                self.absmax = absmax
-#            print absmax, self.absmax
+                absmax = self.absmax
+#            print _absmax, self._absmax
             if mode3D:
                 print("3D not implemented")
-                # from enthought.tvtk.tools import mlab
-                # from enthought.pyface.api import GUI
-                # gui = GUI()
-                # fig = mlab.figure()
-                # x = np.arange(self.size1)
-                # y = np.arange(self.size2)
-                # surf =  mlab.SurfRegularC(x,y,self.f)
-                # if self.debug>0: print self.axis1.itype,self.axis2.itype
-                # #surf =  mlab.ImShow(self.buffer[::self.axis1.itype+1,::self.axis2.itype+1],scale=[1,1,1])
-                # fig.add(surf)
-                # gui.start_event_loop()
             else:
                 if self.level:
                     level = self.level
                 else:
-                    m = self.absmax/scale
+                    # d.absmax*0.05/scale = 3*noise   // scale = d.absmax*0.05/(3*noise)
+                    if scale == "auto":
+                        noise = findnoiselevel_2D(self.buffer)
+                        m = autoscalethresh*noise/0.05
+                        print("computed scale: %.2f"%(absmax/m,))
+                    else:
+                        m = absmax/scale
 #                    level = (m*0.5, m*0.25, m*0.1, m*0.05)
                     level = (m*0.05, m*0.1, m*0.25, m*0.5)  # correction for matplotlib 1.5.1
                     # print("level ", level)
@@ -1544,6 +1541,13 @@ class NPKData(object):
     def f(self,x,y):
         """used by 3D display"""
         return (self.buffer[x,y]/self.absmax)*100
+    #----------------------------------------------
+    @property
+    def absmax(self):
+        if self._absmax == 0:     # compute it if absent
+            #print "computing _absmax...",
+            self._absmax = np.nanmax( np.abs(self.buffer) )
+        return self._absmax
     #----------------------------------------------
     def load(self, name):
         """load data from a file"""
@@ -1663,7 +1667,7 @@ class NPKData(object):
     def fill(self, value):
         "fills the dataset with a single numerical value"
         self.buffer.fill(value)
-        self.absmax = value
+        self._absmax = value
         return self
     #---------------------------------------------------------------------------
     # Basic arithmetics
@@ -1681,13 +1685,13 @@ class NPKData(object):
             raise NotImplementedError
         if multiplier.imag == 0:  # if real
             self.buffer *= multiplier
-            self.absmax *= multiplier
+            self._absmax *= multiplier
         else:
             if self.itype == 1:     # means complex
                 bb = as_cpx(self.buffer)
                 bb *= multiplier
                 self.buffer = as_float(bb)
-                self.absmax *= multiplier
+                self._absmax *= multiplier
             else:                           # if complex
                 raise NPKError("Multiplication of a real buffer by a complex scalar is not implemented yet",data=self)
         return self
@@ -1717,15 +1721,15 @@ class NPKData(object):
             if self.itype != otherdata.itype:
                 raise NPKError("addition of dataset with different complex states is not implemented yet", data=self)
             self.buffer += otherdata.buffer
-            self.absmax = 0.0
+            self._absmax = 0.0
         elif isinstance(otherdata,complex):
             if self.itype != 1:
                 raise NPKError("cannot add a complex value to this data-set", data=self)
             self.buffer += otherdata
-            self.absmax += otherdata
+            self._absmax += otherdata
         elif isinstance(otherdata, numbers.Number):
             self.buffer += otherdata
-            self.absmax += otherdata
+            self._absmax += otherdata
         else:       # then its a number or it fails
             raise NotImplementedError
         return self
@@ -1778,7 +1782,7 @@ class NPKData(object):
             raise NotImplementedError
         elif isinstance(constant, numbers.Number):
             self.buffer += constant
-            self.absmax += constant
+            self._absmax += constant
         else:       # then it fails
             raise NotImplementedError
         return self
@@ -1790,7 +1794,7 @@ class NPKData(object):
         """
         if seed is not None:
             np.random.seed(seed)
-        self.absmax = 0.0
+        self._absmax = 0.0
         self.buffer += noise*np.random.standard_normal(self.buffer.shape)
         return self
     #--------------------------------------------------------------------------
@@ -1808,7 +1812,7 @@ class NPKData(object):
                 self.buffer += as_float( amp*np.exp(1j*np.pi*t) )
         else:
             raise NotImplementedError
-        self.absmax += amp
+        self._absmax += amp
         return self
     #-----------------
     def mean(self, zone=None):  # ((F1_limits),(F2_limits))
@@ -1838,7 +1842,7 @@ class NPKData(object):
             shift = self.get_buffer()[ul:ur,ll:lr].mean()
         return shift
     #-----------------
-    def center(self):
+    def center(self, zone=None):
         """
         center the data, so that the sum of points is zero (usefull for FIDs) 
 
@@ -2189,6 +2193,8 @@ class NPKData(object):
 #            e = np.exp( 1J* e)
         # then apply
 #        print e
+        self.axes(todo).P0 = ph0
+        self.axes(todo).P1 = ph1
         return self.mult_by_vector(axis, e, mode="complex")
     #-------------------------------------------------------------------------------
     def f1demodu(self, shift, axis=1):
@@ -2201,6 +2207,7 @@ class NPKData(object):
         faked by calling flipphase()
         """
         self.flipphase(0.0, 180.0*shift)
+        self.axis1.P1 = 0.0
         return self
     def flipphase(self, ph0, ph1, axis=1):
         """
@@ -2234,6 +2241,8 @@ class NPKData(object):
             c = e * (self.buffer[:,2*i] + 1j*self.buffer[:,2*i+1])
             self.buffer[:,2*i] = c.real
             self.buffer[:,2*i+1] = c.imag
+        self.axis1.P0 = ph0
+        self.axis1.P1 = ph1
         return self
 
     
@@ -2245,6 +2254,7 @@ class NPKData(object):
         """
         delay = self.axes(self.dim).zerotime
         self.phase(0, -360.0*delay, axis=0) # apply phase correction
+        self.axes(self.dim).P1 = 0.0
         return self
     #-------------------------------------------------------------------------------
     def conv_n_p(self):
@@ -2256,7 +2266,7 @@ class NPKData(object):
             a = self.row(i)
             b = self.row(i+1)
             self.set_row(i,a.copy().add(b) )    # put sum
-            a.buffer += -b.buffer             # compute diff
+            a.buffer -= b.buffer             # compute diff
             a.buffer = as_float( 1j*as_cpx(a.buffer) )  # dephase by 90°
             self.set_row(i+1,a)                 # and put back
         self.axis1.itype = 1
@@ -2368,7 +2378,7 @@ class NPKData(object):
                     for j in xrange(self.size3):
                         self.buffer[:,i,j] = fft_base(self.buffer[:,i,j])
         self.axes(todo).itype = it_after
-        self.absmax = 0.0
+        self._absmax = 0.0
         #print "********** FFT :",todo,time()-t0
     
     #---------------------------------------------------------------------------
@@ -2786,7 +2796,7 @@ class NPKData(object):
                 for i in xrange(self.size2):
                     for j in xrange(self.size3):
                         self.buffer[:,i,j] = as_float(tf(self.buffer[:,i,j].copy())*vector)
-        self.absmax = 0.0
+        self._absmax = 0.0
         return self
         
     #-------------------------------------------------------------------------------
@@ -2835,7 +2845,7 @@ class NPKData(object):
                 self.buffer = b
         elif self.dim == 3:
             raise NPKError("reste a faire")
-        self.absmax = 0.0
+        self._absmax = 0.0
         self.adapt_size()
         return self
 

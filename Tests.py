@@ -20,6 +20,7 @@ from __future__ import  print_function, division
 import unittest
 import os
 import os.path as op
+import shutil
 import sys
 from .Display import testplot
 # Beware  !! Awful Hack !!
@@ -86,14 +87,17 @@ def cleanspike():
     '''
     Removes the .pyc in spike
     '''
-    for root, dirs, files in os.walk('.'):
+    for root, dirs, files in os.walk('spike'):
         #print root, dirs, files
         for f in files:
             r,ext = os.path.splitext(f)
-            if ext == '.pyc':
+            if ext == 'pyc':
                 addr = os.path.join(root,f)
                 print(addr)
                 os.remove(addr)
+        for d in dirs:
+            if d == '__pycache__':
+                shutil.rmtree(os.path.join(root,d))
 
 def cleandir():
     "checking files in DATA_dir directory and removes files created by previous tests"
