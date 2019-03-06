@@ -119,6 +119,8 @@ def bruker_proc_phase(self):
     ph0 = -float(self.params['proc']['$PHC0'])+ph1/2
     zero = -360*self.axes(self.dim).zerotime
     self.phase(ph0, ph1+zero) #Performs the phase correction from proc file
+    self.axis1.P0 = ph0
+    self.axis1.P1 = ph1
     return self
 NPKData_plugin("bruker_proc_phase", bruker_proc_phase)
 NPKData_plugin("bk_xf2p", bruker_proc_phase)

@@ -323,11 +323,12 @@ a small description of the files:
 Current Active authors for SPIKE are:
 
 - Marc-André Delsuc     `madelsuc -at- unistra.fr`
-- Lionel Chiron         `Lionel.Chiron -at- casc4de.eu`
-- Christian Rolando     `christian.rolando -at- univ-lille1.fr`
+- Laura Duciel          `laura.duciel -at- casc4de.eu`
 
 Previous authors:
 
+- Christian Rolando     `christian.rolando -at- univ-lille1.fr`
+- Lionel Chiron         `Lionel.Chiron -at- casc4de.eu`
 - Petar Markov          `petar.markov -at- igbmc.fr`
 - Marie-Aude Coutouly . `Marie-Aude.COUTOULY - at- datastorm.fr`
 
