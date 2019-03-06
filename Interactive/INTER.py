@@ -21,7 +21,7 @@ from ipywidgets import interact, interactive, fixed, interact_manual, Layout, HB
 import ipywidgets as widgets
 from IPython.display import display
 
-from .File.BrukerNMR import Import_1D
+from ..File.BrukerNMR import Import_1D
 
 # REACTIVE modify callback behaviour
 # True is good for inline mode / False is better for notebook mode
@@ -256,6 +256,14 @@ class AvProc1D:
             description='Width in Hz',
             layout=Layout(width='15%'),
             disabled = True)
+        self.wpapod_enh = widgets.FloatText(
+            value=2.0,
+            min=0.0, # max exponent of base
+            max=5.0, # min exponent of base
+            description='strength',
+            layout=Layout(width='15%'),
+            step=1,
+            disabled = True)
         self.wpapod_sin = widgets.FloatText(
             value=0.0,
             min=0, # max exponent of base
@@ -294,10 +302,13 @@ class AvProc1D:
         test = self.wapod.value.split()[0]
         self.wpapod_sin.disabled = True
         self.wpapod_Hz.disabled = True
+        self.wpapod_enh.disabled = True
         if test == "apod_sin":
             self.wpapod_sin.disabled = False
         if test in ('apod_em', 'apod_gm','gaussenh'):
             self.wpapod_Hz.disabled = False
+        if test == 'gaussenh':
+            self.wpapod_enh.disabled = False
     def apmin_select(self, e):
         for w in self.wphase0, self.wphase1:
             w.disabled = self.wapmin.value
@@ -308,8 +319,10 @@ class AvProc1D:
         todo = None
         if func == 'apod_sin':
             todo = 'self.data.apod_sin(%f)'%(self.wpapod_sin.value,)
-        if func in ('apod_em', 'apod_gm', 'gaussenh'):
+        elif func in ('apod_em', 'apod_gm'):
             todo = 'self.data.%s(%f)'%(func, self.wpapod_Hz.value)
+        elif func == 'gaussenh':
+            todo = 'self.data.gaussenh(%f,enhancement=%f)'%(self.wpapod_Hz.value, self.wpapod_enh.value)
         if todo is not None:
             eval(todo)
         return self.data
@@ -333,10 +346,10 @@ class AvProc1D:
     def show(self):
         display(
             VBox([self.wfile,
-                HBox([self.wapod, self.wpapod_sin, self.wpapod_Hz, self.bapod]),
+                HBox([self.wapod, self.wpapod_sin, self.wpapod_Hz, self.wpapod_enh, self.bapod]),
                 self.wzf,
                 HBox([self.wapmin, self.wphase0, self.wphase1]),
-                self.wbcorr,
+#                self.wbcorr,
                 self.bdoit]) )
 
 #if __name__ == '__main__':
