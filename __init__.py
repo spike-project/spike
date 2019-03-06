@@ -20,7 +20,7 @@ from . version import ProgramName as __program_name__
 #from version import revision as __revision__
 from . version import rev_date as __date__
 
-__author__ = "Marc A. Delsuc <delsuc@igbmc.fr>, Marie-Aude Coutouly, Lionel Chiron"
+__author__ = "Marc A. Delsuc <delsuc@igbmc.fr>"
 SPIKE_version = __version__
 
 
@@ -33,7 +33,4 @@ from . plugins import load
 
 load(debug=False)
 
-def report():
-	print ("coucou")
-
-
+name = "SPIKE"
