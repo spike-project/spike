@@ -14,7 +14,7 @@ from codecs import encode, decode
 
 ProgramName = "SPIKE"
 VersionName = "Development version"
-VersionInfo = ["0", "99", "2  "]   # Major - Minor - Micro
+VersionInfo = ["0", "99", "2"]   # Major - Minor - Micro
 
 # Major.minor.micro (int) + name eg SPIKE_2_19_5
 # N.M.L
