@@ -2,111 +2,19 @@
 -------------------------------------------------------
   Note/10   File                          Error Warning
 -------------------------------------------------------
-   8.95  plugins/fastclean.py                        0
-   8.32  util/progressbar.py                        12
-   8.00  Display/testplot.py                         0
-   7.74  util/widgets.py                            12
-   7.73  Algo/urQRd_util/pickle_instance.py          0
-M  7.59  plugins/Bruker_NMR_FT.py                    3
-   7.59  util/mpiutil.py                             3
-M  7.40  QC.py                                       2
-   6.96  File/GifaFile.py                           23
-   6.88  util/counter.py                             3
-   6.67  plugins/test.py                             0
-   6.49  plugins/Linear_prediction.py                2
-M  6.46  plugins/FTMS_calib.py                       6
-   6.43  Algo/urQRd_util/versions.py                 0
-   6.32  util/near_prime.py                          0
-   6.25  Algo/urQRd_util/__init__.py                 0
-   6.21  plugins/PALMA.py                            9
-   6.00  NPKError.py                                 1
-   5.93  File/csv.py                           1     0 
-   5.85  util/ConfigForm.py                         26
-   5.84  Algo/CS_transformations.py                  1
-   5.82  plugins/bcorr.py                            2
-M  5.79  FTMS.py                               2     4 
-   5.76  File/Thermo.py                              2
-M  5.71  plugins/__init__.py                         3
-   5.56  FTICR.py                                    6
-   5.50  plugins/rem_ridge.py                        3
-   5.45  File/BrukerSMX.py                           6
-   5.33  __init__.py                                 1
-   5.31  plugins/sane.py                             4
-   5.00  Display/__init__.py                         0
-   5.00  File/__init__.py                            0
-   5.00  util/__init__.py                            0
-   5.00  plugins/zoom3D.py                           2
-   5.00  Algo/__init__.py                            0
+   7.40  QC.py                                       2
 -------------------------------------------------------
-M  4.97  NPKData.py                                 51
-   4.63  util/simple_logger2.py                      3
-   4.62  util/debug/MPI_test_attr.py                 5
    4.47  doc/insert_hide.py                          4
-   4.44  plugins/pg_sane.py                         25
-   4.29  Tests.py                                    7
-   4.27  plugins/Fitter.py                          10
-   4.23  File/HDF5File.py                      8    44 
-   4.23  plugins/sg.py                               2
-M  4.21  processing.py                         8    26 
-   4.16  File/Spinit_with2D.py                 1    19 
-   4.13  Algo/Cadzow.py                        1     2 
-   4.12  Orbitrap.py                                 5
-   4.03  Algo/maxent.py                             14
-   4.00  util/shift_comments.py                      5
-   3.98  File/Spinit.py                        2    15 
-   3.78  NPKConfigParser.py                          9
-   3.67  File/mzXML.py                               2
-   3.50  Algo/Cadzow_mpi2.py                   3     2 
-   3.44  Algo/SL0_test.py                      3     2 
-   3.44  util/progrbarUi.py                          5
-   3.41  Algo/BC.py                            1     4 
-   3.33  util/log_stdout.py                          0
-   3.33  util/hashcheck.py                           2
-   3.23  util/log_all.py                             2
-   3.03  File/Apex.py                          4    14 
-   2.88  plugins/wavelet.py                         11
-   2.88  Algo/rQRd.py                          1     3 
-M  2.70  dev_setup.py                               16
-   2.62  util/readwrite_tools.py               1     1 
-   2.59  plugins/Bucketing.py                        4
-   2.57  plugins/urQRd.py                           12
-   2.50  util/compat.py                              9
-M  2.49  INTER.py                              4    23 
-   2.45  Algo/Linpredic.py                          10
-   2.41  Algo/SL0.py                                 3
-   2.39  Algo/Laplace.py                             5
-   2.33  plugins/Peaks.py                      5    19 
-   2.12  util/ValErr.py                              3
-   2.05  Algo/sane.py                               14
-   1.90  Algo/urQRd_util/Config.py                   2
-   1.79  File/Solarix.py                       8    22 
-   1.61  Algo/Cadzow_mpi.py                    4    16 
-   1.56  util/log_stderr.py                          4
-   1.54  Algo/urQRd.py                         1     4 
-M  1.43  version_rev.py                              2
-   1.12  Algo/urQRd_util/read_mass_spec.py     2    17 
-   0.81  Display/fakeplot.py                        24
-M  0.80  util/signal_tools.py                 14    20 
-   0.69  File/BrukerNMR.py                    12    27 
-   0.65  util/debug_tools.py                   2     8 
 *******************************************************
-M  0.00  version.py                                  0
    0.00  doc/__init__.py                             0
-  -0.57  util/simple_logger.py                       5
-  -0.94  Algo/savitzky_golay.py                      0
   -1.72  doc/conf.py                                 2
-  -1.89  plugins/apmin.py                           42
-  -2.75  util/mail_error_logger.py             7    32 
-  -5.00  Algo/urQRd_util/algo_debug.py               1
-  -5.96  util/mail.py                          7    18 
-  -9.33  util/sendgmail.py                     7    30 
 -------------------------------------------------------
 
-Overall aggregated note value is :  5.00/10
+Overall aggregated note value is :  3.77/10
 
-score is 35 / 53 / 8  (top / med / low)
-Mean - Median note values are :  3.59/10 -  4.12/10
+score is 1 / 2 / 1  (top / med / low)
+Mean - Median note values are :  2.54/10 -  4.47/10
   Median is below 5.0 - let's try to improve it
-Total number of errors : 109 on a total of 96 files
+Total number of errors : 0 on a total of 4 files
 (but quite a few errors or just correct code not understood by pylint)
 -------------------------------------------------------

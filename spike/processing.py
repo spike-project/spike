@@ -741,12 +741,12 @@ class Test(unittest.TestCase):
     def test_proc(self):
         "apply a complete processing test"
         # test is run from above spike
-        from .Tests import directory
+        from .Tests import directory    # tells where DATAsets for tests are located
         if directory() != '__DATA_test__':
             if not os.path.exists('__DATA_test__'):
                 print('creating DATA_test symlink')
                 os.symlink(directory(),'__DATA_test__')
-        main(["prgm", "spike/test.mscf",])
+        main(["prgm", os.path.join("__DATA_test__","test.mscf")])
         os.unlink('__DATA_test__')
 
 ########################################################################################

@@ -20,6 +20,13 @@ from . version import ProgramName as __program_name__
 #from version import revision as __revision__
 from . version import rev_date as __date__
 
+__all__ = [
+    'NPKData',
+    'FTMS',
+    'FTICR',
+    'Orbitrap',
+    'Tests']
+
 __author__ = "Marc A. Delsuc <delsuc@igbmc.fr>"
 SPIKE_version = __version__
 
