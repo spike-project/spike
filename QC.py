@@ -38,6 +38,7 @@ def tracked_files(excluded=('none',)):
     hg = []
     modif = []
     for line in lines:
+        print(line)
         sp = line.split()
         cont = False
         if len (sp) < 1:      # exit on conditions
@@ -54,6 +55,8 @@ def tracked_files(excluded=('none',)):
         hg.append(fname)
         if sp[0] in (b'M'):
             modif.append(decode(sp[1]))
+    print(hg)
+    exit(0)
     return (hg, modif)
 class WritableObject(object):
     "dummy input/output stream for pylint"
