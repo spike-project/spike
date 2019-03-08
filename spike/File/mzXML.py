@@ -87,7 +87,8 @@ class mzXML():
 
 class mzXML_Tests(unittest.TestCase):  
     def test_simple(self):
-        mzxml = mzXML('spike/File/testsmzXML/20131129_V_EV_bC_1499_CID30_r7k_25usc_range410-2000.mzXML')
+        from ..Tests import filename, directory
+        mzxml = mzXML(directory()+'/testsmzXML/20131129_V_EV_bC_1499_CID30_r7k_25usc_range410-2000.mzXML')
         dic_param = {'msLevel':2, 'peaksCount':35775, 'polarity':"+", 'scanType':"Full",
             'filterLine':"FTMS + p NSI Full ms2 1499.60@cid30.00 [410.00-2000.00]",
             'retentionTime':"PT0.0366S", 'lowMz':410.001, 'highMz':2069.29, 
