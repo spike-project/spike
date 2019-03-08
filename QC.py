@@ -55,8 +55,6 @@ def tracked_files(excluded=('none',)):
         hg.append(fname)
         if sp[0] in (b'M'):
             modif.append(decode(sp[1]))
-    print(hg)
-    exit(0)
     return (hg, modif)
 class WritableObject(object):
     "dummy input/output stream for pylint"
@@ -257,7 +255,7 @@ def main(excluded = ['.hgignore'], files = 'hg'):
     message()
 
 if __name__ == '__main__':
-    sys.exit(main(excluded=('v1/*', 'util/dynsubplot.py', 'Miscellaneous/*', 'Visu/*', 'SPIKE_usage_eg/previous-to-clean/*')))
+    sys.exit(main(excluded=('spike/v1/*', 'spike/util/dynsubplot.py', 'spike/Miscellaneous/*', 'SPIKE_usage_eg/previous-to-clean/*')))
     # excluding dynsubplot.py because the add_class method is just too confusing to pylint
 #    sys.exit( main( files=glob.glob('*.py')+glob.glob('*/*.py') ) )
 
