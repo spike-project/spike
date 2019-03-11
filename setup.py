@@ -32,6 +32,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://bitbucket.org/delsuc/spike",
     packages=setuptools.find_packages(),
+    license="CeCILL-2.1",
     classifiers=[
         "Programming Language :: Python",
         "License :: OSI Approved :: CEA CNRS Inria Logiciel Libre License, version 2.1 (CeCILL-2.1)",

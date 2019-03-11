@@ -40,11 +40,11 @@ If you happen to use SPIKE successfully please cite it, and refer to this site, 
 - first publication of the program itself - *rejected from Anal. Chem. Reviewer 1 said "too much NMR", Reviewer 2 said "too much MS", !!*
     1.    Chiron L., Coutouly M-A., Starck J-P., Rolando C., Delsuc M-A. SPIKE a Processing Software dedicated to Fourier Spectroscopies   https://arxiv.org/abs/1608.06777 (2016)
 - first version of the python set-up on which the current SPIKE is partially based
-    2.    Tramesel, D., Catherinot, V. & Delsuc, M.-A. Modeling of NMR processing, toward efficient unattended processing of NMR experiments. _J Magn Reson_ **188**, 56–67 (2007).
+    2.    Tramesel, D., Catherinot, V. & Delsuc, M.-A. Modeling of NMR processing, toward efficient unattended processing of NMR experiments. _J Magn Reson_ **188**, 56-67 (2007).
 - first version of the 2D FT-ICR-MS processing
-    3.    van Agthoven, M. A., Chiron, L., Coutouly, M.-A., Delsuc, M.-A. & Rolando, C. Two-Dimensional ECD FT-ICR Mass Spectrometry of Peptides and Glycopeptides. _Anal Chem_ **84**, 5589–5595 (2012).
+    3.    van Agthoven, M. A., Chiron, L., Coutouly, M.-A., Delsuc, M.-A. & Rolando, C. Two-Dimensional ECD FT-ICR Mass Spectrometry of Peptides and Glycopeptides. _Anal Chem_ **84**, 5589-95 (2012).
 - presentation of the automation possibilities in NMR
-    4. Margueritte, L., Markov, P., Chiron, L., Starck, J.-P., Vonthron Sénécheau, C., Bourjot, M., & Delsuc, M.-A. (2018). Automatic differential analysis of NMR experiments in complex samples. Magn. Reson. Chem., 80(5), 1387. http://doi.org/10.1002/mrc.4683
+    4. Margueritte, L., Markov, P., Chiron, L., Starck, J.-P., Vonthron S&eacute;n&eacute;cheau, C., Bourjot, M., & Delsuc, M.-A. (2018). Automatic differential analysis of NMR experiments in complex samples. Magn. Reson. Chem., 80(5), 1387. http://doi.org/10.1002/mrc.4683
 
 ref 1) is a general purpose reference, the other ones are more specific.
 
@@ -322,7 +322,7 @@ a small description of the files:
 ### Authors and Licence ###
 Current Active authors for SPIKE are:
 
-- Marc-André Delsuc     `madelsuc -at- unistra.fr`
+- Marc-Andr&eacute; Delsuc     `madelsuc -at- unistra.fr`
 - Laura Duciel          `laura.duciel -at- casc4de.eu`
 
 Previous authors:
