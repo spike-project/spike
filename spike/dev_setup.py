@@ -14,7 +14,7 @@ from codecs import encode, decode
 
 ProgramName = "SPIKE"
 VersionName = "Development version"
-VersionInfo = ["0", "99", "2"]   # Major - Minor - Micro
+VersionInfo = ["0", "99", "3"]   # Major - Minor - Micro
 
 # Major.minor.micro (int) + name eg SPIKE_2_19_5
 # N.M.L
@@ -32,6 +32,7 @@ release_notes="""
     - a tool for displaying multiresolution  2D FT-ICR-MS data-sets
     - simple interface in Jupyter for 1D NMR
     - (that part is not tested in python 2)
+- added the setup.py prgm, SPIKE is now a regular installable program - still working on it ! -
 - `scale="auto"` in 2D display, choose a level `autoscalethresh` (default is 3) times above the noise floor.
 - added `gaussenh` apodisation plugin for one-command gaussian enhancement.
 - improved display of FTMS spectra
@@ -395,7 +396,7 @@ Revision Id  :  %s
 """%(version, revision))
     generate_file("version.py")
     generate_file_rev("version_rev.py")
-    generate_notes("release_notes.md")
+    generate_notes("../release_notes.md")
 #    plier()
     # then tests
     test = False

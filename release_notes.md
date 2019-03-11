@@ -5,6 +5,7 @@
     - a tool for displaying multiresolution  2D FT-ICR-MS data-sets
     - simple interface in Jupyter for 1D NMR
     - (that part is not tested in python 2)
+- added the setup.py prgm, SPIKE is now a regular installable program - still working on it ! -
 - `scale="auto"` in 2D display, choose a level `autoscalethresh` (default is 3) times above the noise floor.
 - added `gaussenh` apodisation plugin for one-command gaussian enhancement.
 - improved display of FTMS spectra
