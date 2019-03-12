@@ -1,17 +1,8 @@
-# README #
+# What is SPIKE ? #
 
-The **SPIKE** program. A collaborative development for a FT-spectroscopy processing program.
+**SPIKE** a collaborative development for a FT-spectroscopy processing program.
 
-# Release
-This is the version 0.99.2 - January 2019
-
-MANY improvements and corrections have been made, and where available in the `devel` brach.
-There are now available in the default release.
-
-Complete history in the [release_notes.md](release_notes.md) file.
-
-
-## What is SPIKE ? ##
+*This is the version 0.99.3 - March 2019*
 
 **SPIKE** is a program that allows the processing, the display and the analysis of data-sets obtained from various Fourier-Transform spectroscopies. The name stands for **S**pectrometry **P**rocessing **I**nnovative **KE**rnel.
 
@@ -19,20 +10,13 @@ It allows the processing of **1D** and **2D** FT spectroscopies, implementing Re
 
 It is written in python (tested in python 2.7 and 3.5) and can be used as a set of tools, using for instance `jupyter notebook` as an interactive front-end.
 
-To our knowledge, it is the first program freely available allowing the processing, display and analysis of 2D-FT-ICR (Fourier Transform Ion Cyclotron Resonance).
+To our knowledge, it is the first program freely available allowing the processing, display and analysis of 2D-FT-ICR (Fourier Transform Ion Cyclotron Resonance), as well as **Orbitrap** time domain data. processing.
 
 It is still in very active development.
 Many features are missing, and many other while present, are not fully fixed.
 However, considering the amount of efforts already present in this code, we decided to make it available.
 We believe that even in this partial development stage, this program might prove useful for certain usages.
 
-## Documentation
-Documentation is way behind the code, and certain parts are presenteing obsolete features.
-This is the main reason for geing 0.99 rather than 1.00 version !
-
-You can find the **Very preliminary** documentation [here](http://spikedoc.bitbucket.org/)
-
-On the other hand, the in-line python documentation is rather complete and up to date.
 
 ## Citing SPIKE ##
 If you happen to use SPIKE successfully please cite it, and refer to this site, as well as the following possible references :
@@ -48,69 +32,54 @@ If you happen to use SPIKE successfully please cite it, and refer to this site, 
 
 ref 1) is a general purpose reference, the other ones are more specific.
 
-## SPIKE proposes the following features
+## SPIKE features
+- FT analysis of 1D data-sets
+    - apodisation, phasing, modulus, ...
+- Analysis of 2D data-sets
+    - phase or amplitude modulation
+    - complex or hyper-complex algebra
+- Robust processing
+    - no limit in data-set size
+    - parallel processing of the heaviest processing
+        - on multi-core desktop using standard python ressources
+        - on large clusters, using **MPI** library
+- High-Level features
+    - noise reduction (filtering, Linear-Prediction, Cadzow, urQRd, sane, ...)
+    - automatic or manual baseline correction
+    - NUS data processing
+    - 1D and 2D Peak-Picker
+- Plugin architecture
+    - allow easy extension of the core program
+    - reduces cross dependences
+- Complete spectral display using matplotlib or bokeh transparently
+    - zoom, available in several units (depending on the spectroscopy : seconds, Hz, ppm, m/z, etc...)
+    - store to png or pdf
+- interaction with the Jupyter Notebook environment
 
-####FT analysis of 1D data-sets
-
-* apodisation, phasing, modulus, ...
-
-#### Analysis of 2D data-sets
-
-* phase or amplitude modulation
-* complex or hyper-complex algebra
-
-####Robust processing
-
-* no limit in data-set size
-* parallel processing of the heaviest processing
-    * on multi-core desktop using standard python ressources
-    * on large clusters, using **MPI** library
-
-####High-Level features
-
-* noise reduction (filtering, Linear-Prediction, Cadzow, urQRd, sane, ...)
-* automatic or manual baseline correction
-* 1D and 2D Peak-Picker
-        
-####Plugin architecture
-
-* allow easy extension of the core program
-* reduces cross dependences
-
-####Complete spectral display using matplotlib
-
-* zoom, available in several units (depending on the spectroscopy : seconds, Hz, ppm, m/z, etc...)
-* store to png or pdf
-
-##For the moment, SPIKE handles the following Spectroscopies
-
-#### **NMR** 
-
-- 1D and 2D are fully supported
-- no nD yet
-
-#### **FT-ICR** 
-
-- 1D and 2D are fully supported
-
-#### **Orbitrap** 
-
-- 1D only (!)
-
-#### _other spectroscopies are being considered_
+## Handled the following Spectroscopies
+- **NMR** 
+    - 1D and 2D are fully supported
+    - no nD yet
+- **FT-ICR** 
+    - 1D and 2D are fully supported
+- **Orbitrap** 
+    - 1D only (!)
+- _other spectroscopies are being considered_
 
 ## Files can be imported from
-
 * NMR:
     * Bruker Topspin
     * NMRNoteBook
     * NPK - *Gifa*
+    * SpinIt
 * FT-ICR:
     * Bruker Apex 
     * Bruker Solarix
 * Orbitrap:
     * Thermofisher raw data
-* any data in memory in a `Numpy` buffer.
+* Other
+    * csv and txt files
+    * any data in memory in a `Numpy` buffer.
 
 # Usage
 
@@ -118,13 +87,13 @@ ref 1) is a general purpose reference, the other ones are more specific.
 SPIKE is primary meant for being used as a library, code can as simple as :
 
 ```python
-import spike           # insure spike is in your PYTHONPATH
 from spike.File import Solarix 
 
 dd = Solarix.Import_1D('FTICR-Files/ESI_pos_Ubiquitin_000006.d')  # Import create a basic SPIKE object
 
 dd.hamming().zf(2).rfft().modulus()    # we have a simple piped processing scheme
   # here doing apodisation - zerofilling (doubling the size) - FT and modulus.
+  # calibration is imported from Bruker - advanced calibration is available
 
 dd.unit = "m/z"
 dd.display(zoom=(500,2000))     # display the spectrum for m/z ranging from 500 to 2000
@@ -134,14 +103,6 @@ dd.centroid()                # compute centroids
 
 dd.display(zoom=(856.5, 858.5))    # and zoom on the isotopic peak
 dd.display_peaks(zoom=(856.5, 858.5), peak_label=True)
-```
-
-For the moment, SPIKE does not provide a installation script.
-If you downloaded spike in a given directory, insure this directory is in your PYTHONPATH.
-To do so, either modify the `$PYTHONPATH` environment variable, or add the following lines in the scripts that use SPIKE:
-```python
-import sys
-sys.path.append('the_dir_where_you_put_spike_distrib')
 ```
 
 #### interactive mode
@@ -173,40 +134,45 @@ or
 python -m spike.visu2D param_file.mscf
 ```
 
-typically, you want to add
-```python
-python
-import sys
-sys.path.append('the_dir_where_you_put_spike_distrib')
-```
-to the header of these scripts, and launch them from the directory which contains SPIKE the distribution.
-
-A more complete documentation is available [here](https://spikedoc.bitbucket.org).
-
 
 ## How do I get SPIKE ? ##
 SPIKE is written in pure Python, and relies on several external libraries.
-It is compatible and fully tested with both python 2.7 and python 3.5
-
-It requires the following non-standard Python libraries :
-
-* [Numpy](http://docs.scipy.org/doc/numpy/reference/)
-* [Scipy](http://docs.scipy.org/doc/scipy/reference/)
-* [Matplotlib](http://Matplotlib.org/contents.html)
-* HDF5 / [Pytables](http://www.pytables.org/moin) 
-* Qt / [PySide](http://qt-project.org/wiki/PySide) *optional* used by visu2D
-* MPI / [mpi4py](http://www.mpi4py.scipy.org/) *optionnal* used for parallel processing of large FTICR 2D files
-
-It has been successfully tested in the [**Enthought**](https://enthought.com/) and [**Anaconda**](http://continuum.io/) distributions.
+It is compatible and fully tested with both python 2.7 and python 3.6
 
 To get it, you can simply 
  - insall the above python distributions
  - download the latest stable version here : https://bitbucket.org/delsuc/spike/downloads
  - *or* `hg clone` the devel branch and keep it up-to-date
 
-## Origins ##
+Then you can install it doing
+```bash
+python setup.py install
+```
+or, if you do not want to instal it permanently
+```bash
+python setup.py develop
+```
 
-**SPIKE** is originated from the ** _Gifa_ ** program, developed by M-A Delsuc and others in `FORTRAN 77` since the late eighties.
+### dependencies
+It requires the following non-standard Python libraries :
+
+* [Numpy](http://docs.scipy.org/doc/numpy/reference/)
+* [Scipy](http://docs.scipy.org/doc/scipy/reference/)
+* [Matplotlib](http://Matplotlib.org/contents.html)
+* HDF5 / [Pytables](http://www.pytables.org/moin)
+
+Optionnaly
+
+* MPI / [mpi4py](http://www.mpi4py.scipy.org/) used for parallel processing of large FTICR 2D files
+* [cupy](https://github.com/cupy/cupy) for computating in the GPU using Cuaa, which allows to speed up considerably certain processing steps.
+
+It has been successfully tested in the [**Enthought**](https://enthought.com/) and [**Anaconda**](http://continuum.io/) distributions.
+
+
+
+## History ##
+
+**SPIKE** is originated from the _Gifa_ program, developed by M-A Delsuc and others in `FORTRAN 77` since the late eighties.
 _Gifa_ has known several mutations, and finally ended as a partial rewrite called **NPK**.
 The [NPK](http://abcis.cbs.cnrs.fr/NPK/) program is based on some of the original `FORTRAN` code, wrapped in Java and Python, which allows to control all the program possibilities from the Python level.
 NPK is purely a computing kernel, with no graphical possibilities, and has been used as a kernel embedded in the commercial program NMRNoteBook, commercialized by NMRTEC.

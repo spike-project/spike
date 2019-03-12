@@ -20,6 +20,7 @@ import math
 import re
 import time
 import warnings
+#from numba import jit,vectorize
 
 from . import version
 from . NPKError import NPKError
@@ -41,6 +42,7 @@ def hypercomplex_modulus(arr, size1, size2):
         arr : hypercomplex array
         size1 : size counting horizontally each half quadrant.
         size2 : siez counting vertically each half quadrant.
+
     eg:
         arr = np.array([[1, 4],[3, 7],[1, 9],[5, 7]])
         is an hypercomplex with size1 = 2 and size2 = 2
@@ -2559,12 +2561,12 @@ class NPKData(object):
         apply a Kaiser apodisation
         beta is a positive number
 
-            beta 	Window shape
-            --------------------
-            0 	Rectangular
-            5 	Similar to a Hamming
-            6 	Similar to a Hanning
-            8.6 	Similar to a Blackman
+            beta    Window shape
+            ----    ------------
+            0       Rectangular
+            5       Similar to a Hamming
+            6       Similar to a Hanning
+            8.6     Similar to a Blackman
         """
         todo = self.test_axis(axis)
         it = self.axes(todo).itype

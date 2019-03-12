@@ -1,29 +1,21 @@
-SPIKE Documentation
-===================
+*******************
+First contact SPIKE
+*******************
 
-User Guide
-==========
 
 General Organization
---------------------
-    ytbw (yet to be written)
+====================
+**SPIKE** is a library and a set of programs and utilities meant to process, display and analyze spectroscopic data-sets.
+It is mostly oriented towards **NMR** and **FT-MS** (FT-ICR and Orbitrap) but can probably be rapidly extended to any new domain.
 
+History of SPIKE
+----------------
 
-A Working example in NMR
-------------------------
-    ytbw
-    
-
-A Working example in FTICR
---------------------------
-    ytbw
-	
-A Working example in Orbitrap
------------------------------
-    ytbw
+A Working examples
+------------------
 	
 Plotting
-========
+--------
     ytbw
 
 Data File

@@ -24,7 +24,6 @@ def neg_wing(d, bcorr=False, inwater=False, apt=False):
         if apt == False, computes the std() of the negative points  (distance to mean)
                == True, computes the sum(abs()) of all the points (l_1 norm)
         """
-        import numpy as np
         dd = d.copy().real()
         if inwater:
             dd[int(0.45*d.size1):int(0.55*d.size1)] = 0.0
