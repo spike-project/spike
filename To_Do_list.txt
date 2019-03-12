@@ -1,16 +1,23 @@
 FEATURES
 ========
-bk.ft() bk.ftf2() bk.ftF1(FnMode) à finir
+more user examples in jupyter
+	- 1H 1D proc / visu
+	- 13C 1D proc / visu
+	- 1H 2D proc / visu
+	- HSQC 2D proc / visu
+	- HSQC 2D NUS proc
+	- HSQC 2D NUS visu
+	- 2D FTICR visu
+	- 2D FTICR proc
 
-**kw pour display()
-
-arithmetic avec numpy array  d /= x
+develop more cuda functions
 
 Apex vs Solarix
     dans dossier .m
         <method version="solariXcontrol_2" > dans l'entete de  apexAcquisition.method
         ExciteSweep 
         PULPROG_xx_seq et PULPROG_xx_compiled
+
 
 fermer le pool ou MPI en sortant via register.
 
@@ -20,16 +27,8 @@ model pour RMN
 
 test avec SubP-2015
 
-activate MP
-
-write helper_ipynb
-
-check plot / figure in d.display()
-
 BUGS
 ====
-mp vs MPI
-
 move dowsampling outside processing
 
 correct wrong downsampling in F2
