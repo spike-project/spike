@@ -163,7 +163,7 @@ def Import_1D(folder, outfile = "", compress=False):
     data.axis1.offset = 0.0
     if float(params["ML1"]) >0.0:
         data.axis1.calibA = float(params["ML1"])
-    if float(params["ML2"]) >0.0:
+    if float(params["ML2"]):# >0.0:
         data.axis1.calibB = float(params["ML2"])
     if float(params["ML3"]) >0.0:
         data.axis1.calibC = float(params["ML3"])

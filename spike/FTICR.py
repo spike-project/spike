@@ -69,9 +69,9 @@ class FTICRAxis(FTMS.FTMSAxis):
         self.highfreq = highfreq
 
         self.attributes.insert(0,"FTICR") # updates storable attributes
-        # self.attributes.insert(0,"calibA") # ML1
-        # self.attributes.insert(0,"calibB") # ML2
-        # self.attributes.insert(0,"calibC") # ML3
+        self.attributes.insert(0,"calibA") # ML1
+        self.attributes.insert(0,"calibB") # ML2
+        self.attributes.insert(0,"calibC") # ML3
         self.attributes.insert(0,"highfreq")
         self.attributes.insert(0,"lowfreq")
         
@@ -107,14 +107,16 @@ class FTICRAxis(FTMS.FTMSAxis):
         else:
 #            delta = self.calibA**2 + 4*self.calibC*(self.calibB + h)
 #            m = self.calibA + np.sqrt(delta) / (2 * (self.calibB + h))
-            m = self.calibA/(2*(self.calibB + h)) + np.sqrt(self.calibA**2 + 4*self.calibB*self.calibC + 4*self.calibC*h)/(2*(self.calibB + h))
+            #m = self.calibA/(2*(self.calibB + h)) + np.sqrt(self.calibA**2 + 4*self.calibB*self.calibC + 4*self.calibC*h)/(2*(self.calibB + h))
+            m = -1*(self.calibA+np.sqrt((self.calibA**2)-4*(self.calibB-h)*self.calibC))/(2*(self.calibB-h)) #WK Edit 13/11/2017 based on Solarix info from DPAK
         return m
     def mztoh(self, value):
         """
         return Hz value (h) from  m/z (mz) 
         """
         m = np.maximum(value,0.1)             # protect from divide by 0
-        return self.calibA/m + self.calibC/(m**2)  - self.calibB
+        #return self.calibA/m + self.calibC/(m**2)  - self.calibB
+        return (self.calibC/(m**2)) + (self.calibA/m)  + self.calibB
 
 #-------------------------------------------------------------------------------
 
