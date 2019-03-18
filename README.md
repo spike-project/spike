@@ -1,3 +1,10 @@
+# BE CAREFULL!
+#
+# Due to a the 2019-03-12 update, the FTICR code is wrong. m/z calibration are buggy.
+# We're working on it.
+
+---
+
 # What is SPIKE ? #
 
 **SPIKE** a collaborative development for a FT-spectroscopy processing program.
