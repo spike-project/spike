@@ -124,12 +124,9 @@ def Import_1D(folder,outfile=""):
         raise Exception("You are dealing with 2D data, you should use Import_2D")
     data = FTICRData( dim=1 )   # create dummy 1D
     data.axis1.size = sizeF1    # then set parameters
-    if float(params["ML1"]) >0.0:
-        data.axis1.calibA = float(params["ML1"])
-    if float(params["ML2"]) >0.0:
-        data.axis1.calibB = float(params["ML2"])
-    if float(params["ML3"]) >0.0:
-        data.axis1.calibC = float(params["ML3"])
+    data.axis1.calibA = float(params["ML1"])
+    data.axis1.calibB = float(params["ML2"])
+    data.axis1.calibC = float(params["ML3"])
     data.axis1.specwidth = float(params["SW_h"])
     data.axis1.highfreq = data.axis1.calibA/float(params["EXC_low"])  # these two are in m/z !
     data.axis1.lowfreq = data.axis1.calibA/float(params["EXC_hi"])
@@ -192,12 +189,9 @@ def Import_2D(folder,outfile = "",F1specwidth = None):
     data = FTICRData( dim=2 )   # create dummy 2D
 
     data.axis2.size = sizeF2    # then set parameters along F2 - classical axis -
-    if float(params["ML1"]) >0.0:
-        data.axis2.calibA = float(params["ML1"])
-    if float(params["ML2"]) >0.0:
-        data.axis2.calibB = float(params["ML2"])
-    if float(params["ML3"]) >0.0:
-        data.axis2.calibC = float(params["ML3"])
+    data.axis2.calibA = float(params["ML1"])
+    data.axis2.calibB = float(params["ML2"])
+    data.axis2.calibC = float(params["ML3"])
     data.axis2.specwidth = float(params["SW_h"]) 
     data.axis2.highfreq = data.axis2.calibA/float(params["EXC_low"])  # these two are in m/z !
     data.axis2.lowfreq = data.axis2.calibA/float(params["EXC_hi"])
@@ -215,12 +209,9 @@ def Import_2D(folder,outfile = "",F1specwidth = None):
             data.axis1.specwidth = 1.0/(2*f1)
         else:
             data.axis1.specwidth = data.axis2.specwidth     # else assume square...
-    if float(params["ML1"]) >0.0:
-        data.axis1.calibA = float(params["ML1"])
-    if float(params["ML2"]) >0.0:
-        data.axis1.calibB = float(params["ML2"])
-    if float(params["ML3"]) >0.0:
-        data.axis1.calibC = float(params["ML3"])
+    data.axis1.calibA = float(params["ML1"])
+    data.axis1.calibB = float(params["ML2"])
+    data.axis1.calibC = float(params["ML3"])
     data.axis1.highfreq = data.axis1.calibA/float(params["EXC_low"])  # these two are in m/z !
     data.axis1.lowfreq = data.axis1.calibA/float(params["EXC_hi"])
     data.axis1.highmass = float(params["MW_high"])

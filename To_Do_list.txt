@@ -10,7 +10,12 @@ more user examples in jupyter
 	- 2D FTICR visu
 	- 2D FTICR proc
 
+
 develop more cuda functions
+
+delta peak-picker 
+pandas for peaklists
+spikecalib.py
 
 Apex vs Solarix
     dans dossier .m
@@ -27,8 +32,10 @@ model pour RMN
 
 test avec SubP-2015
 
-BUGS
-====
 move dowsampling outside processing
 
+shearing
+
+BUGS
+====
 correct wrong downsampling in F2

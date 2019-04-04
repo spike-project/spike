@@ -15,12 +15,14 @@ from __future__ import print_function, division
 from subprocess import Popen, PIPE
 
 import sys
+import os
 import re
 from codecs import encode, decode
 #import glob
 
 CMD = "pylint"
 ARGS = ["--rcfile=rcfile3"]
+ERROR_file = "QC_Errors.txt"
 
 def msg(string, sep='='):
     "print string in a box"
@@ -111,6 +113,8 @@ def run_pylint(fich):
         elif l.startswith('E'):
             if l[0:5] not in ignored_error:
                 errors += 1
+                with open(ERROR_file,'a') as ERR:
+                    ERR.write("%s: %s\n"%(fich,l))
         elif l.startswith('W'):
             if l[0:5] not in ignored_warn:
                 warn += 1
@@ -246,6 +250,7 @@ def main(excluded = ['.hgignore'], files = 'hg'):
         msg("Warning, the following files are modified but not commited", sep="*")
         for i in modif:
             print(i)
+    os.remove(ERROR_file)
     stats = processmp(hg)
     t = report(stats, modif)
     print(t)

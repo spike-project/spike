@@ -1,5 +1,14 @@
 <!-- DO NOT MODIFY this file, it is generated automatically from dev_setup ! -->
 # SPIKE Relase Notes
+#### 0.99.4 - April 2019
+- support for distribution via pip - you can now do `pip instal spike_py` and spike installed globally on your system.
+- still struggling with correct calibration routines for FTICR ! - proceed carefully ! -
+- phase() speeded-up by a factor 20 !
+- added a autothresh scaling to peakpicking (catching peaks "autothresh" times above the noise level - default is 3)
+- slight improvement of peak list reporting (additional key words: format="report" and format="full")
+- a bug in extract of complex 1D data-sets was corrected
+- added the figure keyword to peaklist display
+
 #### 0.99.3 - March 2019
 - Development of Interactive tools, to be used within Jupyter - *should be extended in further releases* -
     - a tool for displaying multiresolution  2D FT-ICR-MS data-sets

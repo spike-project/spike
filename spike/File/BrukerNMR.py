@@ -271,7 +271,7 @@ def read_1D(size, filename="fid", bytorda=1, dtypa=0, uses='numpy'):
         with open(filename,"rb") as F:
             buf = F.read(mlt*size)
             ibuf = struct.unpack(fmt%(size), buf)  # upack the string as integers
-        npkbuf = np.empty(size, dtype=np.float64)
+        npkbuf = np.empty(size, dtype=np.float)
         npkbuf[:] = ibuf[:]
     elif uses == 'numpy':
         npkbuf = np.fromfile(filename, nfmt).astype(float)
@@ -286,8 +286,8 @@ def read_2D(sizeF1, sizeF2, filename="ser", bytorda=1, dtypa=0, uses='struct'):
     sizeF2 is the number of data-points in the fid
     """
     if uses != "struct":
-        raise Eception('Only mode "struct" is implmented')
-    npkbuf = np.empty((sizeF1, sizeF2), dtype=np.float64)
+        raise Exception('Only mode "struct" is implemented')
+    npkbuf = np.empty((sizeF1, sizeF2), dtype=np.float)
 # read binary
     if dtypa == 0:
         fmt = "256i"
@@ -785,7 +785,7 @@ def Import_2D_proc(filename="2rr", outfile=None,  verbose=VERBOSE):
         "proc2": SMX.proc2} # create ad-hoc parameters
     d.params = pardic   # add the parameters to the data-set
     if verbose:
-        print("imported 2D spectrum, size = %d x %d\n%s"%(data.shape(0), data.shape(1), acqu['title']))
+        print("imported 2D spectrum, size = %d x %d\n%s"%(data.shape(0), data.shape(1), SMX.acqu['title']))
     return d
 
 ################################################################

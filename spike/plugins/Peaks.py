@@ -6,11 +6,11 @@
 Very First functionnal - Not finished !
 
 
-Peak1D and Peak2D or simple objects
+Peak1D and Peak2D are simple objects
     with attributes like Id, label, intens(ity), pos(ition), or width
     the only added method is report() (returns a string)
 
-Peak1DList and Peak2DList are list, with a few added methods
+Peak1DList and Peak2DList are python list, with a few added methods
     - report (to stdio or to a file)
     - largest sort in decreasing order of intensity
         other sorts can simply done by peaklist.sort(key = lambda p: p.XXX)
@@ -122,16 +122,27 @@ class Peak1D(Peak):
         peaks.report(f=s.axis1.itop)    to get ppm values on a NMR dataset
         order is "id, label, position, intensity"
 
-        printed parameters are : 
-        Id label positions intens width intens_err pos_err width_err
-        and default format used is "{}, {}, {:.2f}, {:.2f}"   (so only the four first parameters are shown)
-        format field can enforce another format:
+        parameters are : 
+        Id label positions intens width intens_err pos_err width_err 
+        in that order.
+
+        By default returns only the 4 first fields with 2 digits, but the format keyword can change that.
+        format values:
+        - None or "report", the standard value is used:  "{}, {}, {:.2f}, {:.2f}" 
+                  (so only the four first parameters are shown)
+        - "full" is all parrameters at full resolution  ( "{}; "*8 )
+        - any othe string following the format syta will do.
             you can use any formating syntax. So for instance the following format
             "{1} :   {3:.2f}  F1: {2:.7f} +/- {4:.2f}"
             will remove the Id, show position with 7 digits after the comma, and will show width
+
+        you can change the report and full default values by setting
+        pk.__class__.report_format   and   pk.__class__.full_format  which class attributes
         """
-        if format is None:
+        if format is None or format == "report":
             format = self.report_format
+        elif format == "full":
+            format = self.full_format
         return format.format( self.Id, self.label, f(self.pos), self.intens, self.width,  self.pos_err, self.intens_err, self.width_err)
     def _report(self, f=_identity):
         """
@@ -170,18 +181,22 @@ class Peak2D(Peak):
         order is "id, label, posF1, posF2, intensity, widthF1, widthF2"
 
         printed parameters are : 
-        Id label posF1 posF2 intens widthF1 widthF2
-        and default format used is "{}, {}, {:.2f}, {:.2f}, {:.2f}"   (so widthes are not shown)
-        if pk is a peak, setting
-            pk.report_format to some other format will change the format for this peak
-            pk.__class__.report_format  to some other format will change the format for all peaks in the peak list
-        
-        you can use any formating syntax. So for instance the following format
-        "{1} :   {4:.2f}  F1: {2:.7f} +/- {5:.2f}  X  F2: {3:.7f} +/- {6:.2f}"
-        will remove the Id, show position with 7 digits after the comma, and will show widthes
+        Id label posF1 posF2 intens widthF1 widthF2 posF1_err posF2_err intens_err widthF1_err widthF2_err 
+
+        By default returns only the 5 first fields with 2 digits, but the format keyword can change that.
+        format values:
+        - None or "report", the standard value is used:  "{}, {}, {:.2f}, {:.2f}, {:.2f}" 
+                  (so only the four first parameters are shown)
+        - "full" is all parrameters at full resolution  ( "{}; "*12 )
+        - any othe string following the format syntxa will do.
+            you can use any formating syntax. So for instance the following format
+            "{1} :   {4:.2f}  F1: {2:.7f} +/- {5:.2f}  X  F2: {3:.7f} +/- {6:.2f}"
+            will remove the Id, show position with 7 digits after the comma, and will show widthes    
         """
-        if format is None:
+        if format is None or format == "report":
             format = self.report_format
+        elif format == "full":
+            format = self.full_format
         return format.format( self.Id, self.label, f1(self.posF1), f2(self.posF2), self.intens, self.widthF1, self.widthF2, self.posF1_err, self.posF2_err, self.intens_err, self.widthF1_err, self.widthF2_err )
     def _report(self, f1=_identity, f2=_identity):
         """
@@ -248,7 +263,7 @@ class Peak1DList(PeakList):
         f is a function used to transform respectively the coordinates
         indentity function is default,
         for instance you can use something like
-        d.peaks.export(f=s.axis1.itop)    to get ppm values on a NMR dataset
+        d.peaks.report(f=d.axis1.itop)    to get ppm values on a NMR dataset
 
         check documentation for Peak1D.report() for details on output format
         """
@@ -261,23 +276,28 @@ class Peak1DList(PeakList):
         """
         lst = [pk._report(f=f) for pk in self ]
         return "\n".join(lst)
-    def display(self, peak_label=False, zoom=None, show=False, f=_identity, color = None, markersize=None):
+    def display(self, peak_label=False, zoom=None, show=False, f=_identity, color = None, markersize=None, figure=None):
         """
         displays 1D peaks
         zoom is in index
         """
         from spike.Display import testplot
         plot = testplot.plot()
+        if figure is None:
+            fig = plot.subplot(111)
+        else:
+            fig = figure
         if zoom:
             z0=zoom[0]
             z1=zoom[1]
             pk = [i for i,p in enumerate(self) if p.pos>=z0 and p.pos<=z1]
         else:
             pk = range(len(self))
-        plot.plot(f(self.pos[pk]), self.intens[pk], "x", color=color)
+        fig.plot(f(self.pos[pk]), self.intens[pk], "x", color=color)
         if peak_label:
             for p in pk:
-                plot.text(f(self.pos[p]), 1.05*self.intens[p], self.label[p], color=color)
+                fig.text(f(self.pos[p]), 1.05*self.intens[p], self.label[p], color=color)
+                print(f(self.pos[p]), 1.05*self.intens[p], self.label[p])
         if show: plot.show()
 
 class Peak2DList(PeakList):
@@ -309,7 +329,7 @@ class Peak2DList(PeakList):
         print ("# %d in Peak list"%len(self), file=file)
         for pk in self:
             print(pk.report(f1=f1, f2=f2, format=format), file=file)
-    def _report(self, f=_identity, file=None):
+    def _report(self, f1=_identity, f2=_identity, file=None):
         """return full report for 2D peak list
         list is : Id, label, posF1, posF2, intens, widthF1, widthF2, posF1_err, posF2_err, intens_err, widthF1_err, widthF2_err
         """
@@ -357,17 +377,17 @@ def _peaks2d(npkd, threshold = 0.1, zoom = None, value = False, zones=0):
             print (z)
 
 #----------------------------------------------------------
-def peakpick(npkd, threshold = None, zoom = None):
+def peakpick(npkd, threshold = None, zoom = None, autothresh=3.0):
     """
     performs a peak picking of the current experiment
     threshold is the level above which peaks are picked
-        None (default) means that 3*(noise level of dataset) will be used - using d.std() as proxy for noise-level
+        None (default) means that autothresh*(noise level of dataset) will be used - using d.std() as proxy for noise-level
     zoom defines the region on which detection is made
         zoom is in currentunit (same syntax as in display)
         None means the whole data
     """
     if threshold is None:
-        threshold = 3*np.std( npkd.get_buffer().real )
+        threshold = autothresh*np.std( npkd.get_buffer().real )
     if npkd.dim == 1:
         listpkF1, listint = peaks1d(npkd, threshold=threshold, zoom=zoom)
                             #     Id, label, intens, pos        
@@ -384,7 +404,9 @@ def peakpick(npkd, threshold = None, zoom = None):
         npkd.peaks = pkl
     else:
         raise NPKError("Not implemented of %sD experiment"%npkd.dim, data=npkd)
-    print ('PP Threshold:',threshold)
+    if threshold is None:
+        print ('PP Threshold:',threshold)
+    print('PP: %d detected'%(len(npkd.peaks),))
     return npkd
 
 def peaks2d(npkd, threshold, zoom):
@@ -529,7 +551,7 @@ def centroid(npkd, *arg, **kwarg):
         raise Exception("Centroid yet to be done")
     return npkd
 #-------------------------------------------------------
-def display_peaks(npkd, peak_label=False, zoom=None, show=False, color=None, markersize=6):
+def display_peaks(npkd, peak_label=False, zoom=None, show=False, color=None, markersize=6, figure=None):
     """
     display the content of the peak list, 
     zoom is in current unit.
@@ -540,7 +562,7 @@ def display_peaks(npkd, peak_label=False, zoom=None, show=False, color=None, mar
             ff1 = npkd.axis1.itoc
         else:
             ff1 = lambda x : npkd.axis1.itoc(2*x)
-        return npkd.peaks.display( peak_label=peak_label, zoom=(z1,z2), show=show, f=ff1, color=color, markersize=markersize)
+        return npkd.peaks.display( peak_label=peak_label, zoom=(z1,z2), show=show, f=ff1, color=color, markersize=markersize, figure=figure)
     elif npkd.dim == 2:
         z1lo, z1up, z2lo, z2up = parsezoom(npkd, zoom)
         if npkd.axis1.itype == 0:  # if real
@@ -551,7 +573,7 @@ def display_peaks(npkd, peak_label=False, zoom=None, show=False, color=None, mar
             ff2 = npkd.axis2.itoc
         else:
             ff2 = lambda x : npkd.axis2.itoc(2*x)
-        return npkd.peaks.display( peak_label=peak_label, zoom=((z1lo,z1up),(z2lo,z2up)), show=show, f1=ff1, f2=ff2, color=color, markersize=markersize)
+        return npkd.peaks.display( peak_label=peak_label, zoom=((z1lo,z1up),(z2lo,z2up)), show=show, f1=ff1, f2=ff2, color=color, markersize=markersize, figure=figure)
     else:
         raise Exception("to be done")
 #-------------------------------------------------------
@@ -641,6 +663,7 @@ class PeakTests(unittest.TestCase):
         self.assertAlmostEqual(d.peaks[0].widthF2,1.3)
 
 NPKData_plugin("pp", peakpick)
+NPKData_plugin("peakpick", peakpick)
 NPKData_plugin("centroid", centroid)
 NPKData_plugin("report_peaks", report_peaks)
 NPKData_plugin("display_peaks", display_peaks)

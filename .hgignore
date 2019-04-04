@@ -26,12 +26,16 @@ Miscellaneous/processing2-urqrd\.py
 Miscellaneous/processing2\.py
 Miscellaneous/SetConfig\.py
 _build
+build
+dist
+SPIKE.egg-info
+spike_make_sphinx
 _static
 _templates
 rst
 Tests_specific.py
 process.mscf
-SPIKE_usage_eg/.ipynb_checkpoints/Processing2D_manual-checkpoint.ipynb
-Algo/urQRd_fft_trick.ipynb
-Algo/.ipynb_checkpoints/urQRd_fft_trick-checkpoint.ipynb
+SPIKE_usage_eg/.ipynb_checkpoints
+Algo/*.ipynb
+Algo/.ipynb_checkpoints
 
