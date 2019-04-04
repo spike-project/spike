@@ -8,6 +8,26 @@ The method will reduce the difference between lists.
 
 adds ppm() ppm_error() and display_icalib() methods to the FTMSAxis object
      and imzmeas and mzref attributes
+
+Adds the following methods():
+to FTICR datasets
+    set_calib(mzmeas, mzref, axis=1)
+    calib(axis=1, method='l1', verbose=False)
+    display_calib(axis=1, compare=False)
+
+to FTICR axes
+    display_icalib(xref, mzref, symbol='bo')
+    ppm_error(xref, mzref)
+    ppm(xref, mzref)
+    display_icalib(xref, mzref, symbol='bo')
+
+and the following attributes:
+    RefAxis: a backup FTICRAxis, used to store the previous calibration
+
+to FTICR axes
+    mzref : list of m/z of reference values
+    imzmeas : list of pea indices of reference peaks (to be match with mzref)
+
 """
 
 from __future__ import print_function
@@ -141,7 +161,7 @@ def _display_icalib(axis, xref, mzref, symbol='bo'):
     mzref: list of reference m/z
     symbol: matplotlib notation for points (default is blue rounds)
     """
-    maxis = np.linspace(axis.lowmass, axis.highmass,10)  # sample mass axis
+    maxis = np.linspace(min(axis.mzref)-10, max(axis.mzref)+10,10)  # sample mass axis
     plt.plot(maxis, np.zeros_like(maxis),'k--')               # and draw a line at zero
     plt.plot(maxis, np.ones_like(maxis),'k:')
     plt.plot(maxis, -np.ones_like(maxis),'k:')
@@ -165,14 +185,16 @@ def display_calib(npkd,  axis=1, compare=False):
     todo = npkd.test_axis(axis)
     axistodo = npkd.axes(todo)
 #    xref = computes_index(meas, axistodo)
+    plt.figure()
     axistodo.display_icalib(axistodo.imzmeas, axistodo.mzref)
     if compare:
         try:
             npkd.RefAxis.display_icalib(axistodo.imzmeas, axistodo.mzref, symbol='rx')
-            maxis = np.linspace(axistodo.lowmass, axistodo.highmass,1000)
+            maxis = np.linspace(min(axistodo.mzref)-10, max(axistodo.mzref)+10,1000)
             plt.plot(maxis, -axistodo.ppm_error( npkd.RefAxis.mztoi( maxis), maxis), 'r:' ) 
         except AttributeError:
             raise Exception('No Reference Axis available')
+    plt.title("Mean error %.2f ppm"%(axistodo.ppm(axistodo.imzmeas, axistodo.mzref)))
     return npkd
 
 def set_calib(npkd, mzmeas, mzref, axis=1):

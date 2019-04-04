@@ -2,109 +2,108 @@
 -------------------------------------------------------
   Note/10   File                          Error Warning
 -------------------------------------------------------
-   8.95  spike/plugins/fastclean.py                  0
-   8.32  spike/util/progressbar.py                  12
+   8.39  spike/util/progressbar.py                  11
    8.12  spike/plugins/gaussenh.py                   0
-   8.00  spike/Display/testplot.py                   0
-   7.74  spike/util/widgets.py                      12
    7.59  spike/util/mpiutil.py                       3
-   7.59  spike/plugins/Bruker_NMR_FT.py              3
-M  7.41  QC.py                                       2
-   6.96  spike/File/GifaFile.py                     23
-   6.88  spike/util/counter.py                       3
-   6.67  spike/plugins/test.py                       0
-   6.49  spike/plugins/Linear_prediction.py          2
-   6.46  spike/plugins/FTMS_calib.py                 6
-   6.32  spike/util/near_prime.py                    0
-   6.21  spike/plugins/PALMA.py                      9
-   6.10  spike/plugins/bokeh_display.py        2    10 
+   7.59  spike/plugins/Bruker_NMR_FT.py              2
+   7.55  spike/util/widgets.py                      12
+M  7.33  QC.py                                       2
+   7.03  spike/File/csv.py                           1
+   7.00  spike/Display/testplot.py                   0
+   6.87  spike/File/GifaFile.py                     24
+   6.67  spike/util/counter.py                       3
+M  6.43  spike/plugins/FTMS_calib.py                 6
+   6.32  spike/plugins/Linear_prediction.py          2
+   6.06  spike/File/Thermo.py                        5
    6.00  spike/__init__.py                           0
-   6.00  spike/NPKError.py                           1
-   5.93  spike/File/csv.py                     1     0 
-   5.85  spike/util/ConfigForm.py                   26
+   5.96  spike/plugins/bokeh_display.py        2    10 
    5.84  spike/Algo/CS_transformations.py            1
-   5.82  spike/plugins/bcorr.py                      2
-   5.79  spike/FTMS.py                         2     4 
-   5.76  spike/File/Thermo.py                        2
-   5.71  spike/plugins/__init__.py                   3
-   5.56  spike/FTICR.py                              6
-   5.50  spike/plugins/rem_ridge.py                  3
-   5.45  spike/File/BrukerSMX.py                     6
-   5.31  spike/plugins/sane.py                       4
-   5.00  spike/util/__init__.py                      0
-   5.00  spike/Display/__init__.py                   0
-   5.00  spike/plugins/zoom3D.py                     2
-   5.00  spike/File/__init__.py                      0
-   5.00  spike/Algo/__init__.py                      0
+   5.82  spike/plugins/bcorr.py                      1
+   5.81  spike/plugins/PALMA.py                2     9 
+   5.79  spike/util/near_prime.py                    0
+   5.73  spike/FTMS.py                         2     4 
+   5.62  spike/plugins/sane.py                       3
+   5.50  spike/plugins/rem_ridge.py                  2
+   5.40  spike/plugins/__init__.py                   3
+   5.38  spike/util/ConfigForm.py              1    26 
+M  5.22  spike/FTICR.py                              5
+   5.00  spike/plugins/test.py                       0
+   5.00  spike/NPKError.py                           1
 -------------------------------------------------------
-   4.97  spike/NPKData.py                           51
+M  4.83  spike/NPKData.py                      3    51 
+   4.69  spike/File/Spinit.py                  2    15 
    4.63  spike/util/simple_logger2.py                3
-   4.47  doc/insert_hide.py                          4
-   4.44  spike/plugins/pg_sane.py                   25
-   4.37  spike/Tests.py                              6
-   4.27  spike/plugins/Fitter.py                    10
-   4.23  spike/plugins/sg.py                         2
-   4.23  spike/File/HDF5File.py                8    44 
-   4.20  spike/processing.py                   8    26 
-   4.16  spike/File/Spinit_with2D.py           1    19 
-   4.13  spike/Algo/Cadzow.py                  1     2 
-   4.12  spike/Orbitrap.py                           5
-   4.03  spike/Algo/maxent.py                       14
+   4.40  spike/File/Spinit_with2D.py           1    19 
+   4.33  spike/processing.py                   7    27 
+   4.32  spike/plugins/pg_sane.py                   26
+   4.29  spike/File/HDF5File.py                7    45 
+   4.06  spike/File/BrukerSMX.py                     6
    4.00  spike/util/shift_comments.py                5
-   3.98  spike/File/Spinit.py                  2    15 
-   3.93  spike/Algo/Cadzow_mpi2.py             2     2 
-   3.78  spike/NPKConfigParser.py                    9
-   3.77  spike/File/mzXML.py                         2
-   3.44  spike/Algo/SL0_test.py                3     2 
-   3.44  spike/util/progrbarUi.py                    5
-   3.41  spike/Algo/BC.py                      1     4 
+   3.81  spike/Orbitrap.py                           4
+   3.71  spike/Tests.py                        2     5 
+   3.68  spike/plugins/fastclean.py            2     0 
+   3.67  spike/Algo/Cadzow.py                  3     1 
+   3.66  spike/NPKConfigParser.py                    9
+   3.61  spike/Interactive/INTER.py                 23
+   3.54  spike/Algo/maxent.py                  3    14 
+M  3.47  spike/File/Apex.py                    4    13 
+   3.44  spike/File/mzXML.py                         3
    3.33  spike/util/log_stdout.py                    0
-   3.33  spike/util/hashcheck.py                     2
+   3.32  spike/Algo/SL0_test.py                3     3 
+   3.26  spike/Algo/BC.py                      1     4 
    3.23  spike/util/log_all.py                       2
-   3.03  spike/File/Apex.py                    4    14 
-   3.00  setup.py                                    0
-   2.88  spike/plugins/wavelet.py                   11
-   2.88  spike/Algo/rQRd.py                    1     3 
-   2.70  spike/dev_setup.py                         16
-   2.64  spike/Interactive/INTER.py            4    23 
+   3.14  spike/util/hashcheck.py                     2
+   3.12  spike/plugins/zoom3D.py               1     2 
+   3.01  spike/Algo/Cadzow_mpi2.py             5     0 
+   2.86  spike/plugins/urQRd.py                     11
+   2.86  spike/plugins/Bucketing.py                  2
+M  2.86  spike/plugins/Peaks.py                2    15 
    2.62  spike/util/readwrite_tools.py         1     1 
-   2.59  spike/plugins/Bucketing.py                  4
-   2.57  spike/plugins/urQRd.py                     12
    2.50  spike/util/compat.py                        9
-   2.45  spike/Algo/Linpredic.py                    10
-   2.41  spike/Algo/SL0.py                           3
-   2.39  spike/Algo/Laplace.py                       5
-   2.33  spike/plugins/Peaks.py                5    19 
+   2.50  spike/util/__init__.py                      0
+   2.50  spike/File/__init__.py                      0
+   2.50  spike/Display/__init__.py                   0
+   2.50  spike/Algo/__init__.py                      0
+   2.45  spike/Algo/Linpredic.py                     9
+   2.39  spike/Algo/Laplace.py                       4
+   2.35  spike/Algo/SL0.py                           3
+   2.14  spike/version_rev.py                        2
    2.12  spike/util/ValErr.py                        3
-   2.05  spike/Algo/sane.py                         14
-   1.79  spike/File/Solarix.py                 8    22 
-   1.61  spike/Algo/Cadzow_mpi.py              4    16 
-   1.56  spike/util/log_stderr.py                    4
-   1.54  spike/Algo/urQRd.py                   1     4 
-   1.43  spike/version_rev.py                        2
-   0.81  spike/Display/fakeplot.py                  24
-   0.80  spike/util/signal_tools.py           14    20 
-   0.69  spike/File/BrukerNMR.py              12    27 
+   2.12  spike/Algo/urQRd.py                         4
+   2.00  setup.py                                    0
+M  1.89  spike/dev_setup.py                    2    14 
+   1.79  spike/Algo/sane.py                         15
+   1.75  spike/plugins/Fitter.py               7    10 
+M  1.74  spike/File/Solarix.py                 8    22 
+   1.67  spike/plugins/wavelet.py              2     7 
+   1.56  spike/util/progrbarUi.py              1     5 
+   1.25  spike/version.py                            0
+   1.25  spike/util/log_stderr.py                    4
+   1.13  spike/util/signal_tools.py           12    20 
+M  1.07  spike/File/BrukerNMR.py               9    26 
+   0.80  spike/Algo/Cadzow_mpi.py              7    14 
    0.65  spike/util/debug_tools.py             2     8 
+   0.61  spike/Display/fakeplot.py             1    24 
+   0.38  spike/plugins/sg.py                   2     2 
 *******************************************************
-   0.00  spike/Interactive/FTICR2D_INTER.py    1     0 
    0.00  spike/Interactive/__init__.py               0
-   0.00  spike/version.py                            0
-   0.00  doc/__init__.py                             0
-  -0.57  spike/util/simple_logger.py                 5
-  -0.94  spike/Algo/savitzky_golay.py                0
-  -1.72  doc/conf.py                                 2
-  -1.89  spike/plugins/apmin.py                     42
-  -2.75  spike/util/mail_error_logger.py       7    32 
-  -5.96  spike/util/mail.py                    7    18 
-  -9.33  spike/util/sendgmail.py               7    30 
+   0.00  spike/Algo/rQRd.py                    1     0 
+   0.00  doc/insert_hide.py                    1     0 
+  -0.18  spike/Interactive/FTICR2D_INTER.py   21    58 
+  -0.38  spike/util/simple_logger.py                 5
+  -1.13  spike/Algo/savitzky_golay.py                0
+  -1.80  spike/plugins/apmin.py                     38
+  -1.82  doc/conf.py                                 3
+  -2.88  spike/util/mail_error_logger.py       6    33 
+  -5.11  spike/util/mail.py                    6    18 
+  -8.22  spike/util/sendgmail.py               6    30 
 -------------------------------------------------------
 
-Overall aggregated note value is :  5.03/10
+Overall aggregated note value is :  4.63/10
 
-score is 34 / 53 / 7  (top / med / low)
-Mean - Median note values are :  3.62/10 -  4.03/10
+score is 27 / 58 / 8  (top / med / low)
+Mean - Median note values are :  3.24/10 -  3.32/10
   Median is below 5.0 - let's try to improve it
-Total number of errors : 109 on a total of 94 files
+Total number of errors : 148 on a total of 93 files
 (but quite a few errors or just correct code not understood by pylint)
 -------------------------------------------------------

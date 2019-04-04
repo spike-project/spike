@@ -1138,7 +1138,7 @@ class NPKData(object):
         see also : chsize
         """
         limits = flatten(args)
-        print ('extract',limits)
+        #print ('extract',limits)
         if len(limits) != 2*self.dim:
             raise NPKError("slice should be defined as coordinate pair (left,right) in axis' current unit : " + " - ".join(self.unit), data=self)
 #            raise NPKError(msg="wrong number of arguments for extract, should be 2 per dimension", data=self)
@@ -1156,8 +1156,7 @@ class NPKData(object):
         """
         self.check1D()
         x1, y1 = self.axis1.extract(zoom)
-        bb = self.get_buffer()
-        self.set_buffer(bb[x1:y1])
+        self.buffer = self.buffer[x1:y1]
         self.adapt_size()
         return self
     #---------------------------------------------------------------------------
@@ -2170,11 +2169,41 @@ class NPKData(object):
         c.adapt_size()
         return c
 
-    #-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
     def phase(self, ph0, ph1, axis=0):
         """
         apply a phase correction along given axis
         phase corrections are in degree
+        for a N complex spectrum, correction on ith point is 
+             ph = ph0 +ph1*(i/N - 0.5)
+             so central point is unchanged
+        """
+        import math as m
+        todo = self.test_axis(axis)
+        # compute shape parameters
+        it = self.axes(todo).itype
+        if it == 0:
+            raise NPKError(msg="no phase correction on real data-set", data=self)
+        size = self.axes(todo).size//2       # compute correction in e
+        if ph1==0:  # we can optimize a little
+            e = np.exp(1J*m.radians(float(ph0))) * np.ones( size, dtype=complex)   # e = exp(j ph0)
+        else:
+            le = m.radians(float(ph0)) + (m.radians(float(ph1)))*np.linspace(-0.5, 0.5, size)
+            e = np.cos(le) + 1J*np.sin(le)
+#            e = np.exp( 1J* e)
+        # then apply
+        self.axes(todo).P0 = ph0
+        self.axes(todo).P1 = ph1
+        return self.mult_by_vector(axis, e, mode="complex")
+#-------------------------------------------------------------------------------
+    def _phase_old(self, ph0, ph1, axis=0):
+        """
+        OBSOLETE - 10 to 20 time slower than above !
+        apply a phase correction along given axis
+        phase corrections are in degree
+        for a N complex spectrum, correction on ith point is 
+             ph = ph0 +ph1*(i/N - 0.5)
+             so central point is unchanged
         """
         import math as m
         todo = self.test_axis(axis)

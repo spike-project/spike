@@ -161,12 +161,10 @@ def Import_1D(folder, outfile = "", compress=False):
     data.axis1.highmass = float(params["MW_high"])
     data.axis1.left_point = 0
     data.axis1.offset = 0.0
-    if float(params["ML1"]) >0.0:
-        data.axis1.calibA = float(params["ML1"])
-    if float(params["ML2"]):# >0.0:
-        data.axis1.calibB = float(params["ML2"])
-    if float(params["ML3"]) >0.0:
-        data.axis1.calibC = float(params["ML3"])
+    data.axis1.calibA = float(params["ML1"])
+    data.axis1.calibB = float(params["ML2"])
+    data.axis1.calibC = float(params["ML3"])
+    #print(float(params["ML1"]),float(params["ML2"]),float(params["ML3"]))
 
     data.params = params   # add the parameters to the data-set
         
@@ -231,12 +229,9 @@ def Import_2D(folder, outfile = "", F1specwidth = None, compress=False):
     data.axis2.highmass = float(params["MW_high"])
     data.axis2.left_point = 0
     data.axis2.offset = 0.0
-    if float(params["ML1"]) >0.0:
-        data.axis2.calibA = float(params["ML1"])
-    if float(params["ML2"]) >0.0:
-        data.axis2.calibB = float(params["ML2"])
-    if float(params["ML3"]) >0.0:
-        data.axis2.calibC = float(params["ML3"])
+    data.axis2.calibA = float(params["ML1"])
+    data.axis2.calibB = float(params["ML2"])
+    data.axis2.calibC = float(params["ML3"])
 
     data.axis1.size = sizeF1    # then set parameters along F1- non classical axis -  
     # assumes most parameter are equivalent - except specwidth
@@ -253,12 +248,9 @@ def Import_2D(folder, outfile = "", F1specwidth = None, compress=False):
     data.axis1.highmass = float(params["MW_high"])
     data.axis1.left_point = 0
     data.axis1.offset = 0.0
-    if float(params["ML1"]) >0.0:
-        data.axis1.calibA = float(params["ML1"])
-    if float(params["ML2"]) >0.0:
-        data.axis1.calibB = float(params["ML2"])
-    if float(params["ML3"]) >0.0:
-        data.axis1.calibC = float(params["ML3"])
+    data.axis1.calibA = float(params["ML1"])
+    data.axis1.calibB = float(params["ML2"])
+    data.axis1.calibC = float(params["ML3"])
 
     data.params = params   # add the parameters to the data-set
 

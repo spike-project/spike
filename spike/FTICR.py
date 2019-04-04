@@ -69,9 +69,6 @@ class FTICRAxis(FTMS.FTMSAxis):
         self.highfreq = highfreq
 
         self.attributes.insert(0,"FTICR") # updates storable attributes
-        self.attributes.insert(0,"calibA") # ML1
-        self.attributes.insert(0,"calibB") # ML2
-        self.attributes.insert(0,"calibC") # ML3
         self.attributes.insert(0,"highfreq")
         self.attributes.insert(0,"lowfreq")
         
@@ -107,16 +104,16 @@ class FTICRAxis(FTMS.FTMSAxis):
         else:
 #            delta = self.calibA**2 + 4*self.calibC*(self.calibB + h)
 #            m = self.calibA + np.sqrt(delta) / (2 * (self.calibB + h))
-            #m = self.calibA/(2*(self.calibB + h)) + np.sqrt(self.calibA**2 + 4*self.calibB*self.calibC + 4*self.calibC*h)/(2*(self.calibB + h))
-            m = -1*(self.calibA+np.sqrt((self.calibA**2)-4*(self.calibB-h)*self.calibC))/(2*(self.calibB-h)) #WK Edit 13/11/2017 based on Solarix info from DPAK
+            m = self.calibA/(2*(self.calibB + h)) + np.sqrt(self.calibA**2 + 4*self.calibB*self.calibC + 4*self.calibC*h)/(2*(self.calibB + h))
+            #m = -1*(self.calibA+np.sqrt((self.calibA**2)-4*(self.calibB-h)*self.calibC))/(2*(self.calibB-h)) #WK Edit 13/11/2017 based on Solarix info from DPAK
         return m
     def mztoh(self, value):
         """
         return Hz value (h) from  m/z (mz) 
         """
         m = np.maximum(value,0.1)             # protect from divide by 0
-        #return self.calibA/m + self.calibC/(m**2)  - self.calibB
-        return (self.calibC/(m**2)) + (self.calibA/m)  + self.calibB
+        return self.calibA/m + self.calibC/(m**2)  - self.calibB  # MAD
+        #return (self.calibC/(m**2)) + (self.calibA/m)  + self.calibB # WK
 
 #-------------------------------------------------------------------------------
 
@@ -180,11 +177,14 @@ class FTICR_Tests(unittest.TestCase):
         self.assertAlmostEqual(F.itoh(0), F.offsetfreq)
         self.assertAlmostEqual(F.itoh(F.size-1), F.specwidth+F.offsetfreq)   # last point is size-1 !!!
         for twice in range(2):
+            m0 = 555.0
+            f0 = 260162.434213
             F = FTICRAxis(size=1000, specwidth=1667000, itype=0, currentunit="points", calibA=344.0974*419620.0, highmass=2000.0)
             if twice == 1:  # second time tests 2nd order calibration
                 print ("TWICE") 
                 F.calibB = 55.0
                 F.calibC = 0.0
+                f0 = 260107.434213
             for i in (1,2):
                 print(F.report())
                 print(F._report())   # low level report
@@ -192,7 +192,11 @@ class FTICR_Tests(unittest.TestCase):
                     print("point at index %d is at freq %f, m/z %f"%(x, F.itoh(x), F.itomz(x)))
                     self.assertAlmostEqual(F.itoh(F.htoi(x)), x)
                     self.assertAlmostEqual(F.mztoi(F.itomz(x)), x)
+                # print("point at m/z %f is at freq %f"%(m0, F.mztoh(m0)))
+                self.assertAlmostEqual(F.mztoh(m0), f0, 5)
                 F.extract((300,F.size-20))
+        self.assertAlmostEqual(F.mztoh(m0), f0, 5)
+
     def test_axis(self):
         "testing FTICRAxis object"
         self.announce()
