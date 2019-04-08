@@ -30,6 +30,7 @@ build
 dist
 SPIKE.egg-info
 spike_make_sphinx
+spikedoc.org
 _static
 _templates
 rst

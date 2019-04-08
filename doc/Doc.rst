@@ -64,7 +64,7 @@ However, with data being typed real, doing:
 
 would create a new buffer, as a `2j` if the complex number $0 +2i$ and the complex numbers thus created take twice the room of the initial data, because of the imaginary part which has to be created.
 
-*Remark both examples are actually a bit contrived, as SPIKE allows doing:  (see below) *
+*Remark both examples are actually a bit contrived, as SPIKE allows doing:  (see below)*
 
 .. code:: python
 
