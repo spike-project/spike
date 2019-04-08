@@ -79,7 +79,7 @@ SPIKE is not published yet, if you happen to use it successfully and wish to cit
 2.	van Agthoven, M. A., Chiron, L., Coutouly, M.-A., Delsuc, M.-A. & Rolando, C. Two-Dimensional ECD FT-ICR Mass Spectrometry of Peptides and Glycopeptides. _Anal Chem_ **84**, 5589–5595 (2012).
 
 Organisation of the Code
-----------------------
+-------------------------
 
 The main program is `NPKData.py`, which defines NPKData object on which everything is built.
 

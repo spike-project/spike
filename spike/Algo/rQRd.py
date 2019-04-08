@@ -210,7 +210,7 @@ def test_rQRd(  lendata = 10000,
         raise Exception("unknown noise type")
 
     iSNR = SNR(data,data0)
-    print "Initial Noisy Data SNR: %.2f dB - noise type : %s"%(iSNR,noisetype)
+    print ("Initial Noisy Data SNR: %.2f dB - noise type : %s"%(iSNR,noisetype))
 
     ###########----
     fdata = mfft(data0) # FFT of noiseless signal

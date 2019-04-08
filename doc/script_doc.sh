@@ -1,5 +1,5 @@
 # Start from directory one level above spike dir.
-cd ..
+#cd ..
 rm -R spike_make_sphinx/*
 
 # get doc from source
@@ -16,9 +16,11 @@ make -C spike_make_sphinx html
 # modify result to hide *_debug attributes and *_Tests classes
 #python2  doc/insert_hide.py spike_make_sphinx/_build/html a'_debug' c'_Tests'
 
-# copy for the spikedoc.bitbucket.org web site
-mkdir  -p spikedoc.bitbucket.org           # should already be there if ou want to upload
-cp -r spike_make_sphinx/_build/html/*  spikedoc.bitbucket.org/
+# copy for the spikedoc.org web site
+mkdir  -p spikedoc.org           # should already be there if ou want to upload
+cp -r spike_make_sphinx/_build/html/*  spikedoc.org/
 
 # remove temporary directory
 #rm -R spike_make_sphinx/*
+
+#

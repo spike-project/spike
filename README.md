@@ -2,7 +2,7 @@
 
 **SPIKE** a collaborative development for a FT-spectroscopy processing program.
 
-*This is the version 0.99.3 - March 2019*
+*This is the version 0.99.4 - April 2019*
 
 **SPIKE** is a program that allows the processing, the display and the analysis of data-sets obtained from various Fourier-Transform spectroscopies. The name stands for **S**pectrometry **P**rocessing **I**nnovative **KE**rnel.
 
@@ -56,7 +56,7 @@ ref 1) is a general purpose reference, the other ones are more specific.
     - store to png or pdf
 - interaction with the Jupyter Notebook environment
 
-## Handled the following Spectroscopies
+## Handles the following Spectroscopies
 - **NMR** 
     - 1D and 2D are fully supported
     - no nD yet
@@ -83,7 +83,7 @@ ref 1) is a general purpose reference, the other ones are more specific.
 
 # Usage
 
-#### As a processing library
+## As a processing library
 SPIKE is primary meant for being used as a library, code can as simple as :
 
 ```python
@@ -105,7 +105,7 @@ dd.display(zoom=(856.5, 858.5))    # and zoom on the isotopic peak
 dd.display_peaks(zoom=(856.5, 858.5), peak_label=True)
 ```
 
-#### interactive mode
+## interactive mode
 SPIKE allows to process datasets interactively from an jupyter (IPython) prompt, and is perfectly working in `jupyter notebook` or even `jupyter lab`
 
 * Look at the examples files ( `eg_*.py` and `*.ipynb` ) for examples and some documentation.
@@ -116,7 +116,7 @@ SPIKE allows to process datasets interactively from an jupyter (IPython) prompt,
 * large 2D-FT-ICR are stored in a hierarchical format, easyly displayed with an interactive program.
 * data-sets are handled in the HDF5 standard file-format, which allows virtually unlimited file size ( _tested up to 500 Gb_ ).
 
-#### running stand-alone programs
+## running stand-alone programs
 
 processing.py and visu2D.py are two stand alone programs, written on the top of SPIKE.
  - processing.py allowing the efficient processing
@@ -135,7 +135,7 @@ python -m spike.visu2D param_file.mscf
 ```
 
 
-## How do I get SPIKE ? ##
+# How do I get SPIKE ? ##
 SPIKE is written in pure Python, and relies on several external libraries.
 It is compatible and fully tested with both python 2.7 and python 3.6
 
@@ -152,8 +152,12 @@ or, if you do not want to instal it permanently
 ```bash
 python setup.py develop
 ```
+Finally, using pip (not fully tested yet !)
+```bash
+pip install spike_py
+```
 
-### dependencies
+## dependencies
 It requires the following non-standard Python libraries :
 
 * [Numpy](http://docs.scipy.org/doc/numpy/reference/)
@@ -188,13 +192,13 @@ If you believe your improvement is useful for other people, please submit a `pul
 This branch is devoted to new features not fully tested yet and still susceptible of changes,
 while the `default` branch is meant for stable code.
 
-#### plugins
+## plugins
 If you consider adding some new feature, it is probably a good idea to implement it as a plugin.
 The code contains already quite a few plugins, some are quite sophisticated - see `Peaks.py` for instance which implements a 1D and 2D peak picker, as well as a centroid evaluation and a full listing capability.
 
 You can check also `fastclean.py` for a very simple plugin, or `wavelet.py` for a plugin relying on an external library which has to be installed.
 
-#### Some Good Practice
+## Some Good Practice
 
 - Spike contains many tools, most of the basic function for data interaction are found in the `NPKData.py` master file; utilities are also scattered in the `util` module.
 Use then, life will be easier for the users.
@@ -252,8 +256,6 @@ a small description of the files:
    Tools automatically plugged in NPK kernel : display utilities, urQRd algorithm and various other tools. 
 - *Miscellaneous*    
    "en vrac"
-- *Visu*   
-   utilities for the Visu2D program
 - *util*   
    set of low-level tools used all over in the code
 - *v1*    
