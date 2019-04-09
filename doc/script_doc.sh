@@ -17,8 +17,8 @@ make -C spike_make_sphinx html
 #python2  doc/insert_hide.py spike_make_sphinx/_build/html a'_debug' c'_Tests'
 
 # copy for the spikedoc.org web site
-mkdir  -p spikedoc.org           # should already be there if ou want to upload
-cp -r spike_make_sphinx/_build/html/*  spikedoc.org/
+mkdir  -p spikedoc           # should already be there if ou want to upload
+cp -r spike_make_sphinx/_build/html/*  spikedoc/
 
 # remove temporary directory
 #rm -R spike_make_sphinx/*

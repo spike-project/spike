@@ -3,11 +3,6 @@
 
 """
 sane.py
-
-This version is GPU accelerated, using the cuda library.
-Speed-up ranges from 2 to 10 depending on board and system.
-Depending on the size of your inboard GPU memory, the size of the data-set may be limited
-
 #########
 Algorithm for denoising time series, named sane (standing for "Support Selection for Noise Elimination")
 
@@ -49,7 +44,6 @@ The fact that you are presently reading this means that you have had
 knowledge of the CeCILL license and that you accept its terms.
 
 First Created by Lionel Chiron and Marc-Andr\'e on september 2015.
-CUDA implementation by Laura Duciel on March 2019
 
 associated publications
 - Bray, F., Bouclon, J., Chiron, L., Witt, M., Delsuc, M.-A., & Rolando, C. (2017).
@@ -67,13 +61,6 @@ import time
 from scipy.linalg import norm
 from math import sqrt
 from ..util.signal_tools import findnoiselevel, mfft, mrfft
-
-CUDA = False  # setting this flag to False will fall back on CPU code
-if CUDA:
-    try:
-        import cupy
-    except ModuleNotFoundError:
-        CUDA = False
 
 debug = 0 # put to 1 for debuging message
 ###################
@@ -189,7 +176,7 @@ def sane(data, k, orda = None, iterations = 1, trick = True, optk = False, ktric
         raise(Exception('order is too large'))
     #####
     if (k >= orda_r):                                                     # checks if rank not too large
-        #print("****",L, Lr, k, orda_r)
+#        print('type(k) ', type(k))
         raise(Exception('rank is too large, or orda is too small'))
     N = len(data_r)-orda_r + 1
     dd = data_r.copy()
@@ -223,7 +210,7 @@ def saneCore(dd, data, Omega):
     QstarH = FastHankel_prod_mat_mat(data.conj(), Q).conj().T# 
     return Q, QstarH                                                    # H approximation given by QQ*H    
 
-def _vec_mean(M, L):
+def vec_mean(M, L):
     '''
     Vector for calculating the mean from the sum on the antidiagonal.
     data = vec_sum*vec_mean
@@ -232,26 +219,6 @@ def _vec_mean(M, L):
     vec_prod_middle = [1/float(M) for i in range(L-2*M)]
     vec_mean_prod_tot = vec_prod_diag + vec_prod_middle + vec_prod_diag[::-1]
     return np.array(vec_mean_prod_tot)
-
-def vec_mean(M, L):
-    '''
-    Vector for calculating the mean from the sum on the antidiagonal.
-    data = vec_sum*vec_mean
-    '''
-    vec_prod_diag =  1./np.arange(1,M+1) # [1/float((i+1)) for i in range(M)]
-    vec_prod_middle = np.ones(L-2*M)/float(M) # [1/float(M) for i in range(L-2*M)]
-    vec_mean_prod_tot = np.concatenate((vec_prod_diag,vec_prod_middle,vec_prod_diag[::-1]))
-    return vec_mean_prod_tot
-
-def Cu_vec_mean(M, L):
-    '''
-    Vector for calculating the mean from the sum on the antidiagonal.
-    data = vec_sum*vec_mean
-    '''
-    vec_prod_diag =  1./cupy.arange(1,M+1) # [1/float((i+1)) for i in range(M)]
-    vec_prod_middle = cupy.ones(L-2*M)/float(M) # [1/float(M) for i in range(L-2*M)]
-    vec_mean_prod_tot = cupy.concatenate((vec_prod_diag,vec_prod_middle,vec_prod_diag[::-1]))
-    return vec_mean_prod_tot
 
 def FastHankel_prod_mat_mat(gene_vect, matrix):
     '''
@@ -263,93 +230,29 @@ def FastHankel_prod_mat_mat(gene_vect, matrix):
     data = np.zeros(shape = (M, K), dtype = complex)
     for k in range(K):
         prod_vect = matrix[:, k] 
-        data[:,k] = FastHankel_prod_mat_vec(gene_vect, prod_vect, k) 
+        data[:,k] = FastHankel_prod_mat_vec(gene_vect, prod_vect) 
     return data
 
-def SFastHankel_prod_mat_vec(gene_vect, prod_vect, k=0):
+def FastHankel_prod_mat_vec(gene_vect, prod_vect):
     """
     Compute product of Hankel matrix (gene_vect)  by vector prod_vect.
     H is not computed
     M is the length of the result
     """
-    #print('*** Je suis dans SFastHankel_prod_mat_vec ***')
-    global fft0
     L = len(gene_vect)                                                  # length of generator vector
     N = len(prod_vect)                                                  # length of the vector that is multiplied by the matrix.
     M = L-N+1
-    if k == 0:
-        fft0 = fft(gene_vect)
     prod_vect_zero = np.concatenate((np.zeros(M-1), prod_vect[::-1]))   # prod_vect is completed with zero to length L
-    fft1 = fft(prod_vect_zero)                    # FFT transforms of generator vector and 
+    fft0, fft1 = fft(gene_vect), fft(prod_vect_zero)                    # FFT transforms of generator vector and 
     prod = fft0*fft1                                                    # FFT product performing the convolution product. 
     c = ifft(prod)                                                      # IFFT for going back 
     return np.roll(c, +1)[:M]
 
-def Cu_FastHankel_prod_mat_vec(gene_vect, prod_vect, k=0):
-    """
-    Compute product of Hankel matrix (gene_vect)  by vector prod_vect.
-    H is not computed
-    M is the length of the result
-    k =0 initializes cuda for gene_vect
-    """
-    #print('*** Je suis dans Cu_FastHankel_prod_mat_vec ***')
-    global fft0
-    L = len(gene_vect)                                                  # length of generator vector
-    N = len(prod_vect)                                                  # length of the vector that is multiplied by the matrix.
-    M = L-N+1
-    if k == 0:
-        cu_gene_vect = cupy.asarray(gene_vect)
-        fft0 = cupy.fft.fft(cu_gene_vect)
-    cu_prod_vect = cupy.asarray(prod_vect)
-    cu_prod_vect_zero = cupy.concatenate((cupy.zeros(M-1), cu_prod_vect[::-1]))   # prod_vect is completed with zero to length L
-    fft1 = cupy.fft.fft(cu_prod_vect_zero)                    # FFT transforms of generator vector and 
-    cu_prod = fft0*fft1                                                    # FFT product performing the convolution product. 
-    c = cupy.fft.ifft(cu_prod)                                                      # IFFT for going back 
-    return cupy.roll(c, +1)[:M].get()
-
-def Cu_FastHankel_prod_mat_vec_2dt(prod_vect,k,Q):
-    """
-    Compute product of Hankel matrix (gene_vect)  by vector prod_vect.
-    H is not computed
-    M is the length of the result
-    k =0 initializes cuda for gene_vect
-    """
-    #print('*** Je suis dans Cu_FastHankel_prod_mat_vec_2dt ***')
-    global fft0
-    N = len(prod_vect)                                                  # length of the vector that is multiplied by the matrix.
-    cu_gene_vect = cupy.concatenate((cupy.zeros(N-1), cupy.asarray(Q[:, k]), cupy.zeros(N-1))) # generator vector for Toeplitz matrix
-    L = len(cu_gene_vect)                                                  # length of generator vector
-    M = L-N+1
-    cu_prod_vect = cupy.asarray(prod_vect)
-    cu_prod_vect_zero = cupy.concatenate((cupy.zeros(M-1), cu_prod_vect[::-1]))   # prod_vect is completed with zero to length L
-    fft0,fft1 = cupy.fft.fft(cu_gene_vect),cupy.fft.fft(cu_prod_vect_zero)                    # FFT transforms of generator vector and 
-    cu_prod = fft0*fft1                                                    # FFT product performing the convolution product. 
-    c = cupy.fft.ifft(cu_prod)                                                      # IFFT for going back 
-    return cupy.roll(c, +1)[:M]
-
-def Cu_Fast_Hankel2dt(Q,QH):
+def Fast_Hankel2dt(Q,QH):
     '''
     returning to data from Q and QstarH
     Based on FastHankel_prod_mat_vec.
     '''
-    #print('*** Je suis dans Cu_Fast_Hankel2dt ***')
-    M,K = Q.shape 
-    K,N = QH.shape 
-    L = M+N-1
-    vec_sum = cupy.zeros((L,), dtype = complex)
-    for k in range(K):
-        prod_vect = QH[k,:]
-        vec_k = Cu_FastHankel_prod_mat_vec_2dt(prod_vect[::-1],k,Q)         # used as fast Toeplitz
-        vec_sum += vec_k 
-    datadenoised = vec_sum*Cu_vec_mean(M, L)                                    # from the sum on the antidiagonal to the mean
-    return datadenoised.get()
-
-def SFast_Hankel2dt(Q,QH):
-    '''
-    returning to data from Q and QstarH
-    Based on FastHankel_prod_mat_vec.
-    '''
-    #print('*** Je suis dans SFast_Hankel2dt ***')
     M,K = Q.shape 
     K,N = QH.shape 
     L = M+N-1
@@ -357,22 +260,12 @@ def SFast_Hankel2dt(Q,QH):
     for k in range(K):
         prod_vect = QH[k,:]
         gene_vect = np.concatenate((np.zeros(N-1), Q[:, k], np.zeros(N-1))) # generator vector for Toeplitz matrix
-        vec_k = SFastHankel_prod_mat_vec(gene_vect, prod_vect[::-1])         # used as fast Toeplitz
+        vec_k = FastHankel_prod_mat_vec(gene_vect, prod_vect[::-1])         # used as fast Toeplitz
         vec_sum += vec_k 
     datadenoised = vec_sum*vec_mean(M, L)                                    # from the sum on the antidiagonal to the mean
     return datadenoised
 
-def cu_select(cuda_select):
-    global FastHankel_prod_mat_vec
-    global Fast_Hankel2dt
-    if cuda_select:
-        FastHankel_prod_mat_vec = Cu_FastHankel_prod_mat_vec
-        Fast_Hankel2dt = Cu_Fast_Hankel2dt
-    else:
-        FastHankel_prod_mat_vec = SFastHankel_prod_mat_vec
-        Fast_Hankel2dt = SFast_Hankel2dt
 
-cu_select(CUDA)
 
 class OPTK(object):
     '''

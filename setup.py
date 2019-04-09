@@ -33,6 +33,8 @@ setuptools.setup(
     url="https://bitbucket.org/delsuc/spike",
     packages=setuptools.find_packages(),
     license="CeCILL-2.1",
+    provides=["spike"],
+    requires=["matplotlib", "numpy", 'scipy', 'tables'],
     classifiers=[
         "Programming Language :: Python",
         "License :: OSI Approved :: CEA CNRS Inria Logiciel Libre License, version 2.1 (CeCILL-2.1)",

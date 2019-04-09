@@ -168,7 +168,7 @@ It requires the following non-standard Python libraries :
 Optionnaly
 
 * MPI / [mpi4py](http://www.mpi4py.scipy.org/) used for parallel processing of large FTICR 2D files
-* [cupy](https://github.com/cupy/cupy) for computating in the GPU using Cuaa, which allows to speed up considerably certain processing steps.
+* [cupy](https://github.com/cupy/cupy) for computating in the GPU using Cuda, which allows to speed up considerably certain processing steps.
 
 It has been successfully tested in the [**Enthought**](https://enthought.com/) and [**Anaconda**](http://continuum.io/) distributions.
 
