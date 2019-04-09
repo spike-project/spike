@@ -25,7 +25,8 @@ __all__ = [
     'FTMS',
     'FTICR',
     'Orbitrap',
-    'Tests']
+    'Tests',
+    'processing']
 
 __author__ = "Marc A. Delsuc <delsuc@igbmc.fr>"
 SPIKE_version = __version__
