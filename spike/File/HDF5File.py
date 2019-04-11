@@ -882,7 +882,7 @@ class HDF5_Tests(unittest.TestCase):
         rootfiles = os.getcwd()
         print ('Setting up tests')
         cls.TestFolder = directory()
-        cls.DataFolder = filename('cytoC_2D_000001.d')
+        cls.DataFolder = filename('ubiquitine_2D_000002.d')#'cytoC_2D_000001.d')
         cls.name_file1 = filename("test_file.msh5")
         cls.name_file2 = filename("test_file2.msh5")
         cls.name_chunk = filename("test_chunk.msh5")
@@ -1005,8 +1005,11 @@ class HDF5_Tests(unittest.TestCase):
         F = h5f.open_internal_file(h5name=name)
         for i in range(17):
             l = F.readline()
+        print('###',l.strip())
         self.assertEqual(l.strip(),
-            b"<scan><count>15</count><minutes>0.4828</minutes><tic>1.398E7</tic><maxpeak>3.108E5</maxpeak></scan>")
+            b'<scan><count>15</count><minutes>0.5997</minutes><tic>2.37E7</tic><maxpeak>3.618E6</maxpeak></scan>')
+#            b"<scan><count>15</count><minutes>0.4828</minutes><tic>1.398E7</tic><maxpeak>3.108E5</maxpeak></scan>")
+# depends on self.DataFolder first is for 'ubiquitine_2D_000002.d' second is for 'cytoC_2D_000001.d'
         with self.assertRaises(Exception):
             G = h5f.open_internal_file(h5name="foo.bar")
         F.close()

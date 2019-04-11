@@ -139,12 +139,31 @@ python -m spike.visu2D param_file.mscf
 SPIKE is written in pure Python, and relies on several external libraries.
 It is compatible and fully tested with both python 2.7 and python 3.6
 
-To get it, you can simply 
- - insall the above python distributions
- - download the latest stable version here : https://bitbucket.org/delsuc/spike/downloads
- - *or* `hg clone` the devel branch and keep it up-to-date
+However it relies on mathematical libraries which should be installed independently.
 
-Then you can install it doing
+- matplotlib
+- numpy
+- scipy
+- tables
+- pandas
+
+some plugins or extension require additional libraries ( `MPI`, `bokeh`, `mayavi`, ...)
+
+To get it, you can simply 
+- rely on a scientific distribution such as Anaconda or Enthough
+- install the above python distributions yourself (tricky)
+
+Then you can install it using pip:
+```bash
+pip install spike_py
+```
+
+Or, if you want to play with the code, 
+
+- download the latest stable version here : https://bitbucket.org/delsuc/spike/downloads
+- *or* `hg clone` the devel branch and keep it up-to-date
+
+
 ```bash
 python setup.py install
 ```
@@ -152,7 +171,7 @@ or, if you do not want to instal it permanently
 ```bash
 python setup.py develop
 ```
-Finally, using pip (not fully tested yet !)
+using pip
 ```bash
 pip install spike_py
 ```

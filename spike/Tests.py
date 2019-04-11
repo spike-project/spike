@@ -51,7 +51,7 @@ RUN = True
 mod_util = ("plugins", 'util.dynsubplot', 'util.debug_tools')  #'util.read_msh5', 
 mod_algo = ('Algo.Cadzow', 'Algo.Linpredic', 'Algo.urQRd', 'Algo.sane', 'Algo.SL0', 'Algo.maxent', 'Algo.BC') 
 mod_plugins = ("plugins.Peaks", "plugins.Fitter", "plugins.Bruker_NMR_FT", "plugins.Peaks")
-mod_file = ("File.BrukerNMR", "File.GifaFile", 'File.HDF5File', 'File.Apex', 'File.csv', 'File.Solarix')# , 'File.mzXML') - not py3 ready yet !
+mod_file = ("File.BrukerNMR", "File.GifaFile", 'File.HDF5File', 'File.Apex', 'File.csv', 'File.Solarix', 'File.mzXML')
 mod_basicproc = ("NPKData", "FTICR", "Orbitrap", 'NPKConfigParser')
 mod_user = ('processing', )
 
@@ -99,7 +99,7 @@ def cleanspike():
             if d == '__pycache__':
                 shutil.rmtree(os.path.join(root,d))
 
-def cleandir():
+def cleandir(verbose=True):
     "checking files in DATA_dir directory and removes files created by previous tests"
     import glob
     files_to_keep = ('ubiquitin_5_scan_res_30000_1.dat','cytoC_ms_1scan_000001.d', 'cytoC_2D_000001.d',
@@ -108,20 +108,24 @@ def cleandir():
                 'ubiquitine_2D_000002_Sampling_2k.list','test.mscf',
                 'ubiquitine_2D_000002.msh5','ubiquitine_2D_000002_mr.msh5',   # these two for testing 2D FT-ICR
                 'Sampling_file_aposteriori_cytoCpnas.list','angio_ms_000005.d',
-                'SubsP_220615_2DFT_2k_128k_000001.d')
+                'SubsP_220615_2DFT_2k_128k_000001.d',
+                'testsmzXML')
     for i in glob.glob(filename("*")):
-        print(i, end=' ')
+        if verbose: print(i, end=' ')
         if os.path.basename(i) in files_to_keep:
-            print(" Ok")
+            if verbose: print(" Ok")
         else:
             if CLEAN:
                 try:
                     os.remove(i)
-                    print(" removed")
+                    if verbose: print(" removed")
                 except OSError:
-                    print(" **** could not be removed ****")
+                    if verbose: print(" **** could not be removed ****")
             else:
-                print(" should be removed")
+                if verbose: 
+                    print(" should be removed")
+                else:
+                    print(i, " should be removed")
 
 class NPKTest(unittest.TestCase):
     """overload unittest.TestCase for default verbosity - Not Used - """
@@ -190,7 +194,7 @@ def do_Test():
         for address in list_of_mails:
             mail(address, subject, "\n".join(to_mail) )
     # finally clean dir
-    #cleandir()
+    cleandir(verbose=False)
 
 def main():
 #    import Display.testplot as testplot
@@ -205,6 +209,7 @@ def main():
     parser.add_argument('-t', '--test_modules', action='append', help="overwrite the list of modules to test - multiple entries possible -")
     parser.add_argument('-n', '--dry',  action='store_true', help="list parameters and do not run the tests")
     parser.add_argument('-d', '--dirty', action='store_true', help="do not remove temporary files")
+    parser.add_argument('-c', '--clean', action='store_true', help="just remove left-over temporary files")
     parser.add_argument('-g', '--graphic',  action='store_true', help="restore graphic output (off by default for background testing)")
     
     args = parser.parse_args()
@@ -214,7 +219,9 @@ def main():
     print( "module", args.test_modules)
     print("dry", args.dry)
     print('dirty', args.dirty)
+    print('clean', args.clean)
     print('graphic', args.graphic)
+
     if args.dry:
         RUN = False
     if args.mail is not None:
@@ -237,7 +244,11 @@ def main():
     testplot.config["DATA_dir"] = DATA_dir
 
 #    print(sys.modules)
-    do_Test()
+    if args.clean:
+        CLEAN = True
+        cleandir(verbose=True)
+    else:
+        do_Test()
     
 if __name__ == '__main__':
     main()
