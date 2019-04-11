@@ -314,15 +314,15 @@ class Apex_Tests(unittest.TestCase):
         
         rootfiles = os.getcwd()
         self.TestFolder = directory()
-        self.DataFolder = filename('cytoC_2D_000001.d')
-        self.serfile = filename('cytoC_2D_000001.d/ser')
-        self.outHDF = filename('cytoC_2D_000001_direct.msh5')
-        self.name_write = filename("file_write")
-        self.name_fticr = filename("file_fticr")
-        self.name_npar = filename("file_npar")
-        self.npar_fticr = filename("npar_fticr")
-        self.name_chunk = filename("Chunk.hf")
-        self.name_get = filename("file_fticr")
+        self.DataFolder = filename('ubiquitine_2D_000002.d')#'cytoC_2D_000001.d')
+        # self.serfile = filename('cytoC_2D_000001.d/ser')
+        # self.outHDF = filename('cytoC_2D_000001_direct.msh5')
+        # self.name_write = filename("file_write")
+        # self.name_fticr = filename("file_fticr")
+        # self.name_npar = filename("file_npar")
+        # self.npar_fticr = filename("npar_fticr")
+        # self.name_chunk = filename("Chunk.hf")
+        self.name_get = filename("file_fticr_2D.msh5")
         
         self.verbose = 1    # verbose > 0 switches messages on
     def announce(self):

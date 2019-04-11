@@ -1,7 +1,7 @@
 #!/usr/bin/env python 
 # encoding: utf-8
 
-from __future__ import print_function
+from __future__ import print_function, division
 import numpy as np
 import xml.dom.minidom
 import base64
@@ -26,7 +26,7 @@ class mzXML():
         data = base64.b64decode(txt)
         endian = '>'
         precision = 'f'
-        count = len(data) / struct.calcsize(endian + precision)
+        count = len(data) // struct.calcsize(endian + precision)
         nump = np.array(struct.unpack(endian + precision * count, data[0:len(data)]))
         return nump
         

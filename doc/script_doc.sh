@@ -7,7 +7,9 @@ sphinx-apidoc -F -o spike_make_sphinx spike
 # copy rst files and configuration
 cp  doc/*.rst   spike_make_sphinx/
 cp  doc/conf.py   spike_make_sphinx/
-pandoc README.md -t rst -o spike_make_sphinx/Readme.rst
+pandoc README.md -t rst -o Readme.rst
+pandoc README.md -s -t latex -o README.pdf
+cp Readme.rst spike_make_sphinx/Readme.rst
 pandoc release_notes.md -t rst -o spike_make_sphinx/release_notes.rst
 
 # build the doc

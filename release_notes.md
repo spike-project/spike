@@ -1,6 +1,7 @@
 <!-- DO NOT MODIFY this file, it is generated automatically from dev_setup ! -->
 # SPIKE Relase Notes
-#### 0.99.4 - April 2019
+#### 0.99.5 - April 2019
+- extended and improved tests - finalized installation through PYPI
 - support for distribution via pip - you can now do `pip instal spike_py` and spike installed globally on your system.
 - still struggling with correct calibration routines for FTICR ! - proceed carefully ! -
 - phase() speeded-up by a factor 20 !

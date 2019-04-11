@@ -19,11 +19,11 @@ with open('spike/version.py', 'rb') as f:
     F = f.read()
     version = str(_version_re.search(F.decode('utf-8')).group(1))
 
-with open("README.md", "r") as fh:
+with open("README.rst", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name='SPIKE',
+    name='spike_py',
     version=version,
     author="M-A. Delsuc",
     author_email="madelsuc@unistra.fr",
