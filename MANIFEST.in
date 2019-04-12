@@ -1,0 +1,1 @@
+recursive-include spikedoc *.html *.js *.inv *.gif *.png *.css
