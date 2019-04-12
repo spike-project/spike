@@ -19,7 +19,7 @@ with open('spike/version.py', 'rb') as f:
     F = f.read()
     version = str(_version_re.search(F.decode('utf-8')).group(1))
 
-with open("README.rst", "r") as fh:
+with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
@@ -45,3 +45,5 @@ setuptools.setup(
 )
 
 # python3 setup.py sdist bdist_wheel
+# twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+# twine upload  dist/*

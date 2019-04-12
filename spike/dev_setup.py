@@ -14,7 +14,7 @@ from codecs import encode, decode
 
 ProgramName = "SPIKE"
 VersionName = "Development version"
-VersionInfo = ["0", "99", "5"]   # Major - Minor - Micro
+VersionInfo = ["0", "99", "6"]   # Major - Minor - Micro
 
 # Major.minor.micro (int) + name eg SPIKE_2_19_5
 # N.M.L
@@ -27,7 +27,7 @@ VersionInfo = ["0", "99", "5"]   # Major - Minor - Micro
 # Release Notes in md syntax !
 release_notes="""
 # SPIKE Relase Notes
-#### 0.99.5 - April 2019
+#### 0.99.6 - April 2019
 - extended and improved tests - finalized installation through PYPI
 - support for distribution via pip - you can now do `pip instal spike_py` and spike installed globally on your system.
 - still struggling with correct calibration routines for FTICR ! - proceed carefully ! -
