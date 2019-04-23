@@ -14,7 +14,7 @@ from codecs import encode, decode
 
 ProgramName = "SPIKE"
 VersionName = "Development version"
-VersionInfo = ["0", "99", "6"]   # Major - Minor - Micro
+VersionInfo = ["0", "99", "7"]   # Major - Minor - Micro
 
 # Major.minor.micro (int) + name eg SPIKE_2_19_5
 # N.M.L
@@ -27,6 +27,18 @@ VersionInfo = ["0", "99", "6"]   # Major - Minor - Micro
 # Release Notes in md syntax !
 release_notes="""
 # SPIKE Relase Notes
+#### 0.99.7 - April 2019
+- first version of Interactive Notebooks:
+  - ProcessFTICR-MS
+  - DisplayFTICR2D
+  - Process1DNMR
+- improved Interactive tools
+- improved FTICR importers to accept `my_expt.d/fid` as well as `my_expt.d`
+- improved peak-picker behavior
+- The BrukerMS importer trys Solarix importer and falls back to Apex importer if it fails
+- improved error messages in FTICR importers
+- cured a bug in Apex.Importxx for a special xml format
+
 #### 0.99.6 - April 2019
 - extended and improved tests - finalized installation through PYPI
 - support for distribution via pip - you can now do `pip instal spike_py` and spike installed globally on your system.

@@ -1,1 +1,3 @@
+# see https://docs.python.org/3/distutils/commandref.html#sdist-cmd
+graft Notebooks
 recursive-include spikedoc *.html *.js *.inv *.gif *.png *.css

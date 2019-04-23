@@ -6,8 +6,8 @@ The Spike Package
 """
 # from __future__ import absolute_import not needed anymore in 2.7
 from __future__ import print_function
-import os, sys
-import warnings
+#import os, sys
+#import warnings
 
 
 # Import exceptions
@@ -20,14 +20,6 @@ from . version import ProgramName as __program_name__
 #from version import revision as __revision__
 from . version import rev_date as __date__
 
-__all__ = [
-    'NPKData',
-    'FTMS',
-    'FTICR',
-    'Orbitrap',
-    'Tests',
-    'processing']
-
 __author__ = "Marc A. Delsuc <delsuc@igbmc.fr>"
 SPIKE_version = __version__
 
@@ -37,7 +29,7 @@ from . import NPKData
 
 ### plugins to the spike.NPKData class.
 # simply put a xxx.py in the plugins folder - and define the interface as described in the doc
-from . plugins import load
+from .plugins import load
 
 load(debug=False)
 

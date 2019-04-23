@@ -49,8 +49,10 @@ def read_param(filename):
             params = child.childNodes
             for param in params:
                 if (param.nodeName == 'param'):
-                    for element in param.childNodes:
-                        if element.nodeName == "name":
+                    if 'name' in param.attributes.keys():  # some versions
+                        k = param.attributes['name'].value
+                    for element in param.childNodes:   
+                        if element.nodeName == "name":     # other versions
                             k = element.firstChild.toxml()
                         elif element.nodeName == "value":
                             try:
@@ -99,7 +101,7 @@ def locate_acquisition(folder):
         
     return L[0]
 #-----------------------------------------
-def Import_1D(folder,outfile=""):
+def Import_1D(inifolder,outfile=""):
     """
     Entry point to import 1D spectra
     It returns a FTICRData
@@ -111,6 +113,18 @@ def Import_1D(folder,outfile=""):
         flag = 'l'              # Apex files are in int32
     else:                       # here in 64bit
         flag = 'i'              # strange, but works here.
+    if op.isfile(inifolder):
+        folder = op.dirname(inifolder)
+    elif op.isdir(inifolder):
+        folder = inifolder
+    elif not op.exists(inifolder):
+        raise Exception("File does not exist: "+inifolder)
+    else:
+        raise Exception("File is undecipherable: "+inifolder)
+    try:
+        parfilename = locate_acquisition(folder)
+    except:
+        raise Exception('%s does not seem to be a valid Apex spectrum'%(inifolder,))
     parfilename = locate_acquisition(folder)
     params = read_param(parfilename)
     

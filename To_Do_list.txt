@@ -10,11 +10,13 @@ more user examples in jupyter
 	- 2D FTICR visu
 	- 2D FTICR proc
 
-
 develop more cuda functions
+
 
 delta peak-picker 
 pandas for peaklists
+add peak lists to files
+
 spikecalib.py
 
 Apex vs Solarix
@@ -39,3 +41,4 @@ shearing
 BUGS
 ====
 correct wrong downsampling in F2
+colors for peak display in bar mode

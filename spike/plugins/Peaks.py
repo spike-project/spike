@@ -72,6 +72,7 @@ from spike import NPKError
 from spike.NPKData import NPKData_plugin, NPKData, flatten, parsezoom
 from spike.util.counter import timeit
 from scipy.optimize import curve_fit
+import warnings
 #from spike.util.signal_tools import findnoiselevel, findnoiselevel_2D
 
 debug = 0
@@ -215,6 +216,8 @@ class PeakList(list):
         #   def __init__(self, *arg, threshold=None, source=None): ...
         # so I use **kwds and sqauwk if something unexpected is passed in.
         # code taken from   lib/python2.7/pstats.py
+        #
+        # additional kw are source: the originating dataset, threshold: actual value
         if "threshold" in kwds:
             self.threshold = kwds["threshold"]
             del kwds["threshold"]
@@ -276,10 +279,11 @@ class Peak1DList(PeakList):
         """
         lst = [pk._report(f=f) for pk in self ]
         return "\n".join(lst)
-    def display(self, peak_label=False, zoom=None, show=False, f=_identity, color = None, markersize=None, figure=None):
+    def display(self, peak_label=False, peak_mode="marker", zoom=None, show=False, f=_identity, color = 'red', markersize=None, figure=None):
         """
         displays 1D peaks
         zoom is in index
+        peak_mode is either "marker" or "bar"
         """
         from spike.Display import testplot
         plot = testplot.plot()
@@ -293,12 +297,27 @@ class Peak1DList(PeakList):
             pk = [i for i,p in enumerate(self) if p.pos>=z0 and p.pos<=z1]
         else:
             pk = range(len(self))
-        fig.plot(f(self.pos[pk]), self.intens[pk], "x", color=color)
+        if peak_mode == "marker":
+            fig.plot(f(self.pos[pk]), self.intens[pk], "x", color=color)
+        elif peak_mode == "bar":
+            for p in self:
+                fig.plot( [f(p.pos),f(p.pos)], [0,p.intens], color=color)
+        else:
+            raise Exception("wrong peak_mode")
         if peak_label:
-            for p in pk:
-                fig.text(f(self.pos[p]), 1.05*self.intens[p], self.label[p], color=color)
-                print(f(self.pos[p]), 1.05*self.intens[p], self.label[p])
+            for p in self:
+                fig.annotate(p.label,(f(p.pos), p.intens),
+                    color='red', xycoords='data', xytext=(0, 10), textcoords='offset points',rotation=40,
+                    arrowprops=dict(arrowstyle='-'), horizontalalignment='left', verticalalignment='bottom')
         if show: plot.show()
+    def pos2label(self):
+        "for FTMS: use pos in current unit, using converion f and set it as label for each peak"
+        try:
+            f = self.source.axis1.itomz
+        except:
+            return
+        for pk in self:
+            pk.label = "%.4f"%(f(pk.pos),)
 
 class Peak2DList(PeakList):
     """
@@ -377,7 +396,7 @@ def _peaks2d(npkd, threshold = 0.1, zoom = None, value = False, zones=0):
             print (z)
 
 #----------------------------------------------------------
-def peakpick(npkd, threshold = None, zoom = None, autothresh=3.0):
+def peakpick(npkd, threshold = None, zoom = None, autothresh=3.0, verbose=True):
     """
     performs a peak picking of the current experiment
     threshold is the level above which peaks are picked
@@ -390,10 +409,12 @@ def peakpick(npkd, threshold = None, zoom = None, autothresh=3.0):
         threshold = autothresh*np.std( npkd.get_buffer().real )
     if npkd.dim == 1:
         listpkF1, listint = peaks1d(npkd, threshold=threshold, zoom=zoom)
-                            #     Id, label, intens, pos        
+                            #     Id, label, intens, pos
         pkl = Peak1DList( ( Peak1D(i, str(i), intens, pos) \
             for i, pos, intens in zip( range(len(listint)), list(listpkF1), list(listint) ) ), \
-                        threshold=threshold, source=npkd )
+                    threshold=threshold, source=npkd )
+        # use pos as labels - used only for FTMS
+        pkl.pos2label()
         npkd.peaks = pkl
     elif npkd.dim == 2:
         listpkF1, listpkF2, listint = peaks2d(npkd, threshold=threshold, zoom=zoom)
@@ -405,13 +426,13 @@ def peakpick(npkd, threshold = None, zoom = None, autothresh=3.0):
     else:
         raise NPKError("Not implemented of %sD experiment"%npkd.dim, data=npkd)
     if threshold is None:
-        print ('PP Threshold:',threshold)
-    print('PP: %d detected'%(len(npkd.peaks),))
+        if verbose: print ('PP Threshold:',threshold)
+    if verbose: print('PP: %d detected'%(len(npkd.peaks),))
     return npkd
 
 def peaks2d(npkd, threshold, zoom):
     '''
-    code for NPKData 2D peak picker
+    math code for NPKData 2D peak picker
     '''
     npkd.check2D()
     #print threshold
@@ -446,7 +467,7 @@ def peaks2d(npkd, threshold, zoom):
     return listpkF1, listpkF2, listint
 def peaks1d(npkd, threshold, zoom=None):
     """
-    code for NPKData 2D peak picker
+    math code for NPKData 1D peak picker
     """
     npkd.check1D()
     z1, z2 = parsezoom(npkd, zoom)
@@ -479,14 +500,14 @@ def center2d(yx, yo, xo, intens, widthy, widthx):
     y = yx[::2]
     x = yx[1::2]
     return intens*(1 - ((x-xo)/widthx)**2)*(1 - ((y-yo)/widthy)**2)
-def centroid1d(npkd, npoints=3):
+def centroid1d(npkd, npoints=3, reset_label=True):
     """
     from peak lists determined with peak()
     realize a centroid fit of the peak summit and width,
     will use npoints values around center  (npoints has to be odd)
     computes Full width at half maximum
     updates in data peak list
-    
+    reset_label when True (default) reset the labels of FTMS datasets
     TODO : update uncertainties
     """
     from scipy import polyfit
@@ -505,6 +526,9 @@ def centroid1d(npkd, npoints=3):
         pk.pos = popt[0]
         pk.intens = popt[1]
         pk.width = popt[2]
+    if reset_label:
+        npkd.peaks.pos2label()
+
 def centroid2d(npkd, npoints_F1=3, npoints_F2=3):
     """
     from peak lists determined with peak()
@@ -544,16 +568,21 @@ def centroid2d(npkd, npoints_F1=3, npoints_F2=3):
 #-------------------------------------------------------
 def centroid(npkd, *arg, **kwarg):
     if npkd.dim == 1:
-        centroid1d(npkd, *arg, **kwarg)
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore', message='.*ovariance.*')
+            centroid1d(npkd, *arg, **kwarg)
     elif npkd.dim == 2:
-        centroid2d(npkd, *arg, **kwarg)
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore', message='.*ovariance.*')
+            centroid2d(npkd, *arg, **kwarg)
     else:
         raise Exception("Centroid yet to be done")
     return npkd
 #-------------------------------------------------------
-def display_peaks(npkd, peak_label=False, zoom=None, show=False, color=None, markersize=6, figure=None):
+def display_peaks(npkd, peak_label=False, peak_mode="marker", zoom=None, show=False, color=None, markersize=6, figure=None):
     """
     display the content of the peak list, 
+    peak_mode is either "marker" (default) or "bar" (1D only)
     zoom is in current unit.
     """
     if npkd.dim == 1:
@@ -562,7 +591,7 @@ def display_peaks(npkd, peak_label=False, zoom=None, show=False, color=None, mar
             ff1 = npkd.axis1.itoc
         else:
             ff1 = lambda x : npkd.axis1.itoc(2*x)
-        return npkd.peaks.display( peak_label=peak_label, zoom=(z1,z2), show=show, f=ff1, color=color, markersize=markersize, figure=figure)
+        return npkd.peaks.display( peak_label=peak_label, peak_mode=peak_mode, zoom=(z1,z2), show=show, f=ff1, color=color, markersize=markersize, figure=figure)
     elif npkd.dim == 2:
         z1lo, z1up, z2lo, z2up = parsezoom(npkd, zoom)
         if npkd.axis1.itype == 0:  # if real
