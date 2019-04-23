@@ -44,6 +44,10 @@ setuptools.setup(
     ],
 )
 
+# How-To
+# cd spike; python dev_setup.py
+# doc/script_doc.sh
 # python3 setup.py sdist bdist_wheel
 # twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+# pip install --extra-index-url https://testpypi.python.org/pypi
 # twine upload  dist/*

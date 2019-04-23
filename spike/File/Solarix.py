@@ -125,7 +125,7 @@ def locate_ExciteSweep(folder):
         raise Exception( "You don't have any ExciteSweep file in the  %s folder, please double check the path"%folder )
     return L[0]
 #-----------------------------------------
-def Import_1D(folder, outfile = "", compress=False):
+def Import_1D(inifolder, outfile = "", compress=False):
     """
     Entry point to import 1D spectra
     It returns a FTICRData
@@ -135,7 +135,18 @@ def Import_1D(folder, outfile = "", compress=False):
         flag = 'l'              # Apex files are in int32
     else:                       # here in 64bit
         flag = 'i'              # strange, but works here.
-    parfilename = locate_acquisition(folder)
+    if op.isfile(inifolder):
+        folder = op.dirname(inifolder)
+    elif op.isdir(inifolder):
+        folder = inifolder
+    elif not op.exists(inifolder):
+        raise Exception("File does not exist: "+inifolder)
+    else:
+        raise Exception("File is undecipherable: "+inifolder)
+    try:
+        parfilename = locate_acquisition(folder)
+    except:
+        raise Exception('%s does not seem to be a valid Solarix spectrum'%(inifolder,))
     params = read_param(parfilename)
     
     

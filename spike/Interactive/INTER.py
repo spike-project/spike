@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 """
-A set of utilities to use spike in NMR within jupyter
+A set of utilities to use spike in NMR or FTMS within jupyter
 
 
 First version MAD june 2017
@@ -14,10 +14,11 @@ from __future__ import print_function, division
 import unittest
 import sys
 import os
+import os.path as op
 import glob
 
 import matplotlib.pylab as plt
-from ipywidgets import interact, interactive, fixed, interact_manual, Layout, HBox, VBox
+from ipywidgets import interact, interactive, fixed, interact_manual, Layout, HBox, VBox, Label, Output
 import ipywidgets as widgets
 from IPython.display import display
 
@@ -28,48 +29,68 @@ from ..File.BrukerNMR import Import_1D
 REACTIVE = True
 
 class FileChooser:
-    "a simple file chooser for Jupyter"
-    def __init__(self, base=None, filetype=['fid','ser']):
+    """a simple file chooser for Jupyter"""
+    def __init__(self, base=None, filetype=['fid','ser'], mode='r', show=True):
         if base is None:
             self.curdir = "/"
         else:
             self.curdir = base
         self.filetype = filetype
+        self.mode = mode
         self.wfile = widgets.Text(layout=Layout(width='70%'),description='File to load')
         self.ldir = widgets.Label(value="Chosen dir:  "+self.curdir)
         self.wdir = widgets.Select(
             options=self.dirlist(),
             description='Choose Dir',
-            layout=Layout(width='50%'))
-        self.wchooser = widgets.Select(
-            options=self.filelist(),
-            description='Choose File',
-            layout=Layout(width='50%'))
-        self.wsetdir = widgets.Button(value='Set', description='Set Directory')
-        self.wup = widgets.Button(description='Up Directory')
+            layout=Layout(width='70%'))
+        if mode=='r':
+            self.wchooser = widgets.Select(
+                options=self.filelist(),
+                description='Choose File',
+                layout=Layout(width='70%'))
+            self.wchooser.observe(self.wob)
+            self.wfile.disabled=True   # not mofiable in read mode
+        elif mode=="w":
+            self.wfile.description = 'File to create'
+            self.wfile.disabled=False
+            self.wchooser = widgets.Select(
+                options=self.filelist(),
+                description='Files',
+                layout=Layout(width='70%'))
+        else:
+            raise Exception('Only "r" and  "w" modes supported')
+        self.wsetdir = widgets.Button(description='❯',layout=Layout(width='20%'),
+                button_style='success', # 'success', 'info', 'warning', 'danger' or ''
+                tooltip='descend in directory')
+        self.wup = widgets.Button(description='❮',layout=Layout(width='20%'),
+                button_style='success', # 'success', 'info', 'warning', 'danger' or ''
+                tooltip='up to previous directory')
         self.wsetdir.on_click(self.setdir)
         self.wup.on_click(self.updir)
-        self.wchooser.observe(self.wob)
-        self.show()
+        if show: self.show()
     def filelist(self):
         fl = []
-        if type(self.filetype) is str:
-            fl = glob.glob(os.path.join(self.curdir,'*',self.filetype))
-        elif type(self.filetype) in (tuple, list):
-            for f in self.filetype:
-                fl += glob.glob(os.path.join(self.curdir,'*',f))
-        else:
-            raise Exception('TypeError, filetype should be either a string or a list')
+        if self.mode == 'r':
+            if type(self.filetype) is str:
+                fl = glob.glob(op.join(self.curdir,self.filetype))
+            elif type(self.filetype) in (tuple, list):
+                for f in self.filetype:
+                    fl += glob.glob(op.join(self.curdir,f))
+            else:
+                raise Exception('TypeError, filetype should be either a string or a list')
+        else:   # 'w'
+            fl = [f for f in glob.glob(op.join(self.curdir,'*')) if op.isfile(f)]
+            self.wfile.value = op.join(self.curdir,self.filetype)
         if fl == []:
             fl = [" "]
         return fl
     def dirlist(self):
         base = self.curdir
-        return [d for d in glob.glob(os.path.join(base,'*')) if (os.path.isdir(d) and not d.endswith('__pycache__'))]
+        return [d for d in glob.glob(op.join(base,'*')) if (op.isdir(d) and not d.endswith('__pycache__'))]
     def wob(self, e):
         self.wfile.value = self.wchooser.value
     def updir(self, e):
-        self.curdir = os.path.dirname(self.curdir)
+        self.curdir = op.dirname(self.curdir)
         self.ldir.value = "Chosen dir:  "+self.curdir
         self.wdir.options = self.dirlist()
         self.wchooser.options = self.filelist()
@@ -80,8 +101,8 @@ class FileChooser:
         self.wchooser.options = self.filelist()
     def show(self):
         display(VBox(
-            [   HBox( [self.ldir, self.wup]),
-            HBox( [self.wdir, self.wsetdir]),    
+            [   self.ldir,
+            HBox( [self.wdir, VBox([self.wup,self.wsetdir])] ),    
                 self.wchooser,
                 self.wfile
             ])
@@ -89,13 +110,33 @@ class FileChooser:
         return self
     @property
     def file(self):
-        "the chosen filename"
+        "the chosen complete filename"
         return self.wfile.value
+    @property
+    def dirname(self):
+        "the final dirname containing the chosen file"
+        if op.isdir(self.wfile.value):
+            return op.basename(self.wfile.value)
+        else:
+            return op.basename(op.dirname(self.wfile.value))
+    @property
+    def nmrname(self):
+        "the final dirname containing the chosen file for TopSpin files"
+        if op.isdir(self.wfile.value):
+            return op.join(
+                op.basename(op.dirname(self.wfile.value)), self.dirname)
+        else:
+            return op.join(
+                op.basename(op.dirname(op.dirname(self.wfile.value))), self.dirname)
+    @property
+    def basename(self):
+        "the basename of the chosen file"
+        return op.basename(self.wfile.value)
     
 
 class Show(object):
     """
-    An interactive display, 1D or 2D
+    An interactive display, 1D or 2D NMR
         Show(spectrum)
     """
     def __init__(self, data):
@@ -130,7 +171,7 @@ class Show(object):
 
 class Phaser1D(object):
     """
-    An interactive phaser in 1D
+    An interactive phaser in 1D NMR
 
         Phaser1D(spectrum)
 
@@ -203,7 +244,7 @@ class Phaser1D(object):
 
 class Phaser2D(object):
     """
-    An interactive phaser in 2D
+    An interactive phaser in 2D NMR
 
         Phaser2D(spec)
 
@@ -242,7 +283,7 @@ class Phaser2D(object):
         self.data.copy().phase(F1p0,F1p1,axis='F1').phase(F2p0,F2p1,axis='F2').display(scale=scale);
 
 class AvProc1D:
-    "Detailed Processing 1D"
+    "Detailed 1D NMR Processing"
     def __init__(self, filename=""):
         self.wfile = widgets.Text(description='File to process',layout=Layout(width='80%'), value=filename)
         self.wapod = widgets.Dropdown(
@@ -351,6 +392,7 @@ class AvProc1D:
                 HBox([self.wapmin, self.wphase0, self.wphase1]),
 #                self.wbcorr,
                 self.bdoit]) )
+
 
 #if __name__ == '__main__':
 #    unittest.main()    
