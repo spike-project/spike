@@ -218,7 +218,7 @@ def report(stats, modif):
     if median <5.0:
         text.append( "  Median is below 5.0 - let's try to improve it")
     text.append( "Total number of errors : {:d} on a total of {:d} files".format(errtot, ncode) )
-    text.append( "(but quite a few errors or just correct code not understood by pylint)" )
+    text.append( "(but quite a few errors are just correct code not understood by pylint)" )
     text.append( "-"*nchar )
     return "\n".join(text)
 
