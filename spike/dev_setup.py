@@ -14,7 +14,7 @@ from codecs import encode, decode
 
 ProgramName = "SPIKE"
 VersionName = "Development version"
-VersionInfo = ["0", "99", "7"]   # Major - Minor - Micro
+VersionInfo = ["0", "99", "8"]   # Major - Minor - Micro
 
 # Major.minor.micro (int) + name eg SPIKE_2_19_5
 # N.M.L
@@ -27,7 +27,11 @@ VersionInfo = ["0", "99", "7"]   # Major - Minor - Micro
 # Release Notes in md syntax !
 release_notes="""
 # SPIKE Relase Notes
+#### 0.99.8 - April 2019
+- corrects a BIG BUG which hampers the import of 1D NMR data-sets,
+
 #### 0.99.7 - April 2019
+**Please do not use,** see above
 - first version of Interactive Notebooks:
   - ProcessFTICR-MS
   - DisplayFTICR2D

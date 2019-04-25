@@ -1,14 +1,18 @@
 <!-- DO NOT MODIFY this file, it is generated automatically from dev_setup ! -->
 # SPIKE Relase Notes
+#### 0.99.8 - April 2019
+- corrects a BIG BUG which hampers the import of 1D NMR data-sets,
+
 #### 0.99.7 - April 2019
+**Please do not use,** see above
 - first version of Interactive Notebooks:
   - ProcessFTICR-MS
   - DisplayFTICR2D
   - Process1DNMR
+- The new BrukerMS importer tries Solarix importer and falls back to Apex importer if it fails
 - improved Interactive tools
 - improved FTICR importers to accept `my_expt.d/fid` as well as `my_expt.d`
 - improved peak-picker behavior
-- The BrukerMS importer trys Solarix importer and falls back to Apex importer if it fails
 - improved error messages in FTICR importers
 - cured a bug in Apex.Importxx for a special xml format
 
