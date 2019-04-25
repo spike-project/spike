@@ -1,6 +1,6 @@
 # Start from directory one level above spike dir.
 #cd ..
-rm -R spike_make_sphinx/*
+rm -R spike_make_sphinx/* dist/* build/*
 
 # get doc from source
 sphinx-apidoc -F -o spike_make_sphinx spike

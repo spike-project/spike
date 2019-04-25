@@ -1,4 +1,5 @@
 # see https://docs.python.org/3/distutils/commandref.html#sdist-cmd
 graft Notebooks
+exclude spike/plugins/tisane.py
 recursive-include spikedoc *.html *.js *.inv *.gif *.png *.css
 include README.pdf README.md LICENSE release_notes.md release_notes.pdf

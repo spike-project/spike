@@ -243,7 +243,7 @@ def write_param(param, filename):
         out('END')
         
 ################################################################
-def read_1D(size, filename="fid", bytorda=1, dtypa=0, uses='numpy'):
+def read_1D(size, filename="fid", bytorda=1, dtypa=0, uses='struct'):
     """
     Reads in a Bruker 1D fid as a numpy float array
     

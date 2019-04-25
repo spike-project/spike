@@ -746,7 +746,7 @@ class Test(unittest.TestCase):
             if not os.path.exists('__DATA_test__'):
                 print('creating DATA_test symlink')
                 os.symlink(directory(),'__DATA_test__')
-        main(["prgm", os.path.join("__DATA_test__","test.mscf")])
+        main(["prgm", os.path.join(directory(),"test.mscf")])
         os.unlink('__DATA_test__')
 
 ########################################################################################
