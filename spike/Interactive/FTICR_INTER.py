@@ -12,9 +12,8 @@ preliminary and not fully tested !
 """
 import os.path as op
 import tables
-import numpy as np
 import matplotlib.pyplot as plt
-from ipywidgets import interact, interactive, fixed, interact_manual, HBox, VBox, HTML, Label, Layout, Output
+from ipywidgets import interact, fixed, HBox, VBox, HTML, Label, Layout, Output
 import ipywidgets as widgets
 from IPython.display import display
 

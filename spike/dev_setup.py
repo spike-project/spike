@@ -32,10 +32,10 @@ release_notes="""
   - ProcessFTICR-MS
   - DisplayFTICR2D
   - Process1DNMR
+- The new BrukerMS importer tries Solarix importer and falls back to Apex importer if it fails
 - improved Interactive tools
 - improved FTICR importers to accept `my_expt.d/fid` as well as `my_expt.d`
 - improved peak-picker behavior
-- The BrukerMS importer trys Solarix importer and falls back to Apex importer if it fails
 - improved error messages in FTICR importers
 - cured a bug in Apex.Importxx for a special xml format
 

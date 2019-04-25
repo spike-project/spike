@@ -301,7 +301,7 @@ class Peak1DList(PeakList):
             fig.plot(f(self.pos[pk]), self.intens[pk], "x", color=color)
         elif peak_mode == "bar":
             for p in self:
-                fig.plot( [f(p.pos),f(p.pos)], [0,p.intens], color=color)
+                fig.plot( [f(p.pos),f(p.pos)], [0,p.intens], '-', color=color)
         else:
             raise Exception("wrong peak_mode")
         if peak_label:

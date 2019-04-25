@@ -17,7 +17,6 @@ import os.path as op
 import glob
 import re
 import struct
-import time
 import unittest
 import shutil
 
@@ -402,14 +401,14 @@ def offset(acqu, proc):
         calibrationOffset=0.0
     return (calibrationOffset)
 ################################################################
-def revoffset(offset, acqu, proc):
+def revoffset(loffset, acqu, proc):
     """
     computes the Bruker OFFSET (ppm of left most point) from spike axis offset value (Hz of rightmost point)
     """
     try:
         SW_h = float(acqu['$SW_h'])
         SFO1 = float(acqu['$SFO1'])
-        OFF = (offset+SW_h)/SFO1
+        OFF = (loffset+SW_h)/SFO1
     except:
         OFF = 0.0
     return OFF
@@ -788,59 +787,59 @@ def Import_2D_proc(filename="2rr", outfile=None,  verbose=VERBOSE):
         print("imported 2D spectrum, size = %d x %d\n%s"%(data.shape(0), data.shape(1), SMX.acqu['title']))
     return d
 
-################################################################
-def Import_3D(filename="ser",outfile="", verbose=VERBOSE):
-    """
-    Imports a 3D Bruker ser
+# ################################################################
+# def Import_3D(filename="ser",outfile="", verbose=VERBOSE):
+#     """
+#     Imports a 3D Bruker ser
     
-    """
-    import os.path as op
-    import NPK.Generic
+#     """
+#     import os.path as op
+#     import NPK.Generic
 
-    if (not op.exists(filename)):
-        raise filename+" : file not found"
-    dir=op.dirname(filename)
-    acqu = read_param(find_acqu(dir))
-    acqu2 = read_param(find_acqu2(dir))
-    acqu3 = read_param(find_acqu3(dir))
-    proc = read_param(find_proc(dir))
-    proc2 = read_param(find_proc2(dir))
-    proc3 = read_param(find_proc3(dir))
-    AQORDER = int(proc['$AQORDER']) # t'was wrongly reading in proc3 before jan 2009 - MAD
-    if AQORDER != 0:
-        (acqu3,acqu2) = (acqu2,acqu3) # exchange acqu2 and acqu3
-    sizeF1= int(acqu3['$TD'])  # get size
-    sizeF2= int(acqu2['$TD'])  # get size
-    sizeF3= int(acqu['$TD'])  # get size
-    if verbose:     print("importing 3D FID, size =",sizeF1,"x",sizeF2,"x",sizeF3)
-    read_3D(sizeF1, sizeF2, sizeF3, filename,  bytorda=int(acqu['$BYTORDA']))
+#     if (not op.exists(filename)):
+#         raise filename+" : file not found"
+#     dir=op.dirname(filename)
+#     acqu = read_param(find_acqu(dir))
+#     acqu2 = read_param(find_acqu2(dir))
+#     acqu3 = read_param(find_acqu3(dir))
+#     proc = read_param(find_proc(dir))
+#     proc2 = read_param(find_proc2(dir))
+#     proc3 = read_param(find_proc3(dir))
+#     AQORDER = int(proc['$AQORDER']) # t'was wrongly reading in proc3 before jan 2009 - MAD
+#     if AQORDER != 0:
+#         (acqu3,acqu2) = (acqu2,acqu3) # exchange acqu2 and acqu3
+#     sizeF1= int(acqu3['$TD'])  # get size
+#     sizeF2= int(acqu2['$TD'])  # get size
+#     sizeF3= int(acqu['$TD'])  # get size
+#     if verbose:     print("importing 3D FID, size =",sizeF1,"x",sizeF2,"x",sizeF3)
+#     read_3D(sizeF1, sizeF2, sizeF3, filename,  bytorda=int(acqu['$BYTORDA']))
 
-# then set parameters
-    freq(float(acqu['$SFO1']), float(acqu3['$SFO1']), float(acqu2['$SFO1']),float(acqu['$SFO1']))
-    specw(float(acqu3['$SFO1'])*float(acqu3['$SW']),float(acqu2['$SFO1'])*float(acqu2['$SW']), float(acqu['$SW_h']))
-    com_offset( offset(acqu3, proc3), offset(acqu2, proc2), offset(acqu, proc))
+# # then set parameters
+#     freq(float(acqu['$SFO1']), float(acqu3['$SFO1']), float(acqu2['$SFO1']),float(acqu['$SFO1']))
+#     specw(float(acqu3['$SFO1'])*float(acqu3['$SW']),float(acqu2['$SFO1'])*float(acqu2['$SW']), float(acqu['$SW_h']))
+#     com_offset( offset(acqu3, proc3), offset(acqu2, proc2), offset(acqu, proc))
 
-    zerotimeposition = zerotime(acqu)
-    if (outfile != ""):
-        dim(3)
-        writec(outfile)
-#        K.join(outfile)
-#        K.putheader("zerotimeposition", repr(zerotimeposition))
-#        K.disjoin()
-        param={}
-        param['axisf3_zerotimeposition'] = zerotimeposition
-        NPK.Generic.dict_dump(param,outfile+'.gtb')
+#     zerotimeposition = zerotime(acqu)
+#     if (outfile != ""):
+#         dim(3)
+#         writec(outfile)
+# #        K.join(outfile)
+# #        K.putheader("zerotimeposition", repr(zerotimeposition))
+# #        K.disjoin()
+#         param={}
+#         param['axisf3_zerotimeposition'] = zerotimeposition
+#         NPK.Generic.dict_dump(param,outfile+'.gtb')
 
-    pardic = {"acqu": acqu, \
-        "acqu2": acqu2, \
-        "acqu3": acqu3, \
-        "proc": proc, \
-        "proc2": proc2, \
-        "proc3": proc3} # create ad-hoc parameters
-    d.params = pardic   # add the parameters to the data-set
-    if verbose:
-        print("imported 3D FID, size = %d x %d x %d\n%s"%(sizeF1, sizeF2, sizeF3, acqu['title']))
-    return d
+#     pardic = {"acqu": acqu, \
+#         "acqu2": acqu2, \
+#         "acqu3": acqu3, \
+#         "proc": proc, \
+#         "proc2": proc2, \
+#         "proc3": proc3} # create ad-hoc parameters
+#     d.params = pardic   # add the parameters to the data-set
+#     if verbose:
+#         print("imported 3D FID, size = %d x %d x %d\n%s"%(sizeF1, sizeF2, sizeF3, acqu['title']))
+#     return d
 
 ################################################################
 def calibdosy(file="acqus"):
@@ -853,7 +852,6 @@ def calibdosy(file="acqus"):
 
     from calibdosy.g in Gifa 5.2006
     """
-    import re
 
     param=read_param(file)  # load values
     nuc1 = param["$NUC1"]

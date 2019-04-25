@@ -1,4 +1,4 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python
 # encoding: utf-8
 
 """
@@ -23,20 +23,19 @@ def Import_1D(*arg, **kword):
     It writes a HDF5 file if an outfile is mentionned
     """
     try:
-       return Solarix.Import_1D(*arg, **kword) 
+        return Solarix.Import_1D(*arg, **kword)
     except:
-       return Apex.Import_1D(*arg, **kword) 
+        return Apex.Import_1D(*arg, **kword)
 #-----------------------------------------
 def Import_2D(*arg, **kword):
     """
     Entry point to import 2D spectra
     It returns a FTICRData
     It writes a HDF5 file if an outfile is mentionned
-    
+
     compression (compress=True) is efficient, but takes more time.
     """
     try:
-       return Solarix.Import_2D(*arg, **kword) 
+        return Solarix.Import_2D(*arg, **kword)
     except:
-       return Apex.Import_2D(*arg, **kword) 
-
+        return Apex.Import_2D(*arg, **kword)

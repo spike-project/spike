@@ -13,40 +13,40 @@ Copyright (c) 2016 IGBMC. All rights reserved.
 import numpy as np
 #import matplotlib.pyplot as plt
 
-from spike.NPKData import NPKData, NPKData_plugin
-from spike.Algo.BC import correctbaseline as cbl
+from spike.NPKData import NPKData_plugin
+#from spike.Algo.BC import correctbaseline as cbl
 
 def neg_wing(d, bcorr=False, inwater=False, apt=False):
-        """ measure negative wing power of NPKData d 
-        
-        if bcorr == True, a baseline correction is applied
-        if inwater == True, the 10% central zone is just zeroed
-        if apt == False, computes the std() of the negative points  (distance to mean)
-               == True, computes the sum(abs()) of all the points (l_1 norm)
-        """
-        dd = d.copy().real()
-        if inwater:
-            dd[int(0.45*d.size1):int(0.55*d.size1)] = 0.0
-        if bcorr:   # complete baseline corr
-            dd.bcorr(method="spline",  xpoints=4)
+    """ measure negative wing power of NPKData d 
+    
+    if bcorr == True, a baseline correction is applied
+    if inwater == True, the 10% central zone is just zeroed
+    if apt == False, computes the std() of the negative points  (distance to mean)
+           == True, computes the sum(abs()) of all the points (l_1 norm)
+    """
+    dd = d.copy().real()
+    if inwater:
+        dd[int(0.45*d.size1):int(0.55*d.size1)] = 0.0
+    if bcorr:   # complete baseline corr
+        dd.bcorr(method="spline",  xpoints=4)
 
-        data = dd.get_buffer()
-        lendata = len(data)
+    data = dd.get_buffer()
+    lendata = len(data)
 
-        if not bcorr:       # simple linear corr
-            wind = [int(0.05*lendata), int(0.95*lendata)]
-            hwidth = int(0.01*lendata/2)
-            y0 = data[wind[0]-hwidth:wind[0]+hwidth].mean()
-            y1 = data[wind[1]-hwidth:wind[1]+hwidth].mean()
-            bl1 = np.poly1d(np.polyfit(wind, [y0,y1], 1))
-            data -= bl1(np.arange(lendata))
+    if not bcorr:       # simple linear corr
+        wind = [int(0.05*lendata), int(0.95*lendata)]
+        hwidth = int(0.01*lendata/2)
+        y0 = data[wind[0]-hwidth:wind[0]+hwidth].mean()
+        y1 = data[wind[1]-hwidth:wind[1]+hwidth].mean()
+        bl1 = np.poly1d(np.polyfit(wind, [y0,y1], 1))
+        data -= bl1(np.arange(lendata))
 
-        if not apt:
-            data[data>0.0] = 0.0    # set positive to 0.0
-            val = data.std()        # and compute std() as l_2 norm
-        else:
-            val = np.sum( np.abs(data) )  # simply l_1 norm
-        return val
+    if not apt:
+        data[data>0.0] = 0.0    # set positive to 0.0
+        val = data.std()        # and compute std() as l_2 norm
+    else:
+        val = np.sum( np.abs(data) )  # simply l_1 norm
+    return val
 
 def phase_pivot(d, p0, p1, pivot=0.5):
     """ three parameter phasing routine
@@ -113,21 +113,21 @@ def apmin(d, first_order=True, inwater=False, baselinecorr=True, apt=False, debu
             else:
                 PPlist = ((P0step,0),(-P0step,0))
             for (dP0,dP1) in PPlist:
-                    neval = neval+1
-                    dd = d.copy()
-                    phase_pivot(dd, P0min+dP0, P1min+dP1,pivot)
-                    pw = neg_wing(dd, bcorr=bcorr, inwater=inwater, apt=apt)
-                    if debug: print (" %.2f %.2f %g"%(P0min+dP0, P1min+dP1, pw))
-                    if (pw<valmin):
-                        moved=1
-                        valmin=pw
-                        P0minnext = P0min+dP0
-                        P1minnext = P1min+dP1
-                        if (P0step*dP0 <0):     # try to remember variation direction
-                            P0step = -P0step
-                        if (P1step*dP1 <0):
-                            P1step = -P1step
-                        break
+                neval = neval+1
+                dd = d.copy()
+                phase_pivot(dd, P0min+dP0, P1min+dP1,pivot)
+                pw = neg_wing(dd, bcorr=bcorr, inwater=inwater, apt=apt)
+                if debug: print (" %.2f %.2f %g"%(P0min+dP0, P1min+dP1, pw))
+                if (pw<valmin):
+                    moved=1
+                    valmin=pw
+                    P0minnext = P0min+dP0
+                    P1minnext = P1min+dP1
+                    if (P0step*dP0 <0):     # try to remember variation direction
+                        P0step = -P0step
+                    if (P1step*dP1 <0):
+                        P1step = -P1step
+                    break
             P0min = P0minnext
             P1min = P1minnext
             if debug:
