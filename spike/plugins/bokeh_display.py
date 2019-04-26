@@ -1,9 +1,23 @@
 #!/usr/bin/env python 
 # encoding: utf-8
 
-"""
-displaying using bokeh
+"""displays interactive plots through bokeh, allows to save them in html format.
 
+This plugin uses bokeh (https://bokeh.pydata.org/en/latest/) to build and display interactive plots.
+It adds npkd.bokeh_fig, a python dictionary containing the styles (colors, lines...) and npkd.bokeh_plot containing the plot itself (bokeh figure format).
+
+To make it work in the notebook add:
+	from bokeh.io import show,output_notebook
+	output_notebook()
+And do: 
+	npkd.bokeh(show=True)
+
+To save the plot in html format after doing npkd.bokeh(show=True):
+	from bokeh.resources import CDN
+	from bokeh.embed import file_html
+	html_text = file_html(npkd.bokeh_plot, CDN, "Title")
+	with open("bokehplot.html", "w") as file:
+	    file.write(html_text)
 """
 
 from __future__ import print_function
