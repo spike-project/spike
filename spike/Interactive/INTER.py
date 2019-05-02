@@ -29,7 +29,7 @@ from ..File.BrukerNMR import Import_1D
 REACTIVE = True
 
 class FileChooser:
-    """a simple file chooser for Jupyter"""
+    """a simple file chooser for Jupyter - not used"""
     def __init__(self, base=None, filetype=['fid','ser'], mode='r', show=True):
         if base is None:
             self.curdir = "/"
@@ -132,12 +132,12 @@ class FileChooser:
     def basename(self):
         "the basename of the chosen file"
         return op.basename(self.wfile.value)
-    
-
+  
 class Show(object):
     """
     An interactive display, 1D or 2D NMR
         Show(spectrum)
+    to be developped for peaks and integrals
     """
     def __init__(self, data):
         self.data = data
@@ -393,6 +393,104 @@ class AvProc1D:
 #                self.wbcorr,
                 self.bdoit]) )
 
+class NMRPeaker(object):
+    "a peak-picker for NMR experiments"
+    def __init__(self, npkd, pkname):
+        self.npkd = npkd.real()
+        self.pkname = pkname
+        self.zoom = widgets.FloatRangeSlider(value=[0, 100],
+            min=0, max=100.0, step=0.1, layout=Layout(width='60%'), description='zoom (%):',
+            continuous_update=REACTIVE, readout=True, readout_format='.1f',)
+        self.zoom.observe(self.display)
+        self.thresh = widgets.FloatSlider(value=50.0,
+            min=0.1, max=100.0, step=0.1, layout=Layout(width='30%'),
+            continuous_update=False, readout=True, readout_format='.1f')
+        self.thresh.observe(self.pickpeak)
+        self.peak_mode = widgets.Dropdown(options=['marker', 'bar'],value='marker',description='show as')
+        self.peak_mode.observe(self.display)
+        self.bexport = widgets.Button(description="Export",layout=Layout(width='10%'),
+                button_style='success', # 'success', 'info', 'warning', 'danger' or ''
+                tooltip='Export to csv file')
+        self.bexport.on_click(self.pkexport)
+        self.bprint = widgets.Button(description="Print", layout=Layout(width='10%'),
+                button_style='success', # 'success', 'info', 'warning', 'danger' or ''
+                tooltip='Print to screen')
+        self.bprint.on_click(self.pkprint)
+        self.spec = Output(layout={'border': '1px solid black'})
+        self.out = Output(layout={'border': '1px solid red'})
+        display( VBox([self.zoom,
+            HBox([Label('threshold - % largest signal'), self.thresh, self.peak_mode, self.bprint, self.bexport] ),
+            self.spec, self.out ]) )
+        with self.spec:
+            self.fig, self.ax = plt.subplots()
+            self.npkd.display(new_fig=False, figure=self.ax, zoom=self.zm)
+    @property
+    def zm(self):
+        "returns the zoom window in ppm"
+        z = self.zoom.value
+        left=self.npkd.axis1.itop(z[0]*self.npkd.size1/100)
+        right=self.npkd.axis1.itop(z[1]*self.npkd.size1/100)
+        return (left,right)
+    def pkprint(self,event):
+        self.out.clear_output(wait=True)
+        with self.out:
+            print(self.pklist())
+    def pkexport(self,event):
+        "exports the peaklist to file"
+        with open(self.pkname,'w') as FPK:
+            print(self.pklist(),file=FPK)
+        print('Peak list stored in ',self.pkname)
+    def pklist(self):
+        "creates peaklist for printing or exporting"
+        text = ["ppm\tInt.(%)\twidth (Hz)"]
+        data = self.npkd
+        intmax = max(data.peaks.intens)/100
+        for pk in data.peaks:
+            ppm = data.axis1.itop(pk.pos)
+            width = 2*pk.width*data.axis1.specwidth/data.size1
+            #(data.axis1.itoh(pk.pos-pk.width) - data.axis1.itoh(pk.pos+pk.width))
+            l = "%.3f\t%.1f\t%.2f"%(ppm, pk.intens/intmax, width)
+            text.append(l)
+        return "\n".join(text)
+    def display(self, event):
+        "interactive wrapper to peakpick"
+        if event['name']=='value':
+            self.ax.clear()
+            self.npkd.display(new_fig=False, figure=self.ax, zoom=self.zm)
+            try:
+                self.npkd.display_peaks(peak_label=True, figure=self.ax, zoom=self.zm)
+            except:
+                pass
+    def pickpeak(self, event):
+        "interactive wrapper to peakpick"
+        if event['name']=='value':
+            self.pp()
+    def pp(self):
+        "do the peak-picking calling pp().centroid()"
+        #self.spec.clear_output(wait=True)
+        th = self.npkd.absmax*self.thresh.value/100
+        self.npkd.set_unit('ppm').peakpick(threshold=th, verbose=False, zoom=self.zm).centroid()
+        with self.spec:
+            self.ax.clear()
+            self.npkd.display(new_fig=False, figure=self.ax, zoom=self.zm)
+            x = self.zm
+            y = [self.npkd.peaks.threshold]*2
+            self.ax.plot(x,y,':r')
+            z = self.zoom.value
+            left=self.npkd.axis1.itop(z[0]*self.npkd.size1/100)
+            right=self.npkd.axis1.itop(z[1]*self.npkd.size1/100)
+            self.npkd.display_peaks(peak_label=True, peak_mode=self.peak_mode.value,figure=self.ax, zoom=self.zm)
+            self.ax.annotate('%d peaks detected'%len(self.npkd.peaks) ,(0.05,0.95), xycoords='figure fraction')
+    def _pp(self):
+        "do the peak-picking calling pp().centroid()"
+        self.ax.clear()
+        self.npkd.set_unit('m/z').peakpick(autothresh=self.thresh.value, verbose=False).centroid()
+        self.npkd.display(new_fig=False, figure=self.ax)
+        x = [self.npkd.axis1.lowmass, self.npkd.axis1.highmass]
+        y = [self.npkd.peaks.threshold]*2
+        self.ax.plot(x,y,':r')
+        self.npkd.display_peaks(peak_label=True, figure=self.ax)
+        self.ax.annotate('%d peaks detected'%len(self.npkd.peaks) ,(0.05,0.95), xycoords='figure fraction')
 
 #if __name__ == '__main__':
 #    unittest.main()    

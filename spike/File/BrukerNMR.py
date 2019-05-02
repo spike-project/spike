@@ -24,6 +24,13 @@ import numpy as np
 
 from ..NPKData import NPKData, LaplaceAxis
 
+# to solve a python2 error !
+try:
+    FileNotFoundError
+except NameError:
+    #py2
+    FileNotFoundError = IOError
+
 debug = False
 VERBOSE = False   # change this for verbose importers by default
 ################################################################
