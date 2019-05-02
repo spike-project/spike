@@ -307,15 +307,13 @@ class Peak1DList(PeakList):
         if peak_label:
             for p in self:
                 fig.annotate(p.label,(f(p.pos), p.intens),
-                    color='red', xycoords='data', xytext=(0, 10), textcoords='offset points',rotation=40,
+                    xycoords='data', xytext=(0, 10), textcoords='offset points',
+                    rotation=40,color='red',fontsize=7,
                     arrowprops=dict(arrowstyle='-'), horizontalalignment='left', verticalalignment='bottom')
         if show: plot.show()
     def pos2label(self):
-        "for FTMS: use pos in current unit, using converion f and set it as label for each peak"
-        try:
-            f = self.source.axis1.itomz
-        except:
-            return
+        "use pos in current unit, using converion f and set it as label for each peak"
+        f = self.source.axis1.itoc
         for pk in self:
             pk.label = "%.4f"%(f(pk.pos),)
 
@@ -413,7 +411,7 @@ def peakpick(npkd, threshold = None, zoom = None, autothresh=3.0, verbose=True):
         pkl = Peak1DList( ( Peak1D(i, str(i), intens, pos) \
             for i, pos, intens in zip( range(len(listint)), list(listpkF1), list(listint) ) ), \
                     threshold=threshold, source=npkd )
-        # use pos as labels - used only for FTMS
+        # use pos as labels - 
         pkl.pos2label()
         npkd.peaks = pkl
     elif npkd.dim == 2:
@@ -480,7 +478,7 @@ def peaks1d(npkd, threshold, zoom=None):
                     (tbuff > buff[2:]) )) # roll 1 and -1 on axis 0
 #    return listpk[0]
     listpkF1 = int(z1) + listpk[0] +1
-    listint = npkd.get_buffer()[listpkF1]
+    listint = npkd.get_buffer()[listpkF1].real
     return listpkF1, listint
 #-------------------------------------------------------
 # centroid measure
@@ -664,7 +662,7 @@ class PeakTests(unittest.TestCase):
         # y == [ -2.36111111e+01  -4.44089210e-15   9.72222222e+00   5.55555556e+00 -1.25000000e+01]
         self.assertAlmostEqual(y[2], 9.72222222)
         d = NPKData(buffer = np.maximum(y,0.0))
-        d.peaks = Peak1DList()
+        d.peaks = Peak1DList(source=d)
         d.peaks.append(Peak1D(0, "0", 9.7, 2 ))
         d.peaks[-1].width = 1.0
         d.centroid(npoints=3)
@@ -681,7 +679,7 @@ class PeakTests(unittest.TestCase):
         #print (M[1:10,6:11])
         self.assertAlmostEqual(M[2,7],5.87777515)
         d = NPKData(buffer = np.maximum(M,0.0))
-        d.peaks = Peak2DList()
+        d.peaks = Peak2DList(source=d)
         # self, Id, label, intens, posF1, posF2 
         d.peaks.append(Peak2D(0, "0", 18.0, 5, 8 ))
         d.centroid(npoints_F1=5)

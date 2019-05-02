@@ -173,7 +173,7 @@ def do_Test():
     elaps = time.time()-t0
     to_mail.append("Ran %d tests in %.3fs"%(nbtests, elaps))
     if results.wasSuccessful():
-        to_mail.append( msg("CONGRATULATIONS - all the {} SPIKE tests performed succesfully ".format(len(list_of_modules))) )
+        to_mail.append( msg("CONGRATULATIONS - all the {} SPIKE tested modules performed succesfully ".format(len(list_of_modules))) )
         subject = "SUCCESS :)  " + subject
         to_mail.append( msg("modules tested were:"))
         for mod in list_of_modules:
