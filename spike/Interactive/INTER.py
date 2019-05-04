@@ -20,7 +20,7 @@ import glob
 import matplotlib.pylab as plt
 from ipywidgets import interact, interactive, fixed, interact_manual, Layout, HBox, VBox, Label, Output
 import ipywidgets as widgets
-from IPython.display import display
+from IPython.display import display, HTML
 
 from ..File.BrukerNMR import Import_1D
 
@@ -196,9 +196,9 @@ class Phaser1D(object):
         self.p0.observe(self.ob)
         self.p1.observe(self.ob)
         self.pivot.observe(self.ob)
-        self.button = widgets.Button(description="Apply correction")
+        self.button = widgets.Button(description="Ok", button_style='success')
         self.button.on_click(self.on_Apply)
-        self.cancel = widgets.Button(description="Cancel")
+        self.cancel = widgets.Button(description="Cancel", button_style='warning')
         self.cancel.on_click(self.on_cancel)
         display(HBox([self.button, self.cancel]))
 #       interact( self.phase, scale=self.scale, p0=self.p0, p1=self.p1, pivot=self.pivot)
@@ -209,7 +209,6 @@ class Phaser1D(object):
         self.data.display(figure=self.ax)
 
     def on_cancel(self, b):
-        print("No action")
 #        self.data.display(scale=self.scale.value);
         for w in [self.p0, self.p1, self.scale, self.button, self.cancel, self.zoom, self.pivot]:
             w.close()
@@ -418,12 +417,32 @@ class NMRPeaker(object):
         self.bprint.on_click(self.pkprint)
         self.spec = Output(layout={'border': '1px solid black'})
         self.out = Output(layout={'border': '1px solid red'})
-        display( VBox([self.zoom,
-            HBox([Label('threshold - % largest signal'), self.thresh, self.peak_mode, self.bprint, self.bexport] ),
-            self.spec, self.out ]) )
+        self.Ok = widgets.Button(description="Ok", button_style='success')
+        self.Ok.on_click(self.on_Apply)
+        self.cancel = widgets.Button(description="Cancel", button_style='warning')
+        self.cancel.on_click(self.on_cancel)
+        self.Box = VBox([HBox([self.Ok, self.cancel]),
+            self.zoom,
+            HBox([Label('threshold - % largest signal'), self.thresh, self.peak_mode, self.bprint, self.bexport] )])
+        display(self.Box )
+        display(self.spec)
+        display(self.out )
         with self.spec:
             self.fig, self.ax = plt.subplots()
             self.npkd.display(new_fig=False, figure=self.ax, zoom=self.zm)
+    def on_cancel(self, b):
+        self.Box.close()
+        self.spec.close()
+        self.out.close()
+        del self.npkd.peaks
+        self.npkd.display(new_fig=False, figure=self.ax)
+    def on_Apply(self, b):
+        pkm = self.peak_mode.value
+        self.Box.close()
+        self.spec.close()
+        self.npkd.display()
+        self.npkd.display_peaks(peak_mode=pkm,figure=self.npkd.mplfigure)
+        self.npkd.mplfigure.annotate('%d peaks detected'%len(self.npkd.peaks) ,(0.05,0.95), xycoords='figure fraction')
     @property
     def zm(self):
         "returns the zoom window in ppm"
@@ -434,8 +453,17 @@ class NMRPeaker(object):
     def pkprint(self,event):
         self.out.clear_output(wait=True)
         with self.out:
+            display(HTML(self.npkd.pk2pandas().to_html()))
+    def _pkprint(self,event):
+        self.out.clear_output(wait=True)
+        with self.out:
             print(self.pklist())
     def pkexport(self,event):
+        "exports the peaklist to file"
+        with open(self.pkname,'w') as FPK:
+            print(self.npkd.pk2pandas().to_csv(),file=FPK)
+        print('Peak list stored in ',self.pkname)
+    def _pkexport(self,event):
         "exports the peaklist to file"
         with open(self.pkname,'w') as FPK:
             print(self.pklist(),file=FPK)
@@ -491,6 +519,90 @@ class NMRPeaker(object):
         self.ax.plot(x,y,':r')
         self.npkd.display_peaks(peak_label=True, figure=self.ax)
         self.ax.annotate('%d peaks detected'%len(self.npkd.peaks) ,(0.05,0.95), xycoords='figure fraction')
+
+class NMRIntegrate(object):
+    "an integrator for NMR experiments"
+    def __init__(self, npkd):
+        self.npkd = npkd.real().integrate()
+        self.zoom = widgets.FloatRangeSlider(value=[0, 100],
+            min=0, max=100.0, step=0.1, layout=Layout(width='60%'), description='zoom (%):',
+            continuous_update=REACTIVE, readout=True, readout_format='.1f',)
+        self.zoom.observe(self.display)
+        self.bias = widgets.FloatSlider(
+            description='bias', layout=Layout(width='30%'),
+            value=0.0,min=-10.0, max=10.0, step=0.1,
+            continuous_update=True, readout=True, readout_format='.1f')
+        self.sep = widgets.FloatSlider(
+            description='peak separation', layout=Layout(width='30%'),
+            value=3.0,min=0.0, max=10.0, step=0.1,
+            continuous_update=True, readout=False, readout_format='.1f')
+        self.wings = widgets.FloatSlider(
+            description='width', layout=Layout(width='30%'),
+            value=5.0,min=0.5, max=10.0, step=0.1,
+            continuous_update=True, readout=False, readout_format='.1f')
+        self.bias.observe(self.integrate)
+        self.sep.observe(self.integrate)
+        self.wings.observe(self.integrate)
+        self.Ok = widgets.Button(description="Ok", button_style='success')
+        self.Ok.on_click(self.on_Apply)
+        self.cancel = widgets.Button(description="Cancel", button_style='warning')
+        self.cancel.on_click(self.on_cancel)
+        self.bprint = widgets.Button(description="Print", layout=Layout(width='10%'),
+                button_style='success', # 'success', 'info', 'warning', 'danger' or ''
+                tooltip='Print to screen')
+        self.bprint.on_click(self.print)
+        self.spec = Output(layout={'border': '1px solid black'})
+        self.out = Output(layout={'border': '1px solid red'})
+        self.Box = VBox([
+            HBox([self.Ok, self.cancel]),
+            self.zoom,
+            HBox([self.bias, self.sep, self.wings, self.bprint] )])
+        display( self.Box)
+        display(self.spec)
+        display( self.out)
+        with self.spec:
+            self.fig, self.ax = plt.subplots()
+        self.npkd.display(new_fig=False, figure=self.ax, zoom=self.zm)
+        self.npkd.display_integrals(label=True, zoom=self.zm, figure=self.ax)
+    def on_cancel(self, b):
+        self.Box.close()
+        self.spec.close()
+        self.out.close()
+        self.npkd.display()
+    def on_Apply(self, b):
+        self.Box.close()
+        self.spec.close()
+        self.npkd.display()
+        self.npkd.display_integrals(label=True, figure=self.npkd.mplfigure)
+    @property
+    def zm(self):
+        "returns the zoom window in ppm"
+        z = self.zoom.value
+        left=self.npkd.axis1.itop(z[0]*self.npkd.size1/100)
+        right=self.npkd.axis1.itop(z[1]*self.npkd.size1/100)
+        return (left,right)
+    def print(self,event):
+        self.out.clear_output(wait=True)
+        with self.out:
+            display(HTML(self.npkd.int2pandas().to_html()))
+    def integrate(self, event):
+        "integrate from event"
+        if event['name']=='value':
+            self.int()
+    def int(self):
+        "do the integration"
+        self.npkd.set_unit('ppm').integrate(separation=self.sep.value, wings=self.wings.value,
+            bias=self.npkd.absmax*self.bias.value/100)
+        self.display({'name':'value'})
+    def display(self, event):
+        "refresh display from event"
+        if event['name']=='value':
+            self.ax.clear()
+            self.npkd.display(new_fig=False, figure=self.ax, zoom=self.zm)
+            try:
+                self.npkd.display_integrals(label=True, figure=self.ax, zoom=self.zm)
+            except:
+                pass
 
 #if __name__ == '__main__':
 #    unittest.main()    
