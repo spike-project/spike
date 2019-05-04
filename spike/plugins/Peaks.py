@@ -631,6 +631,19 @@ def report_peaks(npkd, file=None, format=None):
         return npkd.peaks.report( f1=ff1, f2=ff2, file=file, format=format)
     else:
         raise Exception("to be done")
+#-------------------------------------------------------
+def pk2pandas(npkd):
+    "export extract of current peak list to pandas Dataframe"
+    import pandas as pd
+    w_itohz = 2*npkd.axis1.specwidth/npkd.cpxsize1
+    P1 = pd.DataFrame({
+        'Id':[ pk.Id for pk in npkd.peaks],
+        'Label':npkd.peaks.label,
+        'Position':npkd.axis1.itoc(npkd.peaks.pos),
+        'Intensity':npkd.peaks.intens,
+        'Width':[ pk.width*w_itohz for pk in npkd.peaks]   # width are in Hz
+    }).set_index('Id')
+    return P1
 
 class PeakTests(unittest.TestCase):
     def test_peaks2d(self):
@@ -695,3 +708,4 @@ NPKData_plugin("centroid", centroid)
 NPKData_plugin("report_peaks", report_peaks)
 NPKData_plugin("display_peaks", display_peaks)
 NPKData_plugin("peaks2d", peaks2d)
+NPKData_plugin("pk2pandas", pk2pandas)

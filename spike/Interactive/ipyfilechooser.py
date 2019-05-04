@@ -51,6 +51,7 @@ class FileChooser(VBox):
         )
         self._cancel = Button(
             description='Cancel',
+            button_style='warning', # 'success', 'info', 'warning', 'danger' or ''
             layout=Layout(
                 width='auto',
                 display='none'
@@ -58,6 +59,7 @@ class FileChooser(VBox):
         )
         self._select = Button(
             description='Select',
+            button_style='success', # 'success', 'info', 'warning', 'danger' or ''
             layout=Layout(width='auto')
         )
 
