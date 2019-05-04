@@ -14,7 +14,7 @@ from __future__ import print_function
 import numpy as np
 import unittest
 from spike.NPKData import NPKData_plugin, parsezoom
-from NPKError import NPKError
+from spike.NPKError import NPKError
 
 def delintegrals(data):
     "horrible hack to remove integrals - everything should be rewritten OOP!"
@@ -81,8 +81,8 @@ def display(data, integoff=0.3, integscale=0.5, color='red', label=False, zoom=N
         ax = figure
     trans = transforms.blended_transform_factory( ax.transData, ax.transAxes )
     z1, z2 = parsezoom(data, zoom)
-    sumax = max(data.integvalues)
-    for ((a,b),c) in zip(data.integzones, data.integcurves):
+    sumax = max([c[-1] for c in data.integcurves])
+    for ((a,b),c,v) in zip(data.integzones, data.integcurves, data.integvalues):
 #        print(a,b,max(c)/sumax)
         if a>z2 or b<z1:
             continue   # we're outside
@@ -90,7 +90,7 @@ def display(data, integoff=0.3, integscale=0.5, color='red', label=False, zoom=N
         yinteg = integoff + integscale*c/sumax
         ax.plot(xinteg, yinteg, transform=trans, color=color)
         if label:
-            ax.text(xinteg[-1],yinteg[-1],"%.1f"%c[-1], transform=trans, color=color)
+            ax.text(xinteg[-1],yinteg[-1],"%.2f"%v, transform=trans, color=color)
 
 class IntegralTests(unittest.TestCase):
     def setUp(self):
@@ -106,7 +106,7 @@ class IntegralTests(unittest.TestCase):
         y = math.log(1.0)
         self.assertAlmostEqual(x, y )
 
-def calibrate(data, entry, value):
+def calibrate(npkd, entry, value):
     """
     on a dataset alreat integrated, the integrals are adapted so that
     the given entry is set to the given value.
@@ -114,10 +114,10 @@ def calibrate(data, entry, value):
     try:
         vals = npkd.integvalues
     except:
-        raise NPKError('data set should be integrated with .integrate() first!')
+        raise NPKError('data set should be integrated with .integrate() first!',data=npkd)
     npkd.integvalues *= value/vals[entry]
-    return data
-def integrate(data, separation=3, wings=5, bias=0.0, calibration=None):
+    return npkd
+def integrate(npkd, separation=3, wings=5, bias=0.0, calibration=None):
     """
     computes integral zones and values from peak list, 
 
@@ -126,9 +126,9 @@ def integrate(data, separation=3, wings=5, bias=0.0, calibration=None):
     bias: this value is substracted to data before integration
     calibration: a coefficient to multiply all integrals / if None (default) largest is set at 100
     """
-    compzones(data, separation=separation, wings=wings)
-    compsums(data, bias=bias, calib=calibration)
-    return data
+    compzones(npkd, separation=separation, wings=wings)
+    compsums(npkd, bias=bias, calib=calibration)
+    return npkd
 #-------------------------------------------------------
 def int2pandas(npkd):
     "export extract of current integrals list to pandas Dataframe"

@@ -279,7 +279,7 @@ class Peak1DList(PeakList):
         """
         lst = [pk._report(f=f) for pk in self ]
         return "\n".join(lst)
-    def display(self, peak_label=False, peak_mode="marker", zoom=None, show=False, f=_identity, color = 'red', markersize=None, figure=None):
+    def display(self, peak_label=False, peak_mode="marker", zoom=None, show=False, f=_identity, color = 'red', markersize=None, figure=None, scale=1.0):
         """
         displays 1D peaks
         zoom is in index
@@ -294,13 +294,15 @@ class Peak1DList(PeakList):
         if zoom:
             z0=zoom[0]
             z1=zoom[1]
-            pk = [i for i,p in enumerate(self) if p.pos>=z0 and p.pos<=z1]
+            pkl = [i for i,p in enumerate(self) if p.pos>=z0 and p.pos<=z1]
         else:
-            pk = range(len(self))
+            pkl = range(len(self))
+        mmax = max(self.intens)/scale
+        pk = list(filter(lambda p:self.intens[p]<=mmax, pkl))
         if peak_mode == "marker":
             fig.plot(f(self.pos[pk]), self.intens[pk], "x", color=color)
         elif peak_mode == "bar":
-            for p in self:
+            for p in self[pk]:
                 fig.plot( [f(p.pos),f(p.pos)], [0,p.intens], '-', color=color)
         else:
             raise Exception("wrong peak_mode")
@@ -577,7 +579,7 @@ def centroid(npkd, *arg, **kwarg):
         raise Exception("Centroid yet to be done")
     return npkd
 #-------------------------------------------------------
-def display_peaks(npkd, peak_label=False, peak_mode="marker", zoom=None, show=False, color=None, markersize=6, figure=None):
+def display_peaks(npkd, peak_label=False, peak_mode="marker", zoom=None, show=False, color=None, markersize=6, figure=None, scale=1.0):
     """
     display the content of the peak list, 
     peak_mode is either "marker" (default) or "bar" (1D only)
@@ -589,7 +591,7 @@ def display_peaks(npkd, peak_label=False, peak_mode="marker", zoom=None, show=Fa
             ff1 = npkd.axis1.itoc
         else:
             ff1 = lambda x : npkd.axis1.itoc(2*x)
-        return npkd.peaks.display( peak_label=peak_label, peak_mode=peak_mode, zoom=(z1,z2), show=show, f=ff1, color=color, markersize=markersize, figure=figure)
+        return npkd.peaks.display( peak_label=peak_label, peak_mode=peak_mode, zoom=(z1,z2), show=show, f=ff1, color=color, markersize=markersize, figure=figure, scale=scale)
     elif npkd.dim == 2:
         z1lo, z1up, z2lo, z2up = parsezoom(npkd, zoom)
         if npkd.axis1.itype == 0:  # if real
