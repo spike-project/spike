@@ -133,41 +133,66 @@ class FileChooser:
         "the basename of the chosen file"
         return op.basename(self.wfile.value)
   
-class Show(object):
+class Show1D(object):
     """
-    An interactive display, 1D or 2D NMR
+    An interactive display, 1D NMR
         Show(spectrum)
     to be developped for peaks and integrals
     """
-    def __init__(self, data):
+    def __init__(self, data, title=None):
         self.data = data
-        self.done = widgets.Button(description="Done")
-        self.scale = widgets.FloatSlider(description='scale:', min=1, max=100, step=0.5,
+        self.title = title
+        self.done = widgets.Button(description="Done", button_style='warning',layout=Layout(width='10%'))
+        self.scale = widgets.FloatSlider(description='scale:', value=1.0, min=1.0, max=100, step=0.1,
                             layout=Layout(width='30%'), continuous_update=REACTIVE)
+        self.scaleint = widgets.FloatSlider(value=0.5, min=0.1, max=10, step=0.05,
+                            layout=Layout(width='20%'), continuous_update=REACTIVE)
+        self.offset = widgets.FloatSlider(value=0.3, min=0.0, max=1.0, step=0.01,
+                            layout=Layout(width='20%'), continuous_update=REACTIVE)
         self.zoom = widgets.FloatRangeSlider(value=[0, 100],
             min=0, max=100.0, step=0.1, layout=Layout(width='60%'), description='zoom (%):',
             continuous_update=REACTIVE, readout=True, readout_format='.1f')
-        self.scale.observe(self.ob)
-        self.zoom.observe(self.ob)
+        self.peaks = widgets.Checkbox(value=False, layout=Layout(width='15%'))
+        self.integ = widgets.Checkbox(value=False, layout=Layout(width='15%'))
+
+        for widg in (self.scale, self.zoom, self.scaleint, self.offset, self.peaks, self.integ):
+            widg.observe(self.ob)
         fi,ax = plt.subplots()
         self.ax = ax
-        self.data = data
-        self.data.display(figure=self.ax)
+        self.data.display(figure=self.ax, zoom=self.zm, title=self.title)
         self.done.on_click(self.on_done)
-        if data.dim == 1:
-            display( VBox([HBox([self.scale,self.done]),  self.zoom]) )
-        else:
-            display( VBox([self.scale, self.zoom]) )
+        self.Box = VBox([self.zoom,
+            HBox([self.scale,Label('Integral scale:'),self.scaleint,Label('offset:'),self.offset]),
+            HBox([Label('Show Peaks'),self.peaks,Label('integrals'),self.integ,self.done])])
+        display( self.Box )
     def on_done(self, b):
-        for w in [self.scale, self.done, self.zoom]:
-            w.close()
+        self.Box.close()
+    @property
+    def zm(self):
+        "returns the zoom window in ppm"
+        z = self.zoom.value
+        left=self.data.axis1.itop(z[0]*self.data.size1/100)
+        right=self.data.axis1.itop(z[1]*self.data.size1/100)
+        return (left,right)
     def ob(self, event):
         "observe events and display"
-        if event['name']=='value':
-            self.ax.clear()
-            self.data.display(scale=self.scale.value, new_fig=False, figure=self.ax)
-            z = self.zoom.value
-            self.ax.set_xlim(left=self.data.axis1.itop(z[0]*self.data.size1/100), right=self.data.axis1.itop(z[1]*self.data.size1/100) )
+        if event['name']!='value':
+            return
+        self.ax.clear()
+        self.data.display(scale=self.scale.value, new_fig=False, figure=self.ax, zoom=self.zm, title=self.title)
+        if self.integ.value:
+            try:
+                self.data.display_integrals(label=True, integscale=self.scaleint.value, integoff=self.offset.value, figure=self.ax, zoom=self.zm)
+            except:
+                print('no or wrong integrals')
+                pass
+        if self.peaks.value:
+            try:
+                self.data.display_peaks(peak_label=True, figure=self.ax, zoom=self.zm, scale=self.scale.value)
+            except:
+                print('no or wrong peaklist')
+                pass
+        self.ax.set_xlim(left=self.zm[0], right=self.zm[1])
 
 class Phaser1D(object):
     """
@@ -394,9 +419,8 @@ class AvProc1D:
 
 class NMRPeaker(object):
     "a peak-picker for NMR experiments"
-    def __init__(self, npkd, pkname):
+    def __init__(self, npkd):
         self.npkd = npkd.real()
-        self.pkname = pkname
         self.zoom = widgets.FloatRangeSlider(value=[0, 100],
             min=0, max=100.0, step=0.1, layout=Layout(width='60%'), description='zoom (%):',
             continuous_update=REACTIVE, readout=True, readout_format='.1f',)
@@ -407,10 +431,6 @@ class NMRPeaker(object):
         self.thresh.observe(self.pickpeak)
         self.peak_mode = widgets.Dropdown(options=['marker', 'bar'],value='marker',description='show as')
         self.peak_mode.observe(self.display)
-        self.bexport = widgets.Button(description="Export",layout=Layout(width='10%'),
-                button_style='success', # 'success', 'info', 'warning', 'danger' or ''
-                tooltip='Export to csv file')
-        self.bexport.on_click(self.pkexport)
         self.bprint = widgets.Button(description="Print", layout=Layout(width='10%'),
                 button_style='success', # 'success', 'info', 'warning', 'danger' or ''
                 tooltip='Print to screen')
@@ -423,7 +443,7 @@ class NMRPeaker(object):
         self.cancel.on_click(self.on_cancel)
         self.Box = VBox([HBox([self.Ok, self.cancel]),
             self.zoom,
-            HBox([Label('threshold - % largest signal'), self.thresh, self.peak_mode, self.bprint, self.bexport] )])
+            HBox([Label('threshold - % largest signal'), self.thresh, self.peak_mode, self.bprint] )])
         display(self.Box )
         display(self.spec)
         display(self.out )
@@ -458,16 +478,6 @@ class NMRPeaker(object):
         self.out.clear_output(wait=True)
         with self.out:
             print(self.pklist())
-    def pkexport(self,event):
-        "exports the peaklist to file"
-        with open(self.pkname,'w') as FPK:
-            print(self.npkd.pk2pandas().to_csv(),file=FPK)
-        print('Peak list stored in ',self.pkname)
-    def _pkexport(self,event):
-        "exports the peaklist to file"
-        with open(self.pkname,'w') as FPK:
-            print(self.pklist(),file=FPK)
-        print('Peak list stored in ',self.pkname)
     def pklist(self):
         "creates peaklist for printing or exporting"
         text = ["ppm\tInt.(%)\twidth (Hz)"]
@@ -551,12 +561,17 @@ class NMRIntegrate(object):
                 button_style='success', # 'success', 'info', 'warning', 'danger' or ''
                 tooltip='Print to screen')
         self.bprint.on_click(self.print)
+        self.entry = widgets.IntText(value=0,description='Entry',min=0,layout=Layout(width='15%'))
+        self.value = widgets.FloatText(value=100,description='Value',layout=Layout(width='15%'))
+        self.set = widgets.Button(description="Set", button_style='success', layout=Layout(width='7%'))
+        self.set.on_click(self.set_value)
         self.spec = Output(layout={'border': '1px solid black'})
         self.out = Output(layout={'border': '1px solid red'})
         self.Box = VBox([
             HBox([self.Ok, self.cancel]),
             self.zoom,
-            HBox([self.bias, self.sep, self.wings, self.bprint] )])
+            HBox([self.bias, self.sep, self.wings,] ),
+            HBox([self.entry, self.value, self.set, self.bprint] ),])
         display( self.Box)
         display(self.spec)
         display( self.out)
@@ -574,6 +589,9 @@ class NMRIntegrate(object):
         self.spec.close()
         self.npkd.display()
         self.npkd.display_integrals(label=True, figure=self.npkd.mplfigure)
+    def set_value(self,b):
+        self.npkd.calibrate(self.entry.value, self.value.value)
+        self.display({'name':'value'})
     @property
     def zm(self):
         "returns the zoom window in ppm"
@@ -593,6 +611,11 @@ class NMRIntegrate(object):
         "do the integration"
         self.npkd.set_unit('ppm').integrate(separation=self.sep.value, wings=self.wings.value,
             bias=self.npkd.absmax*self.bias.value/100)
+        self.value.value = 100.0
+        for i,val in enumerate(self.npkd.integvalues):
+            if val == 100.0:
+                self.entry.value = i
+                break
         self.display({'name':'value'})
     def display(self, event):
         "refresh display from event"

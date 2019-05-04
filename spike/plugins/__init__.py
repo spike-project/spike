@@ -1,5 +1,6 @@
+
 #!/usr/bin/env python 
- # encoding: utf-8
+# encoding: utf-8
 """
 Plug-ins for the Spike package
 
@@ -96,7 +97,7 @@ def loadone(pluginname, pgfile=None, debug=True):
         if debug: print("     "+doc)
         plugins[pluginname] = m.__doc__
     except:
-        print("*** Importing  << %s >> Failed ***"%pluginname)
+        print("*** %s not loaded because of an error ***"%pluginname)
         if debug:
             traceback.print_exc()
             print("*** Continuing ***")
