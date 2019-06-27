@@ -28,12 +28,15 @@ VersionInfo = ["0", "99", "9"]   # Major - Minor - Micro
 release_notes="""
 # SPIKE Relase Notes
 
-#### 0.99.9 - May 2019
+#### 0.99.9 - June 2019
+- improved many aspect of the interactive Notebooks
 - improved Proc1DNMR Notebook
     - added peak-picker
     - added integration
-- Integrate plugins
-- added export to pandas of peak lists (1D so far)
+    - added bucketing
+- Integrate: plugin for 1D NMR data integration
+- added peak lists export to pandas
+- added limit to the number of peak to be displayed on screen (default 1000)
 
 #### 0.99.8 - April 2019
 - corrects a BIG BUG which hampers the import of 1D NMR data-sets,

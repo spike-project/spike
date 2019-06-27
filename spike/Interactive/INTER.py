@@ -29,7 +29,7 @@ from ..File.BrukerNMR import Import_1D
 REACTIVE = True
 
 class FileChooser:
-    """a simple file chooser for Jupyter - not used"""
+    """a simple file chooser for Jupyter - obsolete - not used"""
     def __init__(self, base=None, filetype=['fid','ser'], mode='r', show=True):
         if base is None:
             self.curdir = "/"
@@ -182,7 +182,7 @@ class Show1D(object):
         self.data.display(scale=self.scale.value, new_fig=False, figure=self.ax, zoom=self.zm, title=self.title)
         if self.integ.value:
             try:
-                self.data.display_integrals(label=True, integscale=self.scaleint.value, integoff=self.offset.value, figure=self.ax, zoom=self.zm)
+                self.data.display_integral(label=True, integscale=self.scaleint.value, integoff=self.offset.value, figure=self.ax, zoom=self.zm)
             except:
                 print('no or wrong integrals')
                 pass
@@ -193,6 +193,105 @@ class Show1D(object):
                 print('no or wrong peaklist')
                 pass
         self.ax.set_xlim(left=self.zm[0], right=self.zm[1])
+
+class SimpleZoom(HBox):
+    def __init__(self, **kwargs):
+        self.zoomw = widgets.FloatRangeSlider(value=[0, 100],
+        min=0, max=100.0, step=0.1, layout=Layout(width='60%'), description='zoom (%):',
+        continuous_update=REACTIVE, readout=False, readout_format='.1f',)
+        self.zoomdisplay = widgets.Label('- / -')
+        self.zoomfull = widgets.Button(description="Full", button_style='')
+        self.zoomfull.on_click(self.zfull)
+        self.Box = [HBox([self.zoomw,self.zoomdisplay,self.zoomfull])]
+        self.value = [0,100]
+        super().__init__( children=self.Box, layout=Layout(width='auto'), **kwargs)
+        self.zoomw.observe(self.ob)
+    def ob(self, event):
+        "observe changes and set values"
+        if event['name']=='value':
+            self.value = self.zoomw.value
+    @property
+    def zm(self):
+        "returns the zoom window in ppm"
+        z = self.zoomw.value
+        left = self.data.axis1.itop(z[0]*self.data.size1/100)
+        right = self.data.axis1.itop(z[1]*self.data.size1/100)
+        self.zoomdisplay.value = "%.2f / %.2f"%(left,right)
+        return (left,right)
+    def zfull(self, b):
+        self.zoomw.value = [0,100]
+
+class _Phaser1D(object):
+    """
+    In development - unfinished !
+    An interactive phaser in 1D NMR
+
+        Phaser1D(spectrum)
+
+    best when in %matplotlib inline
+
+    """
+    def __init__(self, data):
+        self.scale = widgets.FloatSlider(description='scale:', min=1, max=100, step=0.5,
+                            layout=Layout(width='30%'), continuous_update=REACTIVE)
+        self.p0 = widgets.FloatSlider(description='P0:',min=-180, max=180, step=0.1,
+                            layout=Layout(width='100%'), continuous_update=REACTIVE)
+        self.p1 = widgets.FloatSlider(description='P1:',min=-360, max=360, step=1.0,
+                            layout=Layout(width='100%'), continuous_update=REACTIVE)
+        self.pivot = widgets.FloatSlider(description='pivot:',max=data.axis1.itop(0), min=data.axis1.itop(data.size1),
+                            layout=Layout(width='30%'),  continuous_update=REACTIVE)
+        self.pivot.value = (data.axis1.itop(data.size1/2))
+        self.zoom = SimpleZoom()
+        self.scale.observe(self.ob)
+        self.zoom.observe(self.ob)
+        self.p0.observe(self.ob)
+        self.p1.observe(self.ob)
+        self.pivot.observe(self.ob)
+        self.button = widgets.Button(description="Ok", button_style='success')
+        self.button.on_click(self.on_Apply)
+        self.cancel = widgets.Button(description="Cancel", button_style='warning')
+        self.cancel.on_click(self.on_cancel)
+        display(HBox([self.button, self.cancel]))
+#       interact( self.phase, scale=self.scale, p0=self.p0, p1=self.p1, pivot=self.pivot)
+        display( VBox([ HBox([self.scale, self.pivot]),
+                        self.zoom,
+                        self.p0, self.p1]) )
+        fi,ax = plt.subplots()
+        self.ax = ax
+        self.data = data
+        self.data.display(figure=self.ax)
+    def close_all(self):
+        for w in [self.p0, self.p1, self.scale, self.button, self.cancel, self.zoom]:
+            w.close()
+    def on_cancel(self, b):
+        self.close_all()
+        self.ax.clear()
+        self.data.display(new_fig=False, figure=self.ax)
+    def on_Apply(self, b):
+        lp0, lp1 = self.ppivot() # get centered values
+        print("Applied: phase(%.1f,  %.1f)"%(lp0, lp1))
+        self.close_all()
+        self.ax.clear()
+        self.data.phase(lp0, lp1).display(new_fig=False, figure=self.ax)
+    def ppivot(self):
+        "converts from pivot values to centered ones"
+        pp = (self.pivot.value - self.data.axis1.itop(self.data.size1))/  \
+             (self.data.axis1.itop(0)-self.data.axis1.itop(self.data.size1)) # this one is in 0.0 ... 1.0
+        return (self.p0.value + (pp-0.5)*self.p1.value, self.p1.value)
+
+    def ob(self, event):
+        "observe changes and start phasing"
+        if event['name']=='value':
+            self.phase()
+
+    def phase(self):
+        "apply phase and display"
+        self.ax.clear()
+        lp0, lp1 = self.ppivot() # get centered values
+        self.data.copy().phase(lp0, lp1).display(scale=self.scale.value, new_fig=False, figure=self.ax)
+        plt.plot([self.pivot.value,self.pivot.value],[0,self.data.absmax/self.scale.value])
+        z = self.zoom.value
+        self.ax.set_xlim(left=z[0], right=z[1] )
 
 class Phaser1D(object):
     """
@@ -215,7 +314,10 @@ class Phaser1D(object):
         self.pivot.value = (data.axis1.itop(data.size1/2))
         self.zoom = widgets.FloatRangeSlider(value=[0, 100],
             min=0, max=100.0, step=0.1, layout=Layout(width='60%'), description='zoom (%):',
-            continuous_update=REACTIVE, readout=True, readout_format='.1f',)
+            continuous_update=REACTIVE, readout=False, readout_format='.1f',)
+        self.zoomdisplay = widgets.Label('- / -')
+        self.zoomfull = widgets.Button(description="Full", button_style='success')
+        self.zoomfull.on_click(self.zfull)
         self.scale.observe(self.ob)
         self.zoom.observe(self.ob)
         self.p0.observe(self.ob)
@@ -227,23 +329,34 @@ class Phaser1D(object):
         self.cancel.on_click(self.on_cancel)
         display(HBox([self.button, self.cancel]))
 #       interact( self.phase, scale=self.scale, p0=self.p0, p1=self.p1, pivot=self.pivot)
-        display( VBox([HBox([self.scale, self.pivot]), self.zoom, self.p0, self.p1]) )
+        display( VBox([ HBox([self.scale, self.pivot]),
+                        HBox([self.zoom,self.zoomdisplay,self.zoomfull]),
+                        self.p0, self.p1]) )
         fi,ax = plt.subplots()
         self.ax = ax
         self.data = data
         self.data.display(figure=self.ax)
-
-    def on_cancel(self, b):
-#        self.data.display(scale=self.scale.value);
-        for w in [self.p0, self.p1, self.scale, self.button, self.cancel, self.zoom, self.pivot]:
+    @property
+    def zm(self):
+        "returns the zoom window in ppm"
+        z = self.zoom.value
+        left=self.data.axis1.itop(z[0]*self.data.size1/100)
+        right=self.data.axis1.itop(z[1]*self.data.size1/100)
+        self.zoomdisplay.value = "%.2f / %.2f"%(left,right)
+        return (left,right)
+    def zfull(self, b):
+        self.zoom.value = [0,100]
+    def close_all(self):
+        for w in [self.p0, self.p1, self.scale, self.button, self.cancel, self.zoom, self.pivot, self.zoomdisplay, self.zoomfull]:
             w.close()
+    def on_cancel(self, b):
+        self.close_all()
         self.ax.clear()
         self.data.display(new_fig=False, figure=self.ax)
     def on_Apply(self, b):
         lp0, lp1 = self.ppivot() # get centered values
         print("Applied: phase(%.1f,  %.1f)"%(lp0, lp1))
-        for w in [self.p0, self.p1, self.scale, self.button, self.cancel, self.zoom, self.pivot]:
-            w.close()
+        self.close_all()
         self.ax.clear()
         self.data.phase(lp0, lp1).display(new_fig=False, figure=self.ax)
     def ppivot(self):
@@ -263,8 +376,8 @@ class Phaser1D(object):
         lp0, lp1 = self.ppivot() # get centered values
         self.data.copy().phase(lp0, lp1).display(scale=self.scale.value, new_fig=False, figure=self.ax)
         plt.plot([self.pivot.value,self.pivot.value],[0,self.data.absmax/self.scale.value])
-        z = self.zoom.value
-        self.ax.set_xlim(left=self.data.axis1.itop(z[0]*self.data.size1/100), right=self.data.axis1.itop(z[1]*self.data.size1/100) )
+        z = self.zm
+        self.ax.set_xlim(left=z[0], right=z[1] )
 
 class Phaser2D(object):
     """
@@ -425,8 +538,8 @@ class NMRPeaker(object):
             min=0, max=100.0, step=0.1, layout=Layout(width='60%'), description='zoom (%):',
             continuous_update=REACTIVE, readout=True, readout_format='.1f',)
         self.zoom.observe(self.display)
-        self.thresh = widgets.FloatSlider(value=50.0,
-            min=0.1, max=100.0, step=0.1, layout=Layout(width='30%'),
+        self.thresh = widgets.FloatLogSlider(value=20.0,
+            min=-1, max=2.0, base=10, step=0.01, layout=Layout(width='30%'),
             continuous_update=False, readout=True, readout_format='.1f')
         self.thresh.observe(self.pickpeak)
         self.peak_mode = widgets.Dropdown(options=['marker', 'bar'],value='marker',description='show as')
@@ -578,7 +691,7 @@ class NMRIntegrate(object):
         with self.spec:
             self.fig, self.ax = plt.subplots()
         self.npkd.display(new_fig=False, figure=self.ax, zoom=self.zm)
-        self.npkd.display_integrals(label=True, zoom=self.zm, figure=self.ax)
+        self.npkd.display_integral(label=True, zoom=self.zm, figure=self.ax, labelyposition=0.01, regions=False)
     def on_cancel(self, b):
         self.Box.close()
         self.spec.close()
@@ -588,9 +701,9 @@ class NMRIntegrate(object):
         self.Box.close()
         self.spec.close()
         self.npkd.display()
-        self.npkd.display_integrals(label=True, figure=self.npkd.mplfigure)
+        self.npkd.display_integral(label=True, figure=self.npkd.mplfigure, labelyposition=0.01, regions=False)
     def set_value(self,b):
-        self.npkd.calibrate(self.entry.value, self.value.value)
+        self.npkd.integral_calibrate(self.entry.value, self.value.value)
         self.display({'name':'value'})
     @property
     def zm(self):
@@ -602,7 +715,7 @@ class NMRIntegrate(object):
     def print(self,event):
         self.out.clear_output(wait=True)
         with self.out:
-            display(HTML(self.npkd.int2pandas().to_html()))
+            display(HTML( self.npkd.integrals.to_pandas().to_html() ))
     def integrate(self, event):
         "integrate from event"
         if event['name']=='value':
@@ -611,11 +724,11 @@ class NMRIntegrate(object):
         "do the integration"
         self.npkd.set_unit('ppm').integrate(separation=self.sep.value, wings=self.wings.value,
             bias=self.npkd.absmax*self.bias.value/100)
-        self.value.value = 100.0
-        for i,val in enumerate(self.npkd.integvalues):
-            if val == 100.0:
-                self.entry.value = i
-                break
+        # self.value.value = 100.0
+        # for i,val in enumerate(self.npkd.integvalues):
+        #     if val == 100.0:
+        #         self.entry.value = i
+        #         break
         self.display({'name':'value'})
     def display(self, event):
         "refresh display from event"
@@ -623,7 +736,7 @@ class NMRIntegrate(object):
             self.ax.clear()
             self.npkd.display(new_fig=False, figure=self.ax, zoom=self.zm)
             try:
-                self.npkd.display_integrals(label=True, figure=self.ax, zoom=self.zm)
+                self.npkd.display_integral(label=True, figure=self.ax, zoom=self.zm, labelyposition=0.01, regions=False)
             except:
                 pass
 

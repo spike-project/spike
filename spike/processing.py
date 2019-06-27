@@ -638,7 +638,7 @@ class Proc_Parameters(object):
         if cp.has_option("processing", "sizemulipliers"):   # that nasty bug was around once.
             raise Exception('Error on the name of sizemultiplier parameter, sizemuliplier instead of sizemultiplier')
         self.apex =    cp.get( "import", "apex")                                        # input file
-        self.format =    cp.get( "import", "format")                                    # used format Apex or Solarix
+        self.format =    cp.get( "import", "format", default="Solarix")                 # use format Apex or Solarix
         self.infile =  cp.get( "processing", "infile")                                  # input file
         self.interfile = cp.get( "processing", "interfile", None)                       # intermediatefile
         self.outfile = cp.get( "processing", "outfile")                                 # output file
