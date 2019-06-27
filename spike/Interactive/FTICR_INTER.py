@@ -25,6 +25,7 @@ from ..FTICR import FTICRData
 
 
 SIZEMAX = 8*1024*1024       # largest zone to display
+NbMaxDisplayPeaks = 1000      # maximum number of peaks to display at once
 
 # TOOLS FOR 2D FTICR
 class MR(object):
@@ -483,8 +484,8 @@ class MSPeaker(object):
             layout=Layout(width='100%'), description='zoom',
             continuous_update=False, readout=True, readout_format='.1f',)
         self.zoom.observe(self.display)
-        self.thresh = widgets.FloatSlider(value=50.0,
-            min=1, max=100.0, step=0.1, layout=Layout(width='30%'),
+        self.thresh = widgets.FloatLogSlider(value=20.0,
+            min=-1, max=2.0, base=10, step=0.01, layout=Layout(width='30%'),
             continuous_update=False, readout=True, readout_format='.1f')
         self.thresh.observe(self.pickpeak)
         self.peak_mode = widgets.Dropdown(options=['marker', 'bar'],value='marker',description='show as')
@@ -509,7 +510,8 @@ class MSPeaker(object):
     def pkprint(self,event):
         self.out.clear_output(wait=True)
         with self.out:
-            print(self.pklist())
+            display(HTML(self.npkd.pk2pandas().to_html()))
+#            print(self.pklist())
     def pkexport(self,event):
         "exports the peaklist to file"
         with open(self.pkname,'w') as FPK:
@@ -533,7 +535,7 @@ class MSPeaker(object):
             self.ax.clear()
             self.npkd.display(new_fig=False, figure=self.ax, zoom=self.zoom.value)
             try:
-                self.npkd.display_peaks(peak_label=True, figure=self.ax, zoom=self.zoom.value)
+                self.npkd.display_peaks(peak_label=True, figure=self.ax, zoom=self.zoom.value, NbMaxPeaks=NbMaxDisplayPeaks)
             except:
                 pass
     def pickpeak(self, event):
@@ -550,18 +552,8 @@ class MSPeaker(object):
             x = self.zoom.value
             y = [self.npkd.peaks.threshold]*2
             self.ax.plot(x,y,':r')
-            self.npkd.display_peaks(peak_label=True, peak_mode=self.peak_mode.value,figure=self.ax, zoom=self.zoom.value)
+            self.npkd.display_peaks(peak_label=True, peak_mode=self.peak_mode.value,figure=self.ax, zoom=self.zoom.value, NbMaxPeaks=NbMaxDisplayPeaks)
             self.ax.annotate('%d peaks detected'%len(self.npkd.peaks) ,(0.05,0.95), xycoords='figure fraction')
-    def _pp(self):
-        "do the peak-picking calling pp().centroid()"
-        self.ax.clear()
-        self.npkd.set_unit('m/z').peakpick(autothresh=self.thresh.value, verbose=False).centroid()
-        self.npkd.display(new_fig=False, figure=self.ax)
-        x = [self.npkd.axis1.lowmass, self.npkd.axis1.highmass]
-        y = [self.npkd.peaks.threshold]*2
-        self.ax.plot(x,y,':r')
-        self.npkd.display_peaks(peak_label=True, figure=self.ax)
-        self.ax.annotate('%d peaks detected'%len(self.npkd.peaks) ,(0.05,0.95), xycoords='figure fraction')
 
 class Calib(object):
     "a simple tool to show and modify calibration cste"

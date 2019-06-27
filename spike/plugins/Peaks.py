@@ -76,6 +76,7 @@ import warnings
 #from spike.util.signal_tools import findnoiselevel, findnoiselevel_2D
 
 debug = 0
+NbMaxDisplayPeaks = 1000      # maximum number of peaks to display at once
 def _identity(x):
     "the null function - used as default function argument"
     return x
@@ -279,11 +280,12 @@ class Peak1DList(PeakList):
         """
         lst = [pk._report(f=f) for pk in self ]
         return "\n".join(lst)
-    def display(self, peak_label=False, peak_mode="marker", zoom=None, show=False, f=_identity, color = 'red', markersize=None, figure=None, scale=1.0):
+    def display(self, peak_label=False, peak_mode="marker", zoom=None, show=False, f=_identity, color = 'red', markersize=None, figure=None, scale=1.0, NbMaxPeaks=NbMaxDisplayPeaks):
         """
         displays 1D peaks
         zoom is in index
         peak_mode is either "marker" or "bar"
+        NbMaxPeaks is the maximum number of peaks to displayin the zoom window (show only the largest)
         """
         from spike.Display import testplot
         plot = testplot.plot()
@@ -291,23 +293,31 @@ class Peak1DList(PeakList):
             fig = plot.subplot(111)
         else:
             fig = figure
+        # create and filter list
         if zoom:
             z0=zoom[0]
             z1=zoom[1]
-            pkl = [i for i,p in enumerate(self) if p.pos>=z0 and p.pos<=z1]
+            pkl = [i for i,p in enumerate(self) if p.pos>=z0 and p.pos<=z1]  # index of peaks on zoom window
         else:
             pkl = range(len(self))
-        mmax = max(self.intens)/scale
-        pk = list(filter(lambda p:self.intens[p]<=mmax, pkl))
+        if peak_mode == "marker":   # in marker mode, removes peaks too high
+            mmax = max(self.intens)/scale
+            pkl = list(filter(lambda i:self.intens[i]<=mmax, pkl))
+        if len(pkl)>NbMaxPeaks:     # too many to display
+            pkl.sort(reverse=True, key=lambda i: self[i].intens)
+            pkl = pkl[:NbMaxPeaks]
+        # now display
         if peak_mode == "marker":
-            fig.plot(f(self.pos[pk]), self.intens[pk], "x", color=color)
+            fig.plot(f(self.pos[pkl]), self.intens[pkl], "x", color=color)
         elif peak_mode == "bar":
-            for p in self[pk]:
+            for i in pkl:
+                p = self[i]
                 fig.plot( [f(p.pos),f(p.pos)], [0,p.intens], '-', color=color)
         else:
             raise Exception("wrong peak_mode")
         if peak_label:
-            for p in self:
+            for i in pkl:
+                p = self[i]
                 fig.annotate(p.label,(f(p.pos), p.intens),
                     xycoords='data', xytext=(0, 10), textcoords='offset points',
                     rotation=40,color='red',fontsize=7,
@@ -354,13 +364,17 @@ class Peak2DList(PeakList):
         """
         lst = [pk._report(f1=f1, f2=f2) for pk in self ]
         return "\n".join(lst)
-    def display(self, axis = None, peak_label=False, zoom=None, show=False, f1=_identity, f2=_identity, color=None, markersize=6):
+    def display(self, axis = None, peak_label=False, zoom=None, show=False, f1=_identity, f2=_identity, color=None, markersize=6, figure=None, NbMaxPeaks=NbMaxDisplayPeaks):
         """
         displays 2D peak list
         zoom is in index
         """
         import spike.Display.testplot as testplot
         plot = testplot.plot()
+        if figure is None:
+            fig = plot.subplot(111)
+        else:
+            fig = figure
         if zoom is not None:
             (z1lo, z1up, z2lo, z2up) = flatten(zoom)
             pk = []
@@ -374,14 +388,14 @@ class Peak2DList(PeakList):
         if axis is None:
             plF1 = self.posF1 # these are ndarray !
             plF2 = self.posF2
-            plot.plot(f2(plF2[pk]), f1(plF1[pk]), "x", color=color, markersize=markersize)
+            fig.plot(f2(plF2[pk]), f1(plF1[pk]), "x", color=color, markersize=markersize)
             if peak_label:
                 for p in pk:
                     plp = self[p]
-                    plot.text(1.01*plp.posF2, 1.01*plp.posF1, plp.label, color=color, markersize=markersize)
+                    fig.text(1.01*plp.posF2, 1.01*plp.posF1, plp.label, color=color, markersize=markersize)
         else:
             raise Exception("to be done")
-        if show: plot.show()
+        if show: fig.show()
 
 def _peaks2d(npkd, threshold = 0.1, zoom = None, value = False, zones=0):
     '''
@@ -526,6 +540,10 @@ def centroid1d(npkd, npoints=3, reset_label=True):
         pk.pos = popt[0]
         pk.intens = popt[1]
         pk.width = popt[2]
+        errors = np.sqrt(np.diag(pcov))
+        pk.pos_err = errors[0]
+        pk.intens_err = errors[1]
+        pk.width_err = errors[2]
     if reset_label:
         npkd.peaks.pos2label()
 
@@ -565,6 +583,13 @@ def centroid2d(npkd, npoints_F1=3, npoints_F2=3):
         pk.intens = popt[2]
         pk.widthF1 = popt[3]
         pk.widthF2 = popt[4]
+        errors = np.sqrt(np.diag(pcov))
+        print(errors)
+        pk.posF1_err = errors[0]
+        pk.posF2_err = errors[1]
+        pk.intens_err = errors[2]
+        pk.widthF1_err = errors[3]
+        pk.widthF2_err = errors[4]
 #-------------------------------------------------------
 def centroid(npkd, *arg, **kwarg):
     if npkd.dim == 1:
@@ -579,7 +604,7 @@ def centroid(npkd, *arg, **kwarg):
         raise Exception("Centroid yet to be done")
     return npkd
 #-------------------------------------------------------
-def display_peaks(npkd, peak_label=False, peak_mode="marker", zoom=None, show=False, color=None, markersize=6, figure=None, scale=1.0):
+def display_peaks(npkd, peak_label=False, peak_mode="marker", zoom=None, show=False, color=None, markersize=6, figure=None, scale=1.0, NbMaxPeaks=NbMaxDisplayPeaks):
     """
     display the content of the peak list, 
     peak_mode is either "marker" (default) or "bar" (1D only)
@@ -591,7 +616,7 @@ def display_peaks(npkd, peak_label=False, peak_mode="marker", zoom=None, show=Fa
             ff1 = npkd.axis1.itoc
         else:
             ff1 = lambda x : npkd.axis1.itoc(2*x)
-        return npkd.peaks.display( peak_label=peak_label, peak_mode=peak_mode, zoom=(z1,z2), show=show, f=ff1, color=color, markersize=markersize, figure=figure, scale=scale)
+        return npkd.peaks.display( peak_label=peak_label, peak_mode=peak_mode, zoom=(z1,z2), show=show, f=ff1, color=color, markersize=markersize, figure=figure, scale=scale, NbMaxPeaks=NbMaxPeaks)
     elif npkd.dim == 2:
         z1lo, z1up, z2lo, z2up = parsezoom(npkd, zoom)
         if npkd.axis1.itype == 0:  # if real
@@ -602,7 +627,7 @@ def display_peaks(npkd, peak_label=False, peak_mode="marker", zoom=None, show=Fa
             ff2 = npkd.axis2.itoc
         else:
             ff2 = lambda x : npkd.axis2.itoc(2*x)
-        return npkd.peaks.display( peak_label=peak_label, zoom=((z1lo,z1up),(z2lo,z2up)), show=show, f1=ff1, f2=ff2, color=color, markersize=markersize, figure=figure)
+        return npkd.peaks.display( peak_label=peak_label, zoom=((z1lo,z1up),(z2lo,z2up)), show=show, f1=ff1, f2=ff2, color=color, markersize=markersize, figure=figure, NbMaxPeaks=NbMaxPeaks)
     else:
         raise Exception("to be done")
 #-------------------------------------------------------
@@ -635,16 +660,109 @@ def report_peaks(npkd, file=None, format=None):
         raise Exception("to be done")
 #-------------------------------------------------------
 def pk2pandas(npkd):
-    "export extract of current peak list to pandas Dataframe"
+    "export extract of current peak list to pandas Dataframe - in current unit"
+    import spike.FTMS
+    if isinstance(npkd, spike.FTMS.FTMSData):
+        return pk2pandas_ms(npkd)
+    else:
+        return pk2pandas_nmr(npkd)
+def pk2pandas_ms(npkd):
+    "export extract of current peak list to pandas Dataframe for MS datasets"
     import pandas as pd
-    w_itohz = 2*npkd.axis1.specwidth/npkd.cpxsize1
-    P1 = pd.DataFrame({
-        'Id':[ pk.Id for pk in npkd.peaks],
-        'Label':npkd.peaks.label,
-        'Position':npkd.axis1.itoc(npkd.peaks.pos),
-        'Intensity':npkd.peaks.intens,
-        'Width':[ pk.width*w_itohz for pk in npkd.peaks]   # width are in Hz
-    }).set_index('Id')
+    if npkd.dim == 1:
+        width = np.array([pk.width for pk in npkd.peaks])   # width have to be computed in m/z
+        width_array = 0.5*abs(npkd.axis1.itoc(npkd.peaks.pos+width) - npkd.axis1.itoc(npkd.peaks.pos-width))
+
+        err = np.array([pk.pos_err for pk in npkd.peaks])
+        pos_err_array = 0.5*abs(npkd.axis1.itoc(npkd.peaks.pos+err) - npkd.axis1.itoc(npkd.peaks.pos-err))
+        P1 = pd.DataFrame({
+            'Id':[ pk.Id for pk in npkd.peaks],
+            'Label':npkd.peaks.label,
+            'm/z':npkd.axis1.itoc(npkd.peaks.pos),
+            u'Δm/z':width_array,
+            'R':  np.around(npkd.axis1.itoc(npkd.peaks.pos)/width_array,-3),
+            'Intensity':npkd.peaks.intens,
+            u'ε_m/z': pos_err_array,
+            u'ε_Intensity': [pk.intens_err for pk in npkd.peaks]
+        }).set_index('Id')
+    elif npkd.dim == 2:
+        # width in m/z
+        width1 = np.array([pk.widthF1 for pk in npkd.peaks])   # width have to be computed in m/z
+        width1_array = 0.5*abs(npkd.axis1.itoc(npkd.peaks.pos+npkd.peaks.width1) - npkd.axis1.itoc(npkd.peaks.pos-npkd.peaks.width1))
+        width2 = np.array([pk.widthF2 for pk in npkd.peaks])   # width have to be computed in m/z
+        width2_array = 0.5*abs(npkd.axis2.itoc(npkd.peaks.pos+npkd.peaks.width2) - npkd.axis2.itoc(npkd.peaks.pos-npkd.peaks.width2))
+
+        # then for position_error to current unit
+        err1 = np.array([pk.posF1_err for pk in npkd.peaks])
+        err2 = np.array([pk.posF2_err for pk in npkd.peaks])
+        pos1_err_array = 0.5*abs(npkd.axis1.itoc(npkd.peaks.posF1+err1) - npkd.axis1.itoc(npkd.peaks.posF1-err1))
+        pos2_err_array = 0.5*abs(npkd.axis2.itoc(npkd.peaks.posF2+err2) - npkd.axis2.itoc(npkd.peaks.posF2-err2))
+        # then R
+        R1 =  npkd.axis1.itoc(npkd.peaks.pos)/width1_array
+        R2 =  npkd.axis2.itoc(npkd.peaks.pos)/width2_array
+        P1 = pd.DataFrame({
+            'Id':[ pk.Id for pk in npkd.peaks],
+            'Label':npkd.peaks.label,
+            'm/z F1':npkd.axis1.itoc(npkd.peaks.posF1),
+            'm/z F2':npkd.axis2.itoc(npkd.peaks.posF2),
+            'Intensity':npkd.peaks.intens,
+            u'Δm/z F1':[ pk.widthF1*w_itohz1 for pk in npkd.peaks],   # width are in Hz
+            u'Δm/z F2':[ pk.widthF2*w_itohz2 for pk in npkd.peaks],
+            'R1':  np.around(R1,-3),
+            'R2':  np.around(R1,-3),
+            'R *1E6':  np.around(R1*R2/1E6,-3),
+            u'ε_m/z F1': pos1_err_array,
+            u'ε_m/z F2': pos2_err_array,
+            u'ε_Intensity': [pk.intens_err for pk in npkd.peaks]
+        }).set_index('Id')
+    else:
+        raise Exception('Not implemented in 3D yet')
+    return P1
+def pk2pandas_nmr(npkd):
+    "export extract of current peak list to pandas Dataframe for NMR datasets"
+    import pandas as pd
+    if npkd.dim == 1:
+        w_itohz = 2*npkd.axis1.specwidth/npkd.cpxsize1   # for width: points to Hz
+        # then for position_error to current unit
+        err = np.array([pk.pos_err for pk in npkd.peaks])
+        pos_err_array = npkd.axis1.itoc(npkd.peaks.pos+err) - npkd.axis1.itoc(npkd.peaks.pos-err)
+        pos_err_array = 0.5*np.abs(pos_err_array)
+        P1 = pd.DataFrame({
+            'Id':[ pk.Id for pk in npkd.peaks],
+            'Label':npkd.peaks.label,
+            'Position':npkd.axis1.itoc(npkd.peaks.pos),
+            'Intensity':npkd.peaks.intens,
+            'Width':[ pk.width*w_itohz for pk in npkd.peaks],   # width are in Hz
+            'Position_err': pos_err_array,
+            'Intensity_err': [pk.intens_err for pk in npkd.peaks],
+            'Width_err': [pk.width_err*w_itohz for pk in npkd.peaks]   # width are in Hz
+        }).set_index('Id')
+    elif npkd.dim == 2:
+        w_itohz1 = 2*npkd.axis1.specwidth/npkd.cpxsize1   # for width: points to Hz
+        w_itohz2 = 2*npkd.axis2.specwidth/npkd.cpxsize2
+        # then for position_error to current unit
+        err1 = np.array([pk.posF1_err for pk in npkd.peaks])
+        err2 = np.array([pk.posF2_err for pk in npkd.peaks])
+        pos1_err_array = npkd.axis1.itoc(npkd.peaks.posF1+err1) - npkd.axis1.itoc(npkd.peaks.posF1-err1)
+        pos2_err_array = npkd.axis2.itoc(npkd.peaks.posF2+err2) - npkd.axis2.itoc(npkd.peaks.posF2-err2)
+        pos1_err_array = 0.5*np.abs(pos1_err_array)
+        pos2_err_array = 0.5*np.abs(pos2_err_array)
+        P1 = pd.DataFrame({
+            'Id':[ pk.Id for pk in npkd.peaks],
+            'Label':npkd.peaks.label,
+            'Position F1':npkd.axis1.itoc(npkd.peaks.posF1),
+            'Position F2':npkd.axis2.itoc(npkd.peaks.posF2),
+            'Intensity':npkd.peaks.intens,
+            'Width F1':[ pk.widthF1*w_itohz1 for pk in npkd.peaks],   # width are in Hz
+            'Width F2':[ pk.widthF2*w_itohz2 for pk in npkd.peaks],
+            'Position_err F1': pos1_err_array,
+            'Position_err F2': pos2_err_array,
+            'Intensity_err': [pk.intens_err for pk in npkd.peaks],
+            'Width_err F1': [pk.widthF1_err*w_itohz1 for pk in npkd.peaks],   # width are in Hz
+            'Width_err F2': [pk.widthF2_err*w_itohz1 for pk in npkd.peaks]
+        }).set_index('Id')
+    else:
+        raise Exception('Not implemented in 3D yet')
     return P1
 
 class PeakTests(unittest.TestCase):
