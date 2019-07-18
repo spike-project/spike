@@ -233,7 +233,7 @@ class PeakList(list):
             keys = kwds.keys()
             keys.sort()
             extras = ", ".join(["%s=%s" % (k, kwds[k]) for k in keys])
-            raise(ValueError, "unrecognized keyword args: %s" % extras)
+            raise ValueError("unrecognized keyword args: %s" % extras)
     @property
     def intens(self):
         "returns a numpy array of the intensities"
@@ -247,9 +247,9 @@ class PeakList(list):
     def largest(self):
         "sort the peaklist in decresing order of intensities"
         self.sort(reverse = True, key = lambda p:p.intens)
-    def getitem(self,i,j):
-        print('getitem')
-        return type(self)(list.getitem(self,i,j))
+    # def __getitem__(self,i):
+    #     #print('getitem')
+    #     return type(self)(list.__getitem__(self,i))
 class Peak1DList(PeakList):
     """
     store a list of 1D peaks
@@ -539,11 +539,11 @@ def centroid1d(npkd, npoints=3, reset_label=True):
             print ( "peak %d (id %s) centroid could not be fitted"%(pk.Id, pk.label) )
         pk.pos = popt[0]
         pk.intens = popt[1]
-        pk.width = popt[2]
+        pk.width = np.sqrt(2.0)*popt[2]
         errors = np.sqrt(np.diag(pcov))
         pk.pos_err = errors[0]
         pk.intens_err = errors[1]
-        pk.width_err = errors[2]
+        pk.width_err = np.sqrt(2.0)*errors[2]
     if reset_label:
         npkd.peaks.pos2label()
 
@@ -581,15 +581,15 @@ def centroid2d(npkd, npoints_F1=3, npoints_F2=3):
         pk.posF1 = popt[0]
         pk.posF2 = popt[1]
         pk.intens = popt[2]
-        pk.widthF1 = popt[3]
-        pk.widthF2 = popt[4]
+        pk.widthF1 = np.sqrt(2.0)*popt[3]
+        pk.widthF2 = np.sqrt(2.0)*popt[4]
         errors = np.sqrt(np.diag(pcov))
         print(errors)
         pk.posF1_err = errors[0]
         pk.posF2_err = errors[1]
         pk.intens_err = errors[2]
-        pk.widthF1_err = errors[3]
-        pk.widthF2_err = errors[4]
+        pk.widthF1_err = np.sqrt(2.0)*errors[3]
+        pk.widthF2_err = np.sqrt(2.0)*errors[4]
 #-------------------------------------------------------
 def centroid(npkd, *arg, **kwarg):
     if npkd.dim == 1:
@@ -659,32 +659,44 @@ def report_peaks(npkd, file=None, format=None):
     else:
         raise Exception("to be done")
 #-------------------------------------------------------
-def pk2pandas(npkd):
-    "export extract of current peak list to pandas Dataframe - in current unit"
+def pk2pandas(npkd, full=False):
+    """export extract of current peak list to pandas Dataframe - in current unit
+    if full is False (default), the uncertainty are not listed
+    """
     import spike.FTMS
     if isinstance(npkd, spike.FTMS.FTMSData):
-        return pk2pandas_ms(npkd)
+        return pk2pandas_ms(npkd, full=full)
     else:
-        return pk2pandas_nmr(npkd)
-def pk2pandas_ms(npkd):
+        return pk2pandas_nmr(npkd, full=full)
+def pk2pandas_ms(npkd, full=False):
     "export extract of current peak list to pandas Dataframe for MS datasets"
     import pandas as pd
     if npkd.dim == 1:
         width = np.array([pk.width for pk in npkd.peaks])   # width have to be computed in m/z
         width_array = 0.5*abs(npkd.axis1.itoc(npkd.peaks.pos+width) - npkd.axis1.itoc(npkd.peaks.pos-width))
+        if full:
+            err = np.array([pk.pos_err for pk in npkd.peaks])
+            pos_err_array = 0.5*abs(npkd.axis1.itoc(npkd.peaks.pos+err) - npkd.axis1.itoc(npkd.peaks.pos-err))
+            P1 = pd.DataFrame({
+                'Id':[ pk.Id for pk in npkd.peaks],
+                'Label':npkd.peaks.label,
+                'm/z':npkd.axis1.itoc(npkd.peaks.pos),
+                u'Δm/z':width_array,
+                'R':  np.around(npkd.axis1.itoc(npkd.peaks.pos)/width_array,-3),
+                'Intensity':npkd.peaks.intens,
+                u'ε_m/z': pos_err_array,
+                u'ε_Intensity': [pk.intens_err for pk in npkd.peaks]
+            }).set_index('Id')
+        else:
+            P1 = pd.DataFrame({
+                'Id':[ pk.Id for pk in npkd.peaks],
+                'Label':npkd.peaks.label,
+                'm/z':npkd.axis1.itoc(npkd.peaks.pos),
+                u'Δm/z':width_array,
+                'R':  np.around(npkd.axis1.itoc(npkd.peaks.pos)/width_array,-3),
+                'Intensity':npkd.peaks.intens
+            }).set_index('Id')
 
-        err = np.array([pk.pos_err for pk in npkd.peaks])
-        pos_err_array = 0.5*abs(npkd.axis1.itoc(npkd.peaks.pos+err) - npkd.axis1.itoc(npkd.peaks.pos-err))
-        P1 = pd.DataFrame({
-            'Id':[ pk.Id for pk in npkd.peaks],
-            'Label':npkd.peaks.label,
-            'm/z':npkd.axis1.itoc(npkd.peaks.pos),
-            u'Δm/z':width_array,
-            'R':  np.around(npkd.axis1.itoc(npkd.peaks.pos)/width_array,-3),
-            'Intensity':npkd.peaks.intens,
-            u'ε_m/z': pos_err_array,
-            u'ε_Intensity': [pk.intens_err for pk in npkd.peaks]
-        }).set_index('Id')
     elif npkd.dim == 2:
         # width in m/z
         width1 = np.array([pk.widthF1 for pk in npkd.peaks])   # width have to be computed in m/z
@@ -692,33 +704,47 @@ def pk2pandas_ms(npkd):
         width2 = np.array([pk.widthF2 for pk in npkd.peaks])   # width have to be computed in m/z
         width2_array = 0.5*abs(npkd.axis2.itoc(npkd.peaks.pos+npkd.peaks.width2) - npkd.axis2.itoc(npkd.peaks.pos-npkd.peaks.width2))
 
-        # then for position_error to current unit
-        err1 = np.array([pk.posF1_err for pk in npkd.peaks])
-        err2 = np.array([pk.posF2_err for pk in npkd.peaks])
-        pos1_err_array = 0.5*abs(npkd.axis1.itoc(npkd.peaks.posF1+err1) - npkd.axis1.itoc(npkd.peaks.posF1-err1))
-        pos2_err_array = 0.5*abs(npkd.axis2.itoc(npkd.peaks.posF2+err2) - npkd.axis2.itoc(npkd.peaks.posF2-err2))
         # then R
         R1 =  npkd.axis1.itoc(npkd.peaks.pos)/width1_array
         R2 =  npkd.axis2.itoc(npkd.peaks.pos)/width2_array
-        P1 = pd.DataFrame({
-            'Id':[ pk.Id for pk in npkd.peaks],
-            'Label':npkd.peaks.label,
-            'm/z F1':npkd.axis1.itoc(npkd.peaks.posF1),
-            'm/z F2':npkd.axis2.itoc(npkd.peaks.posF2),
-            'Intensity':npkd.peaks.intens,
-            u'Δm/z F1':[ pk.widthF1*w_itohz1 for pk in npkd.peaks],   # width are in Hz
-            u'Δm/z F2':[ pk.widthF2*w_itohz2 for pk in npkd.peaks],
-            'R1':  np.around(R1,-3),
-            'R2':  np.around(R1,-3),
-            'R *1E6':  np.around(R1*R2/1E6,-3),
-            u'ε_m/z F1': pos1_err_array,
-            u'ε_m/z F2': pos2_err_array,
-            u'ε_Intensity': [pk.intens_err for pk in npkd.peaks]
-        }).set_index('Id')
+        if full:
+            # then for position_error to current unit
+            err1 = np.array([pk.posF1_err for pk in npkd.peaks])
+            err2 = np.array([pk.posF2_err for pk in npkd.peaks])
+            pos1_err_array = 0.5*abs(npkd.axis1.itoc(npkd.peaks.posF1+err1) - npkd.axis1.itoc(npkd.peaks.posF1-err1))
+            pos2_err_array = 0.5*abs(npkd.axis2.itoc(npkd.peaks.posF2+err2) - npkd.axis2.itoc(npkd.peaks.posF2-err2))
+            P1 = pd.DataFrame({
+                'Id':[ pk.Id for pk in npkd.peaks],
+                'Label':npkd.peaks.label,
+                'm/z F1':npkd.axis1.itoc(npkd.peaks.posF1),
+                'm/z F2':npkd.axis2.itoc(npkd.peaks.posF2),
+                'Intensity':npkd.peaks.intens,
+                u'Δm/z F1':width1_array,
+                u'Δm/z F2':width2_array,
+                'R1':  np.around(R1,-3),
+                'R2':  np.around(R1,-3),
+                'R *1E6':  np.around(R1*R2/1E6,-3),
+                u'ε_m/z F1': pos1_err_array,
+                u'ε_m/z F2': pos2_err_array,
+                u'ε_Intensity': [pk.intens_err for pk in npkd.peaks]
+            }).set_index('Id')
+        else:
+            P1 = pd.DataFrame({
+                'Id':[ pk.Id for pk in npkd.peaks],
+                'Label':npkd.peaks.label,
+                'm/z F1':npkd.axis1.itoc(npkd.peaks.posF1),
+                'm/z F2':npkd.axis2.itoc(npkd.peaks.posF2),
+                'Intensity':npkd.peaks.intens,
+                u'Δm/z F1':width1_array,
+                u'Δm/z F2':width2_array,
+                'R1':  np.around(R1,-3),
+                'R2':  np.around(R1,-3),
+                'R *1E6':  np.around(R1*R2/1E6,-3)
+            }).set_index('Id')
     else:
         raise Exception('Not implemented in 3D yet')
     return P1
-def pk2pandas_nmr(npkd):
+def pk2pandas_nmr(npkd, full=False):
     "export extract of current peak list to pandas Dataframe for NMR datasets"
     import pandas as pd
     if npkd.dim == 1:
@@ -727,16 +753,25 @@ def pk2pandas_nmr(npkd):
         err = np.array([pk.pos_err for pk in npkd.peaks])
         pos_err_array = npkd.axis1.itoc(npkd.peaks.pos+err) - npkd.axis1.itoc(npkd.peaks.pos-err)
         pos_err_array = 0.5*np.abs(pos_err_array)
-        P1 = pd.DataFrame({
-            'Id':[ pk.Id for pk in npkd.peaks],
-            'Label':npkd.peaks.label,
-            'Position':npkd.axis1.itoc(npkd.peaks.pos),
-            'Intensity':npkd.peaks.intens,
-            'Width':[ pk.width*w_itohz for pk in npkd.peaks],   # width are in Hz
-            'Position_err': pos_err_array,
-            'Intensity_err': [pk.intens_err for pk in npkd.peaks],
-            'Width_err': [pk.width_err*w_itohz for pk in npkd.peaks]   # width are in Hz
-        }).set_index('Id')
+        if full:
+            P1 = pd.DataFrame({
+                'Id':[ pk.Id for pk in npkd.peaks],
+                'Label':npkd.peaks.label,
+                'Position':npkd.axis1.itoc(npkd.peaks.pos),
+                'Intensity':npkd.peaks.intens,
+                'Width':[ pk.width*w_itohz for pk in npkd.peaks],   # width are in Hz
+                'Position_err': pos_err_array,
+                'Intensity_err': [pk.intens_err for pk in npkd.peaks],
+                'Width_err': [pk.width_err*w_itohz for pk in npkd.peaks]   # width are in Hz
+            }).set_index('Id')
+        else:
+            P1 = pd.DataFrame({
+                'Id':[ pk.Id for pk in npkd.peaks],
+                'Label':npkd.peaks.label,
+                'Position':npkd.axis1.itoc(npkd.peaks.pos),
+                'Intensity':npkd.peaks.intens,
+                'Width':[ pk.width*w_itohz for pk in npkd.peaks]   # width are in Hz
+            }).set_index('Id')
     elif npkd.dim == 2:
         w_itohz1 = 2*npkd.axis1.specwidth/npkd.cpxsize1   # for width: points to Hz
         w_itohz2 = 2*npkd.axis2.specwidth/npkd.cpxsize2
@@ -747,20 +782,31 @@ def pk2pandas_nmr(npkd):
         pos2_err_array = npkd.axis2.itoc(npkd.peaks.posF2+err2) - npkd.axis2.itoc(npkd.peaks.posF2-err2)
         pos1_err_array = 0.5*np.abs(pos1_err_array)
         pos2_err_array = 0.5*np.abs(pos2_err_array)
-        P1 = pd.DataFrame({
-            'Id':[ pk.Id for pk in npkd.peaks],
-            'Label':npkd.peaks.label,
-            'Position F1':npkd.axis1.itoc(npkd.peaks.posF1),
-            'Position F2':npkd.axis2.itoc(npkd.peaks.posF2),
-            'Intensity':npkd.peaks.intens,
-            'Width F1':[ pk.widthF1*w_itohz1 for pk in npkd.peaks],   # width are in Hz
-            'Width F2':[ pk.widthF2*w_itohz2 for pk in npkd.peaks],
-            'Position_err F1': pos1_err_array,
-            'Position_err F2': pos2_err_array,
-            'Intensity_err': [pk.intens_err for pk in npkd.peaks],
-            'Width_err F1': [pk.widthF1_err*w_itohz1 for pk in npkd.peaks],   # width are in Hz
-            'Width_err F2': [pk.widthF2_err*w_itohz1 for pk in npkd.peaks]
-        }).set_index('Id')
+        if full:
+            P1 = pd.DataFrame({
+                'Id':[ pk.Id for pk in npkd.peaks],
+                'Label':npkd.peaks.label,
+                'Position F1':npkd.axis1.itoc(npkd.peaks.posF1),
+                'Position F2':npkd.axis2.itoc(npkd.peaks.posF2),
+                'Intensity':npkd.peaks.intens,
+                'Width F1':[ pk.widthF1*w_itohz1 for pk in npkd.peaks],   # width are in Hz
+                'Width F2':[ pk.widthF2*w_itohz2 for pk in npkd.peaks],
+                'Position_err F1': pos1_err_array,
+                'Position_err F2': pos2_err_array,
+                'Intensity_err': [pk.intens_err for pk in npkd.peaks],
+                'Width_err F1': [pk.widthF1_err*w_itohz1 for pk in npkd.peaks],   # width are in Hz
+                'Width_err F2': [pk.widthF2_err*w_itohz1 for pk in npkd.peaks]
+            }).set_index('Id')
+        else:
+            P1 = pd.DataFrame({
+                'Id':[ pk.Id for pk in npkd.peaks],
+                'Label':npkd.peaks.label,
+                'Position F1':npkd.axis1.itoc(npkd.peaks.posF1),
+                'Position F2':npkd.axis2.itoc(npkd.peaks.posF2),
+                'Intensity':npkd.peaks.intens,
+                'Width F1':[ pk.widthF1*w_itohz1 for pk in npkd.peaks],   # width are in Hz
+                'Width F2':[ pk.widthF2*w_itohz2 for pk in npkd.peaks]
+            }).set_index('Id')
     else:
         raise Exception('Not implemented in 3D yet')
     return P1

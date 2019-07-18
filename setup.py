@@ -48,6 +48,11 @@ setuptools.setup(
 # cd spike; python dev_setup.py
 # doc/script_doc.sh
 # python3 setup.py sdist
+# rsync -av spikedoc/* /Volumes/web/CASC4DE/softwares/spike/spikedoc    
 # twine upload --repository-url https://test.pypi.org/legacy/ dist/*
-# pip install --extra-index-url https://testpypi.python.org/pypi
+# conda create -n test999 numpy scipy matplotlib pytables pandas
+# conda activate test999
+# pip install --extra-index-url https://testpypi.python.org/pypi spike-py
+# python -m spike.Tests -D NPKV2/DATA_test
+#
 # twine upload  dist/*

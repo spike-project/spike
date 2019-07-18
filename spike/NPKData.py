@@ -1508,7 +1508,7 @@ class NPKData(object):
                     else:
                         m = absmax/scale
 #                    level = (m*0.5, m*0.25, m*0.1, m*0.05)
-                    level = (m*0.05, m*0.1, m*0.25, m*0.5)  # correction for matplotlib 1.5.1
+                    level = sorted([m*0.05, m*0.1, m*0.25, m*0.5])  # correction for matplotlib 1.5.1
                     # print("level ", level)
                     # print("m ",  m)
                     if xlabel == "" and ylabel == "":

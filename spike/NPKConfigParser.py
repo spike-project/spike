@@ -120,10 +120,10 @@ class Tests(unittest.TestCase):
         from .Tests import filename
         self.announce()
         cp = NPKConfigParser()
-        cp.read(filename("test.mscf"))
+        cp.read(filename("test_.mscf"))
         print('sections:', list(cp.sections()))
         fname = cp.get("import", "apex", verbose=True, default="def_apex")
-        self.assertEqual("__DATA_test__/ubiquitine_2D_000002.d", fname)              # string
+        self.assertEqual("ubiquitine_2D_000002.d", fname)              # string
         self.assertEqual(2500.0, cp.getfloat("import", "highmass", default=123.45))   # float
         self.assertEqual(True, cp.getboolean("processing", "do_modulus", default=False))   # bool
         self.assertEqual(64*1024*1024*1024, cp.getint("processing", "largest_file", default=123))   # int

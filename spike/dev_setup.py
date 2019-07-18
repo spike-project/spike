@@ -28,6 +28,14 @@ VersionInfo = ["0", "99", "9"]   # Major - Minor - Micro
 release_notes="""
 # SPIKE Relase Notes
 
+#### 0.99.10 - July 2019
+- added Proc2DNMR Notebook - preliminary!
+- added skewness and kurtosis in bucket lists (optional)
+- improved Test suite (should mostly work under Windows now)
+- improved Proc1DNMR Notebook
+- corrected peak-picker so that centroid sets width as FWMH
+- added an option in Peaks.pk2pandas to output or not the uncertainties
+
 #### 0.99.9 - June 2019
 - improved many aspect of the interactive Notebooks
 - improved Proc1DNMR Notebook
