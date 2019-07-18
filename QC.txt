@@ -37,18 +37,20 @@
    4.69  spike/File/Spinit.py                  2    15 
    4.63  spike/util/simple_logger2.py                3
    4.40  spike/File/Spinit_with2D.py           1    19 
-   4.33  spike/processing.py                   7    27 
+   4.32  spike/processing.py                   7    27 
    4.32  spike/plugins/pg_sane.py                   26
    4.28  spike/File/HDF5File.py                7    45 
    4.06  spike/File/BrukerSMX.py                     6
    4.00  spike/util/shift_comments.py                5
    4.00  spike/File/__init__.py                      0
-   3.87  spike/Tests.py                        2     5 
    3.85  spike/plugins/Fitter.py               1    10 
+   3.84  spike/Tests.py                        2     5 
+   3.81  spike/plugins/Bucketing.py                  2
    3.81  spike/Orbitrap.py                           4
    3.68  spike/plugins/fastclean.py            2     0 
    3.67  spike/Algo/Cadzow.py                  3     1 
    3.66  spike/NPKConfigParser.py                    9
+   3.55  spike/plugins/Peaks.py                     16
    3.54  spike/File/Apex.py                    4    13 
    3.54  spike/Algo/maxent.py                  3    14 
    3.44  spike/File/mzXML.py                         3
@@ -58,12 +60,11 @@
    3.23  spike/util/log_all.py                       2
    3.14  spike/util/hashcheck.py                     2
    3.12  spike/plugins/zoom3D.py               1     2 
-   3.10  spike/plugins/Peaks.py                4    16 
    3.04  spike/Interactive/FTICR_INTER.py      1    64 
-   3.03  spike/Interactive/INTER.py            4    44 
+   3.02  spike/Interactive/INTER.py            4    52 
    3.01  spike/Algo/Cadzow_mpi2.py             5     0 
+   3.00  setup.py                                    0
    2.86  spike/plugins/urQRd.py                     11
-   2.86  spike/plugins/Bucketing.py                  2
    2.62  spike/util/readwrite_tools.py         1     1 
    2.57  spike/dev_setup.py                    1    14 
    2.50  spike/util/compat.py                        9
@@ -77,9 +78,8 @@
    2.14  spike/version_rev.py                        2
    2.12  spike/util/ValErr.py                        3
    2.12  spike/Algo/urQRd.py                         4
-   2.00  setup.py                                    0
+   1.93  spike/File/BrukerNMR.py                    20
    1.92  spike/File/Solarix.py                 8    22 
-   1.86  spike/File/BrukerNMR.py                    20
    1.79  spike/Algo/sane_old.py                     15
    1.67  spike/plugins/wavelet.py              2     7 
    1.56  spike/util/progrbarUi.py              1     5 
@@ -103,11 +103,11 @@
   -8.22  spike/util/sendgmail.py               6    30 
 -------------------------------------------------------
 
-Overall aggregated note value is :  4.85/10
+Overall aggregated note value is :  4.86/10
 
 score is 30 / 61 / 6  (top / med / low)
-Mean - Median note values are :  3.46/10 -  3.44/10
+Mean - Median note values are :  3.49/10 -  3.54/10
   Median is below 5.0 - let's try to improve it
-Total number of errors : 119 on a total of 97 files
+Total number of errors : 115 on a total of 97 files
 (but quite a few errors are just correct code not understood by pylint)
 -------------------------------------------------------
