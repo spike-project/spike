@@ -742,12 +742,15 @@ class Test(unittest.TestCase):
         "apply a complete processing test"
         # test is run from above spike
         from .Tests import directory    # tells where DATAsets for tests are located
-        if directory() != '__DATA_test__':
-            if not os.path.exists('__DATA_test__'):
-                print('creating DATA_test symlink')
-                os.symlink(directory(),'__DATA_test__')
-        main(["prgm", os.path.join(directory(),"test.mscf")])
-        os.unlink('__DATA_test__')
+        # if directory() != '__DATA_test__':
+        #     if not os.path.exists('__DATA_test__'):
+        #         print('creating DATA_test symlink')
+        #         os.symlink(directory(),'__DATA_test__')
+        # main(["prgm", os.path.join(directory(),"test.mscf")])
+        # os.unlink('__DATA_test__')
+        os.chdir(directory())
+        print(os.path.realpath(os.curdir))
+        main(["prgm", "test_.mscf"])
 
 ########################################################################################
 def Report_Table_Param():
@@ -800,6 +803,7 @@ def main(argv = None):
     if no argument is given, the standard file : process.mscf is used.
     """
     import datetime as dt
+    print('CONFIG:', os.path.realpath( os.curdir), os.path.exists(sys.argv[1]))
     stdate = dt.datetime.strftime(dt.datetime.now(),"%Y-%m-%d_%Hh%M")
     logflux = TeeLogger(erase=True, log_name="processing_%s.log"%stdate)
     print("Processing 2D FT-MS data -", dt.datetime.strftime(dt.datetime.now(),"%Y-%h-%d %Hh%M"))
@@ -827,7 +831,7 @@ def main(argv = None):
     #### get parameters from configuration file - store them in a parameter object
     cp = NPKConfigParser()
     print('address configfile is ', configfile)
-    cp.readfp(open(configfile))
+    cp.readfp(open(configfile,'r'))
     print("reading config file")
     param = Proc_Parameters(cp) # parameters from config file.. 
     # get optionnal parameters

@@ -144,17 +144,17 @@ def read_param(filename="acqus"):
         ls= f.split("\n")
     #    for v in ls:
         while ls:
-            v=ls.pop(0)
+            v = ls.pop(0)
             v = v.strip()
             if debug: print("-",v,"-")
             if (re.search(r"^\$\$",v)):  # print comments
-                dico['comments']=dico['comments']+"\n"+v
+                dico['comments'] = dico['comments']+"\n"+v
             else:
-                m=re.match(r"##(.*)= *\(0\.\.([0-9]*)\)(.*)$",v )   # match arrays
+                m = re.match(r"##(.*)= *\(0\.\.([0-9]*)\)(.*)$",v )   # match arrays
                 if (m is not None):
                     if debug: print("ARRAY",v,m.group(1,2,3))
                     (key,numb,line)=m.group(1,2,3)
-                    v=ls.pop(0)
+                    v = ls.pop(0)
                     v = v.lstrip()
                     while (not re.match(r"##",v)):    # concatenate all array lines
                         line = line+" "+v

@@ -23,6 +23,7 @@ The results are printed in cvs format either on screen or into a file
 
 from __future__ import print_function
 import numpy as np
+import scipy.stats as stats
 import unittest
 
 from spike import NPKError
@@ -30,7 +31,7 @@ from spike.NPKData import NPKData_plugin, NPKData
 from spike.util.signal_tools import findnoiselevel
 
 #---------------------------------------------------------------------------
-def bucket1d(data, zoom=(0.5, 9.5), bsize=0.04, pp=False, thresh=10, file=None):
+def bucket1d(data, zoom=(0.5, 9.5), bsize=0.04, pp=False, sk=False, thresh=10, file=None):
     """
  This tool permits to realize a bucket integration from the current 1D data-set.
  You will have to give  (all spectral values are in ppm)
@@ -38,6 +39,7 @@ def bucket1d(data, zoom=(0.5, 9.5), bsize=0.04, pp=False, thresh=10, file=None):
    - bsize: the size of the bucket
    - pp: if True, the number of peaks in the bucket is also added
         - peaks are detected if intensity is larger that thresh*noise
+   - sk: if True, skewness and kurtosis computed for each bucket
    - file: the filename to which the result is written
 
 
@@ -68,10 +70,13 @@ def bucket1d(data, zoom=(0.5, 9.5), bsize=0.04, pp=False, thresh=10, file=None):
     print(s, file=file)
     if file is not None:    # wants the prompt on the terminal
         print(s)
+    bklist = "center, bucket, max, min, std"
     if pp:
-        print("center, bucket, max, min, std, peaks_nb, bucket_size", file=file)
-    else:
-        print("center, bucket, max, min, std, bucket_size", file=file)
+        bklist += ", peaks_nb"
+    if sk:
+        bklist += ", skewness, kurtosis"
+    bklist += ', bucket_size'
+    print(bklist, file=file)
     there = max(start,end)   # end of the bucket region
     here = min(start,end)    # running center of the bucket - initialized to begining
     here2 = (here-bsize/2)   # running beginning of the bucket
@@ -81,24 +86,29 @@ def bucket1d(data, zoom=(0.5, 9.5), bsize=0.04, pp=False, thresh=10, file=None):
         inext = int(round(dcopy.axis1.ptoi(next))) # int of running en of bucket
         if ih<0 or inext<0:
             break
-        integ = dcopy.buffer[inext:ih].sum()
+        lbuf = dcopy.buffer[inext:ih]
+        integ = lbuf.sum()
         try:
-            maxv = dcopy.buffer[inext:ih].max()
-            minv = dcopy.buffer[inext:ih].min()
+            maxv = lbuf.max()
+            minv = lbuf.min()
         except ValueError:
             maxv = np.NaN     # sum and std returns nan - max returns an error ???
             minv = np.NaN     # sum and std returns nan - min returns an error ???
-        stdv = dcopy.buffer[inext:ih].std()
+        stdv = lbuf.std()
+        bkvlist = "%.3f, %.1f, %.1f, %.1f, %.1f"%(here, integ/((ih-inext)*bsize), maxv, minv, stdv) #, (ih-inext) )
         if pp:
             pk = np.where((peaklist>=inext)&(peaklist<ih))
-            print("%.3f, %.1f, %.1f, %.1f, %.1f, %d, %d"%(here, integ/((ih-inext)*bsize), maxv, minv, stdv, len(pk[0]), (ih-inext) ), file=file)
-        else:
-            print("%.3f, %.1f, %.1f, %.1f, %.1f, %d"%(here, integ/((ih-inext)*bsize), maxv, minv, stdv, (ih-inext) ), file=file)
+            bkvlist = "%s, %d"%(bkvlist, len(pk[0]))
+        if sk:
+            skew = stats.skew(lbuf)
+            kurt = stats.kurtosis(lbuf)
+            bkvlist = "%s, %.3f, %.3f"%(bkvlist, skew, kurt)
+        print("%s, %d"%(bkvlist, (ih-inext) ), file=file)
         here2 = next
         here = (here+bsize)
     return data
 #---------------------------------------------------------------------------
-def bucket2d(data, zoom=((0.5, 9.5),(0.5, 9.5)), bsize=(0.1, 0.1), pp=False, thresh=10, file=None):
+def bucket2d(data, zoom=((0.5, 9.5),(0.5, 9.5)), bsize=(0.1, 0.1), pp=False, sk=False, thresh=10, file=None):
     """
  This tool permits to realize a bucket integration from the current 2D data-set.
  You will have to give the following values:  (all spectral values are in ppm)
@@ -106,6 +116,7 @@ def bucket2d(data, zoom=((0.5, 9.5),(0.5, 9.5)), bsize=(0.1, 0.1), pp=False, thr
    - bsize (F1,F2): the sizes of the bucket
    - pp: if True, the number of peaks in the bucket is also added
         - peaks are detected if intensity is larger that thresh*noise
+   - sk: if True, skewness and kurtosis computed for each bucket
    - file: the filename to which the result is written
 
 
@@ -145,10 +156,14 @@ def bucket2d(data, zoom=((0.5, 9.5),(0.5, 9.5)), bsize=(0.1, 0.1), pp=False, thr
     print(s, file=file)
     if file is not None:    # wants the prompt on the terminal
         print(s)
+    bklist = "centerF1, centerF2, bucket, max, min, std"
     if pp:
-        print("centerF1, centerF2, bucket, max, min, std, peaks_nb, bucket_size_F1, bucket_size_F2", file=file)
-    else:
-        print("centerF1, centerF2, bucket, max, min, std, bucket_size_F1, bucket_size_F2", file=file)
+        bklist += ", peaks_nb"
+    if sk:
+        bklist += ", skewness, kurtosis"
+    bklist += ', bucket_size_F1, bucket_size_F2'
+    print(bklist, file=file)
+
     here1 = min(start1, end1)
     here1_2 = (here1-bsize1/2)
     there1 = max(start1, end1)
@@ -168,24 +183,27 @@ def bucket2d(data, zoom=((0.5, 9.5),(0.5, 9.5)), bsize=(0.1, 0.1), pp=False, thr
             inext2 = int(round(dcopy.axis2.ptoi(next2)))
             if ih2<0 or inext2<0:
                 break
-            integ = dcopy.buffer[inext1:ih1, inext2:ih2].sum()
+            lbuf = dcopy.buffer[inext1:ih1, inext2:ih2]
+            integ = lbuf.sum()
             area = ((ih1-inext1)*bsize1) * ((ih2-inext2)*bsize2)
             try:
-                maxv = dcopy.buffer[inext1:ih1, inext2:ih2].max()
-                minv = dcopy.buffer[inext1:ih1, inext2:ih2].min()
+                maxv = lbuf.max()
+                minv = lbuf.min()
             except ValueError:
                 maxv = np.NaN     # sum and std returns nan - max returns an error ???
                 minv = np.NaN     # sum and std returns nan - min returns an error ???
-            stdv = dcopy.buffer[inext1:ih1, inext2:ih2].std()
+            stdv = lbuf.std()
+            bkvlist = "%.3f, %.3f, %.1f, %.1f, %.1f, %.1f"%(here1, here2, integ/area, maxv, minv, stdv )
             if pp:
                 pk1 = [pk for pk in peaklist if (pk.posF1>=inext1 and pk.posF1<ih1) ] # peaks in F1
                 pk12 = [pk for pk in pk1 if (pk.posF2>=inext2 and pk.posF2<ih2) ]
-                print("%.3f, %.3f, %.1f, %.1f, %.1f, %.1f, %d, %d, %d"% \
-                    (here1, here2, integ/area, maxv, minv, stdv, len(pk12), (ih1-inext1), (ih2-inext2) ), file=file)
-            else:
-                print("%.3f, %.3f, %.1f, %.1f, %.1f, %.1f, %d, %d"% \
-                    (here1, here2, integ/area, maxv, minv, stdv, (ih1-inext1), (ih2-inext2) ), file=file)
-#            print(here1, here2, here1_2, here2_2, inext1, ih1, inext2, ih2, file=F)
+                bkvlist = "%s, %d"%(bkvlist, len(pk12))
+            if sk:
+                skew = stats.skew(lbuf.ravel())
+                kurt = stats.kurtosis(lbuf.ravel())
+                bkvlist = "%s, %.3f, %.3f"%(bkvlist, skew, kurt)
+            print("%s, %d, %d"%(bkvlist, (ih1-inext1), (ih2-inext2) ), file=file)
+
             here2_2 = next2
             here2 = (here2+bsize2)
         here1_2 = next1

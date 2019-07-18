@@ -104,7 +104,7 @@ def cleandir(verbose=True):
     files_to_keep = ('ubiquitin_5_scan_res_30000_1.dat','cytoC_ms_1scan_000001.d', 'cytoC_2D_000001.d',
                 'dosy-cluster2-corr.gs2', 'dosy-cluster2.gs2',
                 'proj.gs1', 'ubiquitine_2D_000002.d','Lasalocid-Tocsy', 'Sampling_file.list', 
-                'ubiquitine_2D_000002_Sampling_2k.list','test.mscf',
+                'ubiquitine_2D_000002_Sampling_2k.list','test.mscf','test_.mscf',
                 'ubiquitine_2D_000002.msh5','ubiquitine_2D_000002_mr.msh5',   # these two for testing 2D FT-ICR
                 'Sampling_file_aposteriori_cytoCpnas.list','angio_ms_000005.d',
                 'SubsP_220615_2DFT_2k_128k_000001.d',
@@ -141,10 +141,11 @@ def do_Test():
     '''
     import time
     import numpy
+    import platform
     global list_of_modules
     python = "{0}.{1}.{2}".format(*sys.version_info)
     npv = numpy.version.version
-    subject = "SPIKE tests performed on {2} {4} running python {0} / numpy {1} on host {3}".format(python, npv, *os.uname())
+    subject = "SPIKE tests performed on {2} {4} running python {0} / numpy {1} on host {3}".format(python, npv, *platform.uname())
     to_mail = [msg(subject), "Test program version %s"%__version__]
 
     # add spike prefix
