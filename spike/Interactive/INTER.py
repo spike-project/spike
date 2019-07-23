@@ -29,6 +29,41 @@ from ..File.BrukerNMR import Import_1D
 REACTIVE = True
 HEAVY = False
 
+def hidecode(initial='show', message=True):
+    """
+    this func adds a button to hide/show the code on a jupyter page
+    initial is either 'show' or 'hide'
+    see: https://stackoverflow.com/questions/27934885/how-to-hide-code-from-cells-in-ipython-notebook-visualized-with-nbviewer/28073228#28073228
+    """
+    from IPython.display import display, HTML, Markdown
+    if initial == 'show':
+        init = 'false'
+    elif initial == 'hide':
+        init = 'true'
+    if message:
+        msg = "<i>usefull to show a clean screen when processing is finished</i>"
+    else:
+        msg = ""
+    display(HTML('''
+<style>hr {height: 2px; border: 0;border-top: 1px solid #ccc;margin: 1em 0;padding: 0; }</style>
+<script>
+code_show=%s; 
+function code_toggle() {
+ if (code_show){
+ $('div.input').hide();
+ } else {
+ $('div.input').show();
+ }
+ code_show = !code_show
+} 
+$( document ).ready(code_toggle);
+</script>
+<form action="javascript:code_toggle()">
+<input type="submit" style="border:1px solid black; background-color:#DDD" value="hide/show the python code.">
+%s
+</form>'''%(init, msg)))
+
+
 class FileChooser:
     """a simple file chooser for Jupyter - obsolete - not used"""
     def __init__(self, base=None, filetype=['fid','ser'], mode='r', show=True):

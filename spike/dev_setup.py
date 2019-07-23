@@ -16,6 +16,8 @@ ProgramName = "SPIKE"
 VersionName = "Development version"
 VersionInfo = ["0", "99", "10"]   # Major - Minor - Micro
 
+# 1.0 will probably be when interactive Notebooks are really usefull !
+
 # Major.minor.micro (int) + name eg SPIKE_2_19_5
 # N.M.L
 #
@@ -30,10 +32,10 @@ release_notes="""
 
 #### 0.99.10 - July 2019
 - added Proc2DNMR Notebook - preliminary!
+- improved other Notebooks
 - added skewness and kurtosis in bucket lists (optional)
 - improved Test suite (should mostly work under Windows now)
-- improved Proc1DNMR Notebook
-- corrected peak-picker so that centroid sets width as FWMH
+- corrected peak-picker so that  width is FWMH after centroid
 - added an option in Peaks.pk2pandas to output or not the uncertainties
 
 #### 0.99.9 - June 2019
