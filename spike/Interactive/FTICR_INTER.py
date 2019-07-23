@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 from ipywidgets import interact, fixed, HBox, VBox, HTML, Label, Layout, Output
 import ipywidgets as widgets
 from IPython.display import display
+import numpy as np
 
 from .. import FTICR
 from ..NPKData import flatten, parsezoom
@@ -484,28 +485,32 @@ class MSPeaker(object):
             layout=Layout(width='100%'), description='zoom',
             continuous_update=False, readout=True, readout_format='.1f',)
         self.zoom.observe(self.display)
+        self.tlabel = Label('threshold (x noise level):')
         self.thresh = widgets.FloatLogSlider(value=20.0,
-            min=-1, max=2.0, base=10, step=0.01, layout=Layout(width='30%'),
+            min=np.log10(3), max=2.0, base=10, step=0.01, layout=Layout(width='30%'),
             continuous_update=False, readout=True, readout_format='.1f')
         self.thresh.observe(self.pickpeak)
         self.peak_mode = widgets.Dropdown(options=['marker', 'bar'],value='marker',description='show as')
         self.peak_mode.observe(self.display)
-        self.bexport = widgets.Button(description="Export",layout=Layout(width='10%'),
+        self.bexport = widgets.Button(description="Export",layout=Layout(width='7%'),
                 button_style='success', # 'success', 'info', 'warning', 'danger' or ''
                 tooltip='Export to csv file')
         self.bexport.on_click(self.pkexport)
-        self.bprint = widgets.Button(description="Print", layout=Layout(width='10%'),
-                button_style='success', # 'success', 'info', 'warning', 'danger' or ''
-                tooltip='Print to screen')
+        self.bprint = widgets.Button(description="Print", layout=Layout(width='7%'),
+                button_style='success', tooltip='Print to screen')
         self.bprint.on_click(self.pkprint)
-        self.spec = Output(layout={'border': '1px solid black'})
+        self.bdone = widgets.Button(description="Done", layout=Layout(width='7%'),
+                button_style='warning', tooltip='Fix results')
+        self.bdone.on_click(self.done)
+#        self.spec = Output(layout={'border': '1px solid black'})
         self.out = Output(layout={'border': '1px solid red'})
         display( VBox([self.zoom,
-            HBox([Label('threshold (x noise level):'), self.thresh, self.peak_mode, self.bprint, self.bexport] ),
-            self.spec, self.out ]) )
-        with self.spec:
-            self.fig, self.ax = plt.subplots()
-            self.npkd.display(new_fig=False, figure=self.ax, zoom=self.zoom.value)
+                      HBox([self.tlabel, self.thresh, self.peak_mode, self.bprint, self.bexport, self.bdone])
+                      ]) )
+        self.fig, self.ax = plt.subplots()
+        self.npkd.set_unit('m/z').peakpick(autothresh=self.thresh.value, verbose=False, zoom=self.zoom.value).centroid()
+        self.display()
+        display(self.out)
 
     def pkprint(self,event):
         self.out.clear_output(wait=True)
@@ -529,13 +534,17 @@ class MSPeaker(object):
             l = "%.6f\t%.1f\t%.0f\t%.0f"%(mz, pk.intens/intmax, round(mz/Dm,-3), area)
             text.append(l)
         return "\n".join(text)
-    def display(self, event):
-        "interactive wrapper to peakpick"
-        if event['name']=='value':
+    def display(self, event={'name':'value'}):
+        "display spectrum and peaks"
+        if event['name']=='value':  # event is passed by GUI - make it optionnal
             self.ax.clear()
             self.npkd.display(new_fig=False, figure=self.ax, zoom=self.zoom.value)
             try:
-                self.npkd.display_peaks(peak_label=True, figure=self.ax, zoom=self.zoom.value, NbMaxPeaks=NbMaxDisplayPeaks)
+                self.npkd.display_peaks(peak_label=True, peak_mode=self.peak_mode.value, figure=self.ax, zoom=self.zoom.value, NbMaxPeaks=NbMaxDisplayPeaks)
+                x = self.zoom.value
+                y = [self.npkd.peaks.threshold]*2
+                self.ax.plot(x,y,':r')
+                self.ax.annotate('%d peaks detected'%len(self.npkd.peaks) ,(0.05,0.95), xycoords='figure fraction')
             except:
                 pass
     def pickpeak(self, event):
@@ -545,15 +554,14 @@ class MSPeaker(object):
     def pp(self):
         "do the peak-picking calling pp().centroid()"
         #self.spec.clear_output(wait=True)
-        with self.spec:
-            self.npkd.set_unit('m/z').peakpick(autothresh=self.thresh.value, verbose=False, zoom=self.zoom.value).centroid()
-            self.ax.clear()
-            self.npkd.display(new_fig=False, figure=self.ax, zoom=self.zoom.value)
-            x = self.zoom.value
-            y = [self.npkd.peaks.threshold]*2
-            self.ax.plot(x,y,':r')
-            self.npkd.display_peaks(peak_label=True, peak_mode=self.peak_mode.value,figure=self.ax, zoom=self.zoom.value, NbMaxPeaks=NbMaxDisplayPeaks)
-            self.ax.annotate('%d peaks detected'%len(self.npkd.peaks) ,(0.05,0.95), xycoords='figure fraction')
+        self.npkd.set_unit('m/z').peakpick(autothresh=self.thresh.value, verbose=False, zoom=self.zoom.value).centroid()
+        self.display()
+    def done(self, event):
+        "exit GUI"
+        for w in [self.zoom, self.thresh, self.peak_mode, self.bprint, self.bexport, self.bdone]:
+            w.close()
+        self.tlabel.value = "threshold %.2f noise level"%self.thresh.value
+#        self.display()
 
 class Calib(object):
     "a simple tool to show and modify calibration cste"
