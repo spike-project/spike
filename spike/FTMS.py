@@ -125,16 +125,19 @@ class FTMSAxis(NPKData.Axis):
         """
         returns point value (i) from Hz value (h)
         """
-#        pt_value = value * (self.size+self.left_point-1)/self.specwidth - self.left_point
-        pt_value = (value - self.offsetfreq) * (self.size+self.left_point-1)/self.specwidth  - self.left_point
+#       pt_value = value * (self.size+self.left_point-1)/self.specwidth - self.left_point
+#       pt_value = (value - self.offsetfreq) * (self.size+self.left_point-1)/self.specwidth  - self.left_point
+# the -1 was removed to stick to FTICR Bruker/Solarix conventions (???)
+        pt_value = (value - self.offsetfreq) * (self.size+self.left_point  )/self.specwidth  - self.left_point
         return pt_value
     #-------------------------------------------------------------------------------
     def itoh(self, value):
         """
         returns Hz value (h) from point value (i)
         """      
-#        hz_value = (value + self.left_point)*self.specwidth / (self.size+self.left_point-1)
-        hz_value = (value  + self.left_point)*self.specwidth/(self.size+self.left_point-1) + self.offsetfreq
+#       hz_value = (value  + self.left_point)*self.specwidth/(self.size+self.left_point-1) + self.offsetfreq
+# the -1 was removed to stick to FTICR Bruker/Solarix conventions (???)
+        hz_value = (value  + self.left_point)*self.specwidth/(self.size+self.left_point  ) + self.offsetfreq
         return hz_value
     #-------------------------------------------------------------------------------
     def itomz(self, value):

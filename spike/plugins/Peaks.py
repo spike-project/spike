@@ -261,7 +261,7 @@ class Peak1DList(PeakList):
     def pos(self):
         "returns a numpy array of the positions in index"
         return np.array( [pk.pos for pk in self] )
-    def report(self, f=_identity, file=None, format=None):
+    def report(self, f=_identity, file=None, format=None, NbMaxPeaks=NbMaxDisplayPeaks):
         """
         print the peak list
         f is a function used to transform respectively the coordinates
@@ -271,9 +271,16 @@ class Peak1DList(PeakList):
 
         check documentation for Peak1D.report() for details on output format
         """
-        print ("# %d in Peak list"%len(self), file=file)
-        for pk in self:
-            print(pk.report(f=f, format=format), file=file)
+        if NbMaxPeaks<len(self):
+            print("# %d in Peak list - reporting the %d largest"%(len(self), NbMaxPeaks), file=file)
+            indices = list(np.argpartition(self.intens,len(self)-NbMaxPeaks)[-NbMaxPeaks:])
+            for i,pk in enumerate(self):
+                if i in indices:
+                    print(pk.report(f=f, format=format), file=file)
+        else:
+            print ("# %d in Peak list"%len(self), file=file)
+            for pk in self:
+                print(pk.report(f=f, format=format), file=file)
     def _report(self, f=_identity, file=None):
         """return full report for 1D peak list
         list is : Id, label, pos, intens, width,  pos_err, intens_err, width_err
@@ -631,7 +638,7 @@ def display_peaks(npkd, peak_label=False, peak_mode="marker", zoom=None, show=Fa
     else:
         raise Exception("to be done")
 #-------------------------------------------------------
-def report_peaks(npkd, file=None, format=None):
+def report_peaks(npkd, file=None, format=None, NbMaxPeaks=NbMaxDisplayPeaks):
     """
     print the content of the peak list, using the current unit
     
@@ -645,7 +652,7 @@ def report_peaks(npkd, file=None, format=None):
             ff1 = npkd.axis1.itoc
         else:
             ff1 = lambda x : npkd.axis1.itoc(2*x)
-        return npkd.peaks.report(f=ff1, file=file, format=format)
+        return npkd.peaks.report(f=ff1, file=file, format=format, NbMaxPeaks=NbMaxPeaks)
     elif npkd.dim == 2:
         if npkd.axis1.itype == 0:  # if real
             ff1 = npkd.axis1.itoc
@@ -655,7 +662,7 @@ def report_peaks(npkd, file=None, format=None):
             ff2 = npkd.axis2.itoc
         else:
             ff2 = lambda x : npkd.axis2.itoc(2*x)
-        return npkd.peaks.report( f1=ff1, f2=ff2, file=file, format=format)
+        return npkd.peaks.report( f1=ff1, f2=ff2, file=file, format=format, NbMaxPeaks=NbMaxPeaks)
     else:
         raise Exception("to be done")
 #-------------------------------------------------------
@@ -847,7 +854,7 @@ class PeakTests(unittest.TestCase):
         d.centroid(npoints=3)
         self.assertAlmostEqual(d.peaks[0].pos,2.2)
         self.assertAlmostEqual(d.peaks[0].intens,10.0)
-        self.assertAlmostEqual(d.peaks[0].width,1.2)
+        self.assertAlmostEqual(d.peaks[0].width,1.2*np.sqrt(2))
     def test_center2d(self):
         M=np.zeros((20, 20))
         # add one peak at (F1,F2) 5.3, 7.9 with widthes (5.0,1.3) 
@@ -865,8 +872,8 @@ class PeakTests(unittest.TestCase):
         self.assertAlmostEqual(d.peaks[0].posF1,5.3)
         self.assertAlmostEqual(d.peaks[0].posF2,7.9)
         self.assertAlmostEqual(d.peaks[0].intens,20.0)
-        self.assertAlmostEqual(d.peaks[0].widthF1,5.0)
-        self.assertAlmostEqual(d.peaks[0].widthF2,1.3)
+        self.assertAlmostEqual(d.peaks[0].widthF1,5.0*np.sqrt(2))
+        self.assertAlmostEqual(d.peaks[0].widthF2,1.3*np.sqrt(2))
 
 NPKData_plugin("pp", peakpick)
 NPKData_plugin("peakpick", peakpick)
