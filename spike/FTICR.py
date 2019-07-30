@@ -82,7 +82,50 @@ class FTICRAxis(FTMS.FTMSAxis):
             return "FT-ICR report axis at %f kHz,  %d complex pairs,  from physical mz = %8.3f   to m/z = %8.3f  R max (M=400) = %.0f"%  \
             (self.specwidth/1000, self.size/2, self.lowmass, self.highmass, 400.0/self.deltamz(400.))
 
+
     #-------------------------------------------------------------------------------
+# revisited Summer 2019
+# Bruker is:
+#   f = lo_fr + (sw / size) * (size - index)    # and not sw/(size-1) ???
+#   then
+# m/z -> f
+# Calmet == 4
+#   f = ml1/mz - ml2                    # - ml2 ??
+# Calmet == 5
+#   f =  ml3/mz^2 + ml1/mz + ml2        # + ml2  ??
+#
+# so it comes for f -> mz
+# Calmet == 4
+#   mz =  ml1/(f + ml2)
+# Calmet == 5
+#   0 =  ml3/mz^2 + ml1/mz + ml2-f
+#   D = ml1^2 - 4 ml3 (ml2-f)
+#   1/m = ( -ml1 +- sqrt(D) ) / ( 2ml3 )
+#
+# FTMS / itoh() and htoi() were also revisited.
+
+    def htomz(self, value):
+        """
+        return m/z (mz) from hertz value (h)
+        """
+        h = np.maximum(value,0.1)       # protect from divide by 0
+        if self.calibC == 0.0:
+            m = self.calibA/(self.calibB + h)
+        else:
+            delta = self.calibA**2 - 4*self.calibC*(self.calibB - h)
+            m =  2*self.calibC / (np.sqrt(delta)-self.calibA)   # 1/root
+        return m
+    def mztoh(self, value):
+        """
+        return Hz value (h) from  m/z (mz) 
+        """
+        m = np.maximum(value,1.0)             # protect from divide by 0
+        if self.calibC == 0.0:
+            return self.calibA/m  - self.calibB
+        else:
+            return self.calibA/m + self.calibC/(m**2)  + self.calibB
+
+# OLD VERSION
 # these are Bruker equations:
 #
 #    mzaxis = ml1/(ml2+faxis)
@@ -92,9 +135,9 @@ class FTICRAxis(FTMS.FTMSAxis):
 # m^2 F = -m^2*ML2 + m*ML1 +ML3
 # m^2*(F+ML2) - m*ML1 - ML3 = 0
 # delta = ML1^2 + 4*(ML2+F)ML3
-# m = ML1 + sqrt(delta) / (2 * (ML2 + f))
+# 1/m = ML1 + sqrt(delta) / (2 * (ML2 + f))  // probably quite wrong !
 
-    def htomz(self, value):
+    def _htomz(self, value):
         """
         return m/z (mz) from hertz value (h)
         """
@@ -107,7 +150,7 @@ class FTICRAxis(FTMS.FTMSAxis):
             m = self.calibA/(2*(self.calibB + h)) + np.sqrt(self.calibA**2 + 4*self.calibB*self.calibC + 4*self.calibC*h)/(2*(self.calibB + h))
             #m = -1*(self.calibA+np.sqrt((self.calibA**2)-4*(self.calibB-h)*self.calibC))/(2*(self.calibB-h)) #WK Edit 13/11/2017 based on Solarix info from DPAK
         return m
-    def mztoh(self, value):
+    def _mztoh(self, value):
         """
         return Hz value (h) from  m/z (mz) 
         """
@@ -175,23 +218,27 @@ class FTICR_Tests(unittest.TestCase):
         self.assertAlmostEqual(123*F.htomz(123), 321*F.htomz(321))    # verify that f*m/z is constant !
         self.assertAlmostEqual(123*F.mztoh(123), 321*F.mztoh(321))    # verify that f*m/z is constant !
         self.assertAlmostEqual(F.itoh(0), F.offsetfreq)
-        self.assertAlmostEqual(F.itoh(F.size-1), F.specwidth+F.offsetfreq)   # last point is size-1 !!!
-        for twice in range(2):
+        self.assertAlmostEqual(F.itoh(F.size), F.specwidth+F.offsetfreq)   # last point is size-1 !!!
+        for thrice in range(3):
             m0 = 555.0
             f0 = 260162.434213
             F = FTICRAxis(size=1000, specwidth=1667000, itype=0, currentunit="points", calibA=344.0974*419620.0, highmass=2000.0)
-            if twice == 1:  # second time tests 2nd order calibration
+            if thrice == 1:  # second and third time tests offset and 2nd order calibration
                 print ("TWICE") 
                 F.calibB = 55.0
                 F.calibC = 0.0
                 f0 = 260107.434213
+            if thrice == 2:
+                print ("THRICE")
+                F.calibC = 10000.0
+                f0 = 260162.466677
             for i in (1,2):
                 print(F.report())
                 print(F._report())   # low level report
                 for x in (301.0, 1.0, F.size-20.0, F.size-1.0):    # last point is size-1 !!!
                     print("point at index %d is at freq %f, m/z %f"%(x, F.itoh(x), F.itomz(x)))
-                    self.assertAlmostEqual(F.itoh(F.htoi(x)), x)
-                    self.assertAlmostEqual(F.mztoi(F.itomz(x)), x)
+                    self.assertAlmostEqual(F.itoh(F.htoi(x)), x, places=6)
+                    self.assertAlmostEqual(F.mztoi(F.itomz(x)), x, places=6)
                 # print("point at m/z %f is at freq %f"%(m0, F.mztoh(m0)))
                 self.assertAlmostEqual(F.mztoh(m0), f0, 5)
                 F.extract((300,F.size-20))
@@ -206,8 +253,8 @@ class FTICR_Tests(unittest.TestCase):
         print (ax1)
         print (ax2)
         self.assertAlmostEqual(ax1.sum(), ax2.sum())
-        self.assertAlmostEqual(ax1.min(), 5.99880024e+01)
-        self.assertAlmostEqual(ax1.max(), 61367.72645470906)
+        self.assertAlmostEqual(ax1.min(), 60.04664169805335) # 5.99880024e+01)
+        self.assertAlmostEqual(ax1.max(), 61427.71445710858) # 61367.72645470906)
         #        6.13677265e+04   3.06838632e+04   2.04559088e+04 ...,   6.01055107e+01, 6.00466991e+01   5.99880024e+01
     def test_trim(self):
         """

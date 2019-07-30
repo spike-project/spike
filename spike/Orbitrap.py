@@ -141,7 +141,7 @@ class Orbi_Tests(unittest.TestCase):
         self.announce()
         Oaxis = OrbiAxis(size = 1000, specwidth = 1667000, itype = 0, currentunit = "points", calibB=344.0974*(419620.0**2), highmass = 2000.0)
         self.assertAlmostEqual(Oaxis.itoh(0), 0)
-        self.assertAlmostEqual(Oaxis.itoh(Oaxis.size-1), Oaxis.specwidth)   # last point is size-1 !!!
+        self.assertAlmostEqual(Oaxis.itoh(Oaxis.size), Oaxis.specwidth)   # last point is size-1 !!!
         self.assertAlmostEqual(Oaxis.itomz(1023)/Oaxis.deltamz(Oaxis.itomz(1023)), 1023./2, places = 2)    # delta_m / m is 1/size at highest mass - before extraction
         self.assertAlmostEqual(123**2*Oaxis.itomz(123), 321**2*Oaxis.itomz(321))    # verify that f*m/z is constant !
         self.assertAlmostEqual(123*Oaxis.mztoi(123)**2, 321*Oaxis.mztoi(321)**2)    # verify that f*m/z is constant !
@@ -154,24 +154,6 @@ class Orbi_Tests(unittest.TestCase):
                 self.assertAlmostEqual(Oaxis.itoh(Oaxis.htoi(x)), x)
             Oaxis.extract([300,Oaxis.size-20])
             
-    def test_trim(self):
-        """
-        Test trimz 
-        """
-        O = OrbiData(buffer=np.zeros((500, 10000)))
-        O.specwidth = 1667000
-        O.ref_mass = 344.0974
-        O.ref_freq = 419620.0
-        O.highmass = 1000.0
-        print(O.report())
-        l1 = int(O.axis1.mztoi(O.axis1.highmass))
-        l2 = int(O.axis2.mztoi(O.axis2.highmass))
-        O.trimz()
-        self.assertEqual(l1, O.axis1.left_point)
-        self.assertEqual(l2, O.axis2.left_point)
-        self.assertEqual(O.size1, 500-l1)
-        self.assertEqual(O.size2, 10000-l2)
-        print("2D trimz gain is : %d %%" % (100*(1-(O.size1*O.size2/(500.*10000)))))
 
 #-------------------------------------------------------------------------------
 if __name__ == '__main__':
