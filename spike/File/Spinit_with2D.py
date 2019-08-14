@@ -372,7 +372,7 @@ def Import_2D(filename="data.dat"):
     elif representation[1] == 'COMPLEX':
         d.axis1.itype = 1      # complex
     else:
-        print('DATA_REPRESENTATION unknown: ', mode)
+        print('DATA_REPRESENTATION unknown: ', representation[1])
         d.axis1.itype = 0      #  real
     ###
     d.axis1.offset = -d.axis1.specwidth/2 + float(acqu['OFFSET_FREQ_2']) +float(acqu['SR'][1])

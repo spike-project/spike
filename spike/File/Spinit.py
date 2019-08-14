@@ -60,8 +60,8 @@ def read_param(filename="header.xml"):
                 pass
 # debug code
     if debug:
-        for i in dict.keys():
-            print(i+" = "+str(dict[i]))
+        for i in params.keys():
+            print(i+" = "+str(params[i]))
     return params
 
 def modify_val(headertree, key, value):
@@ -115,7 +115,8 @@ def read_1D(size, filename="data.dat"):
     
 ################################################################
 def read_2D(sizeF1, sizeF2, filename="data.dat"):
-    return npkbuf
+    "not done"
+    pass
 
 ################################################################
 def zerotime(acqu):
