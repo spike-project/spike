@@ -15,27 +15,26 @@ import os
 import unittest
 import numpy as np
 import time
-import array
-import tempfile
-
+import math
 import json
+
 import tables
 from tables.nodes import filenode
 
 if sys.version_info[0] < 3:
-    import ConfigParser
+    pass
 else:
-    import configparser as ConfigParser
     xrange = range
 
 
 # File_version is written into the file and tag the file itself 
 # to be changed only if the file format changes
 if sys.version_info[0] < 3:
-    __file_version__ = "0.9"
+    __file_version__ = "0.91"
 else:
-    __file_version__ = b"0.9"
+    __file_version__ = b"0.91"
 """
+__file_version__ 0.91 change in calibration equation. If using a 3 parameters equation, inverse calibB.
 __file_version__ 0.9 new list of attributes for FTMS axes
     additional files are now stored along the data in "attached" group.
 __file_version__ 0.89 transitionnal between 0.8 and 0.9 
@@ -135,6 +134,7 @@ class HDF5File(object):
         self.nparray = None
         self.chunks = None
         self.filters = None    # for compressing : tables.Filters(complevel=1, complib='zlib')
+        self.correct0p9_0p91 = False   # A hack to correct on the fly files during the 0.9 - 0.91 transition
         self.set_compression(compress)
         if access not in ("w", "r", "rw", "a", "r+"):
             raise Exception(access + " : acces key not valid")
@@ -208,7 +208,24 @@ class HDF5File(object):
         if self.debug > 0 : print("File_Version", info["File_Version"])
         
         if info["File_Version"] != __file_version__:
-            msg = """
+            if float(info["File_Version"]) == 0.9 and float(__file_version__) == 0.91:
+                #Just a file with the previous version of calibration
+                self.correct0p9_0p91 = True
+            else:
+                if float(info["File_Version"]) > float(__file_version__):
+                    msg = """
+
+WARNING
+The file {0} is of version {1} while this program handles file version {2} or lower.
+The file was written with a more recent version of the program than this one, and is incompatible.
+You have to upgrade to a newer version of SPIKE.
+to do this, run the following command:
+
+    pip install spike-py --upgrade
+
+""".format(self.fname, info["File_Version"].decode("ascii"), __file_version__.decode("ascii"))
+                else:
+                    msg = """
 
 WARNING
 The file {0} is from version {1} while this program handles file version {2}.
@@ -217,11 +234,11 @@ to do this run the following spike command:
 
 spike.File.HDF5File.update("{0}")
 
-or by running the following program: ( adapt to your local spike setup ) :
+or by running the following program:
 
 python -m spike.File.HDF5File update {0}
-""".format(self.fname, info["File_Version"],__file_version__)
-            raise Exception(msg)
+""".format(self.fname, info["File_Version"].decode("ascii"), __file_version__.decode("ascii"))
+                raise Exception(msg)
         return True
 
     ######### file nodes ################
@@ -522,7 +539,7 @@ python -m spike.File.HDF5File update {0}
             raise Exception("wrong mode, only 'onfile' and 'memory' allowed")
         if (self.debug > 1): print(type(self.data.buffer))
 
-#  Nw axes details
+#  Now axes details
 #        for table in self.hf.walk_nodes("/"+group,"Table"): # get the list of tables in the axes group
 #          values = table.read()
 #           print(values)
@@ -539,6 +556,9 @@ python -m spike.File.HDF5File update {0}
                 vv = values[i][j]                       # fetch value
                 if vv == 'None':  vv = None             # the string None codes for the object None !!!
                 setattr(ax, fields[j], vv)              # copy table entries into axis attribute
+            if self.correct0p9_0p91:    # a file from 0.9 => inverse calibB if calibC is non-null
+                if not math.isclose(ax.calibC,0):
+                    ax.calibB *= -1
             setattr(self.data, "axis%d"%(i+1), ax)      # and set axis
         
         self.data.adapt_size()      # axis sizes have to be updated
@@ -752,7 +772,7 @@ def update(fname, debug = 1):
     if debug > 0 : print("File_Version", fileversion)
     hf.close()
     hf.close()
-    if fileversion == float(__file_version__):
+    if fileversion == float(__file_version__) or fileversion == 0.9:
         print("File is up to date, there is nothing to do")
     if  fileversion < 0.6:
         raise Exception("The file %s is from version %s, which is too old to be updated, sorry"%(fname, fileversion))

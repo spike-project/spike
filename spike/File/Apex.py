@@ -15,6 +15,7 @@ import os
 import unittest
 import glob
 import os.path as op
+import math
 import numpy as np
 import tables
 from ..FTICR import FTICRData
@@ -147,6 +148,9 @@ def Import_1D(inifolder,outfile=""):
     data.axis1.highmass = float(params["MW_high"])
     data.axis1.left_point = 0
     data.axis1.offset = 0.0
+    if not math.isclose(data.axis1.calibC,0.0):
+        print('Using 3 parameters calibration,  Warning calibB is -ML2')
+        data.axis1.calibB *= -1
     
     data.params = params   # add the parameters to the data-set
         
@@ -212,6 +216,9 @@ def Import_2D(folder,outfile = "",F1specwidth = None):
     data.axis2.highmass = float(params["MW_high"])
     data.axis2.left_point = 0
     data.axis2.offset = 0.0
+    if not math.isclose(data.axis2.calibC,0.0):
+        print('Using 3 parameters calibration,  Warning calibB is -ML2')
+        data.axis2.calibB *= -1
 
     data.axis1.size = sizeF1    # then set parameters along F1- non classical axis -  
     # assumes most parameter are equivalent - except specwidth
@@ -223,9 +230,9 @@ def Import_2D(folder,outfile = "",F1specwidth = None):
             data.axis1.specwidth = 1.0/(2*f1)
         else:
             data.axis1.specwidth = data.axis2.specwidth     # else assume square...
-    data.axis1.calibA = float(params["ML1"])
-    data.axis1.calibB = float(params["ML2"])
-    data.axis1.calibC = float(params["ML3"])
+    data.axis1.calibA = data.axis2.calibA
+    data.axis1.calibB = data.axis2.calibB
+    data.axis1.calibC = data.axis2.calibC
     data.axis1.highfreq = data.axis1.calibA/float(params["EXC_low"])  # these two are in m/z !
     data.axis1.lowfreq = data.axis1.calibA/float(params["EXC_hi"])
     data.axis1.highmass = float(params["MW_high"])

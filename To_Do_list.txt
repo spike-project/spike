@@ -1,5 +1,7 @@
 FEATURES
 ========
+Doc de RMN et doc de MS
+
 more user examples in jupyter
 	- 1H 1D proc / visu
 	- 13C 1D proc / visu
@@ -12,9 +14,7 @@ more user examples in jupyter
 
 develop more cuda functions
 
-
 delta peak-picker 
-pandas for peaklists
 add peak lists to files
 
 spikecalib.py
@@ -24,7 +24,6 @@ Apex vs Solarix
         <method version="solariXcontrol_2" > dans l'entete de  apexAcquisition.method
         ExciteSweep 
         PULPROG_xx_seq et PULPROG_xx_compiled
-
 
 fermer le pool ou MPI en sortant via register.
 

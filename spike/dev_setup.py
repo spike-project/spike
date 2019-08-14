@@ -30,9 +30,12 @@ VersionInfo = ["0", "99", "10"]   # Major - Minor - Micro
 release_notes="""
 # SPIKE Relase Notes
 
-#### 0.99.10 - July 2019
+#### 0.99.10 - August 2019
+- changed calibration in FTICR-MS - now should better correspond to Bruker, both for linear and quadratic
+    - be carefull, the definitions are slightly modified, this should be taken into account when reading files,
+    however you should verify the calibration stored into previous files
 - added Proc2DNMR Notebook - preliminary!
-- improved other Notebooks
+- continued to improve other Notebooks
 - added skewness and kurtosis in bucket lists (optional)
 - improved Test suite (should mostly work under Windows now)
 - corrected peak-picker so that  width is FWMH after centroid
@@ -421,13 +424,13 @@ def do(arg):
 def plier():
     "fabrique le zip"
     name = "SPIKE_beta_" + ( "_".join(VersionInfo) )
-    dir = "../"+name
-    zip = dir+".zip"
-    do( ["rm", "-r", dir] )
-    do( ["rm", zip] )
-    do( ["mkdir", dir] )
-    do( ["hg", "clone", ".", dir] )
-    do( ["zip", "-r", zip, dir] )
+    dirn = "../"+name
+    zipn = dir+".zip"
+    do( ["rm", "-r", dirn] )
+    do( ["rm", zipn] )
+    do( ["mkdir", dirn] )
+    do( ["hg", "clone", ".", dirn] )
+    do( ["zip", "-r", zipn, dirn] )
     
     
 if __name__ == '__main__':
