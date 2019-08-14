@@ -1,12 +1,13 @@
 <!-- DO NOT MODIFY this file, it is generated automatically from dev_setup ! -->
 # SPIKE Relase Notes
 
-#### 0.99.10 - July 2019
+#### 0.99.10 - August 2019
+- changed calibration in FTICR-MS - now should better correspond to Bruker, both for linear and quadratic
 - added Proc2DNMR Notebook - preliminary!
+- improved other Notebooks
 - added skewness and kurtosis in bucket lists (optional)
 - improved Test suite (should mostly work under Windows now)
-- improved Proc1DNMR Notebook
-- corrected peak-picker so that centroid sets width as FWMH
+- corrected peak-picker so that  width is FWMH after centroid
 - added an option in Peaks.pk2pandas to output or not the uncertainties
 
 #### 0.99.9 - June 2019

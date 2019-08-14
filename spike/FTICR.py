@@ -94,12 +94,16 @@ class FTICRAxis(FTMS.FTMSAxis):
 # Calmet == 5
 #   f =  ml3/mz^2 + ml1/mz + ml2        # + ml2  ??
 #
+# But we decided to have constant role to ml2 (calibB)
+# so Calmet == 5 is changed to
+#   f =  ml3/mz^2 + ml1/mz - ml2
+#
 # so it comes for f -> mz
 # Calmet == 4
 #   mz =  ml1/(f + ml2)
 # Calmet == 5
 #   0 =  ml3/mz^2 + ml1/mz + ml2-f
-#   D = ml1^2 - 4 ml3 (ml2-f)
+#   D = ml1^2 + 4 ml3 (ml2+f)
 #   1/m = ( -ml1 +- sqrt(D) ) / ( 2ml3 )
 #
 # FTMS / itoh() and htoi() were also revisited.
@@ -112,18 +116,19 @@ class FTICRAxis(FTMS.FTMSAxis):
         if self.calibC == 0.0:
             m = self.calibA/(self.calibB + h)
         else:
-            delta = self.calibA**2 - 4*self.calibC*(self.calibB - h)
-            m =  2*self.calibC / (np.sqrt(delta)-self.calibA)   # 1/root
+            delta = self.calibA**2 + 4*self.calibC*(self.calibB + h)
+            m =  2*self.calibC / (np.sqrt(delta)-self.calibA)
         return m
     def mztoh(self, value):
         """
         return Hz value (h) from  m/z (mz) 
         """
         m = np.maximum(value,1.0)             # protect from divide by 0
+
         if self.calibC == 0.0:
             return self.calibA/m  - self.calibB
         else:
-            return self.calibA/m + self.calibC/(m**2)  + self.calibB
+            return self.calibA/m + self.calibC/(m**2)  - self.calibB
 
 # OLD VERSION
 # these are Bruker equations:

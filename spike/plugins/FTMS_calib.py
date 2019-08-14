@@ -194,7 +194,7 @@ def display_calib(npkd,  axis=1, compare=False):
             plt.plot(maxis, -axistodo.ppm_error( npkd.RefAxis.mztoi( maxis), maxis), 'r:' ) 
         except AttributeError:
             raise Exception('No Reference Axis available')
-    plt.title("Mean error %.2f ppm"%(axistodo.ppm(axistodo.imzmeas, axistodo.mzref)))
+    plt.title("Mean error %.3f ppm"%(axistodo.ppm(axistodo.imzmeas, axistodo.mzref)))
     return npkd
 
 def set_calib(npkd, mzmeas, mzref, axis=1):
@@ -212,7 +212,7 @@ def set_calib(npkd, mzmeas, mzref, axis=1):
 
 def calib(npk, axis=1, method='l1', verbose=False):
     """
-    the current FTMS experiment is recalibrated optimatly 
+    the current FTMS experiment is recalibrated optimaly 
     along its axis 'axis' (usefull only in 2D) using parameters provided with set_calib()
     uses the current (2 or 3 parameters) calibration
     

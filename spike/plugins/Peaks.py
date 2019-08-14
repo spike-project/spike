@@ -669,6 +669,7 @@ def report_peaks(npkd, file=None, format=None, NbMaxPeaks=NbMaxDisplayPeaks):
 def pk2pandas(npkd, full=False):
     """export extract of current peak list to pandas Dataframe - in current unit
     if full is False (default), the uncertainty are not listed
+    uses nmr or ms version depending on data_type
     """
     import spike.FTMS
     if isinstance(npkd, spike.FTMS.FTMSData):
