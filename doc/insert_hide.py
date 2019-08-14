@@ -40,7 +40,7 @@ class INSERTJS(object):
         '''
         Insert the javascripts in all the htmls
         '''
-        print "### inject_in_all"
+        print ("### inject_in_all")
         for path in glob.glob(op.join(self.folder, '*.*')):
             if path[-4:] == 'html':
                 with open(path,'r') as html_doc:
@@ -52,7 +52,7 @@ class INSERTJS(object):
                             print "### injection yet existing "
                 with open(path,'w') as html_doc_modif:
                     html_doc_modif.write(self.soup.prettify("utf-8")) # Rewrite the file with modification.
-        print "### injection finished "
+        print ("### injection finished ")
 
 if __name__ == "__main__":
     addr = sys.argv[1]

@@ -395,6 +395,7 @@ class Solarix_Tests(unittest.TestCase):
     #-------------------------------------------------
     def _test_Import_2D_keep_mem(self):
         "Test and time routine that import 2D from the MS-FTICR folder in memory"
+        from ..Tests import filename, directory
         self.announce()
         t0 = time()
         d = filename("subP_2D_000001.d")
@@ -448,6 +449,7 @@ class Solarix_Tests(unittest.TestCase):
     #-------------------------------------------------
     def _test_3(self):
         "Another strategy close the file after fft on F2 and reopen everything for F1 fft"
+        from ..Tests import filename, directory
         self.announce()
         d = Import_2D(self.DataFolder, filename("essai.ap"))
         t0 = time()

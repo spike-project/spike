@@ -151,13 +151,12 @@ def grid(*args, **key):
 print("-- matplotlib not available, using fake plot instead")
 print("-- no graphic will be available")
 
+gca0 = None
 def gca():
     global gca0
     if gca0 is None:
         gca0 = fake()
     return gca0
-gca0 = None
-
 
 if __name__ == '__main__':
     print("This library creates fake entry methods allowing to fake minimum use of matplotlib.pyplot\neg:")
@@ -165,7 +164,7 @@ if __name__ == '__main__':
     x=range(10)
     plot(x)
     f = figure()
-    f.semilogx(x+x,label="with label")
+    f.semilogx(x,label="with label")
     f.title('title')
     f.text(10,20,'infigure text')
     show()
@@ -175,7 +174,7 @@ if __name__ == '__main__':
     x=range(10)
     plot(x)
     f = figure()
-    f.semilogx(x+x,label="with label")
+    f.semilogx(x,label="with label")
     f.title('title')
     f.text(10,20,'infigure text')
     show()

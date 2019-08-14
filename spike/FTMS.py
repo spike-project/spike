@@ -98,14 +98,14 @@ class FTMSAxis(NPKData.Axis):
         """
         return m/z (mz) from Hz value
         """
-        from warning import warn
+        from warnings import warn
         warn("htomz must be overridden by subclasser")
         return value
     def mztoh(self, value):
         """
         return Hz value from m/z (mz)
         """
-        from warning import warn
+        from warnings import warn
         warn("mztoh must be overridden by subclasser")
         return value
     # the following are generic
