@@ -3,8 +3,10 @@
 
 #### 0.99.10 - August 2019
 - changed calibration in FTICR-MS - now should better correspond to Bruker, both for linear and quadratic
+    - be carefull, the definitions are slightly modified, this should be taken into account when reading files,
+    however you should verify the calibration stored into previous files
 - added Proc2DNMR Notebook - preliminary!
-- improved other Notebooks
+- continued to improve other Notebooks
 - added skewness and kurtosis in bucket lists (optional)
 - improved Test suite (should mostly work under Windows now)
 - corrected peak-picker so that  width is FWMH after centroid
