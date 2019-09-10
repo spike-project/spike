@@ -45,6 +45,7 @@ setuptools.setup(
 )
 
 # How-To
+# python QC.py
 # cd spike; python dev_setup.py
 # doc/script_doc.sh
 # python3 setup.py sdist

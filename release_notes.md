@@ -1,6 +1,13 @@
 <!-- DO NOT MODIFY this file, it is generated automatically from dev_setup ! -->
 # SPIKE Relase Notes
 
+#### 0.99.11 - September 2019
+- added a Notebook for processing of DOSY
+- many improvement in the interactive Notebooks, and in the interactive library (still work to do though)
+- added autpoints computation for spline baseline correction
+- corrected axis placement in spectral display (you should not have inverted axis anymore)
+- corrected a bug when computing projections
+
 #### 0.99.10 - August 2019
 - changed calibration in FTICR-MS - now should better correspond to Bruker, both for linear and quadratic
     - be carefull, the definitions are slightly modified, this should be taken into account when reading files,
