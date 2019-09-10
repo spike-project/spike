@@ -14,7 +14,7 @@ from codecs import encode, decode
 
 ProgramName = "SPIKE"
 VersionName = "Development version"
-VersionInfo = ["0", "99", "10"]   # Major - Minor - Micro
+VersionInfo = ["0", "99", "11"]   # Major - Minor - Micro
 
 # 1.0 will probably be when interactive Notebooks are really usefull !
 
