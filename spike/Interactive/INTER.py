@@ -18,11 +18,18 @@ import os.path as op
 import glob
 
 import matplotlib.pylab as plt
+import matplotlib.gridspec as gridspec
 from ipywidgets import interact, interactive, fixed, interact_manual, Layout, HBox, VBox, Label, Output, Button
 import ipywidgets as widgets
-from IPython.display import display, HTML
+from IPython.display import display, HTML, Javascript
+import numpy as np
 
 from ..File.BrukerNMR import Import_1D
+from .. import NPKData
+try:
+    import spike.plugins.bcorr as bcorr
+except:
+    print('Baseline correction plugins not installed !')
 
 # REACTIVE modify callback behaviour
 # True is good for inline mode / False is better for notebook mode
@@ -41,7 +48,7 @@ def hidecode(initial='show', message=True):
     elif initial == 'hide':
         init = 'true'
     if message:
-        msg = "<i>usefull to show a clean screen when processing is finished</i>"
+        msg = "<i>usefull to show/print a clean screen when processing is finished</i>"
     else:
         msg = ""
     display(HTML('''
@@ -63,6 +70,9 @@ $( document ).ready(code_toggle);
 %s
 </form>'''%(init, msg)))
 
+def jsalert(msg):
+    "send a javascript alert"
+    display(Javascript("alert('%s')"%msg))
 
 class FileChooser:
     """a simple file chooser for Jupyter - obsolete - not used"""
@@ -175,6 +185,158 @@ class Show1D(object):
         Show1D(spectrum)
     to be developped for peaks and integrals
     """
+    def __init__(self, data, title=None, figsize=None):
+        self.data = data
+        self.title = title
+        if figsize is None:
+            figsize = (10,5)
+        self.done = Button(description="Done", button_style='success',layout=Layout(width='10%'))
+        self.scale = widgets.FloatSlider(description='scale:', value=1.0, min=1.0, max=100, step=0.1,
+                            layout=Layout(width='50%'), continuous_update=REACTIVE)
+        for widg in (self.scale,):
+            widg.observe(self.ob)
+        fi,ax = plt.subplots(figsize=figsize)
+        self.ax = ax
+        self.data.display(figure=self.ax, title=self.title)
+        self.xb = self.ax.get_xbound()
+        self.done.on_click(self.on_done)
+        self.Box = HBox([self.scale, self.done])
+        display( self.Box )
+    def on_done(self, b):
+        self.close()
+    def close(self):
+        for w in [ self.Box, self.done, self.scale]:
+            w.close()
+    def ob(self, event):
+        "observe events and display"
+        if event['name']=='value':
+            self.disp()
+    def disp(self):
+        self.xb = self.ax.get_xbound()
+        self.ax.clear()
+        self.data.display(scale=self.scale.value, new_fig=False, figure=self.ax, title=self.title)
+        self.ax.set_xbound(self.xb)
+
+class baseline1D(Show1D):
+    def __init__(self, data, figsize=None):
+        super().__init__( data, figsize=figsize)
+        self.data.real()
+        ppos = self.data.axis1.itop(self.data.axis1.size/2)
+        #self.ax.plot([ppos,ppos], self.ax.get_ybound())
+        self.select = widgets.FloatSlider(description='select:', min=0.0, max=1.0, step=0.002, layout=Layout(width='100%'),
+                                         value=0.5, readout=False, continuous_update=REACTIVE)
+        self.selfine = widgets.FloatSlider(description='fine:', min=0.0, max=1.0, step=0.01, layout=Layout(width='70%'),
+                                         value=0.5, readout=False, continuous_update=REACTIVE)
+        self.bsl_points = []
+        for w in [self.select, self.selfine]:
+            w.observe(self.ob)
+        bsize = '15%'
+#        self.apply = widgets.Button(description="Apply", button_style='success', layout=Layout(width=2*bsize))
+#        self.apply.on_click(self.on_apply)
+        self.done.description = 'Apply'
+        self.cancel = widgets.Button(description="Abort", button_style='warning', layout=Layout(width=2*bsize))
+        self.cancel.on_click(self.on_cancel)
+        self.Box.add_class("hidden")
+        self.auto = widgets.Button(description="auto", button_style='success', layout=Layout(width=bsize))
+        self.auto.on_click(self.on_auto)
+        self.set = widgets.Button(description="add", button_style='success', layout=Layout(width=bsize))
+        self.set.on_click(self.on_set)
+        self.unset = widgets.Button(description="rem", button_style='warning', layout=Layout(width=bsize))
+        self.unset.on_click(self.on_unset)
+        self.toshow = widgets.Dropdown( options=['baseline', 'corrected', 'points'],  description='Display:')
+        self.toshow.observe(self.ob)
+        self.Box = HBox([self.scale, self.done,self.cancel])
+        display(self.Box)
+        display( HBox( [
+                        VBox([self.select, self.selfine], layout=Layout(width='50%')),
+                        VBox([  HBox([self.set, self.auto, self.toshow], layout=Layout(width='100%')),
+                                self.unset
+                              ], layout=Layout(width='50%')) 
+                        ], layout=Layout(width='100%'))
+                )
+        self.disp()
+    def close(self):
+        for w in [ self.select, self.selfine, self.auto, self.set, self.unset, self.cancel, self.toshow]:
+            w.close()
+        super().close()
+    def on_done(self, e):
+        print('Applied correction:\n',self.bsl_points)
+        self.data.set_buffer( self.data.get_buffer() - self.correction() )
+        super().disp()
+        self.close()
+    def on_auto(self, e):
+        "automatically set baseline points"
+        self.bsl_points = [self.data.axis1.itop(x) for x in bcorr.autopoints(self.data)]
+        self.disp()
+    def on_cancel(self, e):
+        self.close()
+        self.ax.clear()
+        self.data.display(new_fig=False, figure=self.ax)
+    def on_set(self, e):
+        "add baseline points at selector"
+        self.bsl_points.append( self.selpos() )
+        self.selfine.value = 0.5
+        self.disp()
+    def on_unset(self, e):
+        "remove baseline points closest from selector"
+        here = self.selpos()
+        distclose = np.inf
+        pclose = np.NaN
+        for i,p in enumerate(self.bsl_points):
+            if abs(p-here)< distclose:
+                pclose = p
+                distclose = abs(p-here)
+        self.bsl_points.remove(pclose)
+        self.disp()
+    def selpos(self):
+        "returns selector pos in ppm"
+        pos = self.select.value + self.selfine.value/100
+        return (1-pos)*(self.data.axis1.itop(0)-self.data.axis1.itop(self.data.size1))+self.data.axis1.itop(self.data.size1)
+    def correction(self):
+        "returns the correction to apply as a numpy array"
+        ibsl_points = [int(self.data.axis1.ptoi(x)) for x in self.bsl_points]
+        x = np.arange(self.data.size1)
+        if len(self.bsl_points) == 1 :
+            value = self.data[ibsl_points[0]] * np.ones( self.data.size1 )
+        elif len(self.bsl_points) < 4 :
+            corr = bcorr._linear_interpolate(self.data.get_buffer(), ibsl_points)
+            value = corr(x)
+        else:
+            corr = bcorr._spline_interpolate(self.data.get_buffer(), ibsl_points)
+            value = corr(x)
+        return value
+    def corrected(self):
+        value = self.data.copy()
+        value.set_buffer( value.get_buffer() - self.correction() )
+        return value
+    def disp(self):
+        self.xb = self.ax.get_xbound()
+        super().disp()
+        if len(self.bsl_points)>0:
+            if self.toshow.value == 'baseline':
+                ( self.data.copy()-self.corrected() ).display(new_fig=False, figure=self.ax, color='r')
+            elif self.toshow.value == 'corrected':
+                self.ax.clear()
+                self.corrected().display(new_fig=False, figure=self.ax, color='r', scale=self.scale.value)
+        ppos = self.selpos()
+        self.ax.plot([ppos,ppos], self.ax.get_ybound())# [0,self.data.absmax/self.scale.value])
+        y = []
+        for point in self.bsl_points:
+            if self.toshow.value == 'corrected':
+                y.append(0)
+            else:
+                loc = int(self.data.axis1.ptoi(point))
+                y.append(self.data[loc])
+        if y:
+            self.ax.scatter(self.bsl_points, y, c='r', marker='o')
+        self.ax.set_xbound(self.xb)
+
+class Show1Dplus(object):
+    """
+    An interactive display, 1D NMR
+        Show1D(spectrum)
+    to be developped for peaks and integrals
+    """
     def __init__(self, data, title=None):
         self.data = data
         self.title = title
@@ -230,13 +392,98 @@ class Show1D(object):
                 pass
         self.ax.set_xlim(left=self.zm[0], right=self.zm[1])
 
+class baseline2D_F2(baseline1D):
+    def __init__(self, data, figsize=None):
+        self.data2D = data
+        super().__init__( self.data2D.projF2, figsize=figsize)
+    def on_done(self, e):
+        super().on_done(e)
+        ibsl_points = [int(self.data2D.axis2.ptoi(x)) for x in self.bsl_points]
+        self.data2D.bcorr(method='spline', xpoints=ibsl_points)
+
 class Show2D(object):
+    """
+    A display for 2D NMR with a scale cursor
+    Show2D(spectrum) where spectrum is a NPKData object
+    - special display for DOSY.
+    """
+    def __init__(self, data, title=None, figsize=None):
+        self.data = data
+        self.isDOSY =  isinstance(data.axis1, NPKData.LaplaceAxis)
+        try:
+            self.proj2 = data.projF2
+        except:
+            self.proj2 = data.proj(axis=2).real()
+        try:
+            self.proj1 = data.projF1
+        except:
+            self.proj1 = data.proj(axis=1).real()
+        self.title = title
+        self.scale = widgets.FloatLogSlider(description='scale:', value=1.0, min=-1, max=3,  base=10, step=0.01,
+                            layout=Layout(width='80%'), continuous_update=HEAVY)
+        self.posview = widgets.Checkbox(value=True,description='Positive')
+        self.negview = widgets.Checkbox(value=False,description='Negative')
+        for w in (self.scale, self.posview, self.negview):
+            w.observe(self.ob)
+        grid = {'height_ratios':[1,4],'hspace':0,'wspace':0}
+        if self.isDOSY:
+            fsize = (10,5)
+            grid['width_ratios']=[7,1]
+        else:
+            fsize = (8,8)
+            grid['width_ratios']=[4,1]
+#        fig, self.axarr = plt.subplots(2, 1, sharex=True, figsize=fsize, gridspec_kw=grid)
+        fig = plt.figure(figsize=fsize, constrained_layout=False)
+        spec2 = gridspec.GridSpec(ncols=2, nrows=2, figure=fig, **grid)
+        axarr = np.empty((2,2), dtype=object)
+        axarr[0,0] = fig.add_subplot(spec2[0, 0])
+        axarr[1,0] = fig.add_subplot(spec2[1, 0],sharex=axarr[0, 0])
+        axarr[1,1] = fig.add_subplot(spec2[1, 1],sharey=axarr[1, 0])
+        self.top_ax = axarr[0,0]
+        self.spec_ax = axarr[1,0]
+        self.side_ax = axarr[1,1]
+        self.Box = HBox( [self.scale, self.posview, self.negview])
+        display( self.Box )
+        self.disp(new=True)
+    def on_done(self, b):
+        self.scale.close()
+    def ob(self, event):
+        "observe events and display"
+        if event['name'] != 'value':
+            return
+        self.disp()
+    def disp(self,new=False):
+        if new:
+            self.proj2.display(figure=self.top_ax, title=self.title)
+            xb = self.top_ax.get_xbound()
+            dataxis = self.proj1.axis1.itoc( self.proj1.axis1.points_axis() )
+            self.side_ax.plot(self.proj1.get_buffer(),dataxis)
+            yb = self.side_ax.get_ybound()
+        else:
+            yb = self.side_ax.get_ybound()
+            xb = self.top_ax.get_xbound()
+            self.spec_ax.clear()
+        if self.posview.value:
+            self.data.display(scale=self.scale.value, new_fig=False, figure=self.spec_ax)
+        if self.negview.value:
+#            m = -self.data.absmax/self.scale.value
+#            level = sorted([m*0.05, m*0.1, m*0.25, m*0.5])  # correction for matplotlib 1.5.1
+            self.data.display(scale=-self.scale.value, new_fig=False,
+                figure=self.spec_ax, mpldic={'cmap':'Wistia'})
+        self.spec_ax.set_xbound(xb)
+        self.spec_ax.set_ybound(yb)
+
+        # if self.isDOSY:   # does not seem needed
+        #     self.side_ax.set_yscale('log')
+
+class Show2Dplus(object):
     """
     A VERY preliminary minimimum interactive display for 2D NMR
         Show2D(spectrum)
     """
     def __init__(self, data, title=None):
         self.data = data
+        self.isDOSY = isinstance(self.data.axis1, NPKData.LaplaceAxis)
         self.title = title
         self.scale = widgets.FloatLogSlider(description='scale:', value=1.0, min=-1, max=2,  base=10, step=0.01,
                             layout=Layout(width='80%'), continuous_update=HEAVY)
@@ -255,16 +502,25 @@ class Show2D(object):
         display( self.Box )
     def fullzoom(self):
         ref = self.data
-        self._zoom =  (ref.axis1.itop(ref.size1), ref.axis1.itop(0), ref.axis2.itop(ref.size2),ref.axis2.itop(0))
+        if self.isDOSY:
+            self._zoom =  (ref.axis1.itod(ref.size1), ref.axis1.itod(0), ref.axis2.itop(ref.size2),ref.axis2.itop(0))
+        else:
+            self._zoom =  (ref.axis1.itop(ref.size1), ref.axis1.itop(0), ref.axis2.itop(ref.size2),ref.axis2.itop(0))
     def zoom_box(self):
         wf = widgets.BoundedFloatText
         ref = self.data
         style = {'description_width': 'initial'}
         lay = Layout(width='80px', height='30px')
-        self.z1l = wf( value=self._zoom[0], max=ref.axis1.itop(0), min=ref.axis1.itop(ref.size1),
-            description='F1:', style=style, layout=lay)
-        self.z1h = wf( value=self._zoom[1], max=ref.axis1.itop(0), min=ref.axis1.itop(ref.size1),
-            description='..', style=style, layout=lay)
+        if self.isDOSY:
+            self.z1l = wf( value=self._zoom[0], max=ref.axis1.itod(ref.size1), min=ref.axis1.itod(0),
+                description='Diff:', style=style, layout=lay)
+            self.z1h = wf( value=self._zoom[1], max=ref.axis1.itod(ref.size1), min=ref.axis1.itod(0),
+                description='..', style=style, layout=lay)
+        else:
+            self.z1l = wf( value=self._zoom[0], max=ref.axis1.itop(0), min=ref.axis1.itop(ref.size1),
+                description='F1:', style=style, layout=lay)
+            self.z1h = wf( value=self._zoom[1], max=ref.axis1.itop(0), min=ref.axis1.itop(ref.size1),
+                description='..', style=style, layout=lay)
         self.z2l = wf( value=self._zoom[2], max=ref.axis2.itop(0), min=ref.axis2.itop(ref.size2),
             description='F2:', style=style, layout=lay)
         self.z2h = wf( value=self._zoom[3], max=ref.axis2.itop(0), min=ref.axis2.itop(ref.size2),
@@ -329,78 +585,6 @@ class SimpleZoom(HBox):
     def zfull(self, b):
         self.zoomw.value = [0,100]
 
-class _Phaser1D(object):
-    """
-    In development - unfinished !
-    An interactive phaser in 1D NMR
-
-        Phaser1D(spectrum)
-
-    best when in %matplotlib inline
-
-    """
-    def __init__(self, data):
-        self.scale = widgets.FloatSlider(description='scale:', min=1, max=100, step=0.5,
-                            layout=Layout(width='30%'), continuous_update=REACTIVE)
-        self.p0 = widgets.FloatSlider(description='P0:',min=-180, max=180, step=0.1,
-                            layout=Layout(width='100%'), continuous_update=REACTIVE)
-        self.p1 = widgets.FloatSlider(description='P1:',min=-360, max=360, step=1.0,
-                            layout=Layout(width='100%'), continuous_update=REACTIVE)
-        self.pivot = widgets.FloatSlider(description='pivot:',max=data.axis1.itop(0), min=data.axis1.itop(data.size1),
-                            layout=Layout(width='30%'),  continuous_update=REACTIVE)
-        self.pivot.value = (data.axis1.itop(data.size1/2))
-        self.zoom = SimpleZoom()
-        self.scale.observe(self.ob)
-        self.zoom.observe(self.ob)
-        self.p0.observe(self.ob)
-        self.p1.observe(self.ob)
-        self.pivot.observe(self.ob)
-        self.button = widgets.Button(description="Ok", button_style='success')
-        self.button.on_click(self.on_Apply)
-        self.cancel = widgets.Button(description="Cancel", button_style='warning')
-        self.cancel.on_click(self.on_cancel)
-        display(HBox([self.button, self.cancel]))
-#       interact( self.phase, scale=self.scale, p0=self.p0, p1=self.p1, pivot=self.pivot)
-        display( VBox([ HBox([self.scale, self.pivot]),
-                        self.zoom,
-                        self.p0, self.p1]) )
-        fi,ax = plt.subplots()
-        self.ax = ax
-        self.data = data
-        self.data.display(figure=self.ax)
-    def close_all(self):
-        for w in [self.p0, self.p1, self.scale, self.button, self.cancel, self.zoom]:
-            w.close()
-    def on_cancel(self, b):
-        self.close_all()
-        self.ax.clear()
-        self.data.display(new_fig=False, figure=self.ax)
-    def on_Apply(self, b):
-        lp0, lp1 = self.ppivot() # get centered values
-        print("Applied: phase(%.1f,  %.1f)"%(lp0, lp1))
-        self.close_all()
-        self.ax.clear()
-        self.data.phase(lp0, lp1).display(new_fig=False, figure=self.ax)
-    def ppivot(self):
-        "converts from pivot values to centered ones"
-        pp = (self.pivot.value - self.data.axis1.itop(self.data.size1))/  \
-             (self.data.axis1.itop(0)-self.data.axis1.itop(self.data.size1)) # this one is in 0.0 ... 1.0
-        return (self.p0.value + (pp-0.5)*self.p1.value, self.p1.value)
-
-    def ob(self, event):
-        "observe changes and start phasing"
-        if event['name']=='value':
-            self.phase()
-
-    def phase(self):
-        "apply phase and display"
-        self.ax.clear()
-        lp0, lp1 = self.ppivot() # get centered values
-        self.data.copy().phase(lp0, lp1).display(scale=self.scale.value, new_fig=False, figure=self.ax)
-        plt.plot([self.pivot.value,self.pivot.value],[0,self.data.absmax/self.scale.value])
-        z = self.zoom.value
-        self.ax.set_xlim(left=z[0], right=z[1] )
-
 class Phaser1D(object):
     """
     An interactive phaser in 1D NMR
@@ -417,45 +601,26 @@ class Phaser1D(object):
                             layout=Layout(width='100%'), continuous_update=REACTIVE)
         self.p1 = widgets.FloatSlider(description='P1:',min=-360, max=360, step=1.0,
                             layout=Layout(width='100%'), continuous_update=REACTIVE)
-        self.pivot = widgets.FloatSlider(description='pivot:',max=data.axis1.itop(0), min=data.axis1.itop(data.size1),
-                            layout=Layout(width='30%'),  continuous_update=REACTIVE)
-        self.pivot.value = (data.axis1.itop(data.size1/2))
-        self.zoom = widgets.FloatRangeSlider(value=[0, 100],
-            min=0, max=100.0, step=0.1, layout=Layout(width='60%'), description='zoom (%):',
-            continuous_update=REACTIVE, readout=False, readout_format='.1f',)
-        self.zoomdisplay = widgets.Label('- / -')
-        self.zoomfull = widgets.Button(description="Full", button_style='success')
-        self.zoomfull.on_click(self.zfull)
-        self.scale.observe(self.ob)
-        self.zoom.observe(self.ob)
-        self.p0.observe(self.ob)
-        self.p1.observe(self.ob)
-        self.pivot.observe(self.ob)
+        self.pivot = widgets.FloatSlider(description='pivot:', min=0.0, max=1.0, step=0.01, layout=Layout(width='30%'),
+                                         value=0.5, readout=False, continuous_update=REACTIVE)
+        for w in [self.p0, self.p1, self.scale, self.pivot]:
+            w.observe(self.ob)
         self.button = widgets.Button(description="Ok", button_style='success')
         self.button.on_click(self.on_Apply)
         self.cancel = widgets.Button(description="Cancel", button_style='warning')
         self.cancel.on_click(self.on_cancel)
-        display(HBox([self.button, self.cancel]))
-#       interact( self.phase, scale=self.scale, p0=self.p0, p1=self.p1, pivot=self.pivot)
-        display( VBox([ HBox([self.scale, self.pivot]),
-                        HBox([self.zoom,self.zoomdisplay,self.zoomfull]),
+        display( VBox([ HBox([self.button, self.cancel]),
+                        HBox([self.scale, self.pivot]),
                         self.p0, self.p1]) )
         fi,ax = plt.subplots()
         self.ax = ax
         self.data = data
         self.data.display(figure=self.ax)
-    @property
-    def zm(self):
-        "returns the zoom window in ppm"
-        z = self.zoom.value
-        left=self.data.axis1.itop(z[0]*self.data.size1/100)
-        right=self.data.axis1.itop(z[1]*self.data.size1/100)
-        self.zoomdisplay.value = "%.2f / %.2f"%(left,right)
-        return (left,right)
-    def zfull(self, b):
-        self.zoom.value = [0,100]
+        ppos = self.data.axis1.itop(self.data.axis1.size/2)
+        self.ax.plot([ppos,ppos], self.ax.get_ybound())
+        self.xb = self.ax.get_xbound()  # initialize zoom
     def close_all(self):
-        for w in [self.p0, self.p1, self.scale, self.button, self.cancel, self.zoom, self.pivot, self.zoomdisplay, self.zoomfull]:
+        for w in [self.p0, self.p1, self.scale, self.button, self.cancel, self.pivot]:
             w.close()
     def on_cancel(self, b):
         self.close_all()
@@ -463,29 +628,32 @@ class Phaser1D(object):
         self.data.display(new_fig=False, figure=self.ax)
     def on_Apply(self, b):
         lp0, lp1 = self.ppivot() # get centered values
-        print("Applied: phase(%.1f,  %.1f)"%(lp0, lp1))
+        if lp0 != 0 or lp1 != 0:
+            print("Applied: phase(%.1f,  %.1f)"%(lp0, lp1))
+            self.data.phase(lp0, lp1).display(new_fig=False, figure=self.ax)
+        else:
+            print("no applied phase")
         self.close_all()
-        self.ax.clear()
-        self.data.phase(lp0, lp1).display(new_fig=False, figure=self.ax)
+#        self.ax.clear()
     def ppivot(self):
         "converts from pivot values to centered ones"
-        pp = (self.pivot.value - self.data.axis1.itop(self.data.size1))/  \
-             (self.data.axis1.itop(0)-self.data.axis1.itop(self.data.size1)) # this one is in 0.0 ... 1.0
+        pp = 1.0-self.pivot.value
         return (self.p0.value + (pp-0.5)*self.p1.value, self.p1.value)
-
     def ob(self, event):
         "observe changes and start phasing"
         if event['name']=='value':
             self.phase()
-
     def phase(self):
         "apply phase and display"
+        self.xb = self.ax.get_xbound()   # get current zoom
         self.ax.clear()
         lp0, lp1 = self.ppivot() # get centered values
         self.data.copy().phase(lp0, lp1).display(scale=self.scale.value, new_fig=False, figure=self.ax)
-        plt.plot([self.pivot.value,self.pivot.value],[0,self.data.absmax/self.scale.value])
-        z = self.zm
-        self.ax.set_xlim(left=z[0], right=z[1] )
+        ppos = (1-self.pivot.value)*(self.data.axis1.itop(0)-self.data.axis1.itop(self.data.size1))+self.data.axis1.itop(self.data.size1)
+        self.ax.plot([ppos,ppos], self.ax.get_ybound())
+        self.ax.set_xbound( self.xb )
+        #z = self.zm
+        #self.ax.set_xlim(left=z[0], right=z[1] )
 
 class Phaser2D(object):
     """
