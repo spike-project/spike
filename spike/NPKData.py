@@ -1480,8 +1480,9 @@ class NPKData(object):
                 ax = axis
             fig.set_xscale(self.axis1.units[self.axis1.currentunit].scale)  # set unit scale (log / linear)
             if self.axis1.units[self.axis1.currentunit].reverse:           # set reverse mode
-                if not fig.xaxis_inverted(): # not yet
-                    fig.invert_xaxis()
+#                if not fig.xaxis_inverted(): # not yet
+#                    fig.invert_xaxis()
+                fig.set_xlim(ax[z2], ax[z1])
             fig.plot(ax[z1:z2:step], self.buffer[z1:z2:step].clip(mmin,mmax), label=label, linewidth=linewidth, color=color, **mpldic)
             if xlabel == "_def_":
                 xlabel = self.axis1.currentunit
@@ -1517,11 +1518,11 @@ class NPKData(object):
                 if axis is None:
                     axis = (self.axis1.unit_axis(), self.axis2.unit_axis())
                 fig.set_yscale(self.axis1.units[self.axis1.currentunit].scale)  # set unit scale (log / linear)
-                if self.axis1.units[self.axis1.currentunit].reverse and new_fig:
-                        fig.invert_yaxis()
+                if self.axis1.units[self.axis1.currentunit].reverse:# and new_fig:
+                        fig.set_ylim(axis[0][z1lo], axis[0][z1up]) #fig.invert_yaxis()
                 fig.set_xscale(self.axis2.units[self.axis2.currentunit].scale)  # set unit scale (log / linear)
-                if self.axis2.units[self.axis2.currentunit].reverse and new_fig:
-                        fig.invert_xaxis()
+                if self.axis2.units[self.axis2.currentunit].reverse:# and new_fig:
+                        fig.set_xlim(axis[1][z2lo], axis[1][z2up])# fig.invert_xaxis()
                 fig.contour(axis[1][z2lo:z2up:step2],
                     axis[0][z1lo:z1up:step1],
                     self.buffer[z1lo:z1up:step1,z2lo:z2up:step2],
@@ -2149,10 +2150,10 @@ class NPKData(object):
                 c.axis1 = self.axis1.copy()
             elif todo == 2:
                 if ptype == "s":
-                    c = Data(buffer =self.buffer.max(0))
+                    c = Data(buffer = self.buffer.max(0))
                 elif ptype == "m":
-                    c = Data(buffer =self.buffer.mean(axis = 0))     # mean of each column
-                c.axis1 = self.axis1.copy()
+                    c = Data(buffer = self.buffer.mean(axis = 0))     # mean of each column
+                c.axis1 = self.axis2.copy()
         elif self.dim == 3 :
             print("3D")
             # if todo == 1:

@@ -238,7 +238,82 @@ def calib(npk, axis=1, method='l1', verbose=False):
         print( ' final - mean offset:', npk.axes(todo).ppm(ax2fit.imzmeas, ax2fit.mzref), 'ppm')
         print('**',npk.axis1.calibA, npk.axis1.calibB, npk.axis1.calibC)
     return npk
- 
+
+def calib_loadref(npkd, fname, recalibrate=False, axis=1):
+    """
+    Reads in a *.ref Bruker file holding a set of calibrating values for MS
+    with the following format:
+        # comments
+
+        # TuneMixPos         m/z           charge
+        C5H12O2N             118.086255    +1
+        C6H19O6N3P3          322.048121    +1
+        ...
+    and associate the reference list to the experiment, preparing for recalibration
+
+    if recalibrate is True, values will be recomputed, with values interpreted as formula or peptides (A letter code)
+    """
+    def read_ref(fname):
+        """
+        Reads in a *.ref Bruker file holding a set of calibrating values for MS
+        returns a referencing dictionary {'FORMULA':(value,charge), ... }
+        """
+        import re
+        ref = {}
+        with open(fname,'r') as F:
+            lines = F.readlines()
+        for li in lines:
+            if li.startswith('#'): continue    # skip comments
+            if not li.strip(): continue        # and empty lines
+            lis = li.split()
+            try:
+                val = float(lis[1])
+            except:
+                print('m/z not valid - skipping line:',li.strip())
+                continue
+            try:
+                m = re.search('\d+',lis[2])
+                charge = float(m.group())
+                if '-' in lis[2]:
+                    charge *= -1
+            except:
+                print('charge not valid - skipping line:',li.strip())
+                continue
+            try:
+                ref[lis[0]] = (val, charge)
+            except:
+                print('skipping line:',li.strip())
+        return ref
+    def recalibrate(calib):
+        """
+        a referencing dictionary {'FORMULA':value, ... }
+        """
+        "recalibrates calib list"
+        diff = []
+        for mol,values in calib.items():
+            mass, charge = values
+            peptide = False
+            try:
+                nmass = iso.parse_peptide(mol).monoisotop(charge)
+                peptide = True
+            except:
+                pass
+            if not peptide:
+                try:
+                    nmass = iso.parse_formula(mol).monoisotop(charge)
+                    peptide = False
+                except:
+                    print('could not understand %s'%mol)
+                    continue
+            if nmass < 10.0:
+                continue
+            if peptide and charge >0:   # then add H+
+                nmass += iso.parse_formula('H').monoisotop()
+            diff.append(1E6*abs(mass-nmass)/mass)
+            calib[mol] = (nmass, charge)
+        print('recalibrate   mean: %.3f ppm   max: %.3f ppm'%(sum(diff)/len(diff), max(diff)))
+        return calib
+
 # and plug the whole stuf into NPKData
 NPKData_plugin("set_calib", set_calib)
 NPKData_plugin("calib", calib)

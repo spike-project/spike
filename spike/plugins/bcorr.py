@@ -109,6 +109,25 @@ def bcorr_auto(npkd, iterations=10, nbchunks=40, degree=1, nbcores=2, smooth=Tru
     npkd.set_buffer( npkd.get_buffer() - bl)
     return npkd
 
+def autopoints(npkd, Npoints=8):
+    """
+    computes Npoints (defaut 8) positions for a spline baseline correction
+    """
+    if Npoints is None :
+        N = 8
+    else:
+        N = Npoints
+    bf = npkd.get_buffer().copy()
+    bf -= np.percentile(bf,20)  # assumes at least ~20% of data-set is baseline...
+    bf = abs(bf)
+    L = len(bf)
+    chunksize = L//N
+    #print (chunksize)
+    xpoints = np.array([i+bf[i:i+chunksize-8].argmin() for i in range(4, L, chunksize)])
+    if npkd.itype == 1:
+        xpoints *= 2
+    return xpoints
+
 def bcorr(npkd, method='spline', xpoints=None):
     """
     recapitulate all baseline correction methods, only 1D so far
@@ -131,18 +150,7 @@ def bcorr(npkd, method='spline', xpoints=None):
         return bcorr_auto(npkd)
     else:
         if xpoints is None or isinstance(xpoints,int):
-            if xpoints is None :
-                N = 8
-            else:
-                N = xpoints
-            bf = abs(npkd.get_buffer())
-            L = len(bf)
-            chunksize = L//N
-            #print (chunksize)
-            xpoints = np.array([i+bf[i:i+chunksize-8].argmin() for i in range(4, L, chunksize)])
-            if npkd.itype == 1:
-                xpoints *= 2
-            #print (xpoints)
+            xpoints = autopoints(npkd, xpoints)
     if method=='linear':
         return linear_interpolate(npkd, xpoints)
     elif method=='spline':
