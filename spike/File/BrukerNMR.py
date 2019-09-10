@@ -724,7 +724,15 @@ def Import_2D(filename="ser", outfile=None, verbose=VERBOSE):
         d.axis2.itype = 0
     else:                       # complex mode
         d.axis2.itype = 1
+    if d.axis2.itype == 1 and d.axis2.size%2 == 1:
+        d.axis2.size = d.axis2.size-1
+        d.buffer = d.buffer[:,:-1]
+        print("axis2 was truncated to match size and type")
     d.axis1.itype = FnMODE(acqu2, proc2)
+    if d.axis1.itype == 1 and d.axis1.size%2 == 1:
+        d.axis1.size = d.axis1.size-1
+        d.buffer = d.buffer[:-1,:]
+        print("axis1 was truncated to match size and type")
     d.axis1.offset = offset(acqu2, proc2)
     d.axis2.offset = offset(acqu, proc)
 
