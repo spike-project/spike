@@ -1482,7 +1482,7 @@ class NPKData(object):
             if self.axis1.units[self.axis1.currentunit].reverse:           # set reverse mode
 #                if not fig.xaxis_inverted(): # not yet
 #                    fig.invert_xaxis()
-                fig.set_xlim(ax[z2], ax[z1])
+                fig.set_xlim(ax[z1], ax[z2])
             fig.plot(ax[z1:z2:step], self.buffer[z1:z2:step].clip(mmin,mmax), label=label, linewidth=linewidth, color=color, **mpldic)
             if xlabel == "_def_":
                 xlabel = self.axis1.currentunit
