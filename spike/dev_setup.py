@@ -14,7 +14,7 @@ from codecs import encode, decode
 
 ProgramName = "SPIKE"
 VersionName = "Development version"
-VersionInfo = ["0", "99", "11"]   # Major - Minor - Micro
+VersionInfo = ["0", "99", "12"]   # Major - Minor - Micro
 
 # 1.0 will probably be when interactive Notebooks are really usefull !
 
@@ -29,6 +29,9 @@ VersionInfo = ["0", "99", "11"]   # Major - Minor - Micro
 # Release Notes in md syntax !
 release_notes="""
 # SPIKE Relase Notes
+
+#### 0.99.12 - September 2019
+The 0.99.11 had a bug in the display of 1D NMR experiment - the 0.99.12 corrects it.
 
 #### 0.99.11 - September 2019
 - added a Notebook for processing of DOSY

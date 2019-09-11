@@ -331,66 +331,43 @@ class baseline1D(Show1D):
             self.ax.scatter(self.bsl_points, y, c='r', marker='o')
         self.ax.set_xbound(self.xb)
 
-class Show1Dplus(object):
-    """
-    An interactive display, 1D NMR
-        Show1D(spectrum)
-    to be developped for peaks and integrals
-    """
-    def __init__(self, data, title=None):
-        self.data = data
-        self.title = title
-        self.done = Button(description="Done", button_style='warning',layout=Layout(width='10%'))
-        self.scale = widgets.FloatSlider(description='scale:', value=1.0, min=1.0, max=100, step=0.1,
-                            layout=Layout(width='30%'), continuous_update=REACTIVE)
+class Show1Dplus(Show1D):
+    def __init__(self, data, figsize=None, title=None):
+        super().__init__( data, figsize=figsize, title=title)
         self.scaleint = widgets.FloatSlider(value=0.5, min=0.1, max=10, step=0.05,
                             layout=Layout(width='20%'), continuous_update=REACTIVE)
         self.offset = widgets.FloatSlider(value=0.3, min=0.0, max=1.0, step=0.01,
                             layout=Layout(width='20%'), continuous_update=REACTIVE)
-        self.zoom = widgets.FloatRangeSlider(value=[0, 100],
-            min=0, max=100.0, step=0.1, layout=Layout(width='60%'), description='zoom (%):',
-            continuous_update=REACTIVE, readout=True, readout_format='.1f')
         self.peaks = widgets.Checkbox(value=False, layout=Layout(width='15%'))
         self.integ = widgets.Checkbox(value=False, layout=Layout(width='15%'))
 
-        for widg in (self.scale, self.zoom, self.scaleint, self.offset, self.peaks, self.integ):
+        for widg in (self.scaleint, self.offset, self.peaks, self.integ):
             widg.observe(self.ob)
-        fi,ax = plt.subplots()
-        self.ax = ax
-        self.data.display(figure=self.ax, zoom=self.zm, title=self.title)
-        self.done.on_click(self.on_done)
-        self.Box = VBox([self.zoom,
-            HBox([self.scale,Label('Integral scale:'),self.scaleint,Label('offset:'),self.offset]),
-            HBox([Label('Show Peaks'),self.peaks,Label('integrals'),self.integ,self.done])])
-        display( self.Box )
-    def on_done(self, b):
-        self.Box.close()
-    @property
-    def zm(self):
-        "returns the zoom window in ppm"
-        z = self.zoom.value
-        left=self.data.axis1.itop(z[0]*self.data.size1/100)
-        right=self.data.axis1.itop(z[1]*self.data.size1/100)
-        return (left,right)
-    def ob(self, event):
-        "observe events and display"
-        if event['name']!='value':
-            return
+        self.fullBox = VBox([  HBox([Label('Integral scale:'),self.scaleint,Label('offset:'),self.offset]),
+                        HBox([Label('Show Peaks'),self.peaks,Label('integrals'),self.integ])
+                    ])
+        display(self.fullBox)
+    def on_done(self, e):
+        self.fullBox.close()
+        super().close()
+    def disp(self):
+        self.xb = self.ax.get_xbound()
         self.ax.clear()
-        self.data.display(scale=self.scale.value, new_fig=False, figure=self.ax, zoom=self.zm, title=self.title)
+        self.data.display(scale=self.scale.value, new_fig=False, figure=self.ax, title=self.title)
         if self.integ.value:
             try:
-                self.data.display_integral(label=True, integscale=self.scaleint.value, integoff=self.offset.value, figure=self.ax, zoom=self.zm)
+                self.data.display_integral(label=True, integscale=self.scaleint.value, integoff=self.offset.value, figure=self.ax)
             except:
                 print('no or wrong integrals')
                 pass
         if self.peaks.value:
             try:
-                self.data.display_peaks(peak_label=True, figure=self.ax, zoom=self.zm, scale=self.scale.value)
+                self.data.display_peaks(peak_label=True, figure=self.ax, scale=self.scale.value)
             except:
                 print('no or wrong peaklist')
                 pass
-        self.ax.set_xlim(left=self.zm[0], right=self.zm[1])
+        self.ax.set_xbound(self.xb)
+
 
 class baseline2D_F2(baseline1D):
     def __init__(self, data, figsize=None):
@@ -466,124 +443,11 @@ class Show2D(object):
         if self.posview.value:
             self.data.display(scale=self.scale.value, new_fig=False, figure=self.spec_ax)
         if self.negview.value:
-#            m = -self.data.absmax/self.scale.value
-#            level = sorted([m*0.05, m*0.1, m*0.25, m*0.5])  # correction for matplotlib 1.5.1
             self.data.display(scale=-self.scale.value, new_fig=False,
                 figure=self.spec_ax, mpldic={'cmap':'Wistia'})
         self.spec_ax.set_xbound(xb)
         self.spec_ax.set_ybound(yb)
 
-        # if self.isDOSY:   # does not seem needed
-        #     self.side_ax.set_yscale('log')
-
-class Show2Dplus(object):
-    """
-    A VERY preliminary minimimum interactive display for 2D NMR
-        Show2D(spectrum)
-    """
-    def __init__(self, data, title=None):
-        self.data = data
-        self.isDOSY = isinstance(self.data.axis1, NPKData.LaplaceAxis)
-        self.title = title
-        self.scale = widgets.FloatLogSlider(description='scale:', value=1.0, min=-1, max=2,  base=10, step=0.01,
-                            layout=Layout(width='80%'), continuous_update=HEAVY)
-        self.phased = widgets.Checkbox(value=False, layout=Layout(width='15%'))
-        self.peaks = widgets.Checkbox(value=False, layout=Layout(width='15%'))
-        self.fullzoom()
-        for widg in (self.scale, self.peaks, self.phased):
-            widg.observe(self.ob)
-        fi,ax = plt.subplots()
-        self.ax = ax
-        self.disp(new=True)
-        self.Box = VBox([self.scale,
-                        HBox([Label("Phase sensitive"), self.phased, Label("Showpeaks"),self.peaks]),
-                        self.zoom_box()
-                        ]) 
-        display( self.Box )
-    def fullzoom(self):
-        ref = self.data
-        if self.isDOSY:
-            self._zoom =  (ref.axis1.itod(ref.size1), ref.axis1.itod(0), ref.axis2.itop(ref.size2),ref.axis2.itop(0))
-        else:
-            self._zoom =  (ref.axis1.itop(ref.size1), ref.axis1.itop(0), ref.axis2.itop(ref.size2),ref.axis2.itop(0))
-    def zoom_box(self):
-        wf = widgets.BoundedFloatText
-        ref = self.data
-        style = {'description_width': 'initial'}
-        lay = Layout(width='80px', height='30px')
-        if self.isDOSY:
-            self.z1l = wf( value=self._zoom[0], max=ref.axis1.itod(ref.size1), min=ref.axis1.itod(0),
-                description='Diff:', style=style, layout=lay)
-            self.z1h = wf( value=self._zoom[1], max=ref.axis1.itod(ref.size1), min=ref.axis1.itod(0),
-                description='..', style=style, layout=lay)
-        else:
-            self.z1l = wf( value=self._zoom[0], max=ref.axis1.itop(0), min=ref.axis1.itop(ref.size1),
-                description='F1:', style=style, layout=lay)
-            self.z1h = wf( value=self._zoom[1], max=ref.axis1.itop(0), min=ref.axis1.itop(ref.size1),
-                description='..', style=style, layout=lay)
-        self.z2l = wf( value=self._zoom[2], max=ref.axis2.itop(0), min=ref.axis2.itop(ref.size2),
-            description='F2:', style=style, layout=lay)
-        self.z2h = wf( value=self._zoom[3], max=ref.axis2.itop(0), min=ref.axis2.itop(ref.size2),
-            description='..', style=style, layout=lay)
-        def zupdate(b):
-            self._zoom = (self.z1l.value, self.z1h.value, self.z2l.value, self.z2h.value)
-        def set(b):
-            self.disp()
-        def reset(b):
-            self.fullzoom()
-            self.disp()
-        for z in (self.z1l, self.z1h, self.z2l, self.z2h):
-            z.observe(zupdate)
-        self.bset = Button(description="Set",button_style='success')
-        self.breset = Button(description="Reset",button_style='success')
-        self.bset.on_click(set)
-        self.breset.on_click(reset)
-        #self.zmupd=('b_zupdate', 'Update', zupdate, layout=Layout(width='300px'), tooltip="Set zoom to values")
-        return VBox([ Label('Zoom Window (in ppm)'),
-                    HBox([self.z1l, self.z1h, self.z2l, self.z2h, self.bset, self.breset])])
-    def on_done(self, b):
-        self.Box.close()
-    def ob(self, event):
-        "observe events and display"
-        if event['name']!='value':
-            return
-        self.disp()
-    def disp(self,new=False):
-        print(self._zoom)
-        if not new:
-            self.ax.clear()
-        self.data.display(scale=self.scale.value, new_fig=new, figure=self.ax, zoom=self._zoom, title=self.title)
-        if self.phased.value:
-            self.data.display(scale=-self.scale.value, new_fig=new, figure=self.ax, zoom=self._zoom, color='red')
-        self.ax.set_xlim(xmin=self._zoom[2], xmax=self._zoom[3])
-        self.ax.set_ylim(ymin=self._zoom[1], ymax=self._zoom[0])
-
-class SimpleZoom(HBox):
-    def __init__(self, **kwargs):
-        self.zoomw = widgets.FloatRangeSlider(value=[0, 100],
-        min=0, max=100.0, step=0.1, layout=Layout(width='60%'), description='zoom (%):',
-        continuous_update=REACTIVE, readout=False, readout_format='.1f',)
-        self.zoomdisplay = widgets.Label('- / -')
-        self.zoomfull = widgets.Button(description="Full", button_style='')
-        self.zoomfull.on_click(self.zfull)
-        self.Box = [HBox([self.zoomw,self.zoomdisplay,self.zoomfull])]
-        self.value = [0,100]
-        super().__init__( children=self.Box, layout=Layout(width='auto'), **kwargs)
-        self.zoomw.observe(self.ob)
-    def ob(self, event):
-        "observe changes and set values"
-        if event['name']=='value':
-            self.value = self.zoomw.value
-    @property
-    def zm(self):
-        "returns the zoom window in ppm"
-        z = self.zoomw.value
-        left = self.data.axis1.itop(z[0]*self.data.size1/100)
-        right = self.data.axis1.itop(z[1]*self.data.size1/100)
-        self.zoomdisplay.value = "%.2f / %.2f"%(left,right)
-        return (left,right)
-    def zfull(self, b):
-        self.zoomw.value = [0,100]
 
 class Phaser1D(object):
     """
@@ -835,63 +699,51 @@ class AvProc1D:
 #                self.wbcorr,
                 self.bdoit]) )
 
-class NMRPeaker(object):
+class NMRPeaker1D(Show1D):
     "a peak-picker for NMR experiments"
-    def __init__(self, npkd):
-        self.npkd = npkd.real()
-        self.zoom = widgets.FloatRangeSlider(value=[0, 100],
-            min=0, max=100.0, step=0.1, layout=Layout(width='60%'), description='zoom (%):',
-            continuous_update=REACTIVE, readout=True, readout_format='.1f',)
-        self.zoom.observe(self.display)
+    def __init__(self, data, figsize=None):
+        super().__init__( data, figsize=figsize)
+        self.Box.add_class("hidden")
+        self.data = data.real()
         self.thresh = widgets.FloatLogSlider(value=20.0,
             min=-1, max=2.0, base=10, step=0.01, layout=Layout(width='30%'),
-            continuous_update=False, readout=True, readout_format='.1f')
+            continuous_update=False, readout=True, readout_format='.2f')
         self.thresh.observe(self.pickpeak)
         self.peak_mode = widgets.Dropdown(options=['marker', 'bar'],value='marker',description='show as')
-        self.peak_mode.observe(self.display)
+        self.peak_mode.observe(self.ob)
         self.bprint = widgets.Button(description="Print", layout=Layout(width='10%'),
                 button_style='success', # 'success', 'info', 'warning', 'danger' or ''
                 tooltip='Print to screen')
         self.bprint.on_click(self.pkprint)
-        self.spec = Output(layout={'border': '1px solid black'})
         self.out = Output(layout={'border': '1px solid red'})
-        self.Ok = widgets.Button(description="Ok", button_style='success')
-        self.Ok.on_click(self.on_Apply)
+        self.done = widgets.Button(description="Ok", button_style='success')
+        self.done.on_click(self.on_done)
         self.cancel = widgets.Button(description="Cancel", button_style='warning')
         self.cancel.on_click(self.on_cancel)
-        self.Box = VBox([HBox([self.Ok, self.cancel]),
-            self.zoom,
-            HBox([Label('threshold - % largest signal'), self.thresh, self.peak_mode, self.bprint] )])
-        display(self.Box )
-        display(self.spec)
+        self.Box = HBox([self.done,self.cancel])
+        self.Box2 = VBox([self.Box,
+                            HBox([Label('threshold - % largest signal'), self.thresh, self.peak_mode, self.bprint] ) ])
+        display(self.Box2 )
         display(self.out )
-        with self.spec:
-            self.fig, self.ax = plt.subplots()
-            self.npkd.display(new_fig=False, figure=self.ax, zoom=self.zm)
+        self.pp()
+        self.display()
     def on_cancel(self, b):
-        self.Box.close()
-        self.spec.close()
+        self.Box2.close()
         self.out.close()
-        del self.npkd.peaks
-        self.npkd.display(new_fig=False, figure=self.ax)
-    def on_Apply(self, b):
+        del self.data.peaks
+        self.ax.clear()
+        self.data.display(new_fig=False, figure=self.ax)
+    def on_done(self, b):
         pkm = self.peak_mode.value
-        self.Box.close()
-        self.spec.close()
-        self.npkd.display()
-        self.npkd.display_peaks(peak_mode=pkm,figure=self.npkd.mplfigure)
-        self.npkd.mplfigure.annotate('%d peaks detected'%len(self.npkd.peaks) ,(0.05,0.95), xycoords='figure fraction')
-    @property
-    def zm(self):
-        "returns the zoom window in ppm"
-        z = self.zoom.value
-        left=self.npkd.axis1.itop(z[0]*self.npkd.size1/100)
-        right=self.npkd.axis1.itop(z[1]*self.npkd.size1/100)
-        return (left,right)
+        self.Box2.close()
+        self.ax.clear()
+        self.data.display(figure=self.ax )
+        self.data.display_peaks(peak_mode=pkm,figure=self.ax )
+        self.data.mplfigure.annotate('%d peaks detected'%len(self.data.peaks) ,(0.05,0.95), xycoords='figure fraction')
     def pkprint(self,event):
         self.out.clear_output(wait=True)
         with self.out:
-            display(HTML(self.npkd.pk2pandas().to_html()))
+            display(HTML(self.data.pk2pandas().to_html()))
     def _pkprint(self,event):
         self.out.clear_output(wait=True)
         with self.out:
@@ -899,24 +751,31 @@ class NMRPeaker(object):
     def pklist(self):
         "creates peaklist for printing or exporting"
         text = ["ppm\tInt.(%)\twidth (Hz)"]
-        data = self.npkd
+        data = self.data
         intmax = max(data.peaks.intens)/100
         for pk in data.peaks:
             ppm = data.axis1.itop(pk.pos)
             width = 2*pk.width*data.axis1.specwidth/data.size1
-            #(data.axis1.itoh(pk.pos-pk.width) - data.axis1.itoh(pk.pos+pk.width))
             l = "%.3f\t%.1f\t%.2f"%(ppm, pk.intens/intmax, width)
             text.append(l)
         return "\n".join(text)
-    def display(self, event):
-        "interactive wrapper to peakpick"
+    def ob(self, event):
         if event['name']=='value':
-            self.ax.clear()
-            self.npkd.display(new_fig=False, figure=self.ax, zoom=self.zm)
-            try:
-                self.npkd.display_peaks(peak_label=True, figure=self.ax, zoom=self.zm)
-            except:
-                pass
+            self.display()        
+    def display(self):
+        "interactive wrapper to peakpick"
+        self.xb = self.ax.get_xbound()
+        self.yb = self.ax.get_ybound()
+        super().disp()
+        x = [self.data.axis1.itoc(z) for z in (0, self.data.size1) ]
+        y = [self.data.absmax*self.thresh.value/100]*2
+        self.ax.plot(x,y,':r')
+        try:
+            self.data.display_peaks(peak_label=True, peak_mode=self.peak_mode.value, figure=self.ax)
+        except:
+            pass
+        self.ax.set_xbound(self.xb)
+        self.ax.set_ybound(self.yb)
     def pickpeak(self, event):
         "interactive wrapper to peakpick"
         if event['name']=='value':
@@ -924,38 +783,26 @@ class NMRPeaker(object):
     def pp(self):
         "do the peak-picking calling pp().centroid()"
         #self.spec.clear_output(wait=True)
-        th = self.npkd.absmax*self.thresh.value/100
-        self.npkd.set_unit('ppm').peakpick(threshold=th, verbose=False, zoom=self.zm).centroid()
-        with self.spec:
-            self.ax.clear()
-            self.npkd.display(new_fig=False, figure=self.ax, zoom=self.zm)
-            x = self.zm
-            y = [self.npkd.peaks.threshold]*2
-            self.ax.plot(x,y,':r')
-            z = self.zoom.value
-            left=self.npkd.axis1.itop(z[0]*self.npkd.size1/100)
-            right=self.npkd.axis1.itop(z[1]*self.npkd.size1/100)
-            self.npkd.display_peaks(peak_label=True, peak_mode=self.peak_mode.value,figure=self.ax, zoom=self.zm)
-            self.ax.annotate('%d peaks detected'%len(self.npkd.peaks) ,(0.05,0.95), xycoords='figure fraction')
+        th = self.data.absmax*self.thresh.value/100
+        zm = None
+        self.data.set_unit('ppm').peakpick(threshold=th, verbose=False, zoom=zm).centroid()
+        self.display()
+        self.ax.annotate('%d peaks detected'%len(self.data.peaks) ,(0.05,0.95), xycoords='figure fraction')
     def _pp(self):
         "do the peak-picking calling pp().centroid()"
         self.ax.clear()
-        self.npkd.set_unit('m/z').peakpick(autothresh=self.thresh.value, verbose=False).centroid()
-        self.npkd.display(new_fig=False, figure=self.ax)
-        x = [self.npkd.axis1.lowmass, self.npkd.axis1.highmass]
-        y = [self.npkd.peaks.threshold]*2
+        self.data.set_unit('m/z').peakpick(autothresh=self.thresh.value, verbose=False).centroid()
+        self.data.display(new_fig=False, figure=self.ax)
+        x = [self.data.axis1.lowmass, self.data.axis1.highmass]
+        y = [self.data.peaks.threshold]*2
         self.ax.plot(x,y,':r')
-        self.npkd.display_peaks(peak_label=True, figure=self.ax)
-        self.ax.annotate('%d peaks detected'%len(self.npkd.peaks) ,(0.05,0.95), xycoords='figure fraction')
+        self.data.display_peaks(peak_label=True, figure=self.ax)
+        self.ax.annotate('%d peaks detected'%len(self.data.peaks) ,(0.05,0.95), xycoords='figure fraction')
 
 class NMRIntegrate(object):
     "an integrator for NMR experiments"
     def __init__(self, npkd):
         self.npkd = npkd.real().integrate()
-        self.zoom = widgets.FloatRangeSlider(value=[0, 100],
-            min=0, max=100.0, step=0.1, layout=Layout(width='60%'), description='zoom (%):',
-            continuous_update=REACTIVE, readout=True, readout_format='.1f',)
-        self.zoom.observe(self.display)
         self.bias = widgets.FloatSlider(
             description='bias', layout=Layout(width='30%'),
             value=0.0,min=-10.0, max=10.0, step=0.1,
@@ -983,40 +830,30 @@ class NMRIntegrate(object):
         self.value = widgets.FloatText(value=100,description='Value',layout=Layout(width='15%'))
         self.set = widgets.Button(description="Set", button_style='success', layout=Layout(width='7%'))
         self.set.on_click(self.set_value)
-        self.spec = Output(layout={'border': '1px solid black'})
         self.out = Output(layout={'border': '1px solid red'})
         self.Box = VBox([
             HBox([self.Ok, self.cancel]),
-            self.zoom,
             HBox([self.bias, self.sep, self.wings,] ),
             HBox([self.entry, self.value, self.set, self.bprint] ),])
         display( self.Box)
-        display(self.spec)
+        self.fig, self.ax = plt.subplots()
+        self.npkd.display(figure=self.ax)
         display( self.out)
-        with self.spec:
-            self.fig, self.ax = plt.subplots()
-        self.npkd.display(new_fig=False, figure=self.ax, zoom=self.zm)
-        self.npkd.display_integral(label=True, zoom=self.zm, figure=self.ax, labelyposition=0.01, regions=False)
+        self.int()
+        self.display()
     def on_cancel(self, b):
         self.Box.close()
-        self.spec.close()
         self.out.close()
-        self.npkd.display()
+        self.ax.clear()
+        self.npkd.display(figure=self.ax)
     def on_Apply(self, b):
         self.Box.close()
-        self.spec.close()
-        self.npkd.display()
-        self.npkd.display_integral(label=True, figure=self.npkd.mplfigure, labelyposition=0.01, regions=False)
+        self.ax.clear()
+        self.npkd.display(figure=self.ax)
+        self.npkd.display_integral(label=True, figure=self.ax, labelyposition=0.01, regions=False)
     def set_value(self,b):
         self.npkd.integral_calibrate(self.entry.value, self.value.value)
-        self.display({'name':'value'})
-    @property
-    def zm(self):
-        "returns the zoom window in ppm"
-        z = self.zoom.value
-        left=self.npkd.axis1.itop(z[0]*self.npkd.size1/100)
-        right=self.npkd.axis1.itop(z[1]*self.npkd.size1/100)
-        return (left,right)
+        self.display()
     def print(self,event):
         self.out.clear_output(wait=True)
         with self.out:
@@ -1027,23 +864,30 @@ class NMRIntegrate(object):
             self.int()
     def int(self):
         "do the integration"
+        try:
+            calib = self.npkd.integrals.calibration
+        except:
+            calib = None
         self.npkd.set_unit('ppm').integrate(separation=self.sep.value, wings=self.wings.value,
             bias=self.npkd.absmax*self.bias.value/100)
-        # self.value.value = 100.0
-        # for i,val in enumerate(self.npkd.integvalues):
-        #     if val == 100.0:
-        #         self.entry.value = i
-        #         break
-        self.display({'name':'value'})
-    def display(self, event):
-        "refresh display from event"
+        self.npkd.integrals.calibrate(calibration=calib)
+        self.display()
+    def ob(self, event):
         if event['name']=='value':
-            self.ax.clear()
-            self.npkd.display(new_fig=False, figure=self.ax, zoom=self.zm)
-            try:
-                self.npkd.display_integral(label=True, figure=self.ax, zoom=self.zm, labelyposition=0.01, regions=False)
-            except:
-                pass
+            self.display()
+    def display(self):
+        "refresh display from event"
+        self.xb = self.ax.get_xbound()
+        self.yb = self.ax.get_ybound()
+        self.ax.clear()
+        self.npkd.display(new_fig=False, figure=self.ax)
+        try:
+            self.npkd.display_integral(label=True, figure=self.ax, labelyposition=0.01, regions=False)
+        except:
+            pass
+        self.ax.set_xbound(self.xb)
+        self.ax.set_ybound(self.yb)
+
 
 #if __name__ == '__main__':
 #    unittest.main()    
