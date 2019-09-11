@@ -2,7 +2,7 @@
 
 **SPIKE** a collaborative development for a FT-spectroscopy processing program.
 
-*This is the version 0.99.10 - July 2019*
+*This is the version 0.99.12 - September 2019*
 
 **SPIKE** is a program that allows the processing, the display and the analysis of data-sets obtained from various Fourier-Transform spectroscopies. The name stands for **S**pectrometry **P**rocessing **I**nnovative **KE**rnel.
 
@@ -122,16 +122,10 @@ processing.py and visu2D.py are two stand alone programs, written on the top of 
  - processing.py allowing the efficient processing
    of FT-ICR 2D datasets, with no limit on the size of the final file
    Produces multi-resolution files
- - visu2D.py
-   is an interactive tool for visualizing 2D FT-ICR multi-resolution files  
    
 syntax :
 ```
 python -m spike.processing param_file.mscf
-```
-or
-```
-python -m spike.visu2D param_file.mscf
 ```
 
 
@@ -155,7 +149,7 @@ To get it, you can simply
 
 Then you can install it using pip:
 ```bash
-pip install spike_py
+pip install spike-py
 ```
 
 Or, if you want to play with the code, 

@@ -1,6 +1,9 @@
 <!-- DO NOT MODIFY this file, it is generated automatically from dev_setup ! -->
 # SPIKE Relase Notes
 
+#### 0.99.12 - September 2019
+The 0.99.11 had a bug in the display of 1D NMR experiment - the 0.99.12 corrects it.
+
 #### 0.99.11 - September 2019
 - added a Notebook for processing of DOSY
 - many improvement in the interactive Notebooks, and in the interactive library (still work to do though)
