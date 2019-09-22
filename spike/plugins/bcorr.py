@@ -22,7 +22,21 @@ if sys.version_info[0] < 3:
 else:
     xrange = range
 #-------------------------------------------------------------------------------
-def _spline_interpolate(buff, xpoints, kind = 3):
+def get_ypoints(buff, xpoints, nsmooth=0):
+    """
+    from  buff and xpoints, returns ypoints = buff[xpoints]
+    eventually smoothed by moving average over 2*nsmooth+1 positions
+    """
+    nsmooth = abs(nsmooth)
+    xp = xpoints.astype(int)
+    y = np.zeros(len(xpoints))
+    for i in range(2*nsmooth+1):
+        xi = np.minimum( np.maximum(xp-i, 0), len(buff)-1)  # shift and truncate
+        y += buff[xi]
+    y /= 2*nsmooth+1
+    return y
+#-------------------------------------------------------------------------------
+def _spline_interpolate(buff, xpoints, kind = 3, nsmooth=0):
     """compute and returns a spline function 
         we are using splrep and splev instead of interp1d because interp1d needs to have 0 and last point
         it doesn't extend.
@@ -31,7 +45,7 @@ def _spline_interpolate(buff, xpoints, kind = 3):
         return _linear_interpolate(buff, xpoints)
     elif len(xpoints) > 2:
         xpoints.sort()
-        y = buff[xpoints]
+        y = get_ypoints(buff, xpoints, nsmooth=nsmooth)
         tck = interpolate.splrep(xpoints, y, k=kind)
         def f(x):
             return interpolate.splev(x, tck, der=0, ext=0)
@@ -39,50 +53,50 @@ def _spline_interpolate(buff, xpoints, kind = 3):
     else:  # if only one points given, returns a constant, which is the value at that point.
         raise NPKError("too little points in spline interpolation")
 #-------------------------------------------------------------------------------
-def _linear_interpolate(buff, xpoints):
+def _linear_interpolate(buff, xpoints, nsmooth=0):
     """computes and returns a linear interpolation"""
     xdata = np.array(xpoints)
-    ydata = buff[xdata]
+    ydata = get_ypoints(buff, xpoints, nsmooth=nsmooth)
     coeffs = np.polyfit(xdata, ydata, 1)
     return np.poly1d(coeffs)
 #-------------------------------------------------------------------------------
-def _interpolate(func, npkd, xpoints, axis = 'F2'):
+def _interpolate(func, npkd, xpoints, axis = 'F2', nsmooth=0):
     """"
     compute and applies a linear function as a baseline correction
     xpoints are the location of pivot points
     """
     if npkd.dim == 1:
-        f = func(npkd.buffer, xpoints)
+        f = func(npkd.buffer, xpoints, nsmooth=nsmooth)
         x = np.arange(npkd.size1)
         npkd.buffer -= f(x)
     elif npkd.dim == 2:
         if npkd.test_axis(axis) == 2:
             x = np.arange(npkd.size2)
             for i in xrange(npkd.size1):
-                f = func(npkd.buffer[i,:], xpoints)
+                f = func(npkd.buffer[i,:], xpoints, nsmooth=nsmooth)
                 npkd.buffer[i,:] -= f(x)
         elif npkd.test_axis(axis) == 1:
             x = np.arange(npkd.size1)
             for i in xrange(npkd.size2):
-                f = func(npkd.buffer[:,i], xpoints)
+                f = func(npkd.buffer[:,i], xpoints, nsmooth=nsmooth)
                 npkd.buffer[:,i] -= f(x)
     else:
         raise NPKError("not implemented")
     return npkd
 
-def linear_interpolate(npkd, xpoints, axis='F2'):
+def linear_interpolate(npkd, xpoints, axis='F2', nsmooth=0):
     """"
     compute and applies a linear function as a baseline correction
     xpoints are the location of pivot points
     """
-    return _interpolate(_linear_interpolate, npkd, xpoints, axis=axis)
+    return _interpolate(_linear_interpolate, npkd, xpoints, axis=axis, nsmooth=nsmooth )
 
-def spline_interpolate(npkd, xpoints, axis='F2'):
+def spline_interpolate(npkd, xpoints, axis='F2', nsmooth=0):
     """"
     compute and applies a spline function as a baseline correction
     xpoints are the location of pivot points
     """
-    return _interpolate(_spline_interpolate, npkd, xpoints, axis=axis)
+    return _interpolate(_spline_interpolate, npkd, xpoints, axis=axis, nsmooth=nsmooth)
 
 
 ########################################################################
@@ -128,7 +142,7 @@ def autopoints(npkd, Npoints=8):
         xpoints *= 2
     return xpoints
 
-def bcorr(npkd, method='spline', xpoints=None):
+def bcorr(npkd, method='spline', xpoints=None, nsmooth=0):
     """
     recapitulate all baseline correction methods, only 1D so far
     
@@ -143,7 +157,9 @@ def bcorr(npkd, method='spline', xpoints=None):
     both linear and spline use an additional list of pivot points 'xpoints' used to calculate the baseline
     if xpoints absent,  pivots are estimated automaticaly
     if xpoints is integer, it determines the number of computed pivots (defaut is 8 if xpoints is None)
+    if xpoints is a list of integers, there will used as pivots
 
+    if nsmooth >0, buffer is smoothed by moving average over 2*nsmooth+1 positions around pivots.
     default is spline with automatic detection of 8 baseline points
     """
     if method=='auto':
@@ -152,9 +168,9 @@ def bcorr(npkd, method='spline', xpoints=None):
         if xpoints is None or isinstance(xpoints,int):
             xpoints = autopoints(npkd, xpoints)
     if method=='linear':
-        return linear_interpolate(npkd, xpoints)
+        return linear_interpolate(npkd, xpoints, nsmooth=nsmooth)
     elif method=='spline':
-        return spline_interpolate(npkd, xpoints)
+        return spline_interpolate(npkd, xpoints, nsmooth=nsmooth)
     else:
         raise Exception("Wrong method in bcorr plugin")
 
