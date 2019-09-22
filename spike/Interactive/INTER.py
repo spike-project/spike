@@ -19,6 +19,7 @@ import glob
 
 import matplotlib.pylab as plt
 import matplotlib.gridspec as gridspec
+from matplotlib.widgets import MultiCursor
 from ipywidgets import interact, interactive, fixed, interact_manual, Layout, HBox, VBox, Label, Output, Button
 import ipywidgets as widgets
 from IPython.display import display, HTML, Javascript
@@ -227,14 +228,17 @@ class baseline1D(Show1D):
                                          value=0.5, readout=False, continuous_update=REACTIVE)
         self.selfine = widgets.FloatSlider(description='fine:', min=0.0, max=1.0, step=0.01, layout=Layout(width='70%'),
                                          value=0.5, readout=False, continuous_update=REACTIVE)
+        self.smooth = widgets.IntSlider(description='smooth:', min=0, max=20,  layout=Layout(width='70%'),
+                                        tooltip='apply a local smoothing for pivot points',
+                                         value=1, readout=True, continuous_update=REACTIVE)
         self.bsl_points = []
-        for w in [self.select, self.selfine]:
+        for w in [self.select, self.selfine, self.smooth]:
             w.observe(self.ob)
         bsize = '15%'
 #        self.apply = widgets.Button(description="Apply", button_style='success', layout=Layout(width=2*bsize))
 #        self.apply.on_click(self.on_apply)
         self.done.description = 'Apply'
-        self.cancel = widgets.Button(description="Abort", button_style='warning', layout=Layout(width=2*bsize))
+        self.cancel = widgets.Button(description="Abort", button_style='warning', layout=Layout(width='10%'))
         self.cancel.on_click(self.on_cancel)
         self.Box.add_class("hidden")
         self.auto = widgets.Button(description="auto", button_style='success', layout=Layout(width=bsize))
@@ -245,18 +249,18 @@ class baseline1D(Show1D):
         self.unset.on_click(self.on_unset)
         self.toshow = widgets.Dropdown( options=['baseline', 'corrected', 'points'],  description='Display:')
         self.toshow.observe(self.ob)
-        self.Box = HBox([self.scale, self.done,self.cancel])
+        self.Box = HBox([self.scale, self.done, self.cancel, self.toshow])
         display(self.Box)
         display( HBox( [
                         VBox([self.select, self.selfine], layout=Layout(width='50%')),
-                        VBox([  HBox([self.set, self.auto, self.toshow], layout=Layout(width='100%')),
+                        VBox([  HBox([self.set, self.auto, self.smooth], layout=Layout(width='100%')),
                                 self.unset
                               ], layout=Layout(width='50%')) 
                         ], layout=Layout(width='100%'))
                 )
         self.disp()
     def close(self):
-        for w in [ self.select, self.selfine, self.auto, self.set, self.unset, self.cancel, self.toshow]:
+        for w in [ self.select, self.selfine, self.auto, self.set, self.unset, self.cancel, self.toshow, self.smooth]:
             w.close()
         super().close()
     def on_done(self, e):
@@ -292,17 +296,24 @@ class baseline1D(Show1D):
         "returns selector pos in ppm"
         pos = self.select.value + self.selfine.value/100
         return (1-pos)*(self.data.axis1.itop(0)-self.data.axis1.itop(self.data.size1))+self.data.axis1.itop(self.data.size1)
+    def smoothed(self):
+        "returns a smoothed version of the data"
+        from scipy.signal import fftconvolve
+        buf = self.data.get_buffer()
+        mask = np.array([1,1,1,1,1])
+        return fftconvolve(buf, mask, mode='same')
     def correction(self):
         "returns the correction to apply as a numpy array"
-        ibsl_points = [int(self.data.axis1.ptoi(x)) for x in self.bsl_points]
+        ibsl_points = self.data.axis1.ptoi( np.array(self.bsl_points) ).astype(int)
         x = np.arange(self.data.size1)
+        yy = self.data.get_buffer()
         if len(self.bsl_points) == 1 :
             value = self.data[ibsl_points[0]] * np.ones( self.data.size1 )
         elif len(self.bsl_points) < 4 :
-            corr = bcorr._linear_interpolate(self.data.get_buffer(), ibsl_points)
+            corr = bcorr._linear_interpolate(yy, ibsl_points, nsmooth=self.smooth.value)
             value = corr(x)
         else:
-            corr = bcorr._spline_interpolate(self.data.get_buffer(), ibsl_points)
+            corr = bcorr._spline_interpolate(yy, ibsl_points, nsmooth=self.smooth.value)
             value = corr(x)
         return value
     def corrected(self):
@@ -311,24 +322,24 @@ class baseline1D(Show1D):
         return value
     def disp(self):
         self.xb = self.ax.get_xbound()
+        # box
         super().disp()
+        # data
         if len(self.bsl_points)>0:
             if self.toshow.value == 'baseline':
                 ( self.data.copy()-self.corrected() ).display(new_fig=False, figure=self.ax, color='r')
             elif self.toshow.value == 'corrected':
                 self.ax.clear()
                 self.corrected().display(new_fig=False, figure=self.ax, color='r', scale=self.scale.value)
+        # selector
         ppos = self.selpos()
         self.ax.plot([ppos,ppos], self.ax.get_ybound())# [0,self.data.absmax/self.scale.value])
-        y = []
-        for point in self.bsl_points:
-            if self.toshow.value == 'corrected':
-                y.append(0)
-            else:
-                loc = int(self.data.axis1.ptoi(point))
-                y.append(self.data[loc])
-        if y:
-            self.ax.scatter(self.bsl_points, y, c='r', marker='o')
+        # pivots
+        y = bcorr.get_ypoints(  self.data.get_buffer(), 
+                                self.data.axis1.ptoi( np.array(self.bsl_points)),
+                                nsmooth=self.smooth.value )
+        self.ax.scatter(self.bsl_points, y, c='r', marker='o')
+        # set zoom
         self.ax.set_xbound(self.xb)
 
 class Show1Dplus(Show1D):
@@ -398,9 +409,10 @@ class Show2D(object):
         self.title = title
         self.scale = widgets.FloatLogSlider(description='scale:', value=1.0, min=-1, max=3,  base=10, step=0.01,
                             layout=Layout(width='80%'), continuous_update=HEAVY)
-        self.posview = widgets.Checkbox(value=True,description='Positive')
-        self.negview = widgets.Checkbox(value=False,description='Negative')
-        for w in (self.scale, self.posview, self.negview):
+        self.posview = widgets.Checkbox(value=True,description='Positive', tooltip='Display Positive levels')
+        self.negview = widgets.Checkbox(value=False,description='Negative', tooltip='Display Negative levels')
+        self.cursors = widgets.Checkbox(value=False,description='Cursors', tooltip='show cursors (cpu intensive !)')
+        for w in (self.scale, self.posview, self.negview, self.cursors):
             w.observe(self.ob)
         grid = {'height_ratios':[1,4],'hspace':0,'wspace':0}
         if self.isDOSY:
@@ -410,16 +422,18 @@ class Show2D(object):
             fsize = (8,8)
             grid['width_ratios']=[4,1]
 #        fig, self.axarr = plt.subplots(2, 1, sharex=True, figsize=fsize, gridspec_kw=grid)
-        fig = plt.figure(figsize=fsize, constrained_layout=False)
-        spec2 = gridspec.GridSpec(ncols=2, nrows=2, figure=fig, **grid)
+        self.fig = plt.figure(figsize=fsize, constrained_layout=False)
+        spec2 = gridspec.GridSpec(ncols=2, nrows=2, figure=self.fig, **grid)
         axarr = np.empty((2,2), dtype=object)
-        axarr[0,0] = fig.add_subplot(spec2[0, 0])
-        axarr[1,0] = fig.add_subplot(spec2[1, 0],sharex=axarr[0, 0])
-        axarr[1,1] = fig.add_subplot(spec2[1, 1],sharey=axarr[1, 0])
+        axarr[0,0] = self.fig.add_subplot(spec2[0, 0])
+        axarr[1,0] = self.fig.add_subplot(spec2[1, 0],sharex=axarr[0, 0])
+        axarr[1,1] = self.fig.add_subplot(spec2[1, 1],sharey=axarr[1, 0])
         self.top_ax = axarr[0,0]
         self.spec_ax = axarr[1,0]
         self.side_ax = axarr[1,1]
-        self.Box = HBox( [self.scale, self.posview, self.negview])
+        self.multitop = None
+        self.multiside = None
+        self.Box = HBox( [self.scale, self.posview, self.negview, self.cursors])
         display( self.Box )
         self.disp(new=True)
     def on_done(self, b):
@@ -440,6 +454,12 @@ class Show2D(object):
             yb = self.side_ax.get_ybound()
             xb = self.top_ax.get_xbound()
             self.spec_ax.clear()
+        if self.cursors.value:
+            self.multitop = MultiCursor(self.fig.canvas, (self.spec_ax, self.top_ax), color='r', lw=1, horizOn=False, vertOn=True)
+            self.multiside = MultiCursor(self.fig.canvas, (self.spec_ax, self.side_ax), color='r', lw=1, horizOn=True, vertOn=False)
+        else:
+            self.multitop = None
+            self.multiside = None
         if self.posview.value:
             self.data.display(scale=self.scale.value, new_fig=False, figure=self.spec_ax)
         if self.negview.value:
