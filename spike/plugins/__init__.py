@@ -97,7 +97,7 @@ def loadone(pluginname, pgfile=None, debug=True):
         if debug: print("     "+doc)
         plugins[pluginname] = m.__doc__
     except:
-        print("*** %s not loaded because of an error ***"%pluginname)
+        print("*** %s not loaded ***"%pluginname)
         if debug:
             traceback.print_exc()
             print("*** Continuing ***")
