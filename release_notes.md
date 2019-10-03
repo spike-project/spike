@@ -1,6 +1,11 @@
 <!-- DO NOT MODIFY this file, it is generated automatically from dev_setup ! -->
 # SPIKE Relase Notes
 
+#### 0.99.13 - October 2019
+- added the EasyDisplayFTICR2D for non programers !
+- improvements in NoteBook interactivity
+- added smoothing in splie baselinecorrection
+
 #### 0.99.12 - September 2019
 The 0.99.11 had a bug in the display of 1D NMR experiment - the 0.99.12 corrects it.
 
