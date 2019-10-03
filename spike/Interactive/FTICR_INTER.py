@@ -46,6 +46,7 @@ class MR(object):
 #        self.row0 = self.data[0].row
         self.highmass = self.data[0].highmass     # a tuple (h1, h2)
         self.Debug = Debug
+        print (self.name)
         if report: self.report()
 
     def load(self):
@@ -166,6 +167,7 @@ class MR_interact(MR):
         setattr(self, name, butt)
 ##################### 1D ##################
     def I1D(self):
+        "show the 1D selector"
         self.r1D = None
         self.t1D = ''
         self.i1D = None
@@ -179,6 +181,7 @@ class MR_interact(MR):
             self.pltaxe1D = ax
 
     def ext_box(self):
+        "defines the interactive tools for 1D"
         wf = widgets.BoundedFloatText
         wi = widgets.BoundedIntText
         ref = self.data[0]
@@ -240,6 +243,7 @@ class MR_interact(MR):
                           self.b_row, self.b_rowp1, self.b_rowm1,HTML("&nbsp;/&nbsp;"),
                           self.b_col, self.b_colp1, self.b_colm1, self.b_accu])])
     def display1D(self):
+        "display the selected 1D"
         if self.t1D == 'row':
             title = 'horizontal extract at F1=%f m/z (index %d)'%(self.z1.value, self.i1D)
             label = str(self.z1.value)
@@ -444,34 +448,6 @@ class MR_interact(MR):
         self.update()
         self.display(redraw=True)
 
-class MR2(MR_interact):  # In development - do not use
-    def back(self, *arg):
-        self.point -= 1
-        try:
-            self._zoom, self.scale = self.track[self.point]
-        except IndexError:
-            self.point = -len(self.track)
-            self._zoom, self.scale = self.track[0]
-    def forw(self, *arg):
-        self.point += 1
-        try:
-            self._zoom, self.scale = self.track[self.point]
-        except IndexError:
-            self._zoom, self.scale = self.track[-1]
-            self.point = -1
-    def _display(self, zoom=None, scale=None, redraw=None):
-        if zoom is not None:
-            self._zoom = zoom
-        if scale is not None:
-            self.scale = scale
-        datasel, zz = self.to_display(self._zoom)
-        corner = (zz[1],zz[3])
-        reso = [corner[i]/datasel.axes(i+1).deltamz(corner[i]) for i in range(2)]
-#        print(corner, reso)
-        nf = not redraw
-        self.pltaxe.clear()
-        datasel.display(zoom=zz, scale=self.scale, show=False, figure=self.pltaxe, new_fig=nf)
-        self.pltaxe.text(corner[1],corner[0],"R: %.0fx%.0f"%tuple(reso))
 
 class MSPeaker(object):
     "a peak-picker for MS experiments"
