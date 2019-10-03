@@ -193,7 +193,8 @@ class FTICRData(FTMS.FTMSData):
                 try:
                     self.params = H.retrieve_object('params')
                 except:
-                    print('params block is missing in this file')
+                    if debug:
+                        print('params block is missing in this file')
                 self.name = name
                 self.hdf5file = H
             else:

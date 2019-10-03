@@ -567,7 +567,9 @@ python -m spike.File.HDF5File update {0}
         try:
             self.data.params = self.retrieve_object('params')
         except:
-            print("WARNING: %s file does not have the params attribute"%self.fname)
+            pass
+            if (self.debug > 0):
+                print("WARNING: %s file does not have the params attribute"%self.fname)
         return self.data
         
     #----------------------------------------------
