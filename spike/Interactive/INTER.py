@@ -6,7 +6,7 @@ A set of utilities to use spike in NMR or FTMS within jupyter
 
 
 First version MAD june 2017
-preliminary and not fully tested !
+Still in development and not fully tested !
 
 """
 
@@ -186,38 +186,67 @@ class Show1D(object):
         Show1D(spectrum)
     to be developped for peaks and integrals
     """
-    def __init__(self, data, title=None, figsize=None):
+    def __init__(self, data, title=None, figsize=None, reverse_scroll=False):
+        """
+        data : to be displayed
+        title : text for window
+        figsize : size in inches (x,y)
+        reverse_scroll : if True, reverses direction of mouse scroll
+        """
         self.data = data
         self.title = title
         if figsize is None:
             figsize = (10,5)
-        self.done = Button(description="Done", button_style='success',layout=Layout(width='10%'))
-        self.scale = widgets.FloatSlider(description='scale:', value=1.0, min=1.0, max=100, step=0.1,
-                            layout=Layout(width='50%'), continuous_update=REACTIVE)
+        if reverse_scroll:
+            self.reverse_scroll = -1
+        else:
+            self.reverse_scroll = 1
+        self.done = Button(description="Done", button_style='success',layout=Layout(width='80px'))
+        self.done.on_click(self.on_done)
+        self.reset = Button(description="Reset", button_style='success',layout=Layout(width='80px'))
+        self.reset.on_click(self.on_reset)
+        self.scale = widgets.FloatSlider(description='scale:', value=1.0, min=1.0, max=200, step=0.1,
+                            layout=Layout(width='80px', height=str(0.8*2.54*figsize[1])+'cm'), continuous_update=REACTIVE,
+                            orientation='vertical')
         for widg in (self.scale,):
             widg.observe(self.ob)
+        plt.ioff()
         fi,ax = plt.subplots(figsize=figsize)
         self.ax = ax
-        self.data.display(figure=self.ax, title=self.title)
+        self.fig = fi
         self.xb = self.ax.get_xbound()
-        self.done.on_click(self.on_done)
-        self.Box = HBox([self.scale, self.done])
+        blank = widgets.HTML("&nbsp;",layout=Layout(width='80px'))
+        self.Box = HBox([   VBox([blank, self.reset, self.scale, self.done]),
+                        self.fig.canvas])
+        self.set_on_redraw()
+        plt.ion()
         display( self.Box )
+        self.data.display(figure=self.ax, title=self.title)
     def on_done(self, b):
         self.close()
+    def on_reset(self, b):
+        self.scale.value = 1.0
+        self.ax.set_xbound( (self.data.axis1.itop(0),self.data.axis1.itop(self.data.size1)) )
     def close(self):
         for w in [ self.Box, self.done, self.scale]:
             w.close()
+        display(self.fig.canvas)
     def ob(self, event):
         "observe events and display"
         if event['name']=='value':
             self.disp()
+    def scale_up(self, step):
+        self.scale.value *= 1.1892**(self.reverse_scroll*step) # 1.1892 is 4th root of 2.0
+    def set_on_redraw(self):
+        def on_scroll(event):
+            self.scale_up(event.step)
+        cids = self.fig.canvas.mpl_connect('scroll_event', on_scroll)
     def disp(self):
         self.xb = self.ax.get_xbound()
         self.ax.clear()
         self.data.display(scale=self.scale.value, new_fig=False, figure=self.ax, title=self.title)
         self.ax.set_xbound(self.xb)
-
+        #self.set_on_redraw()
 class baseline1D(Show1D):
     def __init__(self, data, figsize=None):
         super().__init__( data, figsize=figsize)
@@ -469,7 +498,7 @@ class Show2D(object):
         self.spec_ax.set_ybound(yb)
 
 
-class Phaser1D(object):
+class Phaser1D(Show1D):
     """
     An interactive phaser in 1D NMR
 
