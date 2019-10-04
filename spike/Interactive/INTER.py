@@ -180,19 +180,20 @@ class FileChooser:
         "the basename of the chosen file"
         return op.basename(self.wfile.value)
 
-class Show1D(object):
+class Show1D(HBox):
     """
     An interactive display, 1D NMR
         Show1D(spectrum)
     to be developped for peaks and integrals
     """
-    def __init__(self, data, title=None, figsize=None, reverse_scroll=False):
+    def __init__(self, data, title=None, figsize=None, reverse_scroll=False, show=True):
         """
         data : to be displayed
         title : text for window
         figsize : size in inches (x,y)
         reverse_scroll : if True, reverses direction of mouse scroll
         """
+        super().__init__()
         self.data = data
         self.title = title
         if figsize is None:
@@ -216,21 +217,18 @@ class Show1D(object):
         self.fig = fi
         self.xb = self.ax.get_xbound()
         blank = widgets.HTML("&nbsp;",layout=Layout(width='80px'))
-        self.Box = HBox([   VBox([blank, self.reset, self.scale, self.done]),
-                        self.fig.canvas])
+        self.children = [  VBox([blank, self.reset, self.scale, self.done]), self.fig.canvas ]
         self.set_on_redraw()
         plt.ion()
-        display( self.Box )
-        self.data.display(figure=self.ax, title=self.title)
+        if show:
+            display( self )
+            self.data.display(figure=self.ax, title=self.title)
     def on_done(self, b):
         self.close()
+        display(self.fig.canvas)   # shows spectrum
     def on_reset(self, b):
         self.scale.value = 1.0
         self.ax.set_xbound( (self.data.axis1.itop(0),self.data.axis1.itop(self.data.size1)) )
-    def close(self):
-        for w in [ self.Box, self.done, self.scale]:
-            w.close()
-        display(self.fig.canvas)
     def ob(self, event):
         "observe events and display"
         if event['name']=='value':
@@ -372,8 +370,8 @@ class baseline1D(Show1D):
         self.ax.set_xbound(self.xb)
 
 class Show1Dplus(Show1D):
-    def __init__(self, data, figsize=None, title=None):
-        super().__init__( data, figsize=figsize, title=title)
+    def __init__(self, data, figsize=None, title=None, reverse_scroll=False):
+        super().__init__( data, figsize=figsize, title=title, reverse_scroll=reverse_scroll)
         self.scaleint = widgets.FloatSlider(value=0.5, min=0.1, max=10, step=0.05,
                             layout=Layout(width='20%'), continuous_update=REACTIVE)
         self.offset = widgets.FloatSlider(value=0.3, min=0.0, max=1.0, step=0.01,
@@ -497,48 +495,53 @@ class Show2D(object):
         self.spec_ax.set_xbound(xb)
         self.spec_ax.set_ybound(yb)
 
-
 class Phaser1D(Show1D):
     """
     An interactive phaser in 1D NMR
 
         Phaser1D(spectrum)
 
-    best when in %matplotlib inline
+    requires %matplotlib widget
 
     """
-    def __init__(self, data):
-        self.scale = widgets.FloatSlider(description='scale:', min=1, max=100, step=0.5,
-                            layout=Layout(width='30%'), continuous_update=REACTIVE)
+    def __init__(self, data, figsize=None, title=None, reverse_scroll=False, show=True):
+        super().__init__( data, figsize=figsize, title=title, reverse_scroll=reverse_scroll, show=False)
         self.p0 = widgets.FloatSlider(description='P0:',min=-180, max=180, step=0.1,
                             layout=Layout(width='100%'), continuous_update=REACTIVE)
         self.p1 = widgets.FloatSlider(description='P1:',min=-360, max=360, step=1.0,
                             layout=Layout(width='100%'), continuous_update=REACTIVE)
-        self.pivot = widgets.FloatSlider(description='pivot:', min=0.0, max=1.0, step=0.01, layout=Layout(width='30%'),
+        self.pivot = widgets.FloatSlider(description='pivot:', min=0.0, max=1.0, step=0.01, layout=Layout(width='60%'),
                                          value=0.5, readout=False, continuous_update=REACTIVE)
-        for w in [self.p0, self.p1, self.scale, self.pivot]:
-            w.observe(self.ob)
-        self.button = widgets.Button(description="Ok", button_style='success')
-        self.button.on_click(self.on_Apply)
+        #self.button = widgets.Button(description="Ok", button_style='success')
+        #self.button.on_click(self.on_Apply)
         self.cancel = widgets.Button(description="Cancel", button_style='warning')
         self.cancel.on_click(self.on_cancel)
-        display( VBox([ HBox([self.button, self.cancel]),
-                        HBox([self.scale, self.pivot]),
-                        self.p0, self.p1]) )
-        fi,ax = plt.subplots()
-        self.ax = ax
-        self.data = data
+        self.done.on_click(self.on_Apply)
+        self.Box = VBox([ HBox([self.cancel, self.pivot, widgets.HTML('<i>set by clicking on spectrum</i>')]),
+                        self.p0, self.p1,
+                        self]) 
+        for w in [self.p0, self.p1, self.scale, self.pivot]:
+            w.observe(self.ob)
+        def on_press(event):
+            v = (event.xdata - self.data.axis1.itop(0) ) / \
+                ( self.data.axis1.itop(0)-self.data.axis1.itop(self.data.size1) )
+            self.pivot.value = abs(v)
+        cids = self.fig.canvas.mpl_connect('button_press_event', on_press)
+
+        if show: self.show()
+    def show(self):
+        display(self.Box)
         self.data.display(figure=self.ax)
-        ppos = self.data.axis1.itop(self.data.axis1.size/2)
-        self.ax.plot([ppos,ppos], self.ax.get_ybound())
         self.xb = self.ax.get_xbound()  # initialize zoom
-    def close_all(self):
-        for w in [self.p0, self.p1, self.scale, self.button, self.cancel, self.pivot]:
-            w.close()
+        ppos = (1-self.pivot.value)*(self.data.axis1.itop(0)-self.data.axis1.itop(self.data.size1))+self.data.axis1.itop(self.data.size1)
+        self.ax.plot([ppos,ppos], self.ax.get_ybound())
+
     def on_cancel(self, b):
-        self.close_all()
+        self.Box.close()
         self.ax.clear()
         self.data.display(new_fig=False, figure=self.ax)
+        display(self.fig.canvas)
+        print("no applied phase")
     def on_Apply(self, b):
         lp0, lp1 = self.ppivot() # get centered values
         if lp0 != 0 or lp1 != 0:
@@ -546,8 +549,10 @@ class Phaser1D(Show1D):
             self.data.phase(lp0, lp1).display(new_fig=False, figure=self.ax)
         else:
             print("no applied phase")
-        self.close_all()
-#        self.ax.clear()
+        self.Box.close()
+        self.ax.clear()
+        self.data.display(new_fig=False, figure=self.ax)
+        display(self.fig.canvas)
     def ppivot(self):
         "converts from pivot values to centered ones"
         pp = 1.0-self.pivot.value
