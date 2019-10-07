@@ -246,55 +246,65 @@ class Show1D(HBox):
         self.ax.set_xbound(self.xb)
         #self.set_on_redraw()
 class baseline1D(Show1D):
-    def __init__(self, data, figsize=None):
-        super().__init__( data, figsize=figsize)
+    def __init__(self, data, figsize=None, reverse_scroll=False, show=True):
+        super().__init__( data, figsize=figsize, reverse_scroll=reverse_scroll, show=False)
         self.data.real()
         ppos = self.data.axis1.itop(self.data.axis1.size/2)
         #self.ax.plot([ppos,ppos], self.ax.get_ybound())
-        self.select = widgets.FloatSlider(description='select:', min=0.0, max=1.0, step=0.002, layout=Layout(width='100%'),
-                                         value=0.5, readout=False, continuous_update=REACTIVE)
-        self.selfine = widgets.FloatSlider(description='fine:', min=0.0, max=1.0, step=0.01, layout=Layout(width='70%'),
-                                         value=0.5, readout=False, continuous_update=REACTIVE)
+        self.select = widgets.FloatSlider(description='select:',
+                        min=0.0, max=self.data.size1,
+                        layout=Layout(width='100%'),
+                        value=0.5*self.data.size1, readout=False, continuous_update=REACTIVE)
         self.smooth = widgets.IntSlider(description='smooth:', min=0, max=20,  layout=Layout(width='70%'),
                                         tooltip='apply a local smoothing for pivot points',
                                          value=1, readout=True, continuous_update=REACTIVE)
         self.bsl_points = []
-        for w in [self.select, self.selfine, self.smooth]:
+        for w in [self.select, self.smooth]:
             w.observe(self.ob)
         bsize = '15%'
-#        self.apply = widgets.Button(description="Apply", button_style='success', layout=Layout(width=2*bsize))
-#        self.apply.on_click(self.on_apply)
         self.done.description = 'Apply'
         self.cancel = widgets.Button(description="Abort", button_style='warning', layout=Layout(width='10%'))
         self.cancel.on_click(self.on_cancel)
-        self.Box.add_class("hidden")
-        self.auto = widgets.Button(description="auto", button_style='success', layout=Layout(width=bsize))
+        self.auto = widgets.Button(description="Auto", button_style='success', layout=Layout(width=bsize),
+            tooltip='Automatic set of points')
         self.auto.on_click(self.on_auto)
-        self.set = widgets.Button(description="add", button_style='success', layout=Layout(width=bsize))
+        self.set = widgets.Button(description="Add", button_style='success', layout=Layout(width=bsize),
+            tooltip='Add a baseline point at the selector position')
         self.set.on_click(self.on_set)
-        self.unset = widgets.Button(description="rem", button_style='warning', layout=Layout(width=bsize))
+        self.unset = widgets.Button(description="Rem", button_style='warning', layout=Layout(width=bsize),
+            tooltip='Remove the baseline point closest to the selector')
         self.unset.on_click(self.on_unset)
         self.toshow = widgets.Dropdown( options=['baseline', 'corrected', 'points'],  description='Display:')
         self.toshow.observe(self.ob)
-        self.Box = HBox([self.scale, self.done, self.cancel, self.toshow])
+        self.Box = VBox([
+            HBox([self.done, self.cancel, self.toshow,
+                widgets.HTML('Choose baseline points')]),
+            HBox([self.select,self.set, self.unset, self.auto, self.smooth]),
+            self])
+        def on_press(event):
+            v = self.data.axis1.ptoi(event.xdata)
+            self.select.value = abs(v)
+        cids = self.fig.canvas.mpl_connect('button_press_event', on_press)
+
+        if show: self.show()
+    def show(self):
+        "create the widget and display the spectrum"
         display(self.Box)
-        display( HBox( [
-                        VBox([self.select, self.selfine], layout=Layout(width='50%')),
-                        VBox([  HBox([self.set, self.auto, self.smooth], layout=Layout(width='100%')),
-                                self.unset
-                              ], layout=Layout(width='50%')) 
-                        ], layout=Layout(width='100%'))
-                )
-        self.disp()
+        self.data.display(figure=self.ax)
+        self.xb = self.ax.get_xbound()  # initialize zoom
+        ppos = self.data.axis1.itop(self.select.value)
+        self.ax.plot([ppos,ppos], self.ax.get_ybound())
     def close(self):
-        for w in [ self.select, self.selfine, self.auto, self.set, self.unset, self.cancel, self.toshow, self.smooth]:
+        "close all widget"
+        for w in [ self.select, self.auto, self.set, self.unset, self.cancel, self.toshow, self.smooth]:
             w.close()
         super().close()
     def on_done(self, e):
-        print('Applied correction:\n',self.bsl_points)
+        print('Applied correction:\n', sorted(self.bsl_points))
         self.data.set_buffer( self.data.get_buffer() - self.correction() )
         super().disp()
-        self.close()
+        self.Box.close()
+        display(self.fig.canvas)
     def on_auto(self, e):
         "automatically set baseline points"
         self.bsl_points = [self.data.axis1.itop(x) for x in bcorr.autopoints(self.data)]
@@ -306,7 +316,6 @@ class baseline1D(Show1D):
     def on_set(self, e):
         "add baseline points at selector"
         self.bsl_points.append( self.selpos() )
-        self.selfine.value = 0.5
         self.disp()
     def on_unset(self, e):
         "remove baseline points closest from selector"
@@ -321,8 +330,7 @@ class baseline1D(Show1D):
         self.disp()
     def selpos(self):
         "returns selector pos in ppm"
-        pos = self.select.value + self.selfine.value/100
-        return (1-pos)*(self.data.axis1.itop(0)-self.data.axis1.itop(self.data.size1))+self.data.axis1.itop(self.data.size1)
+        return self.data.axis1.itop(self.select.value)
     def smoothed(self):
         "returns a smoothed version of the data"
         from scipy.signal import fftconvolve
@@ -348,6 +356,7 @@ class baseline1D(Show1D):
         value.set_buffer( value.get_buffer() - self.correction() )
         return value
     def disp(self):
+        "compute and display the spectrum"
         self.xb = self.ax.get_xbound()
         # box
         super().disp()
@@ -360,7 +369,7 @@ class baseline1D(Show1D):
                 self.corrected().display(new_fig=False, figure=self.ax, color='r', scale=self.scale.value)
         # selector
         ppos = self.selpos()
-        self.ax.plot([ppos,ppos], self.ax.get_ybound())# [0,self.data.absmax/self.scale.value])
+        self.ax.plot([ppos,ppos], self.ax.get_ybound())
         # pivots
         y = bcorr.get_ypoints(  self.data.get_buffer(), 
                                 self.data.axis1.ptoi( np.array(self.bsl_points)),
@@ -388,6 +397,8 @@ class Show1Dplus(Show1D):
     def on_done(self, e):
         self.fullBox.close()
         super().close()
+        self.disp()
+        display(self.fig.canvas)
     def disp(self):
         self.xb = self.ax.get_xbound()
         self.ax.clear()
@@ -505,17 +516,24 @@ class Phaser1D(Show1D):
 
     """
     def __init__(self, data, figsize=None, title=None, reverse_scroll=False, show=True):
+        data.check1D()
+        if data.itype == 0:
+            jsalert('Data is Real - Please redo Fourier Transform')
+            return
         super().__init__( data, figsize=figsize, title=title, reverse_scroll=reverse_scroll, show=False)
         self.p0 = widgets.FloatSlider(description='P0:',min=-180, max=180, step=0.1,
                             layout=Layout(width='100%'), continuous_update=REACTIVE)
         self.p1 = widgets.FloatSlider(description='P1:',min=-360, max=360, step=1.0,
                             layout=Layout(width='100%'), continuous_update=REACTIVE)
-        self.pivot = widgets.FloatSlider(description='pivot:', min=0.0, max=1.0, step=0.01, layout=Layout(width='60%'),
-                                         value=0.5, readout=False, continuous_update=REACTIVE)
+        self.pivot = widgets.FloatSlider(description='pivot:',
+                        min=0.0, max=self.data.size1,
+                        step=1, layout=Layout(width='100%'),
+                        value=0.5*self.data.size1, readout=False, continuous_update=REACTIVE)
         #self.button = widgets.Button(description="Ok", button_style='success')
         #self.button.on_click(self.on_Apply)
         self.cancel = widgets.Button(description="Cancel", button_style='warning')
         self.cancel.on_click(self.on_cancel)
+        self.done.description = 'Apply'
         self.done.on_click(self.on_Apply)
         self.Box = VBox([ HBox([self.cancel, self.pivot, widgets.HTML('<i>set by clicking on spectrum</i>')]),
                         self.p0, self.p1,
@@ -523,9 +541,7 @@ class Phaser1D(Show1D):
         for w in [self.p0, self.p1, self.scale, self.pivot]:
             w.observe(self.ob)
         def on_press(event):
-            v = (event.xdata - self.data.axis1.itop(0) ) / \
-                ( self.data.axis1.itop(0)-self.data.axis1.itop(self.data.size1) )
-            self.pivot.value = abs(v)
+            self.pivot.value = self.data.axis1.ptoi(event.xdata)
         cids = self.fig.canvas.mpl_connect('button_press_event', on_press)
 
         if show: self.show()
@@ -533,10 +549,12 @@ class Phaser1D(Show1D):
         display(self.Box)
         self.data.display(figure=self.ax)
         self.xb = self.ax.get_xbound()  # initialize zoom
-        ppos = (1-self.pivot.value)*(self.data.axis1.itop(0)-self.data.axis1.itop(self.data.size1))+self.data.axis1.itop(self.data.size1)
+        ppos = self.data.axis1.itop(self.pivot.value)
         self.ax.plot([ppos,ppos], self.ax.get_ybound())
 
     def on_cancel(self, b):
+        self.p0.value = 0  # because widget remains active...
+        self.p1.value = 0
         self.Box.close()
         self.ax.clear()
         self.data.display(new_fig=False, figure=self.ax)
@@ -550,12 +568,12 @@ class Phaser1D(Show1D):
         else:
             print("no applied phase")
         self.Box.close()
-        self.ax.clear()
-        self.data.display(new_fig=False, figure=self.ax)
-        display(self.fig.canvas)
+#        self.ax.clear()
+#        self.data.display(new_fig=False, figure=self.ax)
+#        display(self.fig.canvas)
     def ppivot(self):
         "converts from pivot values to centered ones"
-        pp = 1.0-self.pivot.value
+        pp = 1.0-(self.pivot.value/self.data.size1)
         return (self.p0.value + (pp-0.5)*self.p1.value, self.p1.value)
     def ob(self, event):
         "observe changes and start phasing"
@@ -567,7 +585,7 @@ class Phaser1D(Show1D):
         self.ax.clear()
         lp0, lp1 = self.ppivot() # get centered values
         self.data.copy().phase(lp0, lp1).display(scale=self.scale.value, new_fig=False, figure=self.ax)
-        ppos = (1-self.pivot.value)*(self.data.axis1.itop(0)-self.data.axis1.itop(self.data.size1))+self.data.axis1.itop(self.data.size1)
+        ppos = self.data.axis1.itop(self.pivot.value)
         self.ax.plot([ppos,ppos], self.ax.get_ybound())
         self.ax.set_xbound( self.xb )
         #z = self.zm
@@ -755,9 +773,9 @@ class AvProc1D:
 
 class NMRPeaker1D(Show1D):
     "a peak-picker for NMR experiments"
-    def __init__(self, data, figsize=None):
-        super().__init__( data, figsize=figsize)
-        self.Box.add_class("hidden")
+    def __init__(self, data, figsize=None, reverse_scroll=False, show=True):
+        super().__init__( data, figsize=figsize, reverse_scroll=reverse_scroll, show=False)
+#        self.Box.add_class("hidden")
         self.data = data.real()
         self.thresh = widgets.FloatLogSlider(value=20.0,
             min=-1, max=2.0, base=10, step=0.01, layout=Layout(width='30%'),
@@ -774,25 +792,26 @@ class NMRPeaker1D(Show1D):
         self.done.on_click(self.on_done)
         self.cancel = widgets.Button(description="Cancel", button_style='warning')
         self.cancel.on_click(self.on_cancel)
-        self.Box = HBox([self.done,self.cancel])
-        self.Box2 = VBox([self.Box,
+        self.Box = VBox([   HBox([self.done,self.cancel]),
+                            self,
                             HBox([Label('threshold - % largest signal'), self.thresh, self.peak_mode, self.bprint] ) ])
-        display(self.Box2 )
-        display(self.out )
-        self.pp()
-        self.display()
+        if show:
+            display(self.Box )
+            display(self.out )
+            self.pp()
+            self.data.display(figure=self.ax)
+            self.ax.set_xbound( (self.data.axis1.itop(0),self.data.axis1.itop(self.data.size1)) )
+            self.disp()
     def on_cancel(self, b):
-        self.Box2.close()
+        self.Box.close()
         self.out.close()
         del self.data.peaks
-        self.ax.clear()
-        self.data.display(new_fig=False, figure=self.ax)
+        self.data.display()
     def on_done(self, b):
         pkm = self.peak_mode.value
-        self.Box2.close()
-        self.ax.clear()
-        self.data.display(figure=self.ax )
-        self.data.display_peaks(peak_mode=pkm,figure=self.ax )
+        self.Box.close()
+        self.data.display()
+        self.data.display_peaks(peak_mode=pkm, figure=self.data.mplfigure  )
         self.data.mplfigure.annotate('%d peaks detected'%len(self.data.peaks) ,(0.05,0.95), xycoords='figure fraction')
     def pkprint(self,event):
         self.out.clear_output(wait=True)
@@ -815,12 +834,14 @@ class NMRPeaker1D(Show1D):
         return "\n".join(text)
     def ob(self, event):
         if event['name']=='value':
-            self.display()        
-    def display(self):
+            self.disp()        
+    def disp(self):
         "interactive wrapper to peakpick"
         self.xb = self.ax.get_xbound()
-        self.yb = self.ax.get_ybound()
-        super().disp()
+        #self.yb = self.ax.get_ybound()
+        self.ax.clear()
+        #super().disp()
+        self.data.display(scale=self.scale.value, new_fig=False, figure=self.ax, title=self.title)
         x = [self.data.axis1.itoc(z) for z in (0, self.data.size1) ]
         y = [self.data.absmax*self.thresh.value/100]*2
         self.ax.plot(x,y,':r')
@@ -829,7 +850,7 @@ class NMRPeaker1D(Show1D):
         except:
             pass
         self.ax.set_xbound(self.xb)
-        self.ax.set_ybound(self.yb)
+        self.ax.set_ylim(ymax=self.data.absmax/self.scale.value)
     def pickpeak(self, event):
         "interactive wrapper to peakpick"
         if event['name']=='value':
@@ -840,7 +861,7 @@ class NMRPeaker1D(Show1D):
         th = self.data.absmax*self.thresh.value/100
         zm = None
         self.data.set_unit('ppm').peakpick(threshold=th, verbose=False, zoom=zm).centroid()
-        self.display()
+        self.disp()
         self.ax.annotate('%d peaks detected'%len(self.data.peaks) ,(0.05,0.95), xycoords='figure fraction')
     def _pp(self):
         "do the peak-picking calling pp().centroid()"
