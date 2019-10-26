@@ -250,6 +250,43 @@ class PeakList(list):
     # def __getitem__(self,i):
     #     #print('getitem')
     #     return type(self)(list.__getitem__(self,i))
+def peak_aggreg(pklist, distance):
+    """
+    aggregates peaks in peaklist if peaks are closer than a given distance in pixel
+    distance : if two peaks are less than distance (in points),  they are aggregated
+    """
+    pkl = sorted(pklist, key = lambda p: p.pos)   # first, sort the list in position
+    newlist = Peak1DList()
+    prev = pkl[0]
+    ipk = 1
+    maxgrp = (prev.intens, 0)  # maintain maxval and index of max peak
+    newgrp = [0,]
+    while ipk < len(pkl):
+        current = pkl[ipk]
+        #print (current.pos, int(current.pos-prev.pos), distance)
+        if abs(current.pos-prev.pos) <= distance:  # start aggregating
+            #print(ipk, current.pos)
+            newgrp.append(ipk)                     # add to list
+            if current.intens>maxgrp[0]:           # check summit
+                maxgrp = (current.intens, ipk)
+        else:       # stop aggregating
+            if len(newgrp) == 1:
+                inewpk = newgrp[0]   # isolated peak
+            else:
+                inewpk =  maxgrp[1]  # larger peak of the aggregate
+            newlist.append( pkl[inewpk] )
+            newgrp = [ipk]
+            maxgrp = (current.intens, ipk)
+        ipk += 1
+        prev = current
+
+    # finished - left-overs
+    if len(newgrp) == 1:
+        inewpk = newgrp[0]   # isolated peak
+    else:
+        inewpk =  maxgrp[1]  # larger peak of the aggregate
+    newlist.append( pklist[inewpk] )
+    return newlist 
 class Peak1DList(PeakList):
     """
     store a list of 1D peaks
@@ -293,7 +330,10 @@ class Peak1DList(PeakList):
         zoom is in index
         peak_mode is either "marker" or "bar"
         NbMaxPeaks is the maximum number of peaks to displayin the zoom window (show only the largest)
+        f() should be a function which converts from points to current display scale - typically npk.axis1.itoc
         """
+        if len(self) == 0:
+            return  # nothing to display
         from spike.Display import testplot
         plot = testplot.plot()
         if figure is None:
@@ -330,6 +370,11 @@ class Peak1DList(PeakList):
                     rotation=40,color='red',fontsize=7,
                     arrowprops=dict(arrowstyle='-'), horizontalalignment='left', verticalalignment='bottom')
         if show: plot.show()
+    # def merge(self, pklist, tolerance=1.0):
+    #     """
+    #     merge self and additional pklist by removing redundant peaks (closer than tolerance - in points)
+    #     """
+    #     self = peak_aggreg(self+pklist, distance=tolerance)  # that simple !
     def pos2label(self):
         "use pos in current unit, using converion f and set it as label for each peak"
         f = self.source.axis1.itoc
@@ -375,6 +420,7 @@ class Peak2DList(PeakList):
         """
         displays 2D peak list
         zoom is in index
+        f1 and f2 should be functions which convert from points to current display scale - typically npk.axis1.itoc npk.axis2.itoc
         """
         import spike.Display.testplot as testplot
         plot = testplot.plot()
@@ -503,6 +549,7 @@ def peaks1d(npkd, threshold, zoom=None):
     listpkF1 = int(z1) + listpk[0] +1
     listint = npkd.get_buffer()[listpkF1].real
     return listpkF1, listint
+
 #-------------------------------------------------------
 # centroid measure
 def center(x, xo, intens, width):

@@ -1,8 +1,11 @@
 FEATURES
 ========
-Doc de RMN et doc de MS
+More Doc !
 
-more user examples in jupyter
+NB
+==
+- close Show1d
+- more user examples in jupyter
 	- 1H 1D proc / visu
 	- 13C 1D proc / visu
 	- 1H 2D proc / visu
@@ -11,33 +14,34 @@ more user examples in jupyter
 	- HSQC 2D NUS visu
 	- 2D FTICR visu
 	- 2D FTICR proc
+- 
 
-develop more cuda functions
+Core
+====
+- develop more cuda functions
+- fermer le pool ou MPI en sortant via register.
+- delta peak-picker 
 
-delta peak-picker 
-add peak lists to files
-
-spikecalib.py
-
-Apex vs Solarix
+MS
+==
+- spikecalib.py
+- move dowsampling outside processing
+- correct wrong downsampling in F2
+- test avec SubP-2015
+- Apex vs Solarix
     dans dossier .m
         <method version="solariXcontrol_2" > dans l'entete de  apexAcquisition.method
         ExciteSweep 
         PULPROG_xx_seq et PULPROG_xx_compiled
 
-fermer le pool ou MPI en sortant via register.
 
-Fichier pour RMN
+NMR
+===
+- colors for peak display in bar mode
+- phase after baseline in NB
+- points below spectrum in NB
+- pivot and zoom in NB
+- Fichier pour RMN
+- model pour RMN
+- shearing
 
-model pour RMN
-
-test avec SubP-2015
-
-move dowsampling outside processing
-
-shearing
-
-BUGS
-====
-correct wrong downsampling in F2
-colors for peak display in bar mode

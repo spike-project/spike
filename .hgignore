@@ -33,6 +33,7 @@ Notebooks_devel
 Restant
 Richard
 plugins
+spikedoc
 
 spike_py.egg-info
 SPIKE.egg-info
@@ -48,5 +49,6 @@ Tests_specific.py
 process.mscf
 SPIKE_usage_eg/.ipynb_checkpoints
 Algo/*.ipynb
-Algo/.ipynb_checkpoints
+
+
 
