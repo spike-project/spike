@@ -845,10 +845,11 @@ def up0p8_to_0p9(fname, debug = 1):
     hf = tables.open_file(fname,"r+")
 
     # creates /attached/
-    hf.create_group("/", 'attached', filters=tables.Filters(complevel=1, complib='zlib'))
+    if '/attached' not in hf:  # certain intermediate 0.8 versions have it already set
+        hf.create_group("/", 'attached', filters=tables.Filters(complevel=1, complib='zlib'))
+        print("Added '/attached' entry")
 
     # now modify axes tables
-
     for group in hf.iter_nodes("/","Group"): # get the list of tables in the file
         print("GROUP",group._v_name)
         if group._v_name.startswith('resol'):
@@ -858,8 +859,8 @@ def up0p8_to_0p9(fname, debug = 1):
             newaxes = []
             for iax, ax in enumerate(axesv8):
                 newax = {}
-                # from 0.! to 0.9 FTMS freq coordinate system has changed, 
-                # so here we translate from ond to new (where sw is invariant)
+                # from 0.8 to 0.9 FTMS freq coordinate system has changed, 
+                # so here we translate from old to new (where sw is invariant)
                 sw = axesv8[iax]['specwidth']
                 size = axesv8[iax]['size']
                 left_point = axesv8[iax]['left_point']

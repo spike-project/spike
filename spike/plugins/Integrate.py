@@ -29,6 +29,13 @@ class Integralitem(object):
         self.end = end
         self.curve = curve
         self.value = value
+    def update(self, data, bias, calibration=1):
+        """ 
+        given a dataset and a constant bias, recompute the curve and the value
+        """
+        buff = (data.get_buffer().real-bias)/data.cpxsize1
+        self.curve = buff[int(self.start):int(self.end)].cumsum()
+        self.value = calibration*self.curve[-1]
     def _report(self):
         return "%d - %d : %f  on %d points\n"%(self.start, self.end, self.value, len(self.curve))
     def __str__(self):
@@ -164,6 +171,8 @@ class Integrals(list):
             ax = plt.subplot(111)
         else:
             ax = figure
+        # trans is a coordinate system where x is in current unit and y in 0..1
+        # used for drawing the integrals
         trans = transforms.blended_transform_factory( ax.transData, ax.transAxes )
         z1, z2 = parsezoom(self.source, zoom)
         sumax = max([c.curve[-1] for c in self])
