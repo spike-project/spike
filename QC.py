@@ -96,10 +96,10 @@ def find_depedencies(reader):
 def run_pylint(fich):
     "run pylint on the given file and return synthetic results (note, error, reorder, warning)"
     from pylint import lint
-    from pylint.reporters.text import TextReporter
+    from pylint.reporters.text import TextReporter, ParseableTextReporter
 #    pyl = lint.Run(args)
     pylint_output = WritableObject()
-    lint.Run([fich]+ARGS, reporter=TextReporter(pylint_output), exit=False)
+    lint.Run([fich]+ARGS, reporter=ParseableTextReporter(pylint_output), do_exit=False)
     ignored_error = ('Exter', 'E1103')  # 5 first char of ignored errors
     ignored_warn = ('none',)            # 5 first char of ignored warnings
     errors = 0
@@ -107,18 +107,18 @@ def run_pylint(fich):
     reorder = 0
     note = 0.0
     for l in pylint_output:
-        if l.startswith('E0001'):
+        if ' [E0001' in l:
             errors = 10000  # indicates crash
             break
-        elif l.startswith('E'):
+        elif ' [E' in l:
             if l[0:5] not in ignored_error:
                 errors += 1
                 with open(ERROR_file,'a') as ERR:
                     ERR.write("%s: %s\n"%(fich,l))
-        elif l.startswith('W'):
+        elif ' [W' in l:
             if l[0:5] not in ignored_warn:
                 warn += 1
-        elif l.startswith('R') and l.split()[0] != 'Raw':
+        elif ' [R' in l:
             reorder += 1
         elif l.startswith('Your code has been rated'):
             m = re.match(r'Your code has been rated at (-?\d+.\d.)/10', l)
@@ -250,7 +250,8 @@ def main(excluded = ['.hgignore'], files = 'hg'):
         msg("Warning, the following files are modified but not commited", sep="*")
         for i in modif:
             print(i)
-    os.remove(ERROR_file)
+    if os.path.exists(ERROR_file):
+        os.remove(ERROR_file)
     stats = processmp(hg)
     t = report(stats, modif)
     print(t)
@@ -260,7 +261,7 @@ def main(excluded = ['.hgignore'], files = 'hg'):
     message()
 
 if __name__ == '__main__':
-    sys.exit(main(excluded=('spike/v1/*', 'spike/util/dynsubplot.py', 'spike/Miscellaneous/*', 'SPIKE_usage_eg/previous-to-clean/*')))
+    sys.exit(main(excluded=('doc/*', 'spike/v1/*', 'spike/util/dynsubplot.py', 'spike/Miscellaneous/*', 'SPIKE_usage_eg/previous-to-clean/*')))
     # excluding dynsubplot.py because the add_class method is just too confusing to pylint
 #    sys.exit( main( files=glob.glob('*.py')+glob.glob('*/*.py') ) )
 
