@@ -299,6 +299,7 @@ class Axis(object):
         which insures that
         -  low<high and within axis size
         -  that it starts on a real index if itype is complex
+        -  that it fits in the data-set
         raise error if not possible
         """
         if len(zoom) != 2:
@@ -312,9 +313,9 @@ class Axis(object):
         if self.itype == 1:     # complex axis
             right += 1  # insure imaginary
         l = max(0,left)
-        l = min(self.size-1,l)
-        r = max(1,left)
-        r = min(self.size, right)
+        l = min(self.size-3,l)
+        r = max(2,left)
+        r = min(self.size-1, right)
 #        if (l,r) != (left,right):
 #            print("%d-%d (points) slice probably outside current axis, recast to %d-%d"%(left,right,l,r))
         return (l,r)

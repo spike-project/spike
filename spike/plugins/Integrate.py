@@ -25,8 +25,8 @@ class Integralitem(object):
         curve : the cumsum over the zone (eventually modified)
         value : the calibrated value
         """
-        self.start = start
-        self.end = end
+        self.start = min(start,end)
+        self.end = max(start,end)
         self.curve = curve
         self.value = value
     def update(self, data, bias, calibration=1):

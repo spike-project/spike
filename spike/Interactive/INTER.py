@@ -962,31 +962,47 @@ class NMRPeaker1D(Show1D):
         self.disp()
         self.ax.annotate('%d peaks detected'%len(self.data.peaks) ,(0.05,0.95), xycoords='figure fraction')
 
+from spike.plugins.Integrate import Integrals, Integralitem
 class NMRIntegrate(Show1D):
     "an integrator for NMR experiments"
     def __init__(self, data, figsize=None, reverse_scroll=False, show=True):
         super().__init__( data, figsize=figsize, reverse_scroll=reverse_scroll, show=False)
+        self.Integ = Integrals(data, compute=False)
+        self.thresh = widgets.FloatLogSlider(description='sensitivity',value=10.0,
+            min=-1, max=2.0, base=10, step=0.01, layout=Layout(width='30%'),
+            continuous_update=True, readout=False, readout_format='.2f')
         self.bias = widgets.FloatSlider(
-            description='bias', layout=Layout(width='30%'),
+            description='bias', layout=Layout(width='20%'),
             value=0.0,min=-10.0, max=10.0, step=0.1,
             continuous_update=True, readout=False, readout_format='.1f')
         self.sep = widgets.FloatSlider(
-            description='peak separation', layout=Layout(width='30%'),
+            description='separation', layout=Layout(width='30%'),
             value=3.0,min=0.0, max=20.0, step=0.1,
             continuous_update=True, readout=False, readout_format='.1f')
         self.wings = widgets.FloatSlider(
-            description='width', layout=Layout(width='30%'),
+            description='extension', layout=Layout(width='30%'),
             value=5.0,min=0.5, max=20.0, step=0.1,
             continuous_update=True, readout=False, readout_format='.1f')
         for w in (self.bias, self.sep, self.wings):
             w.observe(self.integrate)
+        self.thresh.observe(self.peak_and_integrate)
         self.cancel = widgets.Button(description="Cancel", button_style='warning', layout=self.blay)
         self.cancel.on_click(self.on_cancel)
 
-        self.bprint = widgets.Button(description="Print", layout=Layout(width='10%'),
+        self.bprint = widgets.Button(description="Print", layout=self.blay,
                 button_style='success', # 'success', 'info', 'warning', 'danger' or ''
                 tooltip='Print to screen')
         self.bprint.on_click(self.print)
+        self.badd = widgets.Button(description="Add", layout=self.blay,
+                button_style='success', tooltip='Add an entry from current zoom')
+        self.badd.on_click(self.on_add)
+        self.brem = widgets.Button(description="Rem", layout=self.blay,
+                button_style='warning', tooltip='Remove all entries in current zoom')
+        self.brem.on_click(self.on_rem)
+        self.bauto = widgets.Button(description="Compute", layout=self.blay,
+                button_style='success', tooltip='Automatic definition of integrals')
+        self.bauto.on_click(self.integrate)
+
         self.entry = widgets.IntText(value=0,description='Entry',min=0,layout=Layout(width='15%'))
         self.value = widgets.FloatText(value=100,description='Value',layout=Layout(width='15%'))
         self.set = widgets.Button(description="Set", button_style='success', layout=Layout(width='10%'))
@@ -996,9 +1012,10 @@ class NMRIntegrate(Show1D):
         self.tabs = Tab()
         self.tabs.children = [
             VBox([
+                HBox([self.badd, self.brem]), 
                 HBox([VBox([self.blank, self.reset, self.scale]), self.fig.canvas]),
                 ]),
-            VBox([HBox([self.bias, self.sep, self.wings]),
+            VBox([HBox([self.thresh,  self.sep, self.wings]),
                 HBox([VBox([self.blank, self.reset, self.scale]), self.fig.canvas]),
                 ]),
             VBox([HBox([Label('Choose an integral for calibration'),
@@ -1006,7 +1023,7 @@ class NMRIntegrate(Show1D):
                 self.out ])
             ]
         self.tabs.set_title(0, 'Manual integration')
-        self.tabs.set_title(1, 'From Peaks')
+        self.tabs.set_title(1, 'Automatic')
         self.tabs.set_title(2, 'Integral Table & Calibration')
         self.children = [VBox([HBox([self.done, self.cancel]),self.tabs])]
         # self.children = [VBox([HBox([self.done, self.cancel, self.bias, self.sep, self.wings]),
@@ -1018,7 +1035,7 @@ class NMRIntegrate(Show1D):
     def show(self):
         self.data.display(figure=self.ax)
         self.xb = self.ax.get_xbound()  # initialize zoom
-        self.int()
+        #self.int()
         self.data.display(figure=self.ax)
         self.ax.set_xbound( (self.data.axis1.itop(0),self.data.axis1.itop(self.data.size1)) )
         self.disp()
@@ -1031,26 +1048,54 @@ class NMRIntegrate(Show1D):
         self.disp(zoom=True)
         display(self.fig)
         display(self.out)
-    def set_value(self,b):
-        self.data.integral_calibrate(self.entry.value, self.value.value)
+    def on_add(self, b):
+        start, end = self.ax.get_xbound() 
+        self.Integ.append( Integralitem(self.data.axis1.ptoi(start), self.data.axis1.ptoi(end), [], 0.0) )
+        self.Integ.zonestocurves()
         self.disp()
+        self.print(None)
+    def on_rem(self, b):
+        start, end = self.ax.get_xbound()
+        start, end = self.data.axis1.ptoi(start), self.data.axis1.ptoi(end)
+        start, end = (min(start, end), max(start, end))
+        to_rem = []
+        for ii in self.Integ:
+            if ii.start>start and ii.end<end:
+                to_rem.append(ii)
+        for ii in to_rem:
+            self.Integ.remove(ii)
+        self.disp()
+        self.print(None)
+    def set_value(self,b):
+        self.Integ.recalibrate(self.entry.value, self.value.value)
+        self.disp()
+        self.print(None)
     def print(self,event):
         self.out.clear_output(wait=True)
         with self.out:
-            display(HTML( self.data.integrals.to_pandas().to_html() ))
+            display(HTML( self.Integ.to_pandas().to_html() ))
+    def peak_and_integrate(self, event):
+        self.data.pp(threshold=self.data.absmax*self.thresh.value/100, verbose=False).centroid()
+        self.int()
     def integrate(self, event):
-        "integrate from event"
-        if event['name']=='value':
-            self.int()
+        #"integrate from event"
+        #if event['name']=='value':
+        self.int()
     def int(self):
-        "do the integration"
+        "do the automatic integration from peaks and parameters"
         try:
-            calib = self.data.integrals.calibration
+            calib = self.Integ.calibration
         except:
             calib = None
-        self.data.set_unit('ppm').integrate(separation=self.sep.value, wings=self.wings.value,
+        self.data.set_unit('ppm')
+        try:
+            self.data.peaks
+        except:
+            self.data.pp(threshold=self.data.absmax*self.thresh.value/100, verbose=False).centroid()
+        self.Integ = Integrals(self.data, separation=self.sep.value, wings=self.wings.value,
             bias=self.data.absmax*self.bias.value/100)
-        self.data.integrals.calibrate(calibration=calib)
+        self.Integ.calibrate(calibration=calib)
+        self.print(None)
         self.disp()
     def ob(self, event):
         if event['name']=='value':
@@ -1059,14 +1104,14 @@ class NMRIntegrate(Show1D):
         "refresh display from event - if zoom is True, display only in xbound"
         self.xb = self.ax.get_xbound()
         # self.yb = self.ax.get_ybound()
+        self.ax.clear()
         if zoom:
             zoom = self.xb
         else:
             zoom = None
-        self.ax.clear()
         self.data.display(new_fig=False, figure=self.ax, scale=self.scale.value, zoom=zoom)
         try:
-            self.data.display_integral(label=True, figure=self.ax, labelyposition=0.01, regions=False, zoom=zoom)
+            self.Integ.display(label=True, figure=self.ax, labelyposition=0.01, regions=False, zoom=zoom)
         except:
             pass
         self.ax.set_xbound(self.xb)

@@ -217,10 +217,10 @@ def test_rQRd(  lendata = 10000,
     fdatanoise = mfft(data)# FFT of noisy signal 
 
     ###########
-    print "=== Running rQR algo ===",
-    print "lendata:",lendata,
-    print " orda:",orda,
-    print ' rank:',rank
+    print ("=== Running rQR algo ===",)
+    print ("lendata:",lendata,)
+    print (" orda:",orda,)
+    print (' rank:',rank)
 
     t0 = time.time()
     datarqrd = rQRd(data, k=rank, orda=orda, iterations=iterations) # denoise signal with rQRd
@@ -229,10 +229,10 @@ def test_rQRd(  lendata = 10000,
     fdatarqrd  = mfft(datarqrd )# FFT of rQRd denoised signal
     # normrQR = norm(fdatarqrd -fdata)/norm(fdata)
     # print "= normratio ",normrQR
-    print "=== Result ==="
+    print ("=== Result ===")
     fSNR = SNR(datarqrd, data0)
-    print "Denoised SNR: %.2f dB  - processing gain : %.2f dB"%( fSNR, fSNR-iSNR )
-    print "processing time for rQRd : %.2f sec"%trQRd
+    print ("Denoised SNR: %.2f dB  - processing gain : %.2f dB"%( fSNR, fSNR-iSNR ))
+    print ("processing time for rQRd : %.2f sec"%trQRd)
     ################################################################# Plotting
     fig = plt.figure()
     plot_param(fig,321)
