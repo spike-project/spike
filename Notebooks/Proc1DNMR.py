@@ -79,6 +79,7 @@ d1 = Import_1D(FC.selected)
 d1.filename = FC.selected
 d1.set_unit('sec').display(title=FC.nmrname+" fid")
 
+
 # %% [markdown]
 # In the current set-up, the figure can be explored *(zoom, shift, resize, etc)* with the jupyter tools displayed  below the dataset.
 # The figure can also be saved as a `png` graphic file.
@@ -89,6 +90,15 @@ d1.set_unit('sec').display(title=FC.nmrname+" fid")
 # We are going to use a basic processing set-up, check the documentation for advanced processing
 #
 # ### Fourier Transform
+
+# %%
+class f:
+    pass
+FC = f()
+FC.selected = "/DATA/ARTEref/1/fid"
+FC.nmrname = 'TEST'
+d1 = Import_1D(FC.selected)
+d1.filename = FC.selected
 
 # %%
 D1 = d1.copy() # copy the imported data-set to another object for processing
@@ -147,8 +157,16 @@ ph = I.NMRPeaker1D(D1, reverse_scroll=True);
 #
 
 # %%
+from spike.plugins import Peaks, Integrate
+reload(Integrate)
+reload(Peaks)
 reload(I)
-I.NMRIntegrate(D1);
+D1.real()
+ii = I.NMRIntegrate(D1);
+
+# %%
+start, end = ii.ax.get_xbound()
+Integrate.Integralitem(ii.data.axis1.ptoi(start), ii.data.axis1.ptoi(end), [], 0.0)
 
 # %% [markdown]
 # ## Interactive composite display
@@ -216,8 +234,8 @@ else:
 # - hand defined integrals
 
 # %%
-from spike.plugins import Peaks
-
+from spike.plugins import Peaks, Integrate
+reload(Integrate)
 reload(Peaks)
 
 # %%
