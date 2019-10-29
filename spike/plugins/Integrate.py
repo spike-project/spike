@@ -138,6 +138,8 @@ class Integrals(list):
         either use calibration value as a scale,
         if calibration is None put the largest to 100.0 
         """
+        if len(self) == 0:
+            return
         if not calibration:
             intmax = 0.0
             for iint in self:
@@ -194,6 +196,7 @@ class Integrals(list):
             if regions:
                 ax.plot([xinteg[0],xinteg[0]], [0,1], transform=trans, color=color, alpha=0.1)
                 ax.plot([xinteg[-1],xinteg[-1]], [0,1], transform=trans, color=color, alpha=0.1 )
+                
 
 def integrate(npkd, **kw):
     """

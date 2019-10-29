@@ -79,7 +79,6 @@ d1 = Import_1D(FC.selected)
 d1.filename = FC.selected
 d1.set_unit('sec').display(title=FC.nmrname+" fid")
 
-
 # %% [markdown]
 # In the current set-up, the figure can be explored *(zoom, shift, resize, etc)* with the jupyter tools displayed  below the dataset.
 # The figure can also be saved as a `png` graphic file.
@@ -90,15 +89,6 @@ d1.set_unit('sec').display(title=FC.nmrname+" fid")
 # We are going to use a basic processing set-up, check the documentation for advanced processing
 #
 # ### Fourier Transform
-
-# %%
-class f:
-    pass
-FC = f()
-FC.selected = "/DATA/ARTEref/1/fid"
-FC.nmrname = 'TEST'
-d1 = Import_1D(FC.selected)
-d1.filename = FC.selected
 
 # %%
 D1 = d1.copy() # copy the imported data-set to another object for processing
@@ -145,9 +135,6 @@ I.baseline1D(D1, reverse_scroll=True);
 # - get the peak-list in the `Peak Table` tab
 
 # %%
-D1.peaks.threshold
-
-# %%
 reload(I)
 ph = I.NMRPeaker1D(D1, reverse_scroll=True);
 
@@ -157,16 +144,9 @@ ph = I.NMRPeaker1D(D1, reverse_scroll=True);
 #
 
 # %%
-from spike.plugins import Peaks, Integrate
-reload(Integrate)
-reload(Peaks)
 reload(I)
 D1.real()
 ii = I.NMRIntegrate(D1);
-
-# %%
-start, end = ii.ax.get_xbound()
-Integrate.Integralitem(ii.data.axis1.ptoi(start), ii.data.axis1.ptoi(end), [], 0.0)
 
 # %% [markdown]
 # ## Interactive composite display
@@ -228,29 +208,6 @@ else:
 # to come:
 #
 # - spectral superposition
-# - peak-pick by zone
-# - peak aggregators
-# - peak and integral tables editable
-# - hand defined integrals
-
-# %%
-from spike.plugins import Peaks, Integrate
-reload(Integrate)
-reload(Peaks)
-
-# %%
-pk1 = D1.peaks
-len(pk1)
-
-# %%
-pk1.merge(D1.peaks)
-len(pk1)
-
-# %%
-len(pk1 ), len(D1.peaks ),len(pk1 + D1.peaks )
-len(Peaks.peak_aggreg(pk1+D1.peaks, distance=1))
-
-# %%
-temppk = Peaks.Peak1DList()
+# - annotations
 
 # %%
