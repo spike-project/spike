@@ -347,7 +347,7 @@ class Peak1DList(PeakList):
             pkl = [i for i,p in enumerate(self) if p.pos>=z0 and p.pos<=z1]  # index of peaks on zoom window
         else:
             pkl = range(len(self))
-        if peak_mode == "marker":   # in marker mode, removes peaks too high
+        if peak_mode == "marker" and len(self)>0:   # in marker mode, removes peaks too high
             mmax = max(self.intens)/scale
             pkl = list(filter(lambda i:self.intens[i]<=mmax, pkl))
         if len(pkl)>NbMaxPeaks:     # too many to display
@@ -396,7 +396,7 @@ class Peak2DList(PeakList):
     def posF2(self):
         "returns a numpy array of the F2 positions in index"
         return np.array( [pk.posF2 for pk in self] )
-    def report(self, f1=_identity, f2=_identity, file=None, format=None):
+    def report(self, f1=_identity, f2=_identity, file=None, format=None, NbMaxPeaks=NbMaxDisplayPeaks):
         """
         print the peak list
         f1, f2 are two functions used to transform respectively the coordinates in F1 and F2
@@ -407,9 +407,16 @@ class Peak2DList(PeakList):
         
         check documentation for Peak2D.report() for details on output format
         """
-        print ("# %d in Peak list"%len(self), file=file)
-        for pk in self:
-            print(pk.report(f1=f1, f2=f2, format=format), file=file)
+        if NbMaxPeaks<len(self):
+            print("# %d in Peak list - reporting the %d largest"%(len(self), NbMaxPeaks), file=file)
+            indices = list(np.argpartition(self.intens,len(self)-NbMaxPeaks)[-NbMaxPeaks:])
+            for i,pk in enumerate(self):
+                if i in indices:
+                    print(pk.report(f1=f1, f2=f2, format=format), file=file)
+        else:
+            print ("# %d in Peak list"%len(self), file=file)
+            for pk in self:
+                print(pk.report(f1=f1, f2=f2, format=format), file=file)
     def _report(self, f1=_identity, f2=_identity, file=None):
         """return full report for 2D peak list
         list is : Id, label, posF1, posF2, intens, widthF1, widthF2, posF1_err, posF2_err, intens_err, widthF1_err, widthF2_err
@@ -890,6 +897,7 @@ class PeakTests(unittest.TestCase):
         d.pp(threshold=3)
         self.assertEqual(list(d.peaks.pos) , [ 5.0, 7.0, 10.0, 15.0])
         self.assertEqual(list(d.peaks.intens) , [ 20.0, 8.0, 20.0, 11.0])
+        d.peaks.report(NbMaxPeaks=2)
     def test_center1d(self):
         x = np.arange(5)
         y = center(x, 2.2, 10.0, 1.2)
@@ -903,6 +911,7 @@ class PeakTests(unittest.TestCase):
         self.assertAlmostEqual(d.peaks[0].pos,2.2)
         self.assertAlmostEqual(d.peaks[0].intens,10.0)
         self.assertAlmostEqual(d.peaks[0].width,1.2*np.sqrt(2))
+        d.peaks.report(NbMaxPeaks=10)
     def test_center2d(self):
         M=np.zeros((20, 20))
         # add one peak at (F1,F2) 5.3, 7.9 with widthes (5.0,1.3) 
