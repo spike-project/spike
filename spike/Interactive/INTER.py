@@ -198,7 +198,8 @@ class Show1D(HBox):
         self.blay = Layout(width='80px')  # default layout for buttons
         self.done = Button(description="Done", button_style='success',layout=self.blay)
         self.done.on_click(self.on_done)
-        self.reset = Button(description="Reset", button_style='success',layout=self.blay)
+        self.reset = Button(description="Reset", button_style='success',layout=self.blay,
+            tooltip="Reset to full spectrum")
         self.reset.on_click(self.on_reset)
         self.scale = widgets.FloatSlider(description='scale:', value=1.0, min=1.0, max=200, step=0.1,
                             layout=Layout(width='80px', height=str(0.8*2.54*figsize[1])+'cm'), continuous_update=REACTIVE,
@@ -967,22 +968,25 @@ class NMRIntegrate(Show1D):
     "an integrator for NMR experiments"
     def __init__(self, data, figsize=None, reverse_scroll=False, show=True):
         super().__init__( data, figsize=figsize, reverse_scroll=reverse_scroll, show=False)
-        self.Integ = Integrals(data, compute=False)
+        try:
+            self.Integ = data.integrals
+        except:
+            self.Integ = Integrals(data, compute=False)   # initialize with empty list
         self.thresh = widgets.FloatLogSlider(description='sensitivity',value=10.0,
             min=-1, max=2.0, base=10, step=0.01, layout=Layout(width='30%'),
-            continuous_update=True, readout=False, readout_format='.2f')
+            continuous_update=HEAVY, readout=False, readout_format='.2f')
         self.bias = widgets.FloatSlider(
             description='bias', layout=Layout(width='20%'),
             value=0.0,min=-10.0, max=10.0, step=0.1,
-            continuous_update=True, readout=False, readout_format='.1f')
+            continuous_update=HEAVY, readout=False, readout_format='.1f')
         self.sep = widgets.FloatSlider(
             description='separation', layout=Layout(width='30%'),
             value=3.0,min=0.0, max=20.0, step=0.1,
-            continuous_update=True, readout=False, readout_format='.1f')
+            continuous_update=HEAVY, readout=False, readout_format='.1f')
         self.wings = widgets.FloatSlider(
             description='extension', layout=Layout(width='30%'),
             value=5.0,min=0.5, max=20.0, step=0.1,
-            continuous_update=True, readout=False, readout_format='.1f')
+            continuous_update=HEAVY, readout=False, readout_format='.1f')
         for w in (self.bias, self.sep, self.wings):
             w.observe(self.integrate)
         self.thresh.observe(self.peak_and_integrate)
@@ -1001,7 +1005,7 @@ class NMRIntegrate(Show1D):
         self.brem.on_click(self.on_rem)
         self.bauto = widgets.Button(description="Compute", layout=self.blay,
                 button_style='success', tooltip='Automatic definition of integrals')
-        self.bauto.on_click(self.integrate)
+        self.bauto.on_click(self.peak_and_integrate)
 
         self.entry = widgets.IntText(value=0,description='Entry',min=0,layout=Layout(width='15%'))
         self.value = widgets.FloatText(value=100,description='Value',layout=Layout(width='15%'))
@@ -1012,10 +1016,12 @@ class NMRIntegrate(Show1D):
         self.tabs = Tab()
         self.tabs.children = [
             VBox([
-                HBox([self.badd, self.brem]), 
+                HBox([self.badd, self.brem,
+                    Label("Use buttons to add and remove integrals in the current zoom window")]), 
                 HBox([VBox([self.blank, self.reset, self.scale]), self.fig.canvas]),
                 ]),
-            VBox([HBox([self.thresh,  self.sep, self.wings]),
+            VBox([HBox([self.bauto, Label("Define integral shapes using the sliders below")]),
+                HBox([self.thresh,  self.sep, self.wings]),
                 HBox([VBox([self.blank, self.reset, self.scale]), self.fig.canvas]),
                 ]),
             VBox([HBox([Label('Choose an integral for calibration'),
@@ -1048,6 +1054,7 @@ class NMRIntegrate(Show1D):
         self.disp(zoom=True)
         display(self.fig)
         display(self.out)
+        self.data.integrals = self.Integ        # copy integrals
     def on_add(self, b):
         start, end = self.ax.get_xbound() 
         self.Integ.append( Integralitem(self.data.axis1.ptoi(start), self.data.axis1.ptoi(end), [], 0.0) )
@@ -1071,18 +1078,22 @@ class NMRIntegrate(Show1D):
         self.disp()
         self.print(None)
     def print(self,event):
-        self.out.clear_output(wait=True)
+        self.out.clear_output()
+        self.Integ.sort(key=lambda x: x.start)   # sort integrals
         with self.out:
             display(HTML( self.Integ.to_pandas().to_html() ))
     def peak_and_integrate(self, event):
-        self.data.pp(threshold=self.data.absmax*self.thresh.value/100, verbose=False).centroid()
-        self.int()
+        self.data.pp(threshold=self.data.absmax*self.thresh.value/100,
+            verbose=False, zoom=self.ax.get_xbound()).centroid()
+        if len(self.data.peaks)>0:
+            self.int()
     def integrate(self, event):
         #"integrate from event"
         #if event['name']=='value':
         self.int()
     def int(self):
         "do the automatic integration from peaks and parameters"
+        self.on_rem(None) 
         try:
             calib = self.Integ.calibration
         except:
@@ -1091,9 +1102,11 @@ class NMRIntegrate(Show1D):
         try:
             self.data.peaks
         except:
-            self.data.pp(threshold=self.data.absmax*self.thresh.value/100, verbose=False).centroid()
-        self.Integ = Integrals(self.data, separation=self.sep.value, wings=self.wings.value,
-            bias=self.data.absmax*self.bias.value/100)
+            self.data.pp(threshold=self.data.absmax*self.thresh.value/100,
+                verbose=False, zoom=self.ax.get_xbound()).centroid()
+        # appending to the list, self and Integrals are equivalent to list -
+        self.Integ +=  Integrals(self.data, separation=self.sep.value, wings=self.wings.value,
+                bias=self.data.absmax*self.bias.value/100)
         self.Integ.calibrate(calibration=calib)
         self.print(None)
         self.disp()
