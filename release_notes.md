@@ -1,10 +1,14 @@
 <!-- DO NOT MODIFY this file, it is generated automatically from dev_setup ! -->
 # SPIKE Relase Notes
 
+#### 0.99.14 - October 2019
+- lots of improvements in Proc1DNMR notebooks
+- improvements in NoteBook for mouse interactivity (click and scroll) - but requires ipympl
+
 #### 0.99.13 - October 2019
 - added the EasyDisplayFTICR2D for non programers !
 - improvements in NoteBook interactivity
-- added smoothing in splie baselinecorrection
+- added smoothing in spline baselinecorrection
 
 #### 0.99.12 - September 2019
 The 0.99.11 had a bug in the display of 1D NMR experiment - the 0.99.12 corrects it.
