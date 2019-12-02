@@ -403,7 +403,11 @@ def Import_2D(filename="data.dat"):
     d.axis2.offset = -d.axis2.specwidth/2 + float(acqu['OFFSET_FREQ_1']) +float(acqu['SR'][0])
 #    d.axis1.offset = d.axis2.offset + d.axis2.specwidth/2 - d.axis1.specwidth/2  #### Only true in Homonuclear
 
-    d.axis2.zerotime = zerotime(acqu)
+    d.digital_filter_removed = (acqu['DIGITAL_FILTER_REMOVED'] == 'true')
+    if d.digital_filter_removed:
+        d.axis2.zerotime = 0.0
+    else:
+        d.axis2.zerotime = zerotime(acqu)
     pardic = {"header": acqu}          # create ad-hoc parameters
     d.params = pardic                  # add the parameters to the data-set
     return d
