@@ -366,6 +366,7 @@ def Import_2D(filename="data.dat"):
         raise Exception(filename + " : file not found")
     dire = op.dirname(filename)
     acqu = read_param(op.join(dire,'header.xml'))
+    serie = read_serie(op.join(dire,'Serie.xml'))
     size1 = int(acqu['MATRIX_DIMENSION_2D'])  # get size
     size2 = int(acqu['MATRIX_DIMENSION_1D'])  # get size
     if verbose:
@@ -408,7 +409,7 @@ def Import_2D(filename="data.dat"):
         d.axis2.zerotime = 0.0
     else:
         d.axis2.zerotime = zerotime(acqu)
-    pardic = {"header": acqu}          # create ad-hoc parameters
+    pardic = {"header": acqu, "Serie": serie}          # create ad-hoc parameters
     d.params = pardic                  # add the parameters to the data-set
     return d
 
