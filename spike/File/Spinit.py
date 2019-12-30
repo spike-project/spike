@@ -306,7 +306,7 @@ def ftF1_spinit(data, debug=0):
     elif mode in ('STATES', 'COMPLEX'):
         data.revf(axis='F1')
         return data.ft_sh()
-    elif mode in ('PHASE_MODU', 'PHASE_MODULATION', 'NONE', None):
+    elif mode in ('PHASE_MODU', 'PHASE_MODULATION', 'NONE', 'REAL', None):
         return data.ft_phase_modu().reverse(axis='F1')
     elif mode == 'COMPLEX_TPPI':
         data.revf(axis='F1')
