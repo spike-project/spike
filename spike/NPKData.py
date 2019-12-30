@@ -1947,38 +1947,32 @@ class NPKData(object):
         """
         This command extract the real part of the current the data set 
         considered as complex.
-        <ul>
-        <li>axis is not needed in 1D, 
-        <li>can be F1, F2 or F12 in 2D,
-        <li>and can be F1, F2, F3, F12, F13, F23, or F123 in 3D.
-        </ul>
+        
+        axis is not needed in 1D, 
+
+        can be F1, or F2  in 2D - default is F2
+        
+        does nothing if not needed
         """
-        todo = self.test_axis(axis)
-        it = self.axes(todo).itype
+        axtodo = self.test_axis(axis)
+        it = self.axes(axtodo).itype
         if it == 0:
 #            print("You already have real data - nothing done")
             return self
         if self.dim == 1:
             self.buffer = self.buffer[::2]
-        elif self.dim ==2:
-            if todo == 1:
-                self.buffer = self.buffer[::2]
-            elif todo == 2:
+
+        elif self.dim == 2:
+            if axtodo == 1:
+                self.buffer = self.buffer[::2,:]
+            elif axtodo == 2:
                 self.buffer = self.buffer[:,::2]
             else:
                 print("this should never happen")
-        elif self.dim ==3:
-            if todo == 1:
-                self.buffer = self.buffer[:,::2]
-            elif todo == 2:
-                self.buffer = self.buffer[::2]
-            elif todo == 3:
-                self.buffer = self.buffer[:,:,::2]
-            else:
-                print("this should never happen")
+
         else:
-            print(" this should never happen")
-        self.axes(todo).itype = 0
+            print(" real() not implemented in 3D yet")
+        self.axes(axtodo).itype = 0
         self.adapt_size()
         return self
     #-------------------------------------------------------------------------------
