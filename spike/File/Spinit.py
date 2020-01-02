@@ -379,13 +379,12 @@ def Import_2D(filename="data.dat"):
         print("MATRIX_DIMENSION_4D != 1, ignoring")
         
     data = read_2D(size1, size2, filename)
-    print (data.shape)
     d = NPKData(buffer=data, dim=2)
     d.axis1.specwidth = float(acqu['SPECTRAL_WIDTH_2D'])               # in Hz
     try:
         d.axis1.frequency = float(acqu['OBSERVED_FREQUENCY_2D'])/1E6   # in MHz
     except:
-        print('OBSERVED_FREQUENCY_2D is missing, fold back to OBSERVED_FREQUENCY')
+        #print('OBSERVED_FREQUENCY_2D is missing, fold back to OBSERVED_FREQUENCY')
         d.axis1.frequency = float(acqu['OBSERVED_FREQUENCY'])/1E6      # in MHz
         
     representation = get_data_representation(acqu)        
