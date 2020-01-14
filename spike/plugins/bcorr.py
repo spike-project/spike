@@ -28,7 +28,7 @@ def get_ypoints(buff, xpoints, nsmooth=0):
     eventually smoothed by moving average over 2*nsmooth+1 positions
     """
     nsmooth = abs(nsmooth)
-    xp = xpoints.astype(int)
+    xp = np.array(xpoints).astype(int)
     y = np.zeros(len(xpoints))
     for i in range(2*nsmooth+1):
         xi = np.minimum( np.maximum(xp-i, 0), len(buff)-1)  # shift and truncate
