@@ -1720,21 +1720,27 @@ class NPKData(object):
         can add NPKData and numbers
         """
         import numbers
+        import warnings
+        # for the moment we assume 1D !
+        if self.dim>1:
+            raise NotImplemented
         if isinstance(otherdata,NPKData):
             if self.itype != otherdata.itype:
                 raise NPKError("addition of dataset with different complex states is not implemented yet", data=self)
             self.buffer += otherdata.buffer
             self._absmax = 0.0
-        elif isinstance(otherdata,complex):
-            if self.itype != 1:
-                raise NPKError("cannot add a complex value to this data-set", data=self)
-            self.buffer += otherdata
-            self._absmax += otherdata
         elif isinstance(otherdata, numbers.Number):
-            self.buffer += otherdata
-            self._absmax += otherdata
+            if self.itype == 0:
+                if isinstance(otherdata,complex):
+                    raise NPKError("cannot add a complex value to this data-set", data=self)
+                else:
+                    self.buffer += otherdata
+                    self._absmax += otherdata
+            else:   # complex data
+                self.buffer =  as_float(as_cpx(self.buffer) + otherdata*(1+0j))  # multiply by 1 cpx to insure
+                self._absmax += otherdata.real
         else:       # then its a number or it fails
-            raise NotImplementedError
+            raise ValueError
         return self
     def __iadd__(self, otherdata):
         # as add()
@@ -1747,7 +1753,7 @@ class NPKData(object):
         elif isinstance(otherdata,numbers.Number):
             return self.copy().add(otherdata)
         else:
-            return NotImplemented
+            raise NotImplemented
     def __radd__(self, otherdata):
         # as add()) but creates a new object
         import numbers
@@ -1756,7 +1762,7 @@ class NPKData(object):
         elif isinstance(otherdata,numbers.Number):
             return self.copy().add(otherdata)
         else:
-            return NotImplemented
+            raise NotImplemented
     def __sub__(self, otherdata):
         # as -add but creates a new object
         import numbers
@@ -1765,7 +1771,7 @@ class NPKData(object):
         elif isinstance(otherdata,numbers.Number):
             return self.copy().add(-otherdata)
         else:
-            return NotImplemented
+            raise NotImplemented
     def __isub__(self, otherdata):
         # as -add 
         import numbers
@@ -1774,7 +1780,7 @@ class NPKData(object):
         elif isinstance(otherdata,numbers.Number):
             return self.add(-otherdata)
         else:
-            return NotImplemented
+            raise NotImplemented
     #-------------------------------------------------------------------------------
     def addbase(self, constant):
         """
@@ -1828,8 +1834,8 @@ class NPKData(object):
                 ll = 0
                 ur = self.size1
             else:
-                ll = zone[0]
-                ur = zone[1]
+                ll = int(zone[0])
+                ur = int(zone[1])
             shift = self.get_buffer()[ll:ur].mean()
         elif self.dim == 2:
             if zone is None:
@@ -1838,10 +1844,10 @@ class NPKData(object):
                 ul = 1
                 ur = self.size1
             else:
-                ll = zone[0][0]
-                lr = zone[0][1]
-                ul = zone[1][0]
-                ur = zone[1][1]
+                ll = int(zone[0][0])
+                lr = int(zone[0][1])
+                ul = int(zone[1][0])
+                ur = int(zone[1][1])
             shift = self.get_buffer()[ul:ur,ll:lr].mean()
         return shift
     #-----------------
@@ -1859,10 +1865,10 @@ class NPKData(object):
                 ul = 1
                 ur = self.size1
             else:
-                ll = zone[0][0]
-                lr = zone[0][1]
-                ul = zone[1][0]
-                ur = zone[1][1]
+                ll = int(zone[0][0])
+                lr = int(zone[0][1])
+                ul = int(zone[1][0])
+                ur = int(zone[1][1])
             shift = self.buffer[ul:ur,ll:lr].mean()
         return shift
 
@@ -1877,8 +1883,8 @@ class NPKData(object):
                 ll = 0
                 ur = self.size1
             else:
-                ll = zone[0]
-                ur = zone[1]
+                ll = int(zone[0])
+                ur = int(zone[1])
             noise = self.buffer[ll:ur:self.axis1.itype+1].std()
         elif self.dim == 2:
             if zone is None:
@@ -1887,10 +1893,10 @@ class NPKData(object):
                 ul = 1
                 ur = self.size1
             else:
-                ll = zone[0][0]
-                lr = zone[0][1]
-                ul = zone[1][0]
-                ur = zone[1][1]
+                ll = int(zone[0][0])
+                lr = int(zone[0][1])
+                ul = int(zone[1][0])
+                ur = int(zone[1][1])
             noise = self.buffer[ll:lr:self.axis1.itype+1,ul:ur:self.axis2.itype+1].std()
         return noise
     #-----------------
