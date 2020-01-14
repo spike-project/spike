@@ -1722,8 +1722,6 @@ class NPKData(object):
         import numbers
         import warnings
         # for the moment we assume 1D !
-        if self.dim>1:
-            raise NotImplemented
         if isinstance(otherdata,NPKData):
             if self.itype != otherdata.itype:
                 raise NPKError("addition of dataset with different complex states is not implemented yet", data=self)
