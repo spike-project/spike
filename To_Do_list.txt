@@ -4,7 +4,6 @@ More Doc !
 
 NB
 ==
-- close Show1d
 - more user examples in jupyter
 	- 1H 1D proc / visu
 	- 13C 1D proc / visu
@@ -18,12 +17,16 @@ NB
 
 Core
 ====
+- finish add() !!! - not fully implemented -
 - develop more cuda functions
 - fermer le pool ou MPI en sortant via register.
 - delta peak-picker 
+- finalize and generalize tests and data_tests
 
 MS
 ==
+- truncated 2D file in processing, for smaller files
+- more apodisations (Kilgour, Traficante, ...)
 - spikecalib.py
 - move dowsampling outside processing
 - correct wrong downsampling in F2
