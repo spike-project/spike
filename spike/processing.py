@@ -750,7 +750,7 @@ class Test(unittest.TestCase):
         # os.unlink('__DATA_test__')
         os.chdir(directory())
         print(os.path.realpath(os.curdir))
-        main(["prgm", "test_.mscf"])
+        main(["prgm", "test.mscf"])
 
 ########################################################################################
 def Report_Table_Param():
