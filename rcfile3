@@ -400,7 +400,7 @@ ignore-on-opaque-inference=yes
 # List of class names for which member attributes should not be checked (useful
 # for classes with dynamically set attributes). This supports the use of
 # qualified names.
-ignored-classes=subpl,SQLObject,numpy,numpy.random,scipy,scipy.fftpack,scipy.optimize,scipy.stats,tables,PyQt4,PyQt4.QtCore,PyQt4.QtGui,PyQt4.QtGui.QWidget,PySide,PySide.QtCore,PySide.QtGui,PySide.QtGui.QWidget,spike.NPKData.NPKData,MR_interact,email
+ignored-classes=subpl,SQLObject,numpy,numpy.random,scipy,scipy.fftpack,scipy.optimize,scipy.stats,tables,PyQt4,PyQt4.QtCore,PyQt4.QtGui,PyQt4.QtGui.QWidget,PySide,PySide.QtCore,PySide.QtGui,PySide.QtGui.QWidget,spike.NPKData._NPKData,MR_interact,email
 
 # List of module names for which member attributes should not be checked
 # (useful for modules/projects where namespaces are manipulated during runtime
