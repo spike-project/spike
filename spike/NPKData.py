@@ -411,43 +411,110 @@ class TimeAxis(Axis):
     time values should be given as a list of values 
     """
     
-    def __init__(self, size = 64, tabval=None, currentunit = "sec"):
+    def __init__(self, size = 64, tabval=None, currentunit = "sec", scale='linear'):
+        """
+        tabval is a list of time values, values should be in seconds
+              can be set latter on directly or using TimeAxis.load_tabval()
+        currentunit is chosen in ('msec', sec', 'min', 'hours')
+        scale is either 'linear' or 'log'
+        """
         super(TimeAxis, self).__init__(size = size, itype = 0)
         self.Time = "Time"
-        self.tabval = tabval
-        self.units["sec"] = Unit(name="second", converter=self.itos, bconverter=self.stoi, scale='lin')
+        self.tabval = np.array(tabval)
+        self.fval = lambda x: 1.0  # empty function - will be interpolater
+        self.fm1val = lambda x: 1.0  # empty function - will be invers of interpolater
+        self.comp_interpolate()
+        self.units["msec"] = Unit(name="millisec", converter=self.itoms, bconverter=self.mstoi, scale='linear')
+        self.units["sec"] = Unit(name="second", converter=self.itos, bconverter=self.stoi, scale='linear')
+        self.units["min"] = Unit(name="minutes", converter=self.itom, bconverter=self.mtoi, scale='linear')
+        self.units["hours"] = Unit(name="hours", converter=self.itoh, bconverter=self.htoi, scale='linear')
         for i in ("Time", "tabval"):  # updates storable attributes
             self.attributes.append(i)
         self.currentunit = currentunit
-        
+        if scale == 'log':
+            self.set_logdisplay()
+
+    @property
+    def Tmin(self):
+        "smaller tabulated time value"
+        return self.tabval.min()
+    @property
+    def Tmax(self):
+        "larger tabulated time value"
+        return self.tabval.max()
+    def set_logdisplay(self):
+        "set display in log spacing"
+        for unit in self.units.keys():
+            self.units[unit].scale = 'log'
+    def set_lindisplay(self):
+        "set display in linear spacing"
+        for unit in self.units.keys():
+            self.units[unit].scale = 'linear'
     def itos(self, value):
         """
-        returns damping value (d) from point value (i)
+        returns time from point value (i) - interpolated if possible
         """
-#        print("itod might have to be checked")
-        cst = (math.log(self.dmax)-math.log(self.dmin)) / (float(self.size)-1)
-        d = (self.dmin )* np.exp(cst*value)
+        d = self.fval(value)
         return d
     def stoi(self, value):
         """
-        returns point value (i) from damping value (d)
+        returns point value (i) from time - interpolated if possible
         """
-#        print("dtoi might have to be checked")
-        cst = (math.log(self.dmax)-math.log(self.dmin)) / (float(self.size)-1)
-
-        i = (np.log(value/self.dmin)) / cst
-        return i
+        d = self.fm1val(value)
+        return d
+    def mstoi(self, value):
+        "millisec to index"
+        return self.stoi(value/1000.0)
+    def mtoi(self, value):
+        "minutes to index"
+        return self.stoi(value*60.0)
+    def htoi(self, value):
+        "hours to index"
+        return self.stoi(value*3600.0)
+    def itoms(self, value):
+        "index to millisec"
+        return self.itos(value)*1000.0
+    def itom(self, value):
+        "index to minutes"
+        return self.itos(value)/60.0
+    def itoh(self, value):
+        "index to hours"
+        return self.itos(value)/3600.0
+    def stoms(self, value):
+        return value*1000.0
+    def stom(self, value):
+        return value/60.0
+    def stoh(self, value):
+        return value/3600.0
+    def mstos(self, value):
+        return value/1000.0
+    def mtos(self, value):
+        return value*60.0
+    def htos(self, value):
+        return value*3600.0
     def report(self):
         "hight level report"
-        return "Laplace axis of %d points,  from %f to %f  using a scaling factor of %f"%  \
-            (self.size, self.itod(0.0), self.itod(self.size-1), self.dfactor)
+        return "Time sampled axis of %d points,  from %f sec to %f sec "%  \
+            (self.size, self.Tmin, self.Tmax)
     def load_tabval(self, fname):
         """
         load tabulated time values form a file - plain text, one entry per line
         """
+        from scipy.interpolate import interp1d
         with open(fname,'r') as F:
             self.tabval = np.array([float(l) for l in F.readlines() if not l.startswith('#')])
+        self.comp_interpolate()
         return self.tabval
+    def comp_interpolate(self):
+        "computes an interpolater if possible"
+        from scipy.interpolate import interp1d
+        if self.tabval is not None:
+            is_sorted = (np.diff(self.tabval).all() >= 0.0)
+            self.fval = interp1d(np.arange(len(self.tabval)), self.tabval,
+                kind='quadratic', assume_sorted=is_sorted)
+            self.fm1val = interp1d(self.tabval, np.arange(len(self.tabval)), 
+                kind='quadratic', assume_sorted=is_sorted)
+        return self.fval
 ########################################################################
 class LaplaceAxis(Axis):
     """
@@ -1668,7 +1735,7 @@ class _NPKData(object):
         elif isinstance(otherdata,numbers.Number):
             return self.copy().add(otherdata)
         else:
-            raise NotImplemented
+            raise NotImplementedError
     def __radd__(self, otherdata):
         # as add()) but creates a new object
         import numbers
@@ -1677,7 +1744,7 @@ class _NPKData(object):
         elif isinstance(otherdata,numbers.Number):
             return self.copy().add(otherdata)
         else:
-            raise NotImplemented
+            raise NotImplementedError
     def __sub__(self, otherdata):
         # as -add but creates a new object
         import numbers
@@ -1686,7 +1753,7 @@ class _NPKData(object):
         elif isinstance(otherdata,numbers.Number):
             return self.copy().add(-otherdata)
         else:
-            raise NotImplemented
+            raise NotImplementedError
     def __isub__(self, otherdata):
         # as -add 
         import numbers
@@ -1695,7 +1762,7 @@ class _NPKData(object):
         elif isinstance(otherdata,numbers.Number):
             return self.add(-otherdata)
         else:
-            raise NotImplemented
+            raise NotImplementedError
     #-------------------------------------------------------------------------------
     def addbase(self, constant):
         """
@@ -2883,6 +2950,32 @@ class NPKDataTests(unittest.TestCase):
         arr = np.array([[1, 4],[3, 7],[1, 9],[5, 7]]) # hypercomplex of size 2x2
         modulus = hypercomplex_modulus(arr, 2, 2) 
         np.testing.assert_almost_equal(modulus, np.array([[np.sqrt(75)],[np.sqrt(156)]])) # 
+    def test_dampingunit(self):
+        "test itod and dtoi"
+        print(self.test_dampingunit.__doc__)
+        LA = LaplaceAxis( dmin = 10.0, dmax = 10000.0, dfactor = 35534.34765625)
+        damping = LA.itod(50)
+        point = LA.dtoi(damping)
+        self.assertAlmostEqual(damping, 2404.099183509974)
+        self.assertEqual(point, 50)
+    def test_TimeAxis(self):
+        "test TimeAxis"
+        print(self.test_TimeAxis.__doc__)
+        N = 20
+        tabval = list(np.logspace(np.log10(0.001),np.log10(3), N))
+        d = _NPKData(buffer=np.ones((N,1000)))
+        d.axis1.specwidth = 2000*np.pi
+        d.apod_sin(axis=2)
+        d.apod_em(lb=1000, axis=1)
+        d.axis1 = TimeAxis(size=d.size1, tabval=tabval, scale='log')
+        d.axis1.currentunit= 'msec'
+        print(d.report())
+        d.col(0).display(show=True, title='Testing time series')
+        self.assertTrue(d.axis1.fval(12.1)>tabval[12])
+        self.assertTrue(d.axis1.fval(12.9)<tabval[13])
+        self.assertEqual(d.axis1.Tmin, 0.001)
+        
+
     def test_plugin(self):
         '''Test of plugin mechanism'''
         def toto(dd, title):

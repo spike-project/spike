@@ -164,7 +164,7 @@ def _display_icalib(axis, xref, mzref, symbol='bo'):
     maxis = np.linspace(min(axis.mzref)-10, max(axis.mzref)+10,10)  # sample mass axis
     plt.plot(maxis, np.zeros_like(maxis),'k--')               # and draw a line at zero
     plt.plot(maxis, np.ones_like(maxis),'k:')
-    plt.plot(maxis, -np.ones_like(maxis),'k:')
+    plt.plot(maxis, -1*np.ones_like(maxis),'k:')
     plt.plot(mzref, axis.ppm_error(xref, mzref), symbol)
 #    plt.plot(mzref,1E6*(axis.itomz(xref)-mzref)/mzref, symbol) # plot position of ref points
     plt.xlabel('$m/z$')
@@ -253,66 +253,68 @@ def calib_loadref(npkd, fname, recalibrate=False, axis=1):
 
     if recalibrate is True, values will be recomputed, with values interpreted as formula or peptides (A letter code)
     """
-    def read_ref(fname):
-        """
-        Reads in a *.ref Bruker file holding a set of calibrating values for MS
-        returns a referencing dictionary {'FORMULA':(value,charge), ... }
-        """
-        import re
-        ref = {}
-        with open(fname,'r') as F:
-            lines = F.readlines()
-        for li in lines:
-            if li.startswith('#'): continue    # skip comments
-            if not li.strip(): continue        # and empty lines
-            lis = li.split()
+    pass  # not finisehd
+def read_ref(fname):
+    """
+    Reads in a *.ref Bruker file holding a set of calibrating values for MS
+    returns a referencing dictionary {'FORMULA':(value,charge), ... }
+    """
+    import re
+    ref = {}
+    with open(fname,'r') as F:
+        lines = F.readlines()
+    for li in lines:
+        if li.startswith('#'): continue    # skip comments
+        if not li.strip(): continue        # and empty lines
+        lis = li.split()
+        try:
+            val = float(lis[1])
+        except:
+            print('m/z not valid - skipping line:',li.strip())
+            continue
+        try:
+            m = re.search('\d+',lis[2])
+            charge = float(m.group())
+            if '-' in lis[2]:
+                charge *= -1
+        except:
+            print('charge not valid - skipping line:',li.strip())
+            continue
+        try:
+            ref[lis[0]] = (val, charge)
+        except:
+            print('skipping line:',li.strip())
+    return ref
+def recalibrate(calib):
+    """
+    a referencing dictionary {'FORMULA':value, ... }
+    """
+    "recalibrates calib list"
+    import isotopes as iso
+    diff = []
+    for mol,values in calib.items():
+        mass, charge = values
+        peptide = False
+        try:
+            nmass = iso.parse_peptide(mol).monoisotop(charge)
+            peptide = True
+        except:
+            pass
+        if not peptide:
             try:
-                val = float(lis[1])
+                nmass = iso.parse_formula(mol).monoisotop(charge)
+                peptide = False
             except:
-                print('m/z not valid - skipping line:',li.strip())
+                print('could not understand %s'%mol)
                 continue
-            try:
-                m = re.search('\d+',lis[2])
-                charge = float(m.group())
-                if '-' in lis[2]:
-                    charge *= -1
-            except:
-                print('charge not valid - skipping line:',li.strip())
-                continue
-            try:
-                ref[lis[0]] = (val, charge)
-            except:
-                print('skipping line:',li.strip())
-        return ref
-    def recalibrate(calib):
-        """
-        a referencing dictionary {'FORMULA':value, ... }
-        """
-        "recalibrates calib list"
-        diff = []
-        for mol,values in calib.items():
-            mass, charge = values
-            peptide = False
-            try:
-                nmass = iso.parse_peptide(mol).monoisotop(charge)
-                peptide = True
-            except:
-                pass
-            if not peptide:
-                try:
-                    nmass = iso.parse_formula(mol).monoisotop(charge)
-                    peptide = False
-                except:
-                    print('could not understand %s'%mol)
-                    continue
-            if nmass < 10.0:
-                continue
-            if peptide and charge >0:   # then add H+
-                nmass += iso.parse_formula('H').monoisotop()
-            diff.append(1E6*abs(mass-nmass)/mass)
-            calib[mol] = (nmass, charge)
-        print('recalibrate   mean: %.3f ppm   max: %.3f ppm'%(sum(diff)/len(diff), max(diff)))
-        return calib
+        if nmass < 10.0:
+            continue
+        if peptide and charge >0:   # then add H+
+            nmass += iso.parse_formula('H').monoisotop()
+        diff.append(1E6*abs(mass-nmass)/mass)
+        calib[mol] = (nmass, charge)
+    print('recalibrate   mean: %.3f ppm   max: %.3f ppm'%(sum(diff)/len(diff), max(diff)))
+    return calib
 
 # and plug the whole stuf into NPKData
 NPKData_plugin("set_calib", set_calib)

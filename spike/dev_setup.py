@@ -36,6 +36,7 @@ release_notes="""
     - means that a python copy is maintained - only this copy is version controlled
 - still improvements in notebooks
 - NMR: improvement in the SpinIt importer
+- FTICR: added a Bo attribute
 - added the NbMaxPeaks flag in Peak display
 - small bugs corrections
 - adding a complex value to a complex datasets was wrong in complex mode.
