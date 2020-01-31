@@ -27,6 +27,7 @@ import numpy as np
 
 from ..File.BrukerNMR import Import_1D
 from .. import NPKData
+from ..NMR import NMRData
 try:
     import spike.plugins.bcorr as bcorr
 except:
@@ -400,7 +401,7 @@ class SpforSuper(object):
                 mult = -1
             else:
                 return
-            NPKData(name=self.name.value).set_unit(unit).mult(mult).display(
+            NMRData(name=self.name.value).set_unit(unit).mult(mult).display(
                 new_fig=self.fig,
                 scale=scale,
                 color=self.color.value,

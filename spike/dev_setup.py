@@ -31,7 +31,7 @@ VersionInfo = ["0", "99", "15"]   # Major - Minor - Micro
 release_notes="""
 # SPIKE Relase Notes
 #### 0.99.15 - january 2020
-- central object model reorganized, to better adapt compound experiments (chromato-NMR chromato-MS ...)
+- central object model reorganized, to better adapt compound experiments (LC-NMR LC-MS ...)
 - jupytext extension was added to jupyter Notebooks
     - means that a python copy is maintained - only this copy is version controlled
 - still improvements in notebooks
@@ -483,12 +483,4 @@ Revision Id  :  %s
     generate_file_rev("version_rev.py")
     generate_notes("../release_notes.md")
 #    plier()
-    # then tests
-    test = False
-    if test:
-        import Tests
-        Tests.CLEAN = True  # tells test suite to remove ALL temporary files - will produce them again
-        import Display.testplot as testplot
-        testplot.PLOT = False   # switches off the display for automatic tests
-        Tests.do_Test()
     

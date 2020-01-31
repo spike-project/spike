@@ -2,13 +2,13 @@
 
 **SPIKE** a collaborative development for a FT-spectroscopy processing program.
 
-*This is the version 0.99.14 - January 2020*
+*This is the version 0.99.15 - January 2020*
 
 **SPIKE** is a program that allows the processing, the display and the analysis of data-sets obtained from various Fourier-Transform spectroscopies. The name stands for **S**pectrometry **P**rocessing **I**nnovative **KE**rnel.
 
 It allows the processing of **1D** and **2D** FT spectroscopies, implementing Real, Complex and HyperComplex n-dimensionnal Fourier Transform, as well as many other functionalities.
 
-It is written in python (tested in python 3.7 and in python é.7 up to version 0.99.10) and can be used as a set of tools, using for instance `jupyter notebook` as an interactive front-end.
+It is written in python (tested in python 3.7 and in python 2.7 up to version 0.99.10) and can be used as a set of tools, using for instance `jupyter notebook` as an interactive front-end.
 
 To our knowledge, it is the first program freely available allowing the processing, display and analysis of 2D-FT-ICR (Fourier Transform Ion Cyclotron Resonance), as well as **Orbitrap** time domain data. processing.
 
@@ -59,9 +59,12 @@ ref 1) is a general purpose reference, the other ones are more specific.
 ## Handles the following Spectroscopies
 - **NMR** 
     - 1D and 2D are fully supported
+    - DOSY
     - no nD yet
+    - relaxation data in progress
 - **FT-ICR** 
-    - 1D and 2D are fully supported
+    - 1D and 2DFT are fully supported
+    - LC-MS in progress
 - **Orbitrap** 
     - 1D only (!)
 - _other spectroscopies are being considered_
@@ -131,8 +134,9 @@ python -m spike.processing param_file.mscf
 
 # How do I get SPIKE ? ##
 SPIKE is written in pure Python, and relies on several external libraries.
-It is compatible and fully tested with both python 2.7 and python 3.6
+It is compatible and fully tested with python 3.7 (many parts are still compatible with python 2.7 but this is not tested)
 
+## dependencies
 However it relies on mathematical libraries which should be installed independently.
 
 - matplotlib
@@ -141,8 +145,9 @@ However it relies on mathematical libraries which should be installed independen
 - tables
 - pandas
 
-some plugins or extension require additional libraries ( `MPI`, `bokeh`, `mayavi`, ...)
+some plugins or extension require additional libraries (`ipympl`, `MPI`, `bokeh`, `mayavi`, ...)
 
+## installation
 To get it, you can simply 
 - rely on a scientific distribution such as Anaconda or Enthough
 - install the above python distributions yourself (tricky)
@@ -152,11 +157,10 @@ Then you can install it using pip:
 pip install spike-py
 ```
 
-Or, if you want to play with the code, 
+Or, if you want to play with the code, and get the bleeding edge version.
 
-- download the latest stable version here : https://bitbucket.org/delsuc/spike/downloads
-- *or* `hg clone` the devel branch and keep it up-to-date
-
+- `hg clone`  get the devel branch and keep it up-to-date
+- (will be move to git soon)
 
 ```bash
 python setup.py install
@@ -169,21 +173,6 @@ using pip
 ```bash
 pip install spike_py
 ```
-
-## dependencies
-It requires the following non-standard Python libraries :
-
-* [Numpy](http://docs.scipy.org/doc/numpy/reference/)
-* [Scipy](http://docs.scipy.org/doc/scipy/reference/)
-* [Matplotlib](http://Matplotlib.org/contents.html)
-* HDF5 / [Pytables](http://www.pytables.org/moin)
-
-Optionnaly
-
-* MPI / [mpi4py](http://www.mpi4py.scipy.org/) used for parallel processing of large FTICR 2D files
-* [cupy](https://github.com/cupy/cupy) for computating in the GPU using Cuda, which allows to speed up considerably certain processing steps.
-
-It has been successfully tested in the [**Enthought**](https://enthought.com/) and [**Anaconda**](http://continuum.io/) distributions.
 
 
 
