@@ -1,6 +1,12 @@
 <!-- DO NOT MODIFY this file, it is generated automatically from dev_setup ! -->
 # SPIKE Relase Notes
 
+#### 0.99.15 - January 2020
+- big changes in the NPKData.py organisation
+    - the object organisation is now based on NPKData._NPKDATA
+    - use NMR.NMRData to create NMR objects - found in the new NMR.py file
+    - NPKData.NPKData is now obsolete but can still be used
+
 #### 0.99.14 - October 2019
 - lots of improvements in Proc1DNMR notebooks
 - improvements in NoteBook for mouse interactivity (click and scroll) - but requires ipympl

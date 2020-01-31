@@ -69,7 +69,7 @@ import numpy as np
 import unittest
 ###
 from spike import NPKError
-from spike.NPKData import NPKData_plugin, NPKData, flatten, parsezoom
+from spike.NPKData import NPKData_plugin, _NPKData, flatten, parsezoom
 from spike.util.counter import timeit
 from scipy.optimize import curve_fit
 import warnings
@@ -592,7 +592,7 @@ def centroid1d(npkd, npoints=3, reset_label=True):
         raise NPKError("npoints must odd and >2 ",data=npkd)
     buff = npkd.get_buffer().real
     for pk in npkd.peaks:
-        xdata = range(int(round(pk.pos-noff)), int(round(pk.pos+noff+1)))
+        xdata = np.arange(int(round(pk.pos-noff)), int(round(pk.pos+noff+1)))
         ydata = buff[xdata]
         try:
             popt, pcov = curve_fit(center, xdata, ydata, p0=[pk.pos, pk.intens, 1.0] ) # fit
@@ -880,7 +880,7 @@ class PeakTests(unittest.TestCase):
         M=np.zeros((30, 30))
         M[5,7] = 20
         M[10,12] = 20
-        d = NPKData(buffer = M)
+        d = _NPKData(buffer = M)
         d.pp() #threshold = 10)  3*d.std is just right
         self.assertEqual(list(d.peaks.posF1) , [ 5, 10])
         self.assertEqual(list(d.peaks.posF2) , [ 7, 12])
@@ -893,7 +893,7 @@ class PeakTests(unittest.TestCase):
         M[7] = 8
         M[15] = 11
         M[10] = 20
-        d = NPKData(buffer = M)
+        d = _NPKData(buffer = M)
         d.pp(threshold=3)
         self.assertEqual(list(d.peaks.pos) , [ 5.0, 7.0, 10.0, 15.0])
         self.assertEqual(list(d.peaks.intens) , [ 20.0, 8.0, 20.0, 11.0])
@@ -903,7 +903,7 @@ class PeakTests(unittest.TestCase):
         y = center(x, 2.2, 10.0, 1.2)
         # y == [ -2.36111111e+01  -4.44089210e-15   9.72222222e+00   5.55555556e+00 -1.25000000e+01]
         self.assertAlmostEqual(y[2], 9.72222222)
-        d = NPKData(buffer = np.maximum(y,0.0))
+        d = _NPKData(buffer = np.maximum(y,0.0))
         d.peaks = Peak1DList(source=d)
         d.peaks.append(Peak1D(0, "0", 9.7, 2 ))
         d.peaks[-1].width = 1.0
@@ -921,7 +921,7 @@ class PeakTests(unittest.TestCase):
                 M[y,x] = center2d(np.array([y,x]), 5.3, 7.9, 20.0, 5.0, 1.3)
         #print (M[1:10,6:11])
         self.assertAlmostEqual(M[2,7],5.87777515)
-        d = NPKData(buffer = np.maximum(M,0.0))
+        d = _NPKData(buffer = np.maximum(M,0.0))
         d.peaks = Peak2DList(source=d)
         # self, Id, label, intens, posF1, posF2 
         d.peaks.append(Peak2D(0, "0", 18.0, 5, 8 ))

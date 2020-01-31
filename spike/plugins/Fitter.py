@@ -19,7 +19,7 @@ from scipy.optimize import minimize, curve_fit
 
 import spike
 from spike import NPKError
-from spike.NPKData import NPKData_plugin, NPKData, flatten, parsezoom
+from spike.NPKData import NPKData_plugin, _NPKData, flatten, parsezoom
 from spike.util.counter import timeit
 # This counter is used to count function evaluation
 count = 0
@@ -204,7 +204,7 @@ class FitTests(unittest.TestCase):
         Y = np.fft.rfft(y).real
         Y -= Y[0]
         # load and peak pick
-        d=spike.NPKData.NPKData(buffer=Y)
+        d=spike.NPKData._NPKData(buffer=Y)
         d.pp(threshold=1000)
         # check
         self.assertEqual(list(d.peaks.pos) , [159.0, 175.0, 183.0])

@@ -5,7 +5,7 @@
 Kore.py
 
 Created by Marie-Aude Coutouly on 2010-03-26.
-Copyright (c) 2010 NMRTEC. All rights reserved.
+
 """
 from __future__ import print_function
 
@@ -420,17 +420,17 @@ class Kore(object):
                 xpoints = arg[1]
                 if mode == 1:
                     #print "bcorr mode 1 a verifier"
-                    self._current.linear_interpolate(xpoints)
+                    self._current.bcorr_lin(xpoints)
                 elif mode == 2:
-                    self._current.spline_interpolate(xpoints, kind=3)
+                    self._current.bcorr_spline(xpoints, kind=3)
             elif self.get_dim() == 2:
                 axis = arg[1]
                 xpoints = arg[2]
                 if mode == 1:
                     print("attention, c'est faux")
-                    self._current.linear_interpolate(xpoints, axis=axis)
+                    self._current.bcorr_lin(xpoints, axis=axis)
                 elif mode == 2:
-                    self._current.spline_interpolate(xpoints, axis=axis, kind=3)
+                    self._current.bcorr_spline(xpoints, axis=axis, kind=3)
             else:
                 raise Exception("not implemented")
         elif mode == 3:
@@ -1039,6 +1039,10 @@ class Kore(object):
     def phase(self,ph0,ph1,axis = 1):
        for ax in self._test_axis(axis):
             self._current.phase(ph0,ph1,ax)
+    def apmin(self,):
+        self._current.apmin()
+        self._last_ph0 = self._current.axis1.P0
+        self._last_ph1 = self._current.axis1.P1
     #---------------------------------------------------------------------------
     def zoom(self,*args):
         if self._dim == 1:
@@ -1126,7 +1130,8 @@ class Kore(object):
     def get_dim(self):
         return self._dim
     def get_version(self):
-        return "%s" %(npkd.__version__)
+        from .. import SPIKE_version
+        return "%s" %(SPIKE_version)
     def get_npk1d(self):
         return len(self.peaks)
     def get_npk2d(self):
@@ -1210,7 +1215,8 @@ class Kore(object):
         self._current.apod_em(axis,lb)
         self.lb = lb
     def tm(self,tm1,tm2,axis=0):
-        print("TM still to do")
+        print("TM still to do",tm1,tm2)
+        return
         self._current.apod_tm(axis,tm1,tm2)
         self.lb = lb
     def sqsin(self,maxi,axis=1):

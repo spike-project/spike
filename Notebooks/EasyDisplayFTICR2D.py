@@ -57,7 +57,7 @@ display(Markdown('## ... program is ready'))
 from importlib import reload  # the two following lines are debugging help
 reload(IF2)                   # and can be removed safely when in production
 hidecode(initial='hide', message=False)
-ms = IF2.MS2Dscene(root='/home/mad/Documents/DATA')
+ms = IF2.MS2Dscene(root='/DATA')
 
 # %% [markdown]
 # ### to come

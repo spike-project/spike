@@ -2,13 +2,13 @@
 
 **SPIKE** a collaborative development for a FT-spectroscopy processing program.
 
-*This is the version 0.99.12 - September 2019*
+*This is the version 0.99.14 - January 2020*
 
 **SPIKE** is a program that allows the processing, the display and the analysis of data-sets obtained from various Fourier-Transform spectroscopies. The name stands for **S**pectrometry **P**rocessing **I**nnovative **KE**rnel.
 
 It allows the processing of **1D** and **2D** FT spectroscopies, implementing Real, Complex and HyperComplex n-dimensionnal Fourier Transform, as well as many other functionalities.
 
-It is written in python (tested in python 2.7 and 3.6) and can be used as a set of tools, using for instance `jupyter notebook` as an interactive front-end.
+It is written in python (tested in python 3.7 and in python é.7 up to version 0.99.10) and can be used as a set of tools, using for instance `jupyter notebook` as an interactive front-end.
 
 To our knowledge, it is the first program freely available allowing the processing, display and analysis of 2D-FT-ICR (Fourier Transform Ion Cyclotron Resonance), as well as **Orbitrap** time domain data. processing.
 
@@ -222,8 +222,7 @@ Use then, life will be easier for the users.
 
 The main program is `NPKData.py`, which defines NPKData object on which everything is built.
 
-Spectroscopies are defined in the `FTICR.py` and `Orbitrap.py` code, which sub class NPKData.
-It is prototyped as an NMR data-set. This set-up is temporary.
+Spectroscopies are defined in the `NMR.py`, `FTICR.py` and `Orbitrap.py` code, which sub class NPKData.
 
 Many programs contain routines tests (in an object unittest) that also serve as an example of use.
 The code goes through extensive tests daily, using the `unittest` Python library. However, many tests rely on a set of tests data-sets which is more than 1Go large, and not distributed here.
@@ -233,8 +232,10 @@ The code goes through extensive tests daily, using the `unittest` Python library
 a small description of the files:
 
 - NPKData.py
-   the main library, allows all processing for NMR experiments (1D, 2D and 3D)
-   to be used as a library, in a stand-alone program or in IPython interactive session
+  the main library, allows all processing for any kind of experiments (1D, 2D and 3D)
+  to be used as a library, in a stand-alone program or in IPython interactive session
+- NMR.py
+   The NPKData library adapted to NMR processing
 - FTICR.py
    an extension of NPKData for processing FT-ICR datasets (1D and 2D)
 - Orbitrap.py
@@ -250,12 +251,6 @@ a small description of the files:
    python -m spike.processing param_file.mscf
    ```
    
-- visu2D.py
-   an interactive tool for visualizing 2D FT-ICR multi-resolution files  
-   
-  ```
-  python -m spike.visu2D param_file.mscf
-  ```
 
 ### Directories
 - *Algo*   

@@ -27,7 +27,7 @@ class FTMSAxis(NPKData.Axis):
     hold information for one FT-MS axis
     used internally
     """
-    def __init__(self, itype=0, currentunit="points", size=1024, specwidth=1E6,  offsetfreq=0.0, left_point = 0.0, highmass=10000.0, calibA=0.0, calibB=0.0, calibC=0.0 ):
+    def __init__(self, itype=0, currentunit="points", size=1024, specwidth=1E6,  offsetfreq=0.0, left_point = 0.0, highmass=10000.0, calibA=1000000.0, calibB=0.0, calibC=0.0 ):
 #  lowmass_disp=222.0, highmass_disp=222222.0,):
         """
         all parameters from Axis, plus
@@ -88,7 +88,7 @@ class FTMSAxis(NPKData.Axis):
         start, end = self.getslice(zoom)
         new_specwidth = self.itoh(end-1) - self.offsetfreq   # check itoh() for the -1
         self.specwidth = new_specwidth
-        self.size = end-start
+        #self.size = end-start-1
         self.left_point += start
         return (start, end)
 
@@ -166,9 +166,18 @@ class FTMSAxis(NPKData.Axis):
         """return axis containing Hz values, can be used for display"""
         return self.itoh(self.points_axis())
     Hz_axis = freq_axis     # two names for this function
+    #-------------------------------------------------------------------------------
+    def report(self):
+        "high level reporting"
+        if self.itype == 0: # Real
+            return "FT-MS axis at %f kHz,  %d real points,  high m/z = %8.3f  R max (M=400) = %.0f"%  \
+            (self.specwidth/1000, self.size, self.highmass, 400.0/self.deltamz(400.))
+        else: # Complex
+            return "FT-MS axis at %f kHz,  %d complex pairs,  high m/z = %8.3f  R max (M=400) = %.0f"%  \
+            (self.specwidth/1000, self.size/2,  self.highmass, 400.0/self.deltamz(400.))
 #-------------------------------------------------------------------------------
 
-class FTMSData(NPKData.NPKData):
+class FTMSData(NPKData._NPKData):
     """
     subclass of NPKData, meant for handling FT-MS data
     allows 1D and 2D data-sets
@@ -201,10 +210,14 @@ class FTMSData(NPKData.NPKData):
                 raise Exception("Filename should have a .msh5 extension")
         else:
             if debug>0: print("calling super")
-            super(FTMSData, self).__init__(dim=dim, shape=shape, buffer=buffer, name=name, debug=debug)
+            super(FTMSData, self).__init__(dim=dim, shape=shape, buffer=buffer, debug=debug)
             for i in range(self.dim):
                 axis = self.axes(i+1)
-                setattr(self, "axis%d"%(i+1), FTMSAxis(size=axis.size, specwidth=axis.specwidth, itype=axis.itype) )
+                setattr(self, "axis%d"%(i+1), FTMSAxis(size=axis.size, itype=axis.itype) )
+        self.axis1 = FTMSAxis()    # this creates an FTMSAxis so that pylint does not complain - will be overwritten
+        if dim == 2:
+            self.axis2 = FTMSAxis()
+        self.adapt_size()
         if debug>1: print(self.report())
     #------------------------------------------------
     def _gspecwidth(self):
@@ -245,6 +258,28 @@ class FTMSData(NPKData.NPKData):
     #------------------------------------------------
     def trimz(self, axis=0):
         """
+        extract the data so as to keep only lowmass-highmass range
+        axis determines which axis to trim, axis=0 (default) indicates all axes
+        """
+        ext = []
+        unitaxis = []
+        for i in range(self.dim):
+            unitaxis.append( self.axes(i+1).currentunit )  # save
+            self.axes(i+1).currentunit = 'points'
+            if i+1 == axis or axis == 0:
+                ext = ext + [int(self.axes(i+1).mztoi(self.axes(i+1).highmass)), self.axes(i+1).size]
+            else:
+                ext = ext + [0,self.axes(i+1).size]
+        print("extracting :", ext)
+        self.extract(ext)
+        for i in range(self.dim):
+            self.axes(i+1).currentunit = unitaxis[i]  # restore
+        return self
+
+    #------------------------------------------------
+    def _trimz(self, axis=0):
+        """
+        obsolete version !
         extract the data so as to keep only lowmass-highmass range
         axis determines which axis to trim, axis=0 (default) indicates all axes
         """
@@ -305,7 +340,13 @@ class FTMSData(NPKData.NPKData):
         return self
 #-------------------------------------------------------------------------------
 
-#-------------------------------------------------------------------------------
-# if __name__ == '__main__':
-#     unittest.main()
-# no unittest for the moment - tested by subclassers
+if __name__ == '__main__':
+    # minitest
+    d = FTMSData(dim=1, debug=1)
+    print(d.report())
+    d = FTMSData(shape=(33,33),debug=1)
+    print(d.report())
+    d = FTMSData(buffer=np.ones((12,24,48)),debug=1)
+    print(d.report())
+    print(d.axis1.itomz(1),d.axis1.itomz(d.size1))
+    print('Hello from FTMS')

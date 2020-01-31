@@ -37,7 +37,8 @@ __author__ = "Marc A. Delsuc <delsuc@igbmc.fr>"
 __date__ = "Oct 2009"
 
 import math
-from Generic import *
+import os
+from .Generic import *
 
 
 #---------------------------------------------------------------------------

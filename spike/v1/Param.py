@@ -24,6 +24,7 @@ __date__ = "Oct 2009"
 # UserDict is used for 2.1 compatibility required by jython
 
 import collections
+import os
 try:
     from UserDict import UserDict
 except ImportError:
@@ -61,7 +62,7 @@ def NPKevaluate(val):
     found=0
     try:    # try eval()
         fval=eval(val)
-        if  isinstance(fval, collections.Callable) :  # we want to avoid functions !
+        if  isinstance(fval, collections.abc.Callable) :  # we want to avoid functions !
             pass
 #            print " callable"
         else:
@@ -225,7 +226,7 @@ class NPKParam(UserDict):
 #        from NPK import NPK_PATH
 #        base = os.path.join(NPK_PATH,"Param")
         from . import Generic
-        base = os.path.join(Generic.get_npk_path(),"Param")
+        base = os.path.join( os.path.dirname(Generic.__file__),"Param")
         for l in default_list:
             self.load( os.path.join(base,l) +".gtb" )
 #            for i in pp.keys():

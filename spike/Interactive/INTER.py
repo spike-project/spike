@@ -377,7 +377,35 @@ class baseline1D(Show1D):
         # set zoom
         self.ax.set_xbound(self.xb)
 
-class Show1Dplus(Show1D):
+Colors = ('black','red','blue','green','orange',
+'blueviolet','crimson','turquoise','indigo',
+'magenta','gold','pink','purple','salmon','darkblue','sienna')
+
+class SpforSuper(object):
+    "a holder for SuperImpose"
+    def __init__(self, i, name):
+        j = i%len(Colors)
+        self.name = widgets.Text(value=name, layout=Layout(width='40em'))
+        self.color = widgets.Dropdown(options=Colors,value=Colors[j],layout=Layout(width='80px'))
+        self.direct = widgets.Dropdown(options=['up','down','off'],value='off', layout=Layout(width='70px'))
+        self.offset = widgets.FloatText(value=0.0, layout=Layout(width='70px'), tooltip="offset")
+        self.me = HBox([widgets.HTML(value="<b>%d</b>"%i),self.name, self.offset, self.color,self.direct])
+        self.fig = False
+    def display(self, unit='ppm'):
+        if self.name != 'None' and self.direct.value != 'off':
+            scale = 1
+            if self.direct.value == 'up':
+                mult = 1
+            elif self.direct.value == 'down':
+                mult = -1
+            else:
+                return
+            NPKData(name=self.name.value).set_unit(unit).mult(mult).display(
+                new_fig=self.fig,
+                scale=scale,
+                color=self.color.value,
+                label=op.basename(op.dirname(self.name.value)))
+class _Show1Dplus(Show1D):
     def __init__(self, data, figsize=None, title=None, reverse_scroll=False):
         super().__init__( data, figsize=figsize, title=title, reverse_scroll=reverse_scroll)
         self.scaleint = widgets.FloatSlider(value=0.5, min=0.1, max=10, step=0.05,
@@ -423,9 +451,86 @@ class Show1Dplus(Show1D):
                 pass
         self.ax.set_xbound(self.xb)
 
+class Show1Dplus(Show1D):
+    def __init__(self, data, base='/DATA', N=9, figsize=None, title=None, reverse_scroll=False):
+        from spike.Interactive.ipyfilechooser import FileChooser
+        super().__init__( data, figsize=figsize, title=title, reverse_scroll=reverse_scroll)
+        self.scaleint = widgets.FloatSlider(value=0.5, min=0.1, max=10, step=0.05,
+                            layout=Layout(width='20%'), continuous_update=REACTIVE)
+        self.offset = widgets.FloatSlider(value=0.3, min=0.0, max=1.0, step=0.01,
+                            layout=Layout(width='20%'), continuous_update=REACTIVE)
+        self.peaks = widgets.Checkbox(value=False, layout=Layout(width='15%'))
+        self.integ = widgets.Checkbox(value=False, layout=Layout(width='15%'))
+
+        self.Chooser = FileChooser(base=base, filetype="*.gs1", mode='r', show=False)
+        self.bsel = widgets.Button(description='Copy',layout=self.blay,
+                button_style='info', # 'success', 'info', 'warning', 'danger' or ''
+                tooltip='copy selected data-set to entry below')
+        self.to = widgets.IntText(value=1,min=1,max=N,layout=Layout(width='10%'))
+        self.bsel.on_click(self.copy)
+        self.DataList = [SpforSuper(i+1,'None') for i in range(N)]
+        self.DataList[0].color.value = 'red'
+        self.DataList[0].fig = True  # switches on the very first one
+
+        for widg in (self.scaleint, self.offset, self.peaks, self.integ):
+            widg.observe(self.ob)
+
+        self.tabs = Tab()
+        self.tabs.children = [
+            VBox([  HBox([Label('Integral scale:'),self.scaleint,Label('offset:'),self.offset]),
+                    HBox([Label('Show Peaks'),self.peaks,Label('integrals'),self.integ]),
+                    HBox([VBox([self.blank, self.reset, self.scale]), self.fig.canvas])
+                    ]),
+            VBox([  Label("Choose spectra to superimpose"),
+                    HBox([self.Chooser, self.bsel, self.to])]+
+                [sp.me for sp in self.DataList]
+                )
+            ]
+        self.tabs.set_title(0, 'Spectrum')
+        self.tabs.set_title(1, 'Data-List')
+
+        self.children = [self.tabs] 
+
+    def copy(self, event):
+        if self.to.value <1 or self.to.value >len(self.DataList):
+            print('Destination is out of range !')
+        else:
+            self.DataList[self.to.value-1].name.value = self.Chooser.selected
+            self.DataList[self.to.value-1].direct.value = 'up'
+        self.to.value = min(self.to.value, len(self.DataList)) +1
+    def on_done(self, e):
+        self.close()
+        self.disp(zoom=True)
+        display(self.fig)
+    def disp(self, zoom=False):
+        "refresh display - if zoom is True, display only in xbound"
+        self.xb = self.ax.get_xbound()
+        # self.yb = self.ax.get_ybound()
+        if zoom:
+            zoom = self.xb
+        else:
+            zoom = None
+        self.ax.clear()
+        self.data.display(scale=self.scale.value, new_fig=False, figure=self.ax, title=self.title, zoom=zoom)
+        if self.integ.value:
+            try:
+                self.data.display_integral(label=True, integscale=self.scaleint.value,
+                    integoff=self.offset.value, figure=self.ax, zoom=zoom)
+            except:
+                print('no or wrong integrals')
+                pass
+        if self.peaks.value:
+            try:
+                self.data.display_peaks(peak_label=True, figure=self.ax, scale=self.scale.value, zoom=zoom)
+            except:
+                print('no or wrong peaklist')
+                pass
+        self.ax.set_xbound(self.xb)
+
 
 class baseline2D_F2(baseline1D):
     def __init__(self, data, figsize=None):
+        print('WARNING this tool is not functional/tested yet')
         self.data2D = data
         super().__init__( self.data2D.projF2, figsize=figsize)
     def on_done(self, e):
@@ -611,6 +716,7 @@ class Phaser2D(object):
 
     """
     def __init__(self, data):
+        print('WARNING this tool is not functional/tested yet')
         self.data = data
         self.scale = widgets.FloatLogSlider(description='scale:', value=1.0, min=-1, max=2,  base=10, step=0.01,
                             layout=Layout(width='80%'), continuous_update=HEAVY)
@@ -673,6 +779,7 @@ class Phaser2D(object):
 class AvProc1D:
     "Detailed 1D NMR Processing"
     def __init__(self, filename=""):
+        print('WARNING this tool is not functional/tested yet')
         self.wfile = widgets.Text(description='File to process',layout=Layout(width='80%'), value=filename)
         self.wapod = widgets.Dropdown(
             options=['None', 'apod_sin (sine bell)', 'apod_em (Exponential)', 'apod_gm (Gaussian)', 'gaussenh (Gaussian Enhacement)', 'kaiser'],
@@ -1131,5 +1238,5 @@ class NMRIntegrate(Show1D):
         # self.ax.set_ybound(self.yb)
 
 
-#if __name__ == '__main__':
+# if __name__ == '__main__':
 #    unittest.main()    

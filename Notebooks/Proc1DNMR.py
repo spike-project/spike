@@ -15,7 +15,7 @@
 # ---
 
 # %% [markdown]
-# ** *This notebook is unfinished and still under development* **
+# ** *This notebook is unfinished and still under development (but not too bad though ;-)* **
 #
 # # 1D NMR Processing and Display
 #
@@ -27,10 +27,11 @@
 #
 # The SPIKE code used for processing is visible in the cells, and can be used as a minimal tutorial.
 #
+# `reverse_scroll` inverse the direction of the mouse wheel, whether it is `True` or `False`
+#
 # ***Remark*** *to use this program, you should have installed the following packages:*
 #
-# - *a complete scientific python environment* ( *tested with python 3.6 - [anaconda](https://www.anaconda.com/) 
-#  but it should also work in python 2.7*)
+# - *a complete scientific python environment* ( *tested with python 3.6 - [anaconda](https://www.anaconda.com/) does probably not work in python 2.7 *)
 # - [`spike`](https://www.bitbucket.org/delsuc/spike) ( *version 0.99.9 minimum* )
 # - [`ipywidgets`](https://ipywidgets.readthedocs.io/en/latest/)  ( *tested with version 7.1* )
 # - [`ipyml`](https://github.com/matplotlib/jupyter-matplotlib)  ( *adds interactivity in the notebook* )
@@ -146,11 +147,12 @@ ph = I.NMRPeaker1D(D1, reverse_scroll=True);
 # %%
 reload(I)
 D1.real()
-ii = I.NMRIntegrate(D1);
+ii = I.NMRIntegrate(D1, reverse_scroll=True);
 
 # %% [markdown]
 # ## Interactive composite display
 # Convenient to set-up your own figure
+# (spectral superposition is not operational)
 
 # %%
 reload(I)
@@ -205,7 +207,7 @@ else:
 # %% [markdown]
 # *Tools in this page is under intensive development - things are going to change rapidly.*
 #
-# to come:
+# to come/finish:
 #
 # - spectral superposition
 # - annotations

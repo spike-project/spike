@@ -22,7 +22,8 @@ import shutil
 
 import numpy as np
 
-from ..NPKData import NPKData, LaplaceAxis
+from ..NPKData import LaplaceAxis
+from ..NMR import NMRData
 
 # to solve a python2 error !
 try:
@@ -422,7 +423,7 @@ def revoffset(loffset, acqu, proc):
 ################################################################
 def Import_1D(filename="fid", outfile=None, verbose=VERBOSE):
     """
-    Imports a 1D Bruker fid as a NPKData
+    Imports a 1D Bruker fid as a NMRData
     
     """
     if (not op.exists(filename)):
@@ -435,7 +436,7 @@ def Import_1D(filename="fid", outfile=None, verbose=VERBOSE):
     NC = int(acqu['$NC'])   # correct intensity with Bruker "NC" coefficient
     if NC != 0:
         data *= 2**(NC)
-    d = NPKData(buffer=data)
+    d = NMRData(buffer=data)
 # then set parameters
     d.axis1.specwidth = float(acqu['$SW_h'])
     d.axis1.frequency = float(acqu['$SFO1'])
@@ -457,7 +458,7 @@ def Import_1D(filename="fid", outfile=None, verbose=VERBOSE):
 ################################################################
 def Import_1D_proc(filename="1r", verbose=VERBOSE):
     """
-    Imports a 1D Bruker 1r processed file as a NPKData
+    Imports a 1D Bruker 1r processed file as a NMRData
     if 1i exists imports the complex spectrum
 
     """
@@ -470,7 +471,7 @@ def Import_1D_proc(filename="1r", verbose=VERBOSE):
     data = np.fromfile(filename, 'i4').astype(float)
     if op.exists(op.join(dire,'1i')):  # reads imaginary part
         data = data + 1j*np.fromfile(filename, 'i4')
-    d = NPKData(buffer=data)
+    d = NMRData(buffer=data)
 # then set parameters
     d.axis1.specwidth = float(acqu['$SW_h'])
     d.axis1.frequency = float(acqu['$SFO1'])
@@ -497,7 +498,7 @@ def write_file(bytordp, data, filename):
 
 def Export_proc(d, filename, template=None,  verbose=VERBOSE):
     """
-    Exports a 1D or a 2D npkdata to a  Bruker 1r / 2rr file, using templname as a template
+    Exports a 1D or a 2D NMRData to a  Bruker 1r / 2rr file, using templname as a template
     
     filename and template are procno : datadir/my_experiment/expno/pdata/procno/
     and the files are created in the filename directory
@@ -707,10 +708,10 @@ def Import_2D(filename="ser", outfile=None, verbose=VERBOSE):
     # NC = int(acqu['$NC'])   # correct intensity with Bruker "NC" coefficient
     # if NC != 0:
     #     data *= 2**(NC)
-    # d = NPKData(buffer=data)
+    # d = NMRData(buffer=data)
     
     data = read_2D(sizeF1, sizeF2, filename,  bytorda=int(acqu['$BYTORDA']))
-    d = NPKData(buffer=data)
+    d = NMRData(buffer=data)
 # then set parameters
     d.axis1.frequency = float(acqu2['$SFO1'])
     try:
@@ -774,7 +775,7 @@ def Import_2D_proc(filename="2rr", outfile=None,  verbose=VERBOSE):
     else:
         data = datar
 
-    d = NPKData(buffer=data)
+    d = NMRData(buffer=data)
     if SMX.data_2d_2ri is not None:     # swap if was concatenated
         d.swap(axis='F1')
 # then set parameters
