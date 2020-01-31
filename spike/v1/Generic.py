@@ -707,13 +707,14 @@ def neg_wing():
         minus()
         evaln(int(0.05*get_si1_1d()),int(0.95*get_si1_1d()))
         return(get_noise())
-
 #----------------------------------------------------------------
-def apmin():
+def apmin_original():
     """automatic 1D phase correction
     phase by minimizing the negative wing of the spectrum
 
     MAD, oct 2006
+
+    apmin moved to Kore
     """
     dim = get_dim()
     if ( dim != 1 ):
@@ -1207,7 +1208,7 @@ def apodise(  apod, axis = "F1" ):
 #    print traceback.print_stack(limit=3)
     import types
     debug = 0
-    if not type(apod) == types.StringType:
+    if type(apod) != str:
         print(apod)
         raise Exception( "argument should be an NPK executable string\n\n"+apodise.__doc__)
     if ( get_dim() == 1 ):
@@ -1532,8 +1533,8 @@ def auditinitial( auditfilename="audit_trail.html",title="NPK Processing",append
     if the file does not exist it is created and initialized,
     if append ==1 and if the file exists, content will be added to it, this is the default behaviour
     """
-    import v1
-    NPK_version = v1.NPK_version
+    from ..v1 import NPK_version
+    NPK_version = NPK_version
     if (auditfilename=="mute"):
         return "mute"
     if os.path.exists(auditfilename) and append==1:
@@ -1559,8 +1560,8 @@ def auditinitial( auditfilename="audit_trail.html",title="NPK Processing",append
     auditfile.writelines("<li>command line :<b>" + repr(sys.argv) + "</b></li>\n")
 #    auditfile.writelines("<li>operator :<b>" + get_user() + "</b></li>\n")
 #    auditfile.writelines("<li>NPK version :<b>" + __version__ + "</b></li>\n")
-    auditfile.writelines('<li>NPK version <b>'+NPK_version+'</b></li>\n')
-    auditfile.writelines("<li>NPK kernel version :<b>" + get_version() + "</b></li>\n")
+    auditfile.writelines('<li>NPK version: <b>'+NPK_version+'</b></li>\n')
+    auditfile.writelines("<li>SPIKE kernel version: <b>" + get_version() + "</b></li>\n")
     auditfile.writelines("</ul>\n")
     return auditfile
 

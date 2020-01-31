@@ -17,6 +17,7 @@ from __future__ import print_function, division
 import re
 import numpy as np
 from .. import NPKData as npkd
+from .. import NMR
 from ..NPKError import NPKError
 import unittest
 import os
@@ -128,7 +129,7 @@ class GifaFile(object):
         itype is not handled (not coded per axis in header)
         used internally
         """
-        axis = npkd.NMRAxis()
+        axis = NMR.NMRAxis()
         axis.size = int(self.header["Dim%d"%n_axis])
         axis.specwidth = float(self.header["Specw%d"%n_axis])
         axis.offset = float(self.header["Offset%d"%n_axis])
@@ -160,7 +161,7 @@ class GifaFile(object):
         if not self.data_valid:
 #            ndata = NPKdata(dim =self.dim)
 #            ndata.data = self.readc().data               # modified buffer to data
-            ndata = npkd.NPKData(buffer=self.readc(), dim =self.dim)
+            ndata = NMR.NMRData(buffer=self.readc(), dim =self.dim)
             #ndata.display(scale = 10.0,show=True)
             # setup axes
             ndata.axis1 = self.copyaxesfromheader(1)
@@ -663,8 +664,8 @@ class GifaFileTests(unittest.TestCase):
             fid = fid + i*20*np.exp(2*i*432.1j*x)*np.exp(-LB*x)   # that's 5 lines altogether
         # put it into a NPKBuffer
         print("***", fid[10])
-        B = npkd.NPKData(buffer=fid)
-        B.axis1 = npkd.NMRAxis(size=2*1024, specwidth=1000, offset=0.0, frequency=400.0, itype=1)
+        B = NMR.NMRData(buffer=fid)
+        B.axis1 = NMR.NMRAxis(size=2*1024, specwidth=1000, offset=0.0, frequency=400.0, itype=1)
         # and save it
         G.set_data(B)
         G.save()

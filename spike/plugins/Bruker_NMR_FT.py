@@ -254,8 +254,8 @@ NPKData_plugin("bk_xfb", xfb)
 class Bruker_NMR_FT(unittest.TestCase):
     def test_1D(self):
         '''Test mostly syntax'''
-        from ..NPKData import NPKData
-        d1 = NPKData(dim=1)
+        from ..NMR import NMRData
+        d1 = NMRData(dim=1)
         d1.axis1.itype = 0
         d1.ft_seq()
         d1.axis1.itype = 1
@@ -263,8 +263,8 @@ class Bruker_NMR_FT(unittest.TestCase):
         #d1.bruker_proc_phase()
     def test_2D(self):
         '''Test mostly syntax'''
-        from ..NPKData import NPKData
-        d1 = NPKData(dim=2)
+        from ..NMR import NMRData
+        d1 = NMRData(dim=2)
         d1.axis2.itype = 0
         d1.ft_seq()
 

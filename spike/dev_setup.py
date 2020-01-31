@@ -10,13 +10,14 @@ Created by Marc-Andre' on 2010-07-20.
 """
 
 from __future__ import print_function
-from codecs import encode, decode
+from codecs import decode
 
 ProgramName = "SPIKE"
 VersionName = "Development version"
-VersionInfo = ["0", "99", "14"]   # Major - Minor - Micro
+VersionInfo = ["0", "99", "15"]   # Major - Minor - Micro
 
 # 1.0 will probably be when interactive Notebooks are really usefull !
+# And NMR.py validated
 
 # Major.minor.micro (int) + name eg SPIKE_2_19_5
 # N.M.L
@@ -29,13 +30,27 @@ VersionInfo = ["0", "99", "14"]   # Major - Minor - Micro
 # Release Notes in md syntax !
 release_notes="""
 # SPIKE Relase Notes
+#### 0.99.15 - january 2020
+- central object model reorganized, to better adapt compound experiments (chromato-NMR chromato-MS ...)
+- jupytext extension was added to jupyter Notebooks
+    - means that a python copy is maintained - only this copy is version controlled
+- still improvements in notebooks
+- NMR: improvement in the SpinIt importer
+- added the NbMaxPeaks flag in Peak display
+- small bugs corrections
+- adding a complex value to a complex datasets was wrong in complex mode.
+- tests in python 2.7 are abandoned
+- REMARK, it was always mentionned that version 1.0 would be rolled out
+  when interactive functions in notebooks would be really usefull.
+  It will be the next big release probably !
 
-#### 0.99.14 - October 2019
-- lots of improvements in Proc1DNMR notebooks
-- improvements in NoteBook for mouse interactivity (click and scroll) - but requires ipympl
+#### 0.99.14 - October 2019 - not released on pypi -
+- NMR: lots of improvements in Proc1DNMR notebooks
+- improvements in NoteBook for mouse interactivity (click and scroll)
+    - requires the additional ipympl module
 
-#### 0.99.13 - October 2019
-- added the EasyDisplayFTICR2D for non programers !
+#### 0.99.13 - October 2019 - not released on pypi -
+- MS: added the EasyDisplayFTICR2D for non programers !
 - improvements in NoteBook interactivity
 - added smoothing in spline baselinecorrection
 
@@ -43,7 +58,7 @@ release_notes="""
 The 0.99.11 had a bug in the display of 1D NMR experiment - the 0.99.12 corrects it.
 
 #### 0.99.11 - September 2019
-- added a Notebook for processing of DOSY
+- NMR: added a Notebook for processing of DOSY
 - many improvement in the interactive Notebooks, and in the interactive library (still work to do though)
 - added autpoints computation for spline baseline correction
 - corrected axis placement in spectral display (you should not have inverted axis anymore)

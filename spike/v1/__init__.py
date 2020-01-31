@@ -3,17 +3,15 @@
 """
 The NPK Package
 
+
 """
-__version__ = "1.03"
-__author__ = "Marc A. Delsuc <delsuc@igbmc.fr>, marie-Aude Coutouly, Vincent Catherinot <v.catherinot@nmrtec.com>, Dominique Tramesel <d.tramesel@nmrtec.com>"
-__date__ = "june 2010"
+__version__ = "1.2"
+# version 1.2 is a reactivation of NPK v1 to use in spike
+__author__ = "Marc A. Delsuc <delsuc@igbmc.fr>"
+# previous participants marie-Aude Coutouly, Vincent Catherinot <v.catherinot@nmrtec.com>, Dominique Tramesel <d.tramesel@nmrtec.com>" have left long ago
+__date__ = "Jan 2020"
 NPK_version = __version__
 
-
-#### Header to set-up the whole NPK environment
-
-# Import NPK java environment
-import sys
 
 #__all__ = ["Generic", "Param", "Process1D", "Process2D", "Process3D", "GenericDosy", "ProcessDosy",  "Nucleus", "Bruker", "NPK_version" ] # "Peak","Varian",
 from . import Kore

@@ -101,8 +101,10 @@ MR_interact(FC.selected);
 # - overload the initial view
 
 # %%
+from importlib import reload
+reload(FI) 
 # complete initialisation, and storing the view into a python var
-DI = MR_interact(FC.selected,
+DI = FI.MR_interact(FC.selected,
                 report=False,   # inhibits parameter printing
                 show=False,     # does not display on start-up
                 figsize=(15,15),# Size of initial display (in cm)

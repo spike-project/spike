@@ -105,8 +105,8 @@ def loadone(pluginname, pgfile=None, debug=True):
 class PluginTests(unittest.TestCase):
     def test_plugin(self):
         '''Test of plugin mechanism'''
-        from ..NPKData import NPKData
-        d1 = NPKData()
+        from ..NPKData import _NPKData
+        d1 = _NPKData()
         d1.fake("this is a fake title").rfft()
         self.assertTrue( d1.test_title == "this is a fake title")
 

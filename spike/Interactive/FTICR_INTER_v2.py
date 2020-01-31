@@ -302,14 +302,15 @@ class MR_interact(MR):
         self.r1D = None
         self.t1D = ''
         self.i1D = None
-        display(self.ext_box())
         self.check_fig1D()
+        display(self.ext_box())
 
     def check_fig1D(self):
         if self.pltaxe1D is None:
             fg,ax = plt.subplots(figsize=(1.5*self.figsize[0], 0.75*self.figsize[0]))
             ax.text(0.1, 0.8, 'Empty - use "horiz" and "vert" buttons above')
             self.pltaxe1D = ax
+            self.fig1D = fg
 
     def ext_box(self):
         "defines the interactive tools for 1D"
@@ -361,6 +362,14 @@ class MR_interact(MR):
             lcol(b,-1)
         def lcolm1(b):
             lcol(b,1)
+        def on_press(event):
+            v = self.r1D.axis1.mztoi(event.xdata)
+            if self.t1D == 'col':
+                self.z1.value = v
+            elif self.t1D == 'row':
+                self.z2.value = v
+        cids = self.fig1D.canvas.mpl_connect('button_press_event', on_press)
+
         self.bb('b_row', 'horiz', lrow, layout=Layout(width='60px'), tooltip='extract an horizontal row')
         self.bb('b_rowp1', '+1', lrowp1, layout=Layout(width='30px'), tooltip='next row up')
         self.bb('b_rowm1', '-1', lrowm1, layout=Layout(width='30px'), tooltip='next row down')
@@ -402,7 +411,7 @@ class MSPeaker(object):
         self.zoom.observe(self.display)
         self.tlabel = Label('threshold (x noise level):')
         self.thresh = widgets.FloatLogSlider(value=20.0,
-            min=np.log10(3), max=2.0, base=10, step=0.01, layout=Layout(width='30%'),
+            min=np.log10(1), max=2.0, base=10, step=0.01, layout=Layout(width='30%'),
             continuous_update=False, readout=True, readout_format='.1f')
         self.thresh.observe(self.pickpeak)
         self.peak_mode = widgets.Dropdown(options=['marker', 'bar'],value='marker',description='show as')

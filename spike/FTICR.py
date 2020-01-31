@@ -32,6 +32,8 @@ from .File import HDF5File
 from . import FTMS
 from .NPKError import NPKError
 
+from scipy.constants import N_A as Avogadro
+from scipy.constants import e as electron
 FREQ0 = 1E6
 REF_FREQ = 419620.0     # Ad Hoc values for   REF_FREQ / REF_MASS
 REF_MASS = 344.0974
@@ -71,17 +73,16 @@ class FTICRAxis(FTMS.FTMSAxis):
         self.attributes.insert(0,"FTICR") # updates storable attributes
         self.attributes.insert(0,"highfreq")
         self.attributes.insert(0,"lowfreq")
-        
+
     #-------------------------------------------------------------------------------
     def report(self):
         "high level reporting"
         if self.itype == 0: # Real
-            return "FT-ICR report axis at %f kHz,  %d real points,  from physical mz = %8.3f   to m/z = %8.3f  R max (M=400) = %.0f"%  \
+            return "FT-ICR axis at %f kHz,  %d real points,  from physical mz = %8.3f   to m/z = %8.3f  R max (M=400) = %.0f"%  \
             (self.specwidth/1000, self.size, self.lowmass, self.highmass, 400.0/self.deltamz(400.))
         else: # Complex
-            return "FT-ICR report axis at %f kHz,  %d complex pairs,  from physical mz = %8.3f   to m/z = %8.3f  R max (M=400) = %.0f"%  \
+            return "FT-ICR axis at %f kHz,  %d complex pairs,  from physical mz = %8.3f   to m/z = %8.3f  R max (M=400) = %.0f"%  \
             (self.specwidth/1000, self.size/2, self.lowmass, self.highmass, 400.0/self.deltamz(400.))
-
 
     #-------------------------------------------------------------------------------
 # revisited Summer 2019
@@ -205,9 +206,24 @@ class FTICRData(FTMS.FTMSData):
             for i in range(self.dim):
                 axis = self.axes(i+1)
                 setattr(self, "axis%d"%(i+1), FTICRAxis(size=axis.size, specwidth=axis.specwidth, itype=axis.itype) )
+        self.axis1 = FTICRAxis()    # this creates an FTMSAxis so that pylint does not complain - will be overwritten
+        if dim == 2:
+            self.axis2 = FTICRAxis()
+        self.adapt_size()
         if debug>1: print(self.report())
 
-
+    @property
+    def Bo(self):
+        "estimate Bo from internal calibration"
+        from numpy import pi
+        return self.axis1.calibA*2*pi/(electron*Avogadro)*1E-3
+    def setBo(self, Bovalue):
+        "set internal calibration from Bo using physical constants"
+        from numpy import pi
+        self.axis1.calibA = Bo/(2*pi)*(electron*Avogadro)*1E3
+    def report(self):
+        "returns a description string of the dataset"
+        return "FTICR data-set\nBo: %.2f\n%s"%(self.Bo,super(FTICRData, self).report())
 #-------------------------------------------------------------------------------
 class FTICR_Tests(unittest.TestCase):
     def setUp(self):
@@ -262,14 +278,30 @@ class FTICR_Tests(unittest.TestCase):
         self.assertAlmostEqual(ax1.min(), 60.04664169805335) # 5.99880024e+01)
         self.assertAlmostEqual(ax1.max(), 61427.71445710858) # 61367.72645470906)
         #        6.13677265e+04   3.06838632e+04   2.04559088e+04 ...,   6.01055107e+01, 6.00466991e+01   5.99880024e+01
-    def test_trim(self):
+    def test_trim1D(self):
+        """
+        Test trimz 
+        """
+        A = FTICRData(buffer=np.zeros(10000)) #FTICRData(buffer=np.zeros((500, 10000)))
+        A.specwidth = 1E6
+        A.ref_mass = REF_MASS
+        A.ref_freq = REF_FREQ
+        A.highmass = 1000.0
+        print(A.report())
+        l1 = int(A.axis1.mztoi(A.axis1.highmass))
+        print("l1 values:",l1)
+        A.trimz()
+        self.assertEqual(l1, A.axis1.left_point)
+        self.assertEqual(A.size1, 10000-l1-1)
+        print("1D trimz gain is : %d %%" % (100*(1-(A.size1/10000))))
+    def test_trim2D(self):
         """
         Test trimz 
         """
         A = FTICRData(buffer=np.zeros((500, 10000)))
-        A.specwidth = 1667000
-        A.ref_mass = 344.0974
-        A.ref_freq = 419620.0
+        A.specwidth = 1E6
+        A.ref_mass = REF_MASS
+        A.ref_freq = REF_FREQ
         A.highmass = 1000.0
         print(A.report())
         l1 = int(A.axis1.mztoi(A.axis1.highmass))
@@ -278,8 +310,8 @@ class FTICR_Tests(unittest.TestCase):
         A.trimz()
         self.assertEqual(l1, A.axis1.left_point)
         self.assertEqual(l2, A.axis2.left_point)
-        self.assertEqual(A.size1, 500-l1)
-        self.assertEqual(A.size2, 10000-l2)
+        self.assertEqual(A.size1, 500-l1-1)
+        self.assertEqual(A.size2, 10000-l2-1)
         print("2D trimz gain is : %d %%" % (100*(1-(A.size1*A.size2/(500.*10000)))))
     def test_saving_1D(self):
         """
@@ -289,12 +321,18 @@ class FTICR_Tests(unittest.TestCase):
         self.announce()
         A = FTICRData(buffer=np.zeros(10000))
         A.specwidth = 1667000
-        A.ref_mass = 344.0974
-        A.ref_freq = 419620.0
+        A.ref_mass = REF_MASS
+        A.ref_freq = REF_FREQ
         A.highmass = 1000.0
         print(A.report())
         A.save_msh5(filename("1D_test.msh5"))
 #-------------------------------------------------------------------------------
 if __name__ == '__main__':
-    unittest.main()
-
+    # minitest
+    d = FTICRData(dim=1, debug=1)
+    print(d.report())
+    d = FTICRData(shape=(33,33),debug=1)
+    print(d.report())
+    d = FTICRData(buffer=np.ones((12,24,48)),debug=1)
+    print(d.report())
+    print('Hello from FTMS')

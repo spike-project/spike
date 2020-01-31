@@ -85,12 +85,12 @@ def Import_1D(filename, column=0, delimiter=','):
     then one value per line
     column and delimiter  as in load()
     """
-    from ..NPKData import NPKData
+    from ..NMR import NMRData
     from ..FTICR import FTICRData
     from ..Orbitrap import OrbiData
     buf, att = load(filename, column=column, delimiter=delimiter)
     if "NMR" in att.keys():
-        d = NPKData(buffer=buf)
+        d = NMRData(buffer=buf)
     elif "FTICR" in att.keys():
         d = FTICRData(buffer=buf)
     elif "Orbitrap" in att.keys():
@@ -110,7 +110,7 @@ class csvTests(unittest.TestCase):
     def test_csv(self):
         from ..Tests import filename, directory
         from ..FTICR import FTICRData
-        from ..NPKData import NPKData
+        from ..NMR import NMRData
         name2D = filename("dosy-cluster2.gs2")
         A = FTICRData(buffer=np.zeros(10000))
         A.specwidth = 1667000
@@ -124,7 +124,7 @@ class csvTests(unittest.TestCase):
         self.assertAlmostEqual((A-B).get_buffer().max(), 0.0)
         os.unlink(filename("1D_test.txt"))
         
-        d = NPKData(name=name2D)
+        d = NMRData(name=name2D)
         r = d.row(133)
         r.currentunit = "ppm"
         r.save_csv(filename("test2.csv.gz"), fmt="%.14g")

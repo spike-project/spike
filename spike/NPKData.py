@@ -242,7 +242,7 @@ class Unit(object):
 class Axis(object):
     """
     hold information for one spectral axis
-    used internally
+    used internally - a template for other axis types
     """
     def __init__(self, size = 64, itype = 0, currentunit = "points"):
         """
@@ -313,8 +313,8 @@ class Axis(object):
         if self.itype == 1:     # complex axis
             right += 1  # insure imaginary
         l = max(0,left)
-        l = min(self.size-3,l)
-        r = max(2,left)
+        l = min(self.size-5,l)
+        r = max(4,left)
         r = min(self.size-1, right)
 #        if (l,r) != (left,right):
 #            print("%d-%d (points) slice probably outside current axis, recast to %d-%d"%(left,right,l,r))
@@ -343,7 +343,7 @@ class Axis(object):
         
         """
         start, end = self.getslice(zoom)
-        self.size = end-start
+        #self.size = end-start
         return (start, end)
     def load_sampling(self, filename):
         """
@@ -402,136 +402,56 @@ class Axis(object):
         """
         f = self.units[self.currentunit].bconverter
         return f(val)
-class NMRAxis(Axis):
+
+########################################################################
+class TimeAxis(Axis):
     """
-    hold information for one NMR axis
-    used internally
+    Not implmented yet
+    hold information for one sampled time axis (such as chromato of T2 relax)
+    time values should be given as a list of values 
     """
-    def __init__(self,size = 64, specwidth = 2000.0*math.pi, offset = 0.0, frequency = 400.0, itype = 0, currentunit = "points"):
-        """
-        all parameters from Axis, plus
-        specwidth   spectral width, in Hz
-        offset      position in Hz of the rightmost point
-        frequency   carrier frequency, in MHz
-        zerotime    position (in points) on the time zero
-        
-        """
-        super(NMRAxis, self).__init__(size = size, itype = itype)
-        self.specwidth = specwidth  # spectral width, in Hz
-        self.offset = offset        # position in Hz of the rightmost point
-        self.frequency = frequency  # carrier frequency, in MHz
-        self.zerotime = 0.0         # position (in points) on the time zero
-        self.P0 = 0.0      # phase parameters
-        self.P1 = 0.0
-        self.NMR = "NMR"
-        self.units["ppm"] = Unit(name="ppm", converter=self.itop, bconverter=self.ptoi, reverse=True)
-        self.units["Hz"]= Unit(name="Hz", converter=self.itoh, bconverter=self.htoi, reverse=True)
-        self.units["sec"]= Unit(name="Hz", converter=self.itos, bconverter=self.stoi)  # for FID
-        for i in ("specwidth", "offset", "frequency", "NMR"):  # updates storable attributes
-            self.attributes.insert(0, i)
+    
+    def __init__(self, size = 64, tabval=None, currentunit = "sec"):
+        super(TimeAxis, self).__init__(size = size, itype = 0)
+        self.Time = "Time"
+        self.tabval = tabval
+        self.units["sec"] = Unit(name="second", converter=self.itos, bconverter=self.stoi, scale='lin')
+        for i in ("Time", "tabval"):  # updates storable attributes
+            self.attributes.append(i)
         self.currentunit = currentunit
         
-    def report(self):
-        "high level reporting"
-        if self.itype == 0:
-            return "NMR axis at %f MHz,  %d real points,  from %f ppm (%f Hz) to %f ppm  (%f Hz)"%  \
-            (self.frequency, self.size, self.itop(self.size-1), self.itoh(self.size-1), self.itop(0), self.itoh(0))
-        else:
-            return "NMR axis at %f MHz,  %d complex pairs,  from %f ppm (%f Hz) to %f ppm  (%f Hz)"%  \
-            (self.frequency, self.cpxsize, self.itop(self.size-1), self.itoh(self.size-1), self.itop(0), self.itoh(0))
+    def itos(self, value):
+        """
+        returns damping value (d) from point value (i)
+        """
+#        print("itod might have to be checked")
+        cst = (math.log(self.dmax)-math.log(self.dmin)) / (float(self.size)-1)
+        d = (self.dmin )* np.exp(cst*value)
+        return d
+    def stoi(self, value):
+        """
+        returns point value (i) from damping value (d)
+        """
+#        print("dtoi might have to be checked")
+        cst = (math.log(self.dmax)-math.log(self.dmin)) / (float(self.size)-1)
 
-    #-------------------------------------------------------------------------------
-    def __extract(self, zoom):
+        i = (np.log(value/self.dmin)) / cst
+        return i
+    def report(self):
+        "hight level report"
+        return "Laplace axis of %d points,  from %f to %f  using a scaling factor of %f"%  \
+            (self.size, self.itod(0.0), self.itod(self.size-1), self.dfactor)
+    def load_tabval(self, fname):
         """
-        redefines the axis parameters so that the new axis is extracted for the points [start:end] 
-        
-        zoom is given in current unit - does not modify the Data, only the axis definition
+        load tabulated time values form a file - plain text, one entry per line
         """
-        start, end = self.getslice(zoom)
-        self.specwidth = (self.specwidth * (end - start)) /self.size
-        self.offset = self.offset + self.specwidth * (self.size - end)/self.size
-        self.size = end-start
-        return (start, end)
-    #-------------------------------------------------------------------------------
-    def extract(self, zoom):
-        """
-        redefines the axis parameters so that the new axis is extracted for the points [start:end] 
-        
-        zoom is given in current unit - does not modify the Data, only the axis definition
-        """
-        start, end = self.getslice(zoom)
-        new_specwidth = self.itoh(start+1)-self.itoh(end)  # check itoh() for the +1
-        new_offset = self.itoh(end-1)
-        self.specwidth = new_specwidth
-        self.offset = new_offset
-        self.size = end-start
-        return (start, end)
-    #-------------------------------------------------------------------------------
-    def itos(self,value):
-        """
-        returns time value (s) from point value
-        """
-        return 0.5*(value-2*self.zerotime)/self.specwidth 
-    def stoi(self,value):
-        """
-        returns point value (i) from time value (s)
-        """
-        return 2.0*value*self.specwidth + 2*self.zerotime
-    #-------------------------------------------------------------------------------
-    def itop(self,value):
-        """
-        returns ppm value (p) from point value (i)
-        """
-        ppm_value = self.itoh(value) / self.frequency
-        return ppm_value
-    #-------------------------------------------------------------------------------
-    def htop(self,value):
-        """
-        returns ppm value (p) from Hz value (h)
-        """
-        
-        ppm_value = value / self.frequency 
-        return ppm_value
-    #-------------------------------------------------------------------------------
-    def htoi(self,value):
-        """
-        returns point value (i) from Hz value (h)
-        """
-        pt_value = (self.size -1)*(self.offset - value)/self.specwidth + self.size-1
-        return pt_value
-    #-------------------------------------------------------------------------------
-    def ptoh(self,value):
-        """
-        returns Hz value (h) from ppm value (p)
-        """
-        Hz_value = value * self.frequency
-        return Hz_value
-    #-------------------------------------------------------------------------------
-    def ptoi(self,value):
-        """
-        returns point value (i) from ppm value (p)
-        """
-        pt_value = self.htoi((value*self.frequency))
-        return pt_value
-    #-------------------------------------------------------------------------------
-    def itoh(self,value):
-        """
-        returns Hz value (h) from point value (i)
-        """
-        # N points define N-1 intervals ! hence the -1 in itoh() and htoi()
-        hz_value =   (self.size-value-1)*self.specwidth / (self.size-1) + self.offset
-        return hz_value
-    def freq_axis(self):
-        """return axis containing Hz values, can be used for display"""
-        return self.itoh(self.points_axis())
-    Hz_axis = freq_axis     # two names for this function
-    def ppm_axis(self):
-        """return axis containing ppm values, can be used for display"""
-        return self.itop( self.points_axis() )
+        with open(fname,'r') as F:
+            self.tabval = np.array([float(l) for l in F.readlines() if not l.startswith('#')])
+        return self.tabval
 ########################################################################
 class LaplaceAxis(Axis):
     """
-    hold information for one Laplace axis (DOSY)
+    hold information for one Laplace axis (such as DOSY)
     used internally
     """
     
@@ -634,7 +554,7 @@ def NPKData_plugin(name, method, verbose=False):
     
     then all NPKData created will have the method .mymeth()
     
-    look at ..plugins for details
+    look at .plugins/__init__.py for details
     """
     import inspect
     from . import plugins
@@ -647,12 +567,24 @@ def NPKData_plugin(name, method, verbose=False):
         raise Exception("method should be callable")
     if not isinstance(name, str):
         raise Exception("method name should be a string")
-    setattr(NPKData, name, method)
+    setattr(_NPKData, name, method)
     if verbose:
         print("   - successfully added .%s() method to NPKData"%name)
     plugins.codes[pluginfile].append(name)
 
-class NPKData(object):
+def NPKData( *arg, **kw):
+    "trick to insure compatibility for modified code"
+    import sys
+    from . import NMR
+    print('******************************************************************************',file=sys.stderr)   
+    print('* Calling directly NPKData.NPKData() to create a new NMR dataset is obsolete *',file=sys.stderr)
+    print('* Please user NMR.NMRData() instead                                          *',file=sys.stderr)
+    print('******************************************************************************',file=sys.stderr)
+    # uncomment this line if you want to track in your code
+    #raise Exception('NPK')
+    return NMR.NMRData(*arg, **kw)
+
+class _NPKData(object):
     """
     a working data used by the NPK package
     
@@ -683,7 +615,7 @@ class NPKData(object):
     all methods return self, so computation can be piped
     etc...
     """
-    def __init__(self, dim = 1, shape = None, buffer = None, name = None, debug = 0):
+    def __init__(self, dim = 1, shape = None, buffer = None, debug = 0):
         """
         data initialisation,
         four alternative posibilities :
@@ -694,54 +626,41 @@ class NPKData(object):
         
         the first found takes over the others which are not used
         """
-        from .File.GifaFile import GifaFile
         self.debug = debug
-        self.frequency = 400.0
-        self._absmax = 0.0
-        self.noise = 0.0
-        self.name = None
-        self.level = None
-
+        if shape is not None:
+            dim = len(shape)    # overwrite dim if present
         if buffer is not None:
-            dim = len(buffer.shape)
-        if name is not None:
-            Go = GifaFile(name,"r")
-            Go.load()
-            Go.close()
-            B = Go.get_data()
-            del(Go)
-            self.buffer = B.buffer  
-            copyaxes(B,self)
-            self.name = name            
-        elif shape is not None:
-            self.buffer = np.zeros(shape)
-            self.axis1 = NMRAxis()
-            if (len(shape) == 2):
-                self.axis1 = NMRAxis()
-                self.axis2 = NMRAxis()
-            elif (len(shape) == 3):
-                self.axis1 = NMRAxis()
-                self.axis2 = NMRAxis()
-                self.axis3 = NMRAxis()
+            shape = buffer.shape   # overwrite shpae and dim if present
+            dim = len(shape)
+        if dim == 1:
+            if shape is None:   # if not given decide shape
+                shape = (64,)
+            self.axis1 = Axis()
+        elif dim == 2:
+            if shape is None:
+                shape = (64,64)
+            self.axis1 = Axis()
+            self.axis2 = Axis()
+        elif dim == 3:
+            if shape is None:
+                shape = (64,64,64)
+            self.axis1 = Axis()
+            self.axis2 = Axis()
+            self.axis3 = Axis()
         else:
-            if dim == 1:
-                self.buffer = np.zeros((64,))
-                self.axis1 = NMRAxis()
-            elif dim == 2:
-                self.buffer = np.zeros((64,64))
-                self.axis1 = NMRAxis()
-                self.axis2 = NMRAxis()
-            elif dim == 3:
-                self.buffer = np.zeros((64,64,64))
-                self.axis1 = NMRAxis()
-                self.axis2 = NMRAxis()
-                self.axis3 = NMRAxis()
-            else:
-                raise NPKError("invalid dimension")
-        if buffer is not None:
-            self.set_buffer(buffer)
+            raise NPKError("invalid dimension")
+        if buffer is None:
+            buffer = np.zeros(shape)
+        if self.debug:
+            print('dim %d, shape %s, buffer %s'%(dim,shape, buffer.shape))
+        self.buffer = buffer
+        self.set_buffer(buffer)
         self.adapt_size()
         self.check()
+        self._absmax = 0.0
+        self.noise = 0.0
+        self.name = "no data"
+        self.level = []
     #----------------------------------------------
     def get_buffer(self, copy=False):
         """
@@ -971,7 +890,6 @@ class NPKData(object):
         c = Data(buffer = self.buffer.copy())
         copyaxes(self,c)
         c.debug = self.debug
-        c.frequency = self.frequency
         c._absmax = self._absmax
         c.noise = self.noise
         c.name = self.name
@@ -1139,7 +1057,6 @@ class NPKData(object):
         see also : chsize
         """
         limits = flatten(args)
-        #print ('extract',limits)
         if len(limits) != 2*self.dim:
             raise NPKError("slice should be defined as coordinate pair (left,right) in axis' current unit : " + " - ".join(self.unit), data=self)
 #            raise NPKError(msg="wrong number of arguments for extract, should be 2 per dimension", data=self)
@@ -1164,8 +1081,8 @@ class NPKData(object):
     def _extract2d(self, zoom):
         self.check2D()
         zoom = flatten(zoom)
-        x1, y1 = self.axis1.extract(zoom[0:2])
-        x2, y2 = self.axis2.extract(zoom[2:4])
+        x1, y1 = self.axis1.extract(zoom[0:2])  # 0,1
+        x2, y2 = self.axis2.extract(zoom[2:4])  # 2,3
         self.buffer = self.buffer[x1:y1, x2:y2]
         self.adapt_size()
         return self
@@ -1722,7 +1639,7 @@ class NPKData(object):
         import numbers
         import warnings
         # for the moment we assume 1D !
-        if isinstance(otherdata,NPKData):
+        if isinstance(otherdata,_NPKData):
             if self.itype != otherdata.itype:
                 raise NPKError("addition of dataset with different complex states is not implemented yet", data=self)
             self.buffer += otherdata.buffer
@@ -1746,7 +1663,7 @@ class NPKData(object):
     def __add__(self, otherdata):
         import numbers
         # as add() but creates a new object
-        if isinstance(otherdata, NPKData):
+        if isinstance(otherdata, _NPKData):
             return self.copy().add(otherdata)
         elif isinstance(otherdata,numbers.Number):
             return self.copy().add(otherdata)
@@ -1755,7 +1672,7 @@ class NPKData(object):
     def __radd__(self, otherdata):
         # as add()) but creates a new object
         import numbers
-        if isinstance(otherdata, NPKData):
+        if isinstance(otherdata, _NPKData):
             return self.copy().add(otherdata)
         elif isinstance(otherdata,numbers.Number):
             return self.copy().add(otherdata)
@@ -1764,7 +1681,7 @@ class NPKData(object):
     def __sub__(self, otherdata):
         # as -add but creates a new object
         import numbers
-        if isinstance(otherdata, NPKData):
+        if isinstance(otherdata, _NPKData):
             return self.copy().add(otherdata.copy().mult(-1))
         elif isinstance(otherdata,numbers.Number):
             return self.copy().add(-otherdata)
@@ -1773,7 +1690,7 @@ class NPKData(object):
     def __isub__(self, otherdata):
         # as -add 
         import numbers
-        if isinstance(otherdata, NPKData):
+        if isinstance(otherdata, _NPKData):
             return self.add(otherdata.copy().mult(-1))
         elif isinstance(otherdata,numbers.Number):
             return self.add(-otherdata)
@@ -2410,7 +2327,6 @@ class NPKData(object):
                         self.buffer[:,i,j] = fft_base(self.buffer[:,i,j])
         self.axes(todo).itype = it_after
         self._absmax = 0.0
-        #print "********** FFT :",todo,time()-t0
     
     #---------------------------------------------------------------------------
     def apply_process(self, axis_it, process, axis = 0, mp = True, N_proc = None):
@@ -2880,56 +2796,17 @@ class NPKData(object):
         self.adapt_size()
         return self
 
-########################################################################
-    #-------------------------------------------------------------------------------
-    def itop(self,axis,value):
-        todo = self.test_axis(axis)
-        if self.dim == 1:
-            return self.axis1.itop(value)
-        elif self.dim == 2:
-            return self.axes(todo).itop(value)
-    def htop(self,axis,value):
-        todo = self.test_axis(axis)
-        if self.dim == 1:
-            return self.axis1.htop(value)
-        elif self.dim == 2:
-            return self.axes(todo).htop(value)
-    def htoi(self,axis,value):
-        todo = self.test_axis(axis)
-        if self.dim == 1:
-            return self.axis1.htoi(value)
-        elif self.dim == 2:
-            return self.axes(todo).htoi(value)
-    def ptoh(self,axis,value):
-        todo = self.test_axis(axis)
-        if self.dim == 1:
-            return self.axis1.ptoh(value)
-        elif self.dim == 2:
-            return self.axes(todo).ptoh(value)
-    def ptoi(self,axis,value):
-        todo = self.test_axis(axis)
-        if self.dim == 1:
-            return self.axis1.ptoi(value)
-        elif self.dim == 2:
-            return self.axes(todo).ptoi(value)
-    def itoh(self,axis,value):
-        todo = self.test_axis(axis)
-        if self.dim == 1:
-            print("going for F1 , on ", value)
-            return self.axis1.itoh(value)
-        elif self.dim == 2:
-            return self.axes(todo).itoh(value)
 
 class NPKDataTests(unittest.TestCase):
     """ - Testing NPKData basic behaviour - """
     def test_fft(self):
         " - Testing FFT methods - "
         x = np.arange(1024.0)
-        E=NPKData(buffer=x)
+        E=_NPKData(buffer=x)
         E.axis1.itype = 0
         E.ifftr()
         sim = np.exp(-x*(0.1+1j))
-        D=NPKData(buffer=sim)
+        D=_NPKData(buffer=sim)
         p = 0 # 56.78                # surprisingly,  tests fail by 10-1/10-4 if p!=0.0 
         D1 = D.copy().phase(p,0).chsize(2*D.size1).fft().real()     #.display(label='fft')
         D2 = D.copy().phase(p,0).fftr()                             #.display(new_fig=False,label='fftr')
@@ -2940,18 +2817,10 @@ class NPKDataTests(unittest.TestCase):
         self.assertTrue(np.max(D.get_buffer()) < 1E-14)
         self.assertTrue(np.mean(D.get_buffer()) < 1E-14)
 
-    def test_load(self):
-        " - Testing load methods"
-        from .Tests import filename
-        name1D = filename("proj.gs1")
-        E = NPKData(name=name1D)
-        self.assertAlmostEqual(E[0], 1869.4309082)
-        self.assertAlmostEqual(E.get_buffer().max(), 603306.75)
-
     def test_math(self):
         " - Testing dataset arithmetics - "
         M=np.zeros((20,20))
-        d = NPKData(buffer=M)
+        d = _NPKData(buffer=M)
         d[5,7]=10
         d[10,12]=20
         d += 1
@@ -2976,32 +2845,12 @@ class NPKDataTests(unittest.TestCase):
         " test the flatten utility "
         self.assertEqual( [1,2,3,4,5,6,7], flatten( ( (1,2), 3, (4, (5,), (6,7) ) ) ))
 
-    def test_unitval(self):
-        "testing unit conversion functions"
-        F = NMRAxis(size=1000, specwidth=12345.0, frequency = 400.0, offset=321)
-        self.assertAlmostEqual(F.itoh(0), F.specwidth+F.offset)
-        self.assertAlmostEqual(F.itoh(F.size-1), F.offset)   # last point is size-1 !!!
-        for f,g in ((F.htoi,F.itoh), (F.ptoi,F.itop), (F.htop,F.ptoh)):
-            self.assertAlmostEqual( g(f(4321)), 4321)
-        for u in ("points", "Hz", "ppm"):
-            F.currentunit = u
-            self.assertAlmostEqual( F.ctoi( F.itoc(4321)), 4321)
-
-    def test_dampingunit(self):
-        "test itod and dtoi"
-        print(self.test_dampingunit.__doc__)
-        LA = LaplaceAxis( dmin = 10.0, dmax = 10000.0, dfactor = 35534.34765625)
-        damping = LA.itod(50)
-        point = LA.dtoi(damping)
-        self.assertAlmostEqual(damping, 2404.099183509974)
-        self.assertEqual(point, 50)
-        
     def test_zf(self):
         for ty in range(2):  # check both real and complex cases, and 1D and 2D (in F1)
-            d1 = NPKData(buffer = np.arange(6.0))
-            d2 = NPKData(buffer = np.zeros((6, 8)))
+            d1 = _NPKData(buffer = np.arange(6.0))
+            d2 = _NPKData(buffer = np.zeros((6, 8)))
             for i in range(d2.size2):
-                d2.set_col(i,  NPKData(buffer = 0.1*i + np.arange((d2.size1))) )
+                d2.set_col(i,  _NPKData(buffer = 0.1*i + np.arange((d2.size1))) )
             # d2[i,j] = i + 0.1*j
             d1.axis1.itype = ty
             d2.axis1.itype = ty
@@ -3041,7 +2890,7 @@ class NPKDataTests(unittest.TestCase):
             dd.test_title = title
             return dd
         NPKData_plugin("test_pi", toto)
-        d1 = NPKData(buffer = np.arange(6.0))
+        d1 = _NPKData(buffer = np.arange(6.0))
         d1.test_pi("this is a title").rfft()
         self.assertTrue(d1.test_title == "this is a title")
 
