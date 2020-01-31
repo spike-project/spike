@@ -16,6 +16,7 @@
    6.36  spike/File/BrukerMS.py                      2
    6.32  spike/util/near_prime.py                    0
    6.14  spike/plugins/Linear_prediction.py          2
+   6.07  spike/plugins/FTMS_calib.py           1    20 
    6.06  spike/File/Thermo.py                        5
    5.93  spike/FTMS.py                               5
    5.91  spike/plugins/bcorr.py                      1
@@ -23,29 +24,28 @@
    5.76  spike/plugins/Integrate.py                  4
    5.75  spike/Algo/CS_transformations.py            1
    5.62  spike/plugins/sane.py                       3
+   5.60  spike/FTICR.py                              7
    5.50  spike/plugins/rem_ridge.py                  2
-   5.50  spike/plugins/FTMS_calib.py           3    19 
-   5.22  spike/plugins/PALMA.py                6     9 
+   5.37  spike/plugins/PALMA.py                5     9 
    5.19  spike/plugins/Bruker_NMR_FT.py        9     2 
-   5.08  spike/FTICR.py                        1     6 
    5.00  spike/plugins/zoom3D.py                     2
    5.00  spike/NPKError.py                           1
 -------------------------------------------------------
    4.95  spike/util/ConfigForm.py              4    26 
    4.93  spike/plugins/bokeh_display.py        5    10 
+   4.74  spike/NPKData.py                      6    60 
    4.67  spike/File/Spinit.py                       19
    4.44  spike/File/HDF5File.py                7    39 
    4.29  spike/util/shift_comments.py                5
-   4.19  spike/NPKData.py                     23    58 
    4.13  spike/processing.py                   6    39 
    4.00  spike/File/__init__.py                      0
    3.96  spike/File/BrukerSMX.py                     6
    3.90  spike/util/simple_logger2.py                4
    3.90  spike/Tests.py                        2     5 
+M  3.87  spike/Interactive/INTER.py            2    80 
    3.85  spike/Algo/maxent.py                       14
    3.81  spike/plugins/__init__.py             2     3 
    3.81  spike/plugins/Bucketing.py                  2
-   3.69  spike/Interactive/INTER.py            5    80 
    3.68  spike/plugins/fastclean.py            2     0 
    3.67  spike/Algo/Cadzow.py                  3     1 
    3.61  spike/File/mzXML.py                         3
@@ -59,7 +59,6 @@
    3.05  spike/Interactive/FTICR_INTER.py      1    64 
    3.01  spike/Algo/Cadzow_mpi2.py             5     0 
    3.00  setup.py                                    0
-   2.97  spike/dev_setup.py                    1    11 
    2.90  spike/util/log_all.py                       2
    2.86  spike/plugins/urQRd.py                     11
    2.80  spike/Orbitrap.py                           4
@@ -73,16 +72,17 @@
    2.39  spike/plugins/apmin.py                      0
    2.39  spike/Algo/Laplace.py                       4
    2.35  spike/Algo/SL0.py                           3
+M  2.30  spike/dev_setup.py                    2    11 
    2.22  spike/util/log_stdout.py                    0
    2.18  spike/Algo/urQRd.py                         4
-   2.14  spike/version_rev.py                        2
+M  2.14  spike/version_rev.py                        2
    2.12  spike/util/ValErr.py                        3
    2.01  spike/Algo/rQRd.py                    2     3 
    1.99  spike/Algo/sane_old.py                     15
    1.98  spike/File/BrukerNMR.py                    20
    1.70  spike/Algo/sane.py                    1    20 
-   1.25  spike/version.py                            0
    1.25  spike/util/progrbarUi.py              1     5 
+M  1.25  spike/version.py                            0
    1.16  spike/util/signal_tools.py           12    20 
    0.94  spike/util/log_stderr.py                    4
    0.91  spike/plugins/wavelet.py              3     7 
@@ -107,8 +107,8 @@
 Overall aggregated note value is :  4.58/10
 
 score is 28 / 62 / 8  (top / med / low)
-Mean - Median note values are :  3.13/10 -  3.49/10
+Mean - Median note values are :  3.14/10 -  3.49/10
   Median is below 5.0 - let's try to improve it
-Total number of errors : 187 on a total of 98 files
+Total number of errors : 164 on a total of 98 files
 (but quite a few errors are just correct code not understood by pylint)
 -------------------------------------------------------
