@@ -411,7 +411,7 @@ class TimeAxis(Axis):
     time values should be given as a list of values 
     """
     
-    def __init__(self, size = 64, tabval=None, currentunit = "sec", scale='linear'):
+    def __init__(self, size = 32, tabval=None, currentunit = "sec", scale='linear'):
         """
         tabval is a list of time values, values should be in seconds
               can be set latter on directly or using TimeAxis.load_tabval()
@@ -420,9 +420,12 @@ class TimeAxis(Axis):
         """
         super(TimeAxis, self).__init__(size = size, itype = 0)
         self.Time = "Time"
-        self.tabval = np.array(tabval)
         self.fval = lambda x: 1.0  # empty function - will be interpolater
         self.fm1val = lambda x: 1.0  # empty function - will be invers of interpolater
+        if tabval:
+            self.tabval = np.array(tabval)
+        else:
+            self.tabval = np.arange(size)
         self.comp_interpolate()
         self.units["msec"] = Unit(name="millisec", converter=self.itoms, bconverter=self.mstoi, scale='linear')
         self.units["sec"] = Unit(name="second", converter=self.itos, bconverter=self.stoi, scale='linear')

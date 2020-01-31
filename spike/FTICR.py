@@ -216,14 +216,26 @@ class FTICRData(FTMS.FTMSData):
     def Bo(self):
         "estimate Bo from internal calibration"
         from numpy import pi
-        return self.axis1.calibA*2*pi/(electron*Avogadro)*1E-3
+        try:
+            cA = self.axis1.calibA
+        except AttributeError:   # happens in LC-MS
+            cA = self.axis2.calibA
+        return cA*2*pi/(electron*Avogadro)*1E-3
     def setBo(self, Bovalue):
         "set internal calibration from Bo using physical constants"
         from numpy import pi
-        self.axis1.calibA = Bovalue/(2*pi)*(electron*Avogadro)*1E3
+        try:
+            cA = self.axis1.calibA
+            self.axis1.calibA = Bovalue/(2*pi)*(electron*Avogadro)*1E3
+        except:
+            self.axis2.calibA = Bovalue/(2*pi)*(electron*Avogadro)*1E3
     def report(self):
         "returns a description string of the dataset"
-        return "FTICR data-set\nBo: %.2f\n%s"%(self.Bo,super(FTICRData, self).report())
+        try:
+            Bo = "%.2f"%self.Bo
+        except AttributeError:
+            Bo = "None"
+        return "FTICR data-set\nBo: %s\n%s"%(Bo,super(FTICRData, self).report())
 #-------------------------------------------------------------------------------
 class FTICR_Tests(unittest.TestCase):
     def setUp(self):
