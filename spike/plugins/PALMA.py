@@ -572,7 +572,7 @@ def prepare_palma(npkd, finalsize, Dmin, Dmax):
     targetaxis.dmax = Dmax
     T = targetaxis.itod( np.arange(N) )
     T = T.reshape((1,N))
-    K = np.exp(-np.kron(t, T))
+    K = np.exp(-1*np.kron(t, T))
     npkd.axis1.K = K
 
     #Stepsize parameter 

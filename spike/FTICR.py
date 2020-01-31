@@ -220,7 +220,7 @@ class FTICRData(FTMS.FTMSData):
     def setBo(self, Bovalue):
         "set internal calibration from Bo using physical constants"
         from numpy import pi
-        self.axis1.calibA = Bo/(2*pi)*(electron*Avogadro)*1E3
+        self.axis1.calibA = Bovalue/(2*pi)*(electron*Avogadro)*1E3
     def report(self):
         "returns a description string of the dataset"
         return "FTICR data-set\nBo: %.2f\n%s"%(self.Bo,super(FTICRData, self).report())
