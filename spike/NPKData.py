@@ -20,6 +20,8 @@ import math
 import re
 import time
 import warnings
+import inspect
+
 #from numba import jit,vectorize
 
 from . import version
@@ -411,11 +413,13 @@ class TimeAxis(Axis):
     time values should be given as a list of values 
     """
     
-    def __init__(self, size = 32, tabval=None, currentunit = "sec", scale='linear'):
+    def __init__(self, size = 32, tabval=None, importunit="sec", currentunit="sec", scale='linear'):
         """
         tabval is a list of time values, values should be in seconds
               can be set latter on directly or using TimeAxis.load_tabval()
-        currentunit is chosen in ('msec', sec', 'min', 'hours')
+        importunit is the unit in the tabval series
+        currentunit is for display
+        unit are chosen in ('msec', sec', 'min', 'hours')
         scale is either 'linear' or 'log'
         """
         super(TimeAxis, self).__init__(size = size, itype = 0)
@@ -426,6 +430,15 @@ class TimeAxis(Axis):
             self.tabval = np.array(tabval)
         else:
             self.tabval = np.arange(size)
+        if importunit != 'sec':
+            if importunit == 'msec':
+                self.tabval = self.mstos(self.tabval)
+            elif importunit == 'min':
+                self.tabval = self.mtos(self.tabval)
+            elif importunit == 'hours':
+                self.tabval = self.htos(self.tabval)
+            else:
+                raise ValueError
         self.comp_interpolate()
         self.units["msec"] = Unit(name="millisec", converter=self.itoms, bconverter=self.mstoi, scale='linear')
         self.units["sec"] = Unit(name="second", converter=self.itos, bconverter=self.stoi, scale='linear')
@@ -499,14 +512,26 @@ class TimeAxis(Axis):
         "hight level report"
         return "Time sampled axis of %d points,  from %f sec to %f sec "%  \
             (self.size, self.Tmin, self.Tmax)
-    def load_tabval(self, fname):
+    def load_tabval(self, fname, importunit="sec"):
         """
         load tabulated time values form a file - plain text, one entry per line
+
+        importunit is the unit in the tabval series
+        unit is chosen in ('msec', sec', 'min', 'hours')
         """
         from scipy.interpolate import interp1d
         with open(fname,'r') as F:
             self.tabval = np.array([float(l) for l in F.readlines() if not l.startswith('#')])
         self.comp_interpolate()
+        if importunit != 'sec':
+            if importunit == 'msec':
+                self.tabval = self.mstos(self.tabval)
+            elif importunit == 'min':
+                self.tabval = self.mtos(self.tabval)
+            elif importunit == 'hours':
+                self.tabval = self.htos(self.tabval)
+            else:
+                raise ValueError
         return self.tabval
     def comp_interpolate(self):
         "computes an interpolater if possible"
@@ -626,7 +651,6 @@ def NPKData_plugin(name, method, verbose=False):
     
     look at .plugins/__init__.py for details
     """
-    import inspect
     from . import plugins
     curframe = inspect.currentframe()
     calframe = inspect.getouterframes(curframe, 1)
@@ -644,15 +668,16 @@ def NPKData_plugin(name, method, verbose=False):
 
 def NPKData( *arg, **kw):
     "trick to insure compatibility for modified code"
-    import sys
     from . import NMR
     print('******************************************************************************',file=sys.stderr)   
     print('* Calling directly NPKData.NPKData() to create a new NMR dataset is obsolete *',file=sys.stderr)
-    print('* Please user NMR.NMRData() instead                                          *',file=sys.stderr)
+    print('* Please use NMR.NMRData() instead                                           *',file=sys.stderr)
     print('******************************************************************************',file=sys.stderr)
     # uncomment this line if you want to track in your code
     #raise Exception('NPK')
-    return NMR.NMRData(*arg, **kw)
+    curframe = inspect.currentframe()
+    calframe = inspect.getouterframes(curframe)[1]
+    print("in %s - %s line %s\n"%(calframe[1], calframe[3], calframe[2]),file=sys.stderr)
 
 class _NPKData(object):
     """
@@ -2585,7 +2610,6 @@ class _NPKData(object):
         """
         todo = self.test_axis(axis)
         it = self.axes(todo).itype
-        sw = self.axes(todo).specwidth
         size = self.axes(todo).size
         if it == 1: # means complex
             size = size//2

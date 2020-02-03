@@ -63,7 +63,7 @@ SIZEMIN = 1024
 # http://bytes.com/topic/python/answers/552476-why-cant-you-pickle-instancemethods
 #
 def _pickle_method(method):
-    func_name = method.im_func.__name__
+    func_name = method.__func__.__name__
     obj = method.im_self
     cls = method.im_class
     return _unpickle_method, (func_name, obj, cls)

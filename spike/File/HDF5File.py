@@ -43,8 +43,9 @@ __file_version__ 0.7 has the ability to update the axes
 __file_version__ 0.6 is first stabilized multiresolution version
 """
 # version is the library version number
-__version__ = "0.901"
+__version__ = "0.902"
 """
+v 0.902  0.901 correction was incomplete - now, all textual parameters, stored as bytes are converted to string
 v 0.901  when storing a string 'None' it will be read back as the python object None - no change on the file format
 v 0.9 porting from pytables v2 to v3.x / new list of attributes for FTMS axes / storage for files and objects / better compression
 v 0.8 axes are gathered in one table, it's a more HDF5 way to deal with informations
@@ -551,11 +552,15 @@ python -m spike.File.HDF5File update {0}
             # dico = {}
             # for j in range(len(values[i])):   # for each entry in the axis table load into "dico"
             #     dico[fields[j]] = values[i][j]
+            if (self.debug > 0): print('loading axis %d'%i)
             ax = FTICR.FTICRAxis()  # create empty axis
             for j in range(len(values[i])):    # for all entries in axis table
                 vv = values[i][j]                       # fetch value
+                if isinstance(vv, np.bytes_):
+                    vv = vv.decode()
                 if vv == 'None':  vv = None             # the string None codes for the object None !!!
                 setattr(ax, fields[j], vv)              # copy table entries into axis attribute
+                if (self.debug > 0): print('  %s : %s'%(fields[j], vv))
             if self.correct0p9_0p91:    # a file from 0.9 => inverse calibB if calibC is non-null
                 if not math.isclose(ax.calibC,0):
                     ax.calibB *= -1
