@@ -231,11 +231,29 @@ class FTICRData(FTMS.FTMSData):
             self.axis2.calibA = Bovalue/(2*pi)*(electron*Avogadro)*1E3
     def report(self):
         "returns a description string of the dataset"
+        self.check(warn=True)
         try:
             Bo = "%.2f"%self.Bo
         except AttributeError:
             Bo = "None"
-        return "FTICR data-set\nBo: %s\n%s"%(Bo,super(FTICRData, self).report())
+        s = "FTICR data-set\nBo: %s\n"%(Bo)
+        if self.dim == 1:
+            s += "Single Spectrum data-set\n"
+            s += self.axis1.report()
+        elif self.dim == 2:
+            if isinstance(self.axis1, FTICRAxis):
+                s += "2D FTICR-MS data-set\n"
+                s += "Axis F1: (parents) " + self.axis1.report()
+                s += "\nAxis F2: (fragments) " + self.axis2.report()
+            elif isinstance(self.axis1, NPKData.TimeAxis):
+                s += "LC-MS data-set\n"
+                s += self.axis1.report()
+                s += "\n"+self.axis2.report()
+            else:
+                s += "Unknown FTICR-MS data-set\n"
+                s += self.axis1.report()
+                s += "\n"+self.axis2.report()
+        return s
 #-------------------------------------------------------------------------------
 class FTICR_Tests(unittest.TestCase):
     def setUp(self):
