@@ -30,8 +30,38 @@ VersionInfo = ["0", "99", "15"]   # Major - Minor - Micro
 # Release Notes in md syntax !
 release_notes="""
 # SPIKE Relase Notes
-#### 0.99.15 - january 2020
-- central object model reorganized, to better adapt compound experiments (LC-NMR LC-MS ...)
+#### 0.99.15 - February 2020
+This release introduces a major modification in the organisation of the `NPKData` object -
+which is the central object on which everything is organized.
+
+*Previously* `NPKData.NPKData` was the standard class, which created NMR object, and other classes
+(such as `FTICR.FTICRData` or `Orbitrap.OrbiData`) inherited from this class and had to overloaded a few things. 
+`NPKData` held also all `Axis` definition, both generic and for NMR.
+
+*Now*,
+
+- `NPKData._NPKData` is a generic object - agnostic about the spectroscopy
+- `NPKData` holds also the definitions of generic Axes ( `Axis` but also `TimeAxis` and `LaplaceAxis`) 
+- `NMR.NMRData` is the new class for NMR data-sets, `NMR` also contains the definitions for all NMR related Axes.
+- `FTICR.FTICRData` and `Orbitrap.OrbiData` now inherit from the `_NPKData` class (through `FTMS`).
+
+In consequence, to create an NMR dataset from scratch, now do:
+```
+        NMR.NMRData(...)
+```
+where you were using `NPKData.NPKData` previously
+
+and do 
+```
+        NPKData._NPKData(...)
+```
+to create an empty dataset not associated to any spectroscopy
+
+*This should have been done long ago - but I'm so lazy...*
+
+**Other modifications**
+
+- This set-up allows to better adapt compound experiments (LC-NMR LC-MS ...)
 - jupytext extension was added to jupyter Notebooks
     - means that a python copy is maintained - only this copy is version controlled
 - still improvements in notebooks

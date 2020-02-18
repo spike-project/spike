@@ -474,13 +474,16 @@ def peakpick(npkd, threshold = None, zoom = None, autothresh=3.0, verbose=True):
     """
     performs a peak picking of the current experiment
     threshold is the level above which peaks are picked
-        None (default) means that autothresh*(noise level of dataset) will be used - using d.std() as proxy for noise-level
+        None (default) means that autothresh*(noise level of dataset) will be used - using d.robust_stats() as proxy for noise-level
     zoom defines the region on which detection is made
         zoom is in currentunit (same syntax as in display)
         None means the whole data
     """
     if threshold is None:
-        threshold = autothresh*np.std( npkd.get_buffer().real )
+        mu, sigma = npkd.robust_stats()
+        threshold = autothresh*sigma
+        if mu >0:
+            threshold += mu
     if npkd.dim == 1:
         listpkF1, listint = peaks1d(npkd, threshold=threshold, zoom=zoom)
                             #     Id, label, intens, pos
