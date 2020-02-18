@@ -1195,9 +1195,42 @@ class _NPKData(object):
     def zeroing(self, threshold):
         """
         Sets to zero points below threshold (in absolute value)
-        see also :  plus, minus
+        Can be used for compression
+        see also :  eroding, plus, minus
         """
         self.buffer[abs(self.buffer)<threshold] = 0.0
+        return self
+    #---------------------------------------------------------------------------
+    def eroding(self):
+        """
+        Sets to zeros values isolated between to zeros values
+        Can be used for further compression after zeroing
+        see also :  zeroing
+        """
+        b = self.get_buffer()
+        # do the eroding
+        b[1:-1] = np.where( np.logical_and(b[2:]==0 , b[:-2]==0),
+                            0.0,
+                            b[1:-1] )
+        #ends are special
+        if b[1] == 0: b[0] = 0
+        if b[-2] == 0: b[-1] = 0
+        self.set_buffer(b)
+        return self
+    def dilating(self):
+        """
+        Extends values neighbourg to zeros values
+        see also :  eroding
+        """
+        b = self.get_buffer()
+        # do the dilatation
+        b[1:-1] = np.where( np.logical_and(b[1:-1]==0 , b[:-2]+b[2:]!=0),
+                            0.5*(b[:-2]+b[2:]),
+                            b[1:-1] )
+        #ends are special
+        if b[0] == 0: b[0] = 0.5*b[1]
+        if b[-1] == 0: b[-1] = 0.5*b[-2]
+        self.set_buffer(b)
         return self
     #---------------------------------------------------------------------------
     def plus(self):
@@ -1438,7 +1471,7 @@ class _NPKData(object):
         return test
     def display(self, scale = 1.0, autoscalethresh=3.0, absmax = None, show = False, label = None, new_fig = True, axis = None,
                 zoom = None, xlabel="_def_", ylabel = "_def_", title = None, figure = None,
-                linewidth=1, color = None, mpldic={}, mode3D = False):
+                linewidth=1, color = None, mpldic={}, mode3D = False, NbMaxVect=None):
         """
         not so quick and dirty display using matplotlib or mlab - still a first try
         
@@ -1462,7 +1495,8 @@ class _NPKData(object):
         figure  if not None, will be used directly to display instead of using its own
         linewidth: linewidth for the plots (useful for example when using seaborn)
         mpldic: a dictionnary passed as is to the plot command 
-        
+        NbMaxVect: if set to a number, will limit the number of displayed vectors to that number by decimating the data (in 1D only so far)
+
         can actually be called without harm, even if no graphic is available, it will just do nothing.
         
         """
@@ -1496,6 +1530,9 @@ class _NPKData(object):
 #                if not fig.xaxis_inverted(): # not yet
 #                    fig.invert_xaxis()
                 fig.set_xlim(ax[z1], ax[z2])
+            if NbMaxVect is not None:
+                while abs(z2-z1+1)/step > NbMaxVect:     # if too many vectors to display !
+                    step += self.axis1.itype+1
             fig.plot(ax[z1:z2:step], self.buffer[z1:z2:step].clip(mmin,mmax), label=label, linewidth=linewidth, color=color, **mpldic)
             if xlabel == "_def_":
                 xlabel = self.axis1.currentunit
@@ -1866,21 +1903,9 @@ class _NPKData(object):
         center the data, so that the sum of points is zero (usefull for FIDs) 
 
         """
-        if self.dim == 1:
-            self -= self.mean()
-        elif self.dim == 2:
-            if zone is None:
-                ll = 0
-                lr = self.size2
-                ul = 1
-                ur = self.size1
-            else:
-                ll = int(zone[0][0])
-                lr = int(zone[0][1])
-                ul = int(zone[1][0])
-                ur = int(zone[1][1])
-            shift = self.buffer[ul:ur,ll:lr].mean()
-        return shift
+        self.check1D()
+        self -= self.mean()
+        return self
 
     #-----------------
     def std(self, zone=None):  # ((F1_limits),(F2_limits))
@@ -1910,6 +1935,16 @@ class _NPKData(object):
             noise = self.buffer[ll:lr:self.axis1.itype+1,ul:ur:self.axis2.itype+1].std()
         return noise
     #-----------------
+    def robust_stats(self, tresh=3.0, iterations=5):
+        """
+        returns (mean, std) for current dataset, while excluding most outliers
+        defined as larger than (tresh*std+mean)
+        """
+        b = self.copy().get_buffer().real.ravel()
+        for i in range(iterations):
+            b = b[ (b-b.mean()) < tresh*b.std() ]
+        return (b.mean(), b.std())
+
     #-----------------
     def test_axis(self, axis=0):
         """
