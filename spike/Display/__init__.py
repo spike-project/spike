@@ -3,7 +3,9 @@
 
 
 """
-Utilities
+Small Utilities
+
+The real display engine is in NPKData display()
 
 Created by Marc-André on 2011-03-20.
 Copyright (c) 2011 IGBMC. All rights reserved.

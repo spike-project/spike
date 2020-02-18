@@ -288,7 +288,7 @@ class CadzowTest(unittest.TestCase):
         from .. import NPKData
         import multiprocessing as mproc
         print(self.test2D.__doc__)
-        d1 = NPKData.NPKData(buffer=np.random.rand(500,200))  # create fake data
+        d1 = NPKData._NPKData(buffer=np.random.rand(500,200))  # create fake data
         d1.axis1.itype=1
         d2 = d1.copy()
         print("one processor")

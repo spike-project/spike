@@ -56,35 +56,35 @@ SIZEMIN = 1024
 #HIGHMASS = 100000   # kludge to use mztoi !
 
 
-#####################################################
-# This code allows to pickle methods, and thus to use multiprocessing on methods
-# This very nice trick comes from :
-# Steven Bethard
-# http://bytes.com/topic/python/answers/552476-why-cant-you-pickle-instancemethods
-#
-def _pickle_method(method):
-    func_name = method.__func__.__name__
-    obj = method.im_self
-    cls = method.im_class
-    return _unpickle_method, (func_name, obj, cls)
+# #####################################################
+# # This code allows to pickle methods, and thus to use multiprocessing on methods
+# # This very nice trick comes from :
+# # Steven Bethard
+# # http://bytes.com/topic/python/answers/552476-why-cant-you-pickle-instancemethods
+# #
+# def _pickle_method(method):
+#     func_name = method.__func__.__name__
+#     obj = method.__self__
+#     cls = method.__class__
+#     return _unpickle_method, (func_name, obj, cls)
 
-def _unpickle_method(func_name, obj, cls):
-    for cls in cls.mro():
-        try:
-            func = cls.__dict__[func_name]
-        except KeyError:
-            pass
-        else:
-            break
-    return func.__get__(obj, cls)
-try:
-    import copy_reg as copyreg
-except:
-    import copyreg
-import types
-copyreg.pickle(types.MethodType, _pickle_method, _unpickle_method)
-# end of the trick
-#####################################################
+# def _unpickle_method(func_name, obj, cls):
+#     for cls in cls.mro():
+#         try:
+#             func = cls.__dict__[func_name]
+#         except KeyError:
+#             pass
+#         else:
+#             break
+#     return func.__get__(obj, cls)
+# try:
+#     import copy_reg as copyreg
+# except:
+#     import copyreg
+# import types
+# copyreg.pickle(types.MethodType, _pickle_method, _unpickle_method)
+# # end of the trick
+# #####################################################
 
 
 def intelliround(x):
