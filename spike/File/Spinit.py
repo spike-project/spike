@@ -28,7 +28,8 @@ opj = os.path.join
 
 import numpy as np
 
-from ..NPKData import NPKData, NPKData_plugin
+from ..NPKData import _NPKData, NPKData_plugin
+from ..NMR import NMRData
 
 debug = False
 verbose = False   # change this for verbose importers
@@ -312,8 +313,8 @@ def ftF1_spinit(data, debug=0):
         data.revf(axis='F1')
         return data.ft_sh_tppi()
     elif mode == 'ECHO_ANTIECHO':
-        data.revf(axis='F1')
-        return data.ft_n_p()  
+        #data.revf(axis='F1')
+        return data.ft_n_p().reverse('F1')  
     if debug>0: print("no case encountered return a phase_modu processing")
     # cas par defaut: PHASE_MODULATION
     return data.ft_phase_modu().reverse(axis='F1')
@@ -323,7 +324,7 @@ NPKData_plugin('ftF1_spinit', ftF1_spinit)
 ################################################################
 def Import_1D(filename="data.dat"):
     """
-    Imports a 1D spinit fid as a NPKData
+    Imports a 1D spinit fid as a NMRData
     
     """
     if (not op.exists(filename)):
@@ -340,7 +341,7 @@ def Import_1D(filename="data.dat"):
     data = read_1D(size, filename)
     if verbose:
         print("After read_1D, size is : ", data.size)
-    d = NPKData(buffer=data)
+    d = NMRData(buffer=data)
 # then set parameters
     d.axis1.specwidth = float(acqu['SPECTRAL_WIDTH'])           # in Hz
     d.axis1.frequency = float(acqu['OBSERVED_FREQUENCY'])/1E6   # in MHz
@@ -359,7 +360,7 @@ def Import_1D(filename="data.dat"):
 def Import_2D(filename="data.dat"):
     """
 
-    Imports a 2D spinit fid as a NPKData
+    Imports a 2D spinit fid as a NMRData
     
     """
     if (not op.exists(filename)):
@@ -379,7 +380,7 @@ def Import_2D(filename="data.dat"):
         print("MATRIX_DIMENSION_4D != 1, ignoring")
         
     data = read_2D(size1, size2, filename)
-    d = NPKData(buffer=data, dim=2)
+    d = NMRData(buffer=data, dim=2)
     d.axis1.specwidth = float(acqu['SPECTRAL_WIDTH_2D'])               # in Hz
     try:
         d.axis1.frequency = float(acqu['OBSERVED_FREQUENCY_2D'])/1E6   # in MHz
@@ -415,7 +416,7 @@ def Import_2D(filename="data.dat"):
 ################################################################
 def Export_1D(d, filename="data.dat", template="header.xml", kind=None):
     """
-    export a 1D NPKData as a spinit
+    export a 1D NMRData as a spinit
     kind: 1DFID, 1DSPEC
     """
     if d.dim >1:
@@ -442,7 +443,7 @@ def Export_1D(d, filename="data.dat", template="header.xml", kind=None):
 ################################################################
 def Export_2D(d,  filename="data.dat", template="header.xml", kind=None, debug=0):
     """
-    export a 2D NPKData as a spinit
+    export a 2D NMRData as a spinit
     """
     array = d.get_buffer().flatten() + 0.0j
     if debug>0:
