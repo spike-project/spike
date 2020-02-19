@@ -884,7 +884,7 @@ class PeakTests(unittest.TestCase):
         M[5,7] = 20
         M[10,12] = 20
         d = _NPKData(buffer = M)
-        d.pp() #threshold = 10)  3*d.std is just right
+        d.pp(threshold = 10) # 3*d.std was just right - but does not work anymore with robust_stats() !
         self.assertEqual(list(d.peaks.posF1) , [ 5, 10])
         self.assertEqual(list(d.peaks.posF2) , [ 7, 12])
         self.assertEqual(list(d.peaks.intens) , [ 20.0, 20.0])
