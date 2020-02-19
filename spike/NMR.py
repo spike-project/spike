@@ -285,7 +285,7 @@ class NMRDataTests(unittest.TestCase):
         " - Testing load methods"
         from .Tests import filename
         name1D = filename("proj.gs1")
-        E = _NPKData(name=name1D)
+        E = NMRData(name=name1D)
         self.assertAlmostEqual(E[0], 1869.4309082)
         self.assertAlmostEqual(E.get_buffer().max(), 603306.75)
     def test_unitval(self):
