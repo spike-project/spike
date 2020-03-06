@@ -57,14 +57,18 @@ def hidecode(initial='show', message=True):
 <style>hr {height: 2px; border: 0;border-top: 1px solid #ccc;margin: 1em 0;padding: 0; }</style>
 <script>
 code_show=%s; 
-function code_toggle() { if (code_show){ $('div.input').hide(); } else { $('div.input').show(); } code_show = !code_show } 
-$( document ).ready(code_toggle);
+function code_toggle()
+    { if (code_show)
+        { $('div.input').hide(); $('#but').val("show python code");
+        } else { $('div.input').show(); $('#but').val("hide python code");
+    }
+    code_show = !code_show } 
+$(document).ready(code_toggle);
 </script>
 <form action="javascript:code_toggle()">
-<input type="submit" style="border:1px solid black; background-color:#DDD" value="hide/show the python code.">
+<input id="but" type="submit" style="border:1px solid black; background-color:#DDD">
 %s
 </form>'''%(init, msg)))
-
 def jsalert(msg):
     "send a javascript alert"
     display(Javascript("alert('%s')"%msg))
