@@ -1,6 +1,6 @@
 <!-- DO NOT MODIFY this file, it is generated automatically from dev_setup ! -->
 # SPIKE Relase Notes
-#### 0.99.15 - February 2020
+#### 0.99.15 - March 2020 
 This release introduces a major modification in the organisation of the `NPKData` object -
 which is the central object on which everything is organized.
 
@@ -30,17 +30,18 @@ to create an empty dataset not associated to any spectroscopy
 *This should have been done long ago - but I'm so lazy...*
 
 **Other modifications**
-
 - This set-up allows to better adapt compound experiments (LC-NMR LC-MS ...)
 - jupytext extension was added to jupyter Notebooks
     - means that a python copy is maintained - only this copy is version controlled
 - still improvements in notebooks
+- 
 - NMR: improvement in the SpinIt importer
 - FTICR: added a Bo attribute
 - added the NbMaxPeaks flag in Peak display
+- added the self.kind attribute in the Axis class - easier to use than self.NMR !
 - small bugs corrections
 - adding a complex value to a complex datasets was wrong in complex mode.
-- tests in python 2.7 are abandoned
+- tests in python 2.7 are abandoned - but very few python 3 features are really used...
 - REMARK, it was always mentionned that version 1.0 would be rolled out
   when interactive functions in notebooks would be really usefull.
   It will be the next big release probably !
