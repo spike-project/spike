@@ -40,6 +40,7 @@ class NMRAxis(Axis):
         self.P0 = 0.0      # phase parameters
         self.P1 = 0.0
         self.NMR = "NMR"
+        self.kind = "NMR"
         self.units["ppm"] = Unit(name="ppm", converter=self.itop, bconverter=self.ptoi, reverse=True)
         self.units["Hz"]= Unit(name="Hz", converter=self.itoh, bconverter=self.htoi, reverse=True)
         self.units["sec"]= Unit(name="Hz", converter=self.itos, bconverter=self.stoi)  # for FID

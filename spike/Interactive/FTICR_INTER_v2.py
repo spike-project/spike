@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 """
-A tool to display 2D FT-ICR data-sets
+A tool to display FT-ICR data-sets
 
 to be embedded in jupyter notebook
 

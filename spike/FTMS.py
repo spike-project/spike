@@ -48,7 +48,7 @@ class FTMSAxis(NPKData.Axis):
         super(FTMSAxis, self).__init__(size=size, itype=itype)
         self.specwidth = specwidth
         self.offsetfreq = offsetfreq
-
+        self.kind = "FTMS"
         self.calibA = calibA
         self.calibB = calibB
         self.calibC = calibC
