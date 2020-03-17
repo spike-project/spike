@@ -66,6 +66,7 @@ class FTICRAxis(FTMS.FTMSAxis):
             specwidth=specwidth, offsetfreq=offsetfreq, left_point=left_point, highmass=highmass,
             calibA=calibA, calibB=calibB, calibC=calibC)
         self.FTICR = "FTICR"
+        self.kind = "FTICR"
 
         self.lowfreq = lowfreq
         self.highfreq = highfreq

@@ -260,7 +260,8 @@ class Axis(object):
         self.currentunit = currentunit
         self.sampling = None        # index list of sampled points if instantiated
         self.sampling_info = {}
-        self.attributes = ["itype", "sampling"]    # storable attributes
+        self.kind = 'generic'    # tells which kind of axis
+        self.attributes = ["kind", "itype", "sampling"]    # storable attributes
     @property
     def borders(self):
         """the (min, max) available windows, used typically for display"""
@@ -424,6 +425,7 @@ class TimeAxis(Axis):
         """
         super(TimeAxis, self).__init__(size = size, itype = 0)
         self.Time = "Time"
+        self.kind = "Time"
         self.fval = lambda x: 1.0  # empty function - will be interpolater
         self.fm1val = lambda x: 1.0  # empty function - will be invers of interpolater
         if tabval:
@@ -556,6 +558,7 @@ class LaplaceAxis(Axis):
         self.dmax = dmax
         self.dfactor = dfactor
         self.Laplace = "Laplace"
+        self.kind = "Laplace"
         self.units["damping"] = Unit(name="damping", converter=self.itod, bconverter=self.dtoi, scale='log')
         self.units["Diff"] = self.units["damping"]
         for i in ("dmin", "dmax", "dfactor", "Laplace"):  # updates storable attributes

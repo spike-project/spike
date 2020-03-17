@@ -61,6 +61,7 @@ class OrbiAxis(FTMS.FTMSAxis):
             specwidth=specwidth, offsetfreq=offsetfreq, left_point=left_point, highmass=highmass,
             calibA=calibA, calibB=calibB, calibC=calibC)
         self.Orbitrap = "Orbitrap"
+        self.kind = "Orbitrap"
         self.calibA = calibA
         self.calibB = calibB
         self.calibC = calibC
