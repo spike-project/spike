@@ -307,8 +307,8 @@ class Axis(object):
         """
         if len(zoom) != 2:
             raise NPKError("slice should be defined as coordinate pair (left,right) in axis' current unit %s"%self.currentunit)
-        a = int( round( self.ctoi(zoom[0]) ) )
-        b = int( round( self.ctoi(zoom[1]) ) )
+        a = int( round( float( self.ctoi(zoom[0]) ) ) )
+        b = int( round( float( self.ctoi(zoom[1]) ) ) )
         if self.itype == 1:     # complex axis
             a = 2*(a//2)  # int( 2*round( (self.ctoi(zoom[0])-0.5)/2 ) )     # insure real (a%2==0)
             b = 2*(b//2)  # int( 2*round( (self.ctoi(zoom[1])-0.5)/2 ) )
@@ -1516,7 +1516,7 @@ class _NPKData(object):
             fig = figure
         self.mplfigure = fig
         if self.dim == 1:
-            if not absmax:  # _absmax is the largest point on spectrum, either given from call, or handled internally
+            if absmax is None:  # _absmax is the largest point on spectrum, either given from call, or handled internally
                 absmax = self.absmax
             mmin = -absmax/scale
             mmax = absmax/scale

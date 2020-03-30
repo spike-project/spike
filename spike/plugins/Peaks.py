@@ -739,6 +739,7 @@ def pk2pandas_ms(npkd, full=False):
     if npkd.dim == 1:
         width = np.array([pk.width for pk in npkd.peaks])   # width have to be computed in m/z
         width_array = 0.5*abs(npkd.axis1.itoc(npkd.peaks.pos+width) - npkd.axis1.itoc(npkd.peaks.pos-width))
+        width_array = np.where(width_array==0, np.NaN, width_array)
         if full:
             err = np.array([pk.pos_err for pk in npkd.peaks])
             pos_err_array = 0.5*abs(npkd.axis1.itoc(npkd.peaks.pos+err) - npkd.axis1.itoc(npkd.peaks.pos-err))
