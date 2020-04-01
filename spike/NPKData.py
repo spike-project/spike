@@ -428,7 +428,7 @@ class TimeAxis(Axis):
         self.kind = "Time"
         self.fval = lambda x: 1.0  # empty function - will be interpolater
         self.fm1val = lambda x: 1.0  # empty function - will be invers of interpolater
-        if tabval:
+        if tabval is not None:
             self.tabval = np.array(tabval)
         else:
             self.tabval = np.arange(size)
