@@ -541,9 +541,9 @@ class TimeAxis(Axis):
         if self.tabval is not None:
             is_sorted = (np.diff(self.tabval).all() >= 0.0)
             self.fval = interp1d(np.arange(len(self.tabval)), self.tabval,
-                kind='quadratic', assume_sorted=is_sorted)
+                kind='quadratic', assume_sorted=is_sorted, fill_value="extrapolate")
             self.fm1val = interp1d(self.tabval, np.arange(len(self.tabval)), 
-                kind='quadratic', assume_sorted=is_sorted)
+                kind='quadratic', assume_sorted=is_sorted, fill_value="extrapolate")
         return self.fval
 ########################################################################
 class LaplaceAxis(Axis):
