@@ -18,6 +18,7 @@ _rev_re = re.compile(r"revision\s+=\s+'(.*)'")
 with open('spike/version.py', 'rb') as f:
     F = f.read()
     version = str(_version_re.search(F.decode('utf-8')).group(1))
+print("version :",version)
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -49,11 +50,11 @@ setuptools.setup(
 # cd spike; python dev_setup.py
 # doc/script_doc.sh
 # python3 setup.py sdist
-# rsync -av spikedoc/* /Volumes/web/CASC4DE/softwares/spike/spikedoc    
-# twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+# rsync -av spikedoc/* /media/web/CASC4DE/softwares/spike/spikedoc    
+# twine upload -U --repository-url https://test.pypi.org/legacy/ dist/*
 # conda create -n test999 numpy scipy matplotlib pytables pandas
 # conda activate test999
+# conda install ipympl
 # pip install --extra-index-url https://testpypi.python.org/pypi spike-py
-# python -m spike.Tests -D NPKV2/DATA_test
-#
+# python -m spike.Tests -D /DATA/DATA_test
 # twine upload  dist/*

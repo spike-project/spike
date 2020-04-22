@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 # encoding: utf-8
 
@@ -12,7 +13,7 @@ Created by MAD on 03-2019.
 Copyright (c) 2019 IGBMC. All rights reserved.
 """
 
-from ..File import Apex, Solarix
+from . import Apex0, Apex, Solarix
 
 
 #-----------------------------------------
@@ -25,7 +26,16 @@ def Import_1D(*arg, **kword):
     try:
         return Solarix.Import_1D(*arg, **kword)
     except:
+        pass
+    try:
         return Apex.Import_1D(*arg, **kword)
+    except:
+        pass
+    try:
+        return Apex0.Import_1D(*arg, **kword)
+    except:
+        pass
+    Exception("Import failed, Could not determine data type")
 #-----------------------------------------
 def Import_2D(*arg, **kword):
     """

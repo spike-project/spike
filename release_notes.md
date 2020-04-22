@@ -1,5 +1,10 @@
 <!-- DO NOT MODIFY this file, it is generated automatically from dev_setup ! -->
 # SPIKE Relase Notes
+#### 0.99.16 - April 2020 
+- FTICR a new Apex0 bruker importer - to access old datasets, with the "NMR" setup (acqus pdata ...)
+- FTICR a global BrukerMS importer - Import1D - Import2D
+- a few corrected bugs
+
 #### 0.99.15 - March 2020 
 This release introduces a major modification in the organisation of the `NPKData` object -
 which is the central object on which everything is organized.
