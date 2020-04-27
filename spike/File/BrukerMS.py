@@ -35,7 +35,7 @@ def Import_1D(*arg, **kword):
         return Apex0.Import_1D(*arg, **kword)
     except:
         pass
-    Exception("Import failed, Could not determine data type")
+    raise Exception("Import failed, Could not determine data type")
 #-----------------------------------------
 def Import_2D(*arg, **kword):
     """
