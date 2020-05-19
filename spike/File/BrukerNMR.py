@@ -83,7 +83,7 @@ def find_proc_down(dire, proclist):
         if op.isdir(pdata):
             for f in proclist:
                 fname = op.join(pdata,f)
-                print('SEARCH',fname)
+                if debug: print('SEARCH',fname)
                 if op.exists(fname):
                     if debug: print('FOUND',f)
                     break
