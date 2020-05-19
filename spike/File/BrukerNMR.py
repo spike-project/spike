@@ -80,13 +80,14 @@ def find_proc_down(dire, proclist):
     search in pdada/PROCNO and returns the first one
     """
     for pdata in glob.glob( op.join(dire,"pdata","*") ):
-        for f in proclist:
-            fname = op.join(pdata,f)
-            if debug: print('SEARCH',fname)
-            if op.exists(fname):
-                if debug: print('FOUND',f)
-                break
-        break
+        if op.isdir(pdata):
+            for f in proclist:
+                fname = op.join(pdata,f)
+                print('SEARCH',fname)
+                if op.exists(fname):
+                    if debug: print('FOUND',f)
+                    break
+            break
     else:
         raise Exception("No proc file found in "+dire)
     return(fname)
