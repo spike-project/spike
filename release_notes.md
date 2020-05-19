@@ -1,5 +1,11 @@
 <!-- DO NOT MODIFY this file, it is generated automatically from dev_setup ! -->
 # SPIKE Relase Notes
+#### 0.99.18 - May 2020 
+- corrected a bug in BrukerNMR importer...
+
+#### 0.99.17 - April 2020 
+- corrected a bug in BrukerMS importer...
+
 #### 0.99.16 - April 2020 
 - FTICR a new Apex0 bruker importer - to access old datasets, with the "NMR" setup (acqus pdata ...)
 - FTICR a global BrukerMS importer - Import1D - Import2D
