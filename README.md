@@ -2,7 +2,7 @@
 
 **SPIKE** a collaborative development for a FT-spectroscopy processing program.
 
-*This is the version 0.99.15 - January 2020*
+*This is the version 0.99.19 - June 2020*
 
 **SPIKE** is a program that allows the processing, the display and the analysis of data-sets obtained from various Fourier-Transform spectroscopies. The name stands for **S**pectrometry **P**rocessing **I**nnovative **KE**rnel.
 
