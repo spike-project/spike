@@ -1476,7 +1476,7 @@ class _NPKData(object):
                 zoom = None, xlabel="_def_", ylabel = "_def_", title = None, figure = None,
                 linewidth=1, color = None, mpldic={}, mode3D = False, NbMaxVect=None):
         """
-        not so quick and dirty display using matplotlib or mlab - still a first try
+        not so quick and dirty display using matplotlib 
         
         scale   allows to increase the vertical scale of display,
                 in 2D if "auto" will compute a scale so the first level is located at at autoscalethresh sigma
@@ -1492,10 +1492,11 @@ class _NPKData(object):
                 in 2D, should be a pair (xaxis,yaxis)
         new_fig will create a new window if set to True (default) (active only is figure==None)
                 if new_fig is a dict, it will be passed as is to plt.figure()
+        figure  if not None, will be used directly to display instead of using its own
+                figure is actually a "matplotlib.axes" object, not a "matplotlib.figure"
         mode3D  obsolete
         zoom    is a tuple defining the zoom window (left,right) or   ((F1_limits),(F2_limits))
                 defined in the current axis unit (points, ppm, m/z etc ....)
-        figure  if not None, will be used directly to display instead of using its own
         linewidth: linewidth for the plots (useful for example when using seaborn)
         mpldic: a dictionnary passed as is to the plot command 
         NbMaxVect: if set to a number, will limit the number of displayed vectors to that number by decimating the data (in 1D only so far)
@@ -1511,7 +1512,7 @@ class _NPKData(object):
                     plot.figure(**new_fig)
                 else:
                     plot.figure()
-            fig = plot.subplot(111)
+            fig = plot.gca()
         else:
             fig = figure
         self.mplfigure = fig
