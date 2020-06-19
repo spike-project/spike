@@ -4,7 +4,7 @@
 ProgramName = 'SPIKE'
 VersionName = 'Development version'
 version = '0.99.19'
-revision = '476'
+revision = '478'
 rev_date = '19-06-2020'
 
 def report():
