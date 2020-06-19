@@ -11,8 +11,10 @@ Copyright (c) 2011 IGBMC. All rights reserved.
 __all__ = [
     'BrukerNMR',
     'BrukerSMX',
+    'GifaFile',
     'Spinit',
     'Apex',
+    'Apex0',
     'Solarix',
     'Thermo',
     'mzXML',

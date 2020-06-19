@@ -14,7 +14,7 @@ from codecs import decode
 
 ProgramName = "SPIKE"
 VersionName = "Development version"
-VersionInfo = ["0", "99", "18"]   # Major - Minor - Micro
+VersionInfo = ["0", "99", "19"]   # Major - Minor - Micro
 
 # 1.0 will probably be when interactive Notebooks are really usefull !
 # And NMR.py validated
@@ -30,7 +30,7 @@ VersionInfo = ["0", "99", "18"]   # Major - Minor - Micro
 # Release Notes in md syntax !
 release_notes="""
 # SPIKE Relase Notes
-#### 0.99.18 - May 2020 
+#### 0.99.19 - May 2020 
 - corrected a bug in BrukerNMR importer...
 
 #### 0.99.17 - April 2020 
@@ -386,13 +386,11 @@ correction of Gifa file bug, bug in Apex for narrow band data-sets, changes in m
 
 # Version control used - only one should be true
 UsingSVN = False # subversion
-UsingHG = True # mercurial
-# projet moved from svn to hg - git not defined yet
-if UsingSVN and UsingHG:
-    raise Exception("Please define only one flag UsingHG or UsingHG !")
+UsingHG = False # mercurial
+UsingGIT = True # git / github
 
 ####################### End of configuration ###################
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, check_output
 
 import re
 from datetime import date
@@ -413,6 +411,9 @@ def generate_version():
     elif UsingHG:
         hg = Popen(["hg", "summary"], stdout=PIPE).communicate()[0]
         revision = re.search(r'^parent: ([\d]*):', decode(hg), re.MULTILINE).group(1)
+    elif UsingGIT:
+        git = check_output("git log |grep ^commit|wc", shell=True)
+        revision = git.decode().split()[0]
     else:
         revision = "Undefined"
     # date   dd-mm-yyyy
@@ -500,13 +501,14 @@ def do(arg):
 
 def plier():
     "fabrique le zip"
-    name = "SPIKE_beta_" + ( "_".join(VersionInfo) )
+    name = "SPIKE" + ( "_".join(VersionInfo) )
     dirn = "../"+name
     zipn = dir+".zip"
     do( ["rm", "-r", dirn] )
     do( ["rm", zipn] )
     do( ["mkdir", dirn] )
-    do( ["hg", "clone", ".", dirn] )
+    if UsingHG:
+      do( ["hg", "clone", ".", dirn] )
     do( ["zip", "-r", zipn, dirn] )
     
     

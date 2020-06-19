@@ -1,6 +1,6 @@
 <!-- DO NOT MODIFY this file, it is generated automatically from dev_setup ! -->
 # SPIKE Relase Notes
-#### 0.99.18 - May 2020 
+#### 0.99.19 - May 2020 
 - corrected a bug in BrukerNMR importer...
 
 #### 0.99.17 - April 2020 
