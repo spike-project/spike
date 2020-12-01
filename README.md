@@ -1,5 +1,9 @@
 # What is SPIKE ? #
 
+# ❗ *WARNING* ❗
+## *There is a bug with 2D-MS experiment in this 0.99.19 version*
+## *Please do not use this version for 2D-FTMS, use 0.99.18  - we're working on it*
+
 **SPIKE** a collaborative development for a FT-spectroscopy processing program.
 
 *This is the version 0.99.19 - June 2020*
