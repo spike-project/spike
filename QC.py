@@ -30,7 +30,48 @@ def msg(string, sep='='):
     print('|', string, '|')
     print(sep*(len(string)+4))
 
-def tracked_files(excluded=('none',)):
+def tracked_files(versioning='git', excluded=['none',]):
+    """return list of hg tracked files in folder as a tuple : (all,modified) 
+    excluded is a list of patterns (unix style) which are excluded
+    """
+    if versioning == 'git':
+        return tracked_files_git(excluded=excluded)
+    elif versioning == 'hg':
+        return tracked_files_hg(excluded=excluded)
+    else:
+        raise Exception(versioning, ' unsupported versioning system')
+
+def tracked_files_git(excluded=['none',]):
+    """return list of git tracked files in folder as a tuple : (all,modified) 
+    excluded is a list of patterns (unix style) which are excluded
+    """
+    import fnmatch
+    gitall = Popen(["git", "ls-files"], stdout=PIPE).communicate()[0]
+    lines = [decode(l) for l in gitall.split(b"\n")]
+    git = []
+
+    for line in lines:
+        print(line)
+        cont = False
+        if len (line) < 1:      # exit on conditions
+            continue
+        for pat in excluded:
+            if fnmatch.fnmatch(line, pat): # find pattern
+                print("excluding", line)
+                cont = True
+        if cont:
+            continue
+        git.append(line)
+
+    gitmodif = Popen(["git", "ls-files", "-m"], stdout=PIPE).communicate()[0]
+    if gitmodif != b'':
+        modif = [decode(l) for l in gitmodif.split(b"\n")]
+    else:
+        modif = []
+    print(gitmodif, modif)
+    return (git, modif)
+
+def tracked_files_hg(excluded=['none',]):
     """return list of hg tracked files in folder as a tuple : (all,modified) 
     excluded is a list of patterns (unix style) which are excluded
     """
@@ -235,14 +276,14 @@ def message():
         print(a, end=' ')
     print("filename.py")
     
-def main(excluded = ['.hgignore'], files = 'hg'):
+def main(excluded = ['.hgignore', '.gitignore'], files = 'hg'):
     """does the work
     excluded is a list of excluded file pattern
-    files is the list of files to analyse, if files == 'hg' (defaullt) then files are taken from a mercurial repository.
+    files is the list of files to analyse, if files == 'hg' (default) or 'git' then files are taken from a mercurial or git repository.
     """
     #collect
-    if files == 'hg':
-        (hg, modif) = tracked_files(excluded=excluded)
+    if files in ('hg', 'git'):
+        (hg, modif) = tracked_files(excluded=excluded, versioning=files)
     else:
         modif = []
         hg = files
@@ -261,7 +302,8 @@ def main(excluded = ['.hgignore'], files = 'hg'):
     message()
 
 if __name__ == '__main__':
-    sys.exit(main(excluded=('doc/*', 'spike/v1/*', 'spike/util/dynsubplot.py', 'spike/Miscellaneous/*', 'SPIKE_usage_eg/previous-to-clean/*')))
+    print('We are here',os.path.realpath(  os.curdir) )
+    sys.exit(main(files='git', excluded=['Notebooks/*', 'doc/*', 'spike/v1/*', 'spike/util/dynsubplot.py', 'spike/Miscellaneous/*', 'SPIKE_usage_eg/previous-to-clean/*']))
     # excluding dynsubplot.py because the add_class method is just too confusing to pylint
 #    sys.exit( main( files=glob.glob('*.py')+glob.glob('*/*.py') ) )
 
