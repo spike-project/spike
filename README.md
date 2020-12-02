@@ -7,11 +7,15 @@
 
 **SPIKE** a collaborative development for a FT-spectroscopy processing program.
 
-*This is the version 0.99.19 - June 2020*
+*This is the version 0.99.20 - Nov 2020*
+
+### WARNING - version 0.99.14 to 0.99.19 should be avoided for FTICR handling because of hidden bug.
 
 **SPIKE** is a program that allows the processing, the display and the analysis of data-sets obtained from various Fourier-Transform spectroscopies. The name stands for **S**pectrometry **P**rocessing **I**nnovative **KE**rnel.
 
-It allows the processing of **1D** and **2D** FT spectroscopies, implementing Real, Complex and HyperComplex n-dimensionnal Fourier Transform, as well as many other functionalities.
+It allows the processing of **1D** and **2D** FT spectroscopies, mostly NMR and FTICR-MS, but also Orbitrap, and other to come.
+
+It implements Real, Complex and HyperComplex n-dimensionnal Fourier Transform, as well as many other functionalities.
 
 It is written in python (tested in python 3.7 and in python 2.7 up to version 0.99.10) and can be used as a set of tools, using for instance `jupyter notebook` as an interactive front-end.
 

@@ -214,9 +214,9 @@ class FTMSData(NPKData._NPKData):
             for i in range(self.dim):
                 axis = self.axes(i+1)
                 setattr(self, "axis%d"%(i+1), FTMSAxis(size=axis.size, itype=axis.itype) )
-        self.axis1 = FTMSAxis()    # this creates an FTMSAxis so that pylint does not complain - will be overwritten
-        if dim == 2:
-            self.axis2 = FTMSAxis()
+        # self.axis1 = FTMSAxis()    # this creates an FTMSAxis so that pylint does not complain - will be overwritten
+        # if dim == 2:
+        #     self.axis2 = FTMSAxis()
         self.adapt_size()
         if debug>1: print(self.report())
     #------------------------------------------------

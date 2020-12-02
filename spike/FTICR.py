@@ -207,9 +207,9 @@ class FTICRData(FTMS.FTMSData):
             for i in range(self.dim):
                 axis = self.axes(i+1)
                 setattr(self, "axis%d"%(i+1), FTICRAxis(size=axis.size, specwidth=axis.specwidth, itype=axis.itype) )
-        self.axis1 = FTICRAxis()    # this creates an FTMSAxis so that pylint does not complain - will be overwritten
-        if dim == 2:
-            self.axis2 = FTICRAxis()
+        # self.axis1 = FTICRAxis()    # this creates an FTMSAxis so that pylint does not complain - will be overwritten
+        # if dim == 2:
+        #     self.axis2 = FTICRAxis()
         self.adapt_size()
         if debug>1: print(self.report())
 
