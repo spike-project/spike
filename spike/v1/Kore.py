@@ -10,7 +10,7 @@ Created by Marie-Aude Coutouly on 2010-03-26.
 from __future__ import print_function
 
 import numpy as np
-from .. import NPKData as npkd
+from ..NMR import NMRData as NPKData
 from ..File import GifaFile as gf
 import array
 import sys
@@ -21,13 +21,13 @@ class Kore(object):
     def __init__(self, debug=0):
         
         self.debug = debug
-        self._column = npkd.NPKData(dim = 1)
-        self._plane2d = npkd.NPKData(dim = 2)
-        self._image = npkd.NPKData(dim = 3)
-        self._datab = npkd.NPKData(dim = 1)
-        self._window = npkd.NPKData(dim = 1)
-        self._filter = npkd.NPKData(dim = 1)
-        self._tab = npkd.NPKData(dim = 1)
+        self._column = NPKData(dim = 1)
+        self._plane2d = NPKData(dim = 2)
+        self._image = NPKData(dim = 3)
+        self._datab = NPKData(dim = 1)
+        self._window = NPKData(dim = 1)
+        self._filter = NPKData(dim = 1)
+        self._tab = NPKData(dim = 1)
         self._last_row = 0
         self._last_plane = 0
         self._last_col = 0
@@ -1393,4 +1393,5 @@ global kore
 kore = Kore()
 compatibility(globals())
 
+kore.report()
     

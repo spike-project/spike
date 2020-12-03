@@ -2,7 +2,7 @@
 # the file contains 2 sections : import and processing
 #
 # entries are case insensitive (except for file names !).
-# see python ConfigParser documentation for a full description of capabilities
+# see NPKConfigParser documentation for a full description of capabilities
 
 [import]
 # the Apex directory which contains the 2D file to be read
@@ -11,57 +11,130 @@ apex = ../DATA_test/ubiquitine_2D_000002.d
 
 # parameters  NOT FULLY IMPLEMENTED YET
 # only F1specwidth is implemented - and required !
-# the following parameters are optionnal,
+# the following parameters are optional,
 # they will overwrite the values found in the Apex/Solarix file descriptor if present
 # F1_specwidth & F2_specwidth are the sampling frequencies along F1 (vertical) and F2 (horizontal) axes
 F1_specwidth = 500000
-## F2_specwidth = 1666666
-# highmass is the cutoff frequency of the excitation pulse
+# highmass is the cutoff frequency of the P1-P2 excitation pulses
 highmass = 2600
 
+# format can be either Solarix or Apex depending on the version of the spectrometer
 format = Solarix
 
 [processing]
 # the hdf5 file which will be processed - usually coming from apex above
 # input, will be untouched
 infile = ../DATA_test/ubiquitine_2D_000002_in.msh5
-#infile = /Users/chiron/FTICR_data/TGplasmahumainNT_2D_000001_interm.msh5
 
 # the file which will be created
 # output - will be created
 outfile =  ../DATA_test/ubiquitine_2D_urqrd_000002_mr.msh5
-#outfile =  /Users/chiron/FTICR_data/TGplasmahumainNT_2D_000001_mr.msh5
+
+# outfile file is internally compressed by removing the weakest value lost in the noise
+compress_outfile = True
+
+# compress_level is the ratio of noise level that will be discarded, up to 3.0 (3 x sigma) it should be ok.
+# the highest compress_level, the better the compression, but expect some distortions and missing small peaks
+compress_level = 3.0
 
 # the process creates an intermediate file.
 # If interfile is given, it will be created and used - and it will remain after processing
 # interfile = /DATA/FT-ICR/bradykinine/bradikynine_2D_inter.msh5
 # interfile is not defined, the intermediate file will be temporary created in directory tempdir
-# be carful, the intermediate file cann be big - usually twice the final file
+# be careful, the intermediate file can be big - usually x2 to x4 the input file (which is x2 the 'ser' file)
 # directory for temporary files
 tempdir = ../DATA_test/tmp
 
-### sizemultipliers F1 F2
-sizemultipliers = 1 1
+# sizemultipliers tells the program the size of the final 2D, as multiples of the initial (acquisition) sizes
+sizemultipliers = 1.0 1.0
 
 # the following parameters determine the processing that will be performed
 # these can be True of False
 
+
 # do_F2 : if false, processing along F2 (horizontal) is not performed
 do_F2 = True
+
 # do_F1 : if false, processing along F1 (vertical) is not performed
 do_F1 = True
-# do_f1demodu : if True, the F1 offset correction will be applied
-do_f1demodu = True
-# do_urqrd : if True, the urqrd denoising is applied.
-do_urqrd = False
-# rank used for urqrd
-urqrd_rank = 25
-
 
 # do_f1demodu : if True, the F1 offset correction will be applied
 do_f1demodu = True
+
+# if freq_f1demodu is defined, it will be used by do_f1demodu
+# should be set to the last freq value of the excitation pulse
+# if not set, Exci_high or  highmass is used (thus assuming a lowmass to highmass pulse)
+# freq_f1demodu = 123456.789 
+
 # do_modulus : if True, a modulus will be applied at the end of the processing
 do_modulus = True
 # do_rem_ridge : if True, vertical ridges will be applied
 do_rem_ridge = True
 
+
+# a noise removal algorithm can be used during processing to remove the scintillation noise 
+# two algorithms are available in the program: SANE and URQRD.
+# both are applied on each column of the 2D before Fourier transform,
+# they require a rank parameter which is an estimate of the mean number of lines present in each column
+# not very stringent, if unkown, choose a small value (10) for rather "empty" 2D,
+# and a large one (50-200) for a "full" one. experiment !
+# both can be iterated, which will improve the quality, in particular in very noisy situations.
+# for both algo, processing time is proportional to rank x iteration x size in F1
+
+# URQRD is the original algorithm,
+#   Efficient denoising algorithms for large experimental datasets and their applications in Fourier transform ion cyclotron resonance mass spectrometry
+#   L. Chiron, M. A. van Agthoven, B. Kieffer, C. Rolando, and M-A. Delsuc
+#   PNAS (2014) 111 (4) 1385-1390. doi: 10.1073/pnas.1306700111 
+# do_urqrd : if True, the urqrd denoising is applied in F1
+do_urqrd = False
+# rank used for urqrd - twice the number of lines expected in each colum is supposed to be an optimal
+urqrd_rank = 30
+# urqrd iterations  
+urqrd_iterations = 1
+
+# SANE is an improved algorithm, 
+#   Nonuniform Sampling Acquisition of Two-Dimensional Fourier Transform Ion Cyclotron Resonance Mass Spectrometry for Increased Mass Resolution of Tandem Mass Spectrometry Precursor Ions
+#   F. Bray, J. Bouclon, L. Chiron, M. Witt, M-A. Delsuc, and C. Rolando
+#   Anal. Chem. (2017), 89, 17, 8589–8593 doi: 10.1021/acs.analchem.7b01850
+# SANE is more efficient in extracting small peaks from the noise, and has a better peak height fidelity.
+# produces nicer experiment, but slower than URQRD however it requires a smaller rank 
+# do_sane : if True, the SANE denoising is applied in F1
+do_sane = False
+# rank used for SANE ~ the number of lines expected in each colum
+sane_rank = 15
+# a few SANE iterations may improve, to the price of additional times
+sane_iterations = 2
+
+# For Non Uniform Sampled (NUS) experiments, additionall parameters are required
+
+# samplingfile is the the list, one entry per line, of the indices of the measured experiments
+# generally generated with the random_sampling.py generator
+samplingfile = None
+
+# the optimal reconstruction algorithm is currently PG_SANE, based SANE (see above, same ref)
+# do_pgsane should be True for NUS experiments to be processed
+do_pgsane = False
+
+# PG_SANE combines 2 approaches: SANE (see above) and PG
+# rank used for SANE ~ the number of lines expected in each colum
+pgsane_rank = 10
+# PG needs a threshold to reject artefacts below threshold x noise; the lower the more inclusive
+pgsane_threshold = 2.0
+# PG_SANE iterations are required to obtain convergence, usually the more the better (and the slower)
+pgsane_iterations = 10
+
+# The program is fully parallel and can use two different systems to go multi-processor
+# - MPI
+#     - MPI is preferable, but needs to be installed on the machine
+#     - it is chosen when launching the program with a special command:
+#     eg:  mpiexec -np 16 python processing.py
+
+# - multiprocessing
+#     - multiprocessing is chosen from the configuration file:
+#     - to use the multiprocessing mode, mp is set to True 
+mp = False
+
+#     - nproc is the number of process on which the computation is done ( +1 for control)
+# when using multiprocessing - it is not used when using mPI
+# so the optimum is nproc+1 = nb of core on the machine.
+nproc = 7

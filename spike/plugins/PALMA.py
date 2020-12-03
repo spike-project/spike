@@ -21,6 +21,7 @@ import sys
 import os.path as op
 import unittest
 import re
+import six
 
 import numpy as np
 import scipy
@@ -486,12 +487,7 @@ def do_palma(npkd, miniSNR=32, mppool=None, nbiter=1000, lamda=0.1, uncertainty=
     import multiprocessing as mp
     from spike.util import progressbar as pg
     from spike.util import widgets
-    import sys #
-    if sys.version_info[0] < 3:
-        import itertools
-        imap = itertools.imap
-    else:
-        imap = map
+    from six.moves import map as imap
 
     # local functions
     def palmaiter(npkd):

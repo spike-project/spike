@@ -7,19 +7,20 @@ Copyright (c) 2010 IGBMC. All rights reserved.
 
 Cadzow in MPI mode
 complete rewrite from the code from Cyrille Bonamy for the MPI part
+The original code used in the publication () is in the attic.
 
-code compatible avec la version 0.4.0 de NPK
+code compatible with  NPK version 0.4.0 
 
 Thresholding to make Cadzow on the main relevant columns.
 
 note that the cadzow algo is multithreaded if running over the MKL library.
 So if MKL is installed, run only on instance per node, as all cores from the node will be solicited.
 """
-from __future__ import print_function
+from __future__ import print_function, division 
 import sys
 import numpy as np
-import util.mpiutil as mpiutil
-import util.progressbar as pg
+from spike.util import mpiutil as mpiutil
+from spike.util import progressbar as pg
 import tables
 import time
 
