@@ -729,7 +729,6 @@ class Test(unittest.TestCase):
                         #   [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]
     def test_zf(self):
         "testing zerofilling computation"
-        print(self.test_zf.__doc__)
         d = FTICRData(dim = 2)
         d.axis1.size = 1024
         d.axis2.size = 10*1024-10    # 10240 - 10 = 10230
@@ -743,15 +742,20 @@ class Test(unittest.TestCase):
         "apply a complete processing test"
         # test is run from above spike
         from .Tests import directory    # tells where DATAsets for tests are located
-        # if directory() != '__DATA_test__':
-        #     if not os.path.exists('__DATA_test__'):
-        #         print('creating DATA_test symlink')
-        #         os.symlink(directory(),'__DATA_test__')
-        # main(["prgm", os.path.join(directory(),"test.mscf")])
-        # os.unlink('__DATA_test__')
         os.chdir(directory())
-        print(os.path.realpath(os.curdir))
+        # process
         main(["prgm", "test.mscf"])
+        # and check results
+        print('\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n')
+        fn = "ubiquitine_2D_000002.msh5"
+        d= FTICRData(name=fn, mode='onfile')
+        self.assertAlmostEqual(d.Bo, 9.4, places=2)
+        self.assertAlmostEqual( d.axis1.specwidth*d.axis1.lowmass/1E6, d.axis2.specwidth*d.axis2.lowmass/1E6, places=0)
+        fn = "ubiquitine_2D_000002_mr.msh5"
+        d= FTICRData(name=fn, mode='onfile')
+        self.assertAlmostEqual(d.Bo, 9.4, places=2)
+        print(d)
+
 
 ########################################################################################
 def Report_Table_Param():
