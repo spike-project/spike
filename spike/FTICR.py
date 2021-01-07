@@ -200,7 +200,7 @@ class FTICRData(FTMS.FTMSData):
                 self.name = name
                 self.hdf5file = H
             else:
-                raise Exception("Filename should have a .msh5 extension")
+                raise FileNotFoundError("Filename should have a .msh5 extension")
         else:
             if debug>0: print("calling super")
             super(FTICRData, self).__init__(dim=dim, shape=shape, buffer=buffer, name=name, debug=debug)

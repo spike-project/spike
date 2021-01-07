@@ -14,7 +14,7 @@ from codecs import decode
 
 ProgramName = "SPIKE"
 VersionName = "Development version"
-VersionInfo = ["0", "99", "20"]   # Major - Minor - Micro
+VersionInfo = ["0", "99", "21"]   # Major - Minor - Micro
 
 # 1.0 will probably be when interactive Notebooks are really usefull !
 # And NMR.py validated
@@ -30,6 +30,10 @@ VersionInfo = ["0", "99", "20"]   # Major - Minor - Micro
 # Release Notes in md syntax !
 release_notes="""
 # SPIKE Relase Notes
+#### 0.99.21 - Dec 2020
+- method .diagonal() for computing the diagonal of 2D FTICR spectra 
+- small corrections when opening files
+
 #### 0.99.20 - Nov 2020
 - corrected a bad bug which corrupted F1 calibration when loading a 2D-FTICRMS experiment
     this bug was introduced in the 0.99.14 release but was not detected at that time
