@@ -155,7 +155,7 @@ def Dosy3D(audit,p_in_arg,f_in,f_out,inputfilename,outputfilename):
         try:
             com_read( inputfilename )
         except:
-            raise "Error while reading file ",inputfilename
+            raise "Error while reading file "+inputfilename
         if ( get_dim() != 3 ):
             raise "This is not a 3D dataset"
     (si1,si2,si3)=(get_si1_3d(),get_si2_3d(),get_si3_3d())
@@ -265,8 +265,8 @@ it implements data massaging before ILT:
         itype(get_itype_2d()-2)
         audittrail( audit,  "text", "assuming real data-set along F1 !")
 
-	# data should be real in F2!
-	toreal("f2")
+    # data should be real in F2!
+    toreal("f2")
 
     # %action% ilt_set-up
     #   determines the kind of analysis to perform

@@ -612,7 +612,7 @@ def load_sq_tab(filename):
     try:
         fin = open(filename)
     except:
-        raise filename," cannot be accessed"
+        raise filename+" cannot be accessed"
     # read file
     list = []
     f=fin.read()
