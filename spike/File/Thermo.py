@@ -30,6 +30,8 @@ def read_thermo(filename):
             typ = 'f8'
         elif param['Storage Type'] == 'int':
             typ = 'i4'
+        elif param['Storage Type'] == 'short':
+            typ = 'i2'
         else:
             raise Exception( "Unknown Storage type : " + param['Storage Type'] )
         # adapted spectralwidth
@@ -39,6 +41,8 @@ def read_thermo(filename):
         # m/z = A + B/f^2 + C/f^4
         data.axis1.calibA = float(param["Source Coeff1"])
         data.axis1.calibB = float(param["Source Coeff2"])*1E6     # Thermo works internally in kHz, we use Hz
+        if "Source Coeff3" not in param:
+            param["Source Coeff3"] = 0.0
         data.axis1.calibC = float(param["Source Coeff3"])*1E12
         data.axis1.specwidth = swnew
         # data.axis1.ref_freq *= swnew/swold
@@ -51,13 +55,13 @@ def read_param(F):
     """
     dic = {}
     for l in F:
-        if l.startswith("Data:"):
+        if l.startswith(b"Data:"): 
             break
-        v = l.rstrip().split(':')       # remove trailing chars and split around :
+        v = l.rstrip().split(b':')       # remove trailing chars and split around :
         if len(v)<2:    # comment lines
             print(l)
         else:
-            dic[v[0]] = v[1].lstrip()    # metadata lines
+            dic[v[0].decode('utf-8')] = v[1].lstrip().decode('utf-8')    # metadata lines
     return dic
 def read_data(F, typ='float'):
     """
@@ -68,12 +72,12 @@ def read_data(F, typ='float'):
     pos = 0
     for l in F:
         pos += len(l)
-        if l.startswith("Data Points"):
-            print(re.findall(r'\d+', l)[0])
-        if l.startswith("Data:"):
+        if l.startswith(b"Data Points"):
+            print(re.findall(rb'\d+', l)[0])
+        if l.startswith(b"Data:"):
             break
     F.seek(pos)
-    data_interm = np.array(np.fromfile(F, dtype=typ).tolist())  # ndarray to list to np.array
+    data_interm = np.array(np.fromfile(F, dtype=typ).tolist()).astype('float64')  # ndarray to list to np.array
     data = OrbiData(buffer = data_interm )
     return data
 #-----------------------------------------
