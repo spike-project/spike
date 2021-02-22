@@ -51,7 +51,6 @@ import numpy.linalg as linalg
 from scipy.linalg import norm
 from numpy.fft import fft, ifft
 
-
 def urQRd(data, k, orda=None, iterations=1):
     
     """ 
@@ -73,7 +72,7 @@ def urQRd(data, k, orda=None, iterations=1):
     if np.allclose(data,0.0):   # dont do anything if data is empty
         return data
     if not orda:
-        orda = (data.size+1)/2
+        orda = (data.size)/2
     if (2*orda > data.size):
         raise(Exception('order is too large'))
     if (k >= orda):
@@ -81,7 +80,7 @@ def urQRd(data, k, orda=None, iterations=1):
     N = len(data)-orda+1
     dd = data
     for i in range(iterations):
-        Omega = np.random.normal(size=(N,k))
+        Omega = np.random.normal(size=(int(N),int(k)))
         Q, QstarH = urQRdCore(dd, orda, Omega) # H = QQ*H
         dd = Fast_Hankel2dt(Q,QstarH)
     denoised = dd
@@ -96,7 +95,7 @@ def urQRdCore(data, orda, Omega):
   
     Y =  FastHankel_prod_mat_mat(data, Omega)
     Q,r = linalg.qr(Y) # QR decomopsition of Y
-    del(r)          # we don't need it any more
+    del(r)          # we don't need it any more #dont need to del it
 
     QstarH = FastHankel_prod_mat_mat(data.conj(), Q).conj().T# 
     return Q, QstarH # H approximation given by QQ*H    
@@ -124,6 +123,7 @@ def FastHankel_prod_mat_mat(gene_vect, matrix):
         data[:,k] = FastHankel_prod_mat_vec(gene_vect, prod_vect) 
     return data
 
+#this is the slow stage
 def FastHankel_prod_mat_vec(gene_vect, prod_vect):
     """
     Compute product of Hankel matrix (gene_vect)  by vector prod_vect.
