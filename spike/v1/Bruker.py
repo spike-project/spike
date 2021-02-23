@@ -140,7 +140,7 @@ def read_param(filename="acqus"):
     try:
         fin = open(filename)
     except:
-        raise filename," cannot be accessed"
+        raise filename+" cannot be accessed"
     # read file
     dict = {}
     dict['comments']=""
@@ -599,7 +599,7 @@ def calibdosy(file="acqus"):
 # STEBP_2echos Bruker avance sequences
     if (re.search('dstebp',pulprog)):
         sequence = 'bpp_ste_2echoes'	
-    	if nuc1  in ('1H','15N','13C','31P','19F','17O'):
+        if nuc1  in ('1H','15N','13C','31P','19F','17O'):
             nucleus = nuc1
         delta = (2*p30)
         bdelta = (d20-(10*p1)-(8*p30)-(8*d16)-(8*d17)-(2*p19))
@@ -607,7 +607,7 @@ def calibdosy(file="acqus"):
 # STE_2echos Bruker avance sequences
     elif re.search('dstegp',pulprog):
         sequence = 'ste_2echoes'
-    	if nuc1  in ('1H','15N','13C','31P','19F','17O'):
+        if nuc1  in ('1H','15N','13C','31P','19F','17O'):
             nucleus = nuc1
        	delta = p30
         bdelta = (2*(d20-(2*p1)-(p30)-(2*d16)-(p19)))
@@ -615,15 +615,15 @@ def calibdosy(file="acqus"):
 # BPP_LED NMRtec and Bruker Avance sequences
     elif re.search('stegpbp|ledbp',pulprog):
         sequence = 'bpp_ste'
-    	if nuc1  in ('1H','15N','13C','31P','19F','17O'):
+        if nuc1  in ('1H','15N','13C','31P','19F','17O'):
             nucleus = nuc1
         delta = 2*p30
         bdelta = d20-(4*p1)-(2*p30)-(3*d16)-(p19)
         tau = 2*d16
 # LEDgp/STEgp Bruker Avance sequence
     elif re.search('stegp|led',pulprog):
-    	sequence = 'ste'
-    	if nuc1  in ('1H','15N','13C','31P','19F','17O'):
+        sequence = 'ste'
+        if nuc1  in ('1H','15N','13C','31P','19F','17O'):
             nucleus = nuc1
         delta = p30
         bdelta = d20-(2*p1)-(p30)-(2*d16)-(p19)

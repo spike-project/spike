@@ -231,7 +231,7 @@ class FileChooser(VBox):
 
     def _on_select_click(self, b):
         '''Handler for when the select button is clicked'''
-        if self._gb.layout.display is 'none':
+        if self._gb.layout.display == 'none':
             self._gb.layout.display = None
             self._cancel.layout.display = None
 

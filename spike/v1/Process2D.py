@@ -2551,7 +2551,7 @@ def read_file_2d( audit, filein):
         try:
             com_read( filein )
         except:
-            raise "Error while reading file ",filein
+            raise "Error while reading file "+filein
         if ( get_dim() != 2 ):
             raise "This is not a 2D dataset"
 
