@@ -72,14 +72,14 @@ def urQRd(data, k, orda=None, iterations=1):
     if np.allclose(data,0.0):   # dont do anything if data is empty
         return data
     if not orda:
-        orda = (data.size)/2
+        orda = data.size//2
     if (2*orda > data.size):
         raise(Exception('order is too large'))
     if (k >= orda):
         raise(Exception('rank is too large'))
     N = len(data)-orda+1
     dd = data
-    for i in range(iterations):
+    for _ in range(iterations):
         Omega = np.random.normal(size=(int(N),int(k)))
         Q, QstarH = urQRdCore(dd, orda, Omega) # H = QQ*H
         dd = Fast_Hankel2dt(Q,QstarH)

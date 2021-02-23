@@ -73,7 +73,6 @@ def read_scan(filename):
     xmldoc = minidom.parse(filename)
     
     x = xmldoc.documentElement
-    pp = {}
     children = x.childNodes
     count_scan = 0
     for child in children:
@@ -145,7 +144,7 @@ def Import_1D(inifolder,outfile=""):
     data.axis1.specwidth = float(params["SW_h"])
     #data.axis1.highfreq = data.axis1.calibA/float(params["EXC_low"])  # these two are in m/z !
     #data.axis1.lowfreq = data.axis1.calibA/float(params["EXC_hi"])
-    data.axis1.highfreq = float(params["SW_h_Broadband"])  # these two are in m/z !
+    data.axis1.highfreq = float(params["SW_h_Broadband"])
     data.axis1.lowfreq = float(params["FR_low"])
     data.axis1.highmass = float(params["MW_high"])
     data.axis1.left_point = 0

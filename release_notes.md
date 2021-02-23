@@ -1,5 +1,16 @@
 <!-- DO NOT MODIFY this file, it is generated automatically from dev_setup ! -->
 # SPIKE Relase Notes
+#### 0.99.21 - Feb 2021
+- plugin which implements .diagonal() for computing the diagonal of 2D FTICR spectra 
+- small correction in urQRd  - thanks to Will Kew
+- correction when reading Apex MS dataset for pulse frequency limits - thanks to Maria van Agthoven
+- correction ThermoFisher/Orbitrap import code - thanks to Will Kew
+- small corrections when opening files
+
+#### 0.99.20 - Nov 2020
+- corrected a bad bug which corrupted F1 calibration when loading a 2D-FTICRMS experiment
+    this bug was introduced in the 0.99.14 release but was not detected at that time
+
 #### 0.99.19 - May 2020 
 - corrected a bug in BrukerNMR importer...
 

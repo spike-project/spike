@@ -30,9 +30,14 @@ VersionInfo = ["0", "99", "21"]   # Major - Minor - Micro
 # Release Notes in md syntax !
 release_notes="""
 # SPIKE Relase Notes
-#### 0.99.21 - Dec 2020
-- method .diagonal() for computing the diagonal of 2D FTICR spectra 
+#### 0.99.21 - Feb 2021
+- plugin which implements .diagonal() for computing the diagonal of 2D FTICR spectra 
+- changed the logic to generate downsampled 2D FTICR spectra - smaller files, smaller vignettes
+- small correction in urQRd  - thanks to Will Kew
+- correction when reading Apex MS dataset for pulse frequency limits - thanks to Maria van Agthoven
+- correction ThermoFisher/Orbitrap import code - thanks to Will Kew
 - small corrections when opening files
+- many small bugs corrected
 
 #### 0.99.20 - Nov 2020
 - corrected a bad bug which corrupted F1 calibration when loading a 2D-FTICRMS experiment
