@@ -50,13 +50,18 @@ class NMRAxis(Axis):
         
     def report(self):
         "high level reporting"
+        rst = "NMR axis at %f MHz, "%(self.frequency,)
         if self.itype == 0:
-            return "NMR axis at %f MHz,  %d real points,  from %f ppm (%f Hz) to %f ppm  (%f Hz)"%  \
-            (self.frequency, self.size, self.itop(self.size-1), self.itoh(self.size-1), self.itop(0), self.itoh(0))
+            rst += "%d real points, "%(self.size,)
+            if self.size>1:
+                rst += "from %f ppm (%f Hz) to %f ppm  (%f Hz)"% \
+                    (self.itop(self.size-1), self.itoh(self.size-1), self.itop(0), self.itoh(0))
         else:
-            return "NMR axis at %f MHz,  %d complex pairs,  from %f ppm (%f Hz) to %f ppm  (%f Hz)"%  \
-            (self.frequency, self.cpxsize, self.itop(self.size-1), self.itoh(self.size-1), self.itop(0), self.itoh(0))
-
+            rst += "%d complex pairs,  "%(self.cpxsize,)
+            if self.cpxsize>1:
+                rst += "from %f ppm (%f Hz) to %f ppm  (%f Hz)"%  \
+                    (self.itop(self.size-1), self.itoh(self.size-1), self.itop(0), self.itoh(0))
+        return rst
     #-------------------------------------------------------------------------------
     def __extract(self, zoom):
         """

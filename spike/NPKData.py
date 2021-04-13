@@ -2709,42 +2709,33 @@ class _NPKData(object):
         WARNING : different from common definition of apodisation
         This commands applies a trapezoid filter function to the data-
         set. The function raises from 0.0 to 1.0 from the first point to 
-        point n1. The function then stays to 1.0 until point n2, from which 
+        point tm1. The function then stays to 1.0 until point tm2, from which 
         it goes down to 0.0 at the last point.
-        If in 2D or 3D then Fx tells on which axis to apply the filter.
+        if tm2 = -1 nothing is done
+        If in 2D or 3D then axis tells on which axis to apply the filter.
         """
         todo = self.test_axis(axis)
         it = self.axes(todo).itype
         size = self.axes(todo).size
         if it == 1: # means complex
             #size = size//2
-            tm1 = min(size,2*(tm1//2)+1)
-            tm2 = 2*(tm2//2)+1
+            tm1 = min(size,2*(tm1//2))
+            tm2 = 2*(tm2//2)
         ftm1 = tm1
-        ftm2 = size-tm2+1
-        e = np.zeros(size)
+        ftm2 = size-tm2
+        e = np.ones(size)
         if it==0:
-            for i in range(1,ftm1):
-                e[i] = float(i)/ftm1+1
-            for i in range(ftm1,tm2):
-                e[i] = 1.
-            for i in range(tm2, size):
-                e[i] =float(i)/size
-            print("****** ",e[0])
+            e[0:ftm1]  = np.linspace(0, 1, ftm1)
+            if tm2 != -1:
+                e[tm2:]    = np.linspace(1, 0, ftm2)
         elif it ==1:
-            for i in range(1,ftm1,2):
-                e[i] = float(i)/ftm1
-                e[i+1] = float(i)/ftm1
-            for i in range(ftm1,tm2,2):
-                e[i] = 1.
-                e[i+1] = 1.
-            for i in range(tm2, size-1,2):
-                e[i] = float(size-i+1)/ftm2
-                e[i+1] = float(size-i+1)/ftm2
-        #if it == 1:
-        #    e = as_float((1 + 1.0j)*e)
-        print("APOD_TM still to be doublechecked",e)
-        #return self.apod_apply(axis,e)
+            e[0:ftm1:2]  = np.linspace(0, 1, ftm1/2)
+            e[1:ftm1:2]  = np.linspace(0, 1, ftm1/2)
+            if tm2 != -1:
+                e[tm2::2]    = np.linspace(1, 0, ftm2/2)
+                e[tm2+1::2]  = np.linspace(1, 0, ftm2/2)
+#        print("APOD_TM still to be doublechecked",e)
+        return self.apod_apply(axis,e)
     #-------------------------------------------------------------------------------
     def apod_em(self, lb, axis=0):
         """
