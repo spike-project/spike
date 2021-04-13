@@ -6,17 +6,15 @@
 #     text_representation:
 #       extension: .py
 #       format_name: percent
-#       format_version: '1.2'
-#       jupytext_version: 1.2.4
+#       format_version: '1.3'
+#       jupytext_version: 1.3.4
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
 #     name: python3
 # ---
 
-# %% [markdown]
-# ** *This notebook is unfinished and still under development (but not too bad though ;-)* **
-#
+# %% [markdown] class="test_MAD"
 # # 1D NMR Processing and Display
 #
 # a simplified environment for processing 1D Bruker NMR datasets with `SPIKE`.
@@ -26,12 +24,13 @@
 # Cells are meant to be used in order, taking you to the complete analysis, but you can go back at any time.
 #
 # The SPIKE code used for processing is visible in the cells, and can be used as a minimal tutorial.
+# You can hide it when done to present a clean NoteBook.
 #
 # `reverse_scroll` inverse the direction of the mouse wheel, whether it is `True` or `False`
 #
 # ***Remark*** *to use this program, you should have installed the following packages:*
 #
-# - *a complete scientific python environment* ( *tested with python 3.6 - [anaconda](https://www.anaconda.com/) does probably not work in python 2.7 *)
+# - *a complete scientific python environment* ( *tested with python 3.7 - [anaconda](https://www.anaconda.com/) does probably not work in python 2.7 *)
 # - [`spike`](https://www.bitbucket.org/delsuc/spike) ( *version 0.99.9 minimum* )
 # - [`ipywidgets`](https://ipywidgets.readthedocs.io/en/latest/)  ( *tested with version 7.1* )
 # - [`ipyml`](https://github.com/matplotlib/jupyter-matplotlib)  ( *adds interactivity in the notebook* )
@@ -40,30 +39,35 @@
 # the following cell should be run only once, at the beginning of the processing
 
 # %%
-# load all python and interactive tools
+# load all python and interactive tools - should be run only once
 from __future__ import print_function, division
 from IPython.display import display, HTML, Markdown, Image
 display(Markdown('## STARTING Environment...'))
+import matplotlib as mpl
 # %matplotlib widget
 import os.path as op
 import spike
 from spike.File.BrukerNMR import Import_1D
 from spike.Interactive import INTER as I
 from spike.Interactive.ipyfilechooser import FileChooser
+print("\nInteractive module version,",I.__version__)
 display(Markdown('## ...program is Ready'))
 from importlib import reload  # the two following lines are debugging help
+mpl.rcParams['figure.figsize'] = (8,4)
 reload(I)                   # and can be removed safely when in production
-I.hidecode()
+I.hidecode(message="")
+I.hidedoc()
 
 # %% [markdown]
 # ### Choose the file
 # The `FileChooser()` tool creates a dialog box which allows to choose a file on your disk
 #
-# - use the `Select` button
+# - use the `Select` button, `..` is for going back in the directory tree
 # - modify the ( *optional* ) `path` argument, to start the exploration on a given location
 # - After the selection, the selected filename is found in `FC.selected`
 
 # %%
+# FileChooser
 FC = FileChooser(path='/DATA/',filename='fid')
 display(FC)
 
@@ -75,34 +79,34 @@ display(FC)
 # We store the dataset into a variable, typing the variable name shows a summary of the dataset. 
 
 # %%
+# Import dataset
 print('Reading file ',FC.selected)
 d1 = Import_1D(FC.selected)
 d1.filename = FC.selected
 d1.set_unit('sec').display(title=FC.nmrname+" fid")
 
 # %% [markdown]
-# In the current set-up, the figure can be explored *(zoom, shift, resize, etc)* with the jupyter tools displayed  below the dataset.
+# In the current set-up, the figure can be resized and explored *(zoom, shift, resize, etc)* with the jupyter tools displayed  below the dataset.
 # The figure can also be saved as a `png` graphic file.
 #
-# For more interactivity - see below.
-#
 # ## Basic Processing
-# We are going to use a basic processing set-up, check the documentation for advanced processing
-#
-# ### Fourier Transform
+# The following cell applies a basic processing, check the documentation for more advanced processing
 
 # %%
+# Basic Processing
+LB = 0.1        # you can adapte LB to your means
 D1 = d1.copy() # copy the imported data-set to another object for processing
-D1.apod_em(0.3).zf(4).ft_sim().bk_corr().apmin()  # chaining  apodisation - zerofill - FT - Bruker correction - autophase
+D1.apod_em(LB).zf(4).ft_sim().bk_corr().apmin()  # chaining  apodisation - zerofill - FT - Bruker correction - autophase
 D1.set_unit('ppm').display(title=FC.nmrname)  # chain  set to ppm unit - and display
+D1.mplfigure.figure.canvas.header_visible = False
 
 # %% [markdown]
 # <hr/>
 #
-# **Following steps are optional**
+# **Following steps are for special operations**
 #
 # ### rephasing
-# If is is required use the interactive phaser
+# If the spectrum requires rephasing, use the interactive phaser down here.
 #
 # Use `scale` (or mouse wheel) and the zoom box to tune the display; then use `P0, P1, pivot` to optimize the phase.
 #
@@ -111,8 +115,9 @@ D1.set_unit('ppm').display(title=FC.nmrname)  # chain  set to ppm unit - and dis
 # Once finished, click on `Done`
 
 # %%
+# rephasing
 reload(I)
-I.Phaser1D(D1, reverse_scroll=True);
+I.Phaser1D(D1);
 
 # %% [markdown]
 # ### Baseline correction
@@ -125,8 +130,9 @@ I.Phaser1D(D1, reverse_scroll=True);
 # You can also try the `Auto` button for a set of selector points, a set you can optimize by adding and removing points.
 
 # %%
+# Baseline Correction
 reload(I)
-I.baseline1D(D1, reverse_scroll=True);
+I.baseline1D(D1);
 
 # %% [markdown]
 # ## Peak-Picker
@@ -136,8 +142,9 @@ I.baseline1D(D1, reverse_scroll=True);
 # - get the peak-list in the `Peak Table` tab
 
 # %%
+# Peak Picker
 reload(I)
-ph = I.NMRPeaker1D(D1, reverse_scroll=True);
+ph = I.NMRPeaker1D(D1);
 
 # %% [markdown]
 # ## Integrate
@@ -145,9 +152,10 @@ ph = I.NMRPeaker1D(D1, reverse_scroll=True);
 #
 
 # %%
+# Integration
 reload(I)
 D1.real()
-ii = I.NMRIntegrate(D1, reverse_scroll=True);
+ii = I.NMRIntegrate(D1);
 
 # %% [markdown]
 # ## Interactive composite display
@@ -155,10 +163,13 @@ ii = I.NMRIntegrate(D1, reverse_scroll=True);
 # (spectral superposition is not operational)
 
 # %%
-reload(I)
-s = I.Show1Dplus(D1, title=FC.nmrname, reverse_scroll=True);
+# Composite display
+s = I.Show1Dplus(D1, title=FC.nmrname);
 
 # %% [markdown]
+# ---
+# optional steps
+#
 # ## Save the data-set
 # either as stand alone native SPIKE files, (there are other formats)
 
@@ -186,6 +197,10 @@ D1.pk2pandas().to_csv('peaklist.csv')
 D1.integrals.to_pandas().to_csv('integrals.csv')
 
 # %% [markdown]
+# ---
+#
+# This part adds the bucket list tool 
+#
 # ## Export a buckelist
 
 # %%

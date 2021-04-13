@@ -10,6 +10,10 @@ import os
 __version__ = '0.1.2'
 
 class FileChooser(VBox):
+    """
+# FileChooser code is from
+# https://github.com/crahan/ipyfilechooser
+    """
 
     _LBL_TEMPLATE = '<span style="margin-left:10px; color:{1};">{0}</span>'
     _LBL_NOFILE = 'No file selected'
