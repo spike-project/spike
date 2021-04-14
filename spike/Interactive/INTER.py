@@ -57,7 +57,10 @@ def hidecode(initial='show', message="<i>usefull to show/print a clean screen wh
     elif initial == 'hide':
         init = 'true'
     display(HTML('''
-<style>hr {height: 2px; border: 0;border-top: 1px solid #ccc;margin: 1em 0;padding: 0; }</style>
+<style>
+hr         {height: 2px; border: 0;border-top: 1px solid #ccc;margin: 1em 0;padding: 0; }
+.container {width:100%% !important; }
+</style>
 <script>
 code_show=%s; 
 function code_toggle()
@@ -258,8 +261,11 @@ class Show1D(HBox):
         plt.ion()
         if show:
             display( self )
-            self.data.display(figure=self.ax, title=self.title)
+            self.data.display(figure=self.ax, title="Show 0")
             self.fig.canvas.header_visible = False
+            for s in ["left", "top", "right"]:
+                self.ax.spines[s].set_visible(False)
+            self.ax.yaxis.set_visible(False)
     def on_done(self, b):
         self.close()
         display(self.fig)   # shows spectrum
@@ -279,9 +285,12 @@ class Show1D(HBox):
     def disp(self):
         self.xb = self.ax.get_xbound()
         self.ax.clear()
-        self.data.display(scale=self.scale.value, new_fig=False, figure=self.ax, title=self.title)
+        self.data.display(scale=self.scale.value, new_fig=False, figure=self.ax, title="Show")
         self.ax.set_xbound(self.xb)
         self.fig.canvas.header_visible = False
+        for s in ["left", "top", "right"]:
+            self.ax.spines[s].set_visible(False)
+        self.ax.yaxis.set_visible(False)
         #self.set_on_redraw()
 class baseline1D(Show1D):
     def __init__(self, data, figsize=None, reverse_scroll=False, show=True):
@@ -454,12 +463,77 @@ class Show1Dplus(Show1D):
     def __init__(self, data, base='/DATA', N=9, figsize=None, title=None, reverse_scroll=False):
         from spike.Interactive.ipyfilechooser import FileChooser
         super().__init__( data, figsize=figsize, title=title, reverse_scroll=reverse_scroll)
-        self.scaleint = widgets.FloatSlider(value=0.5, min=0.1, max=10, step=0.05,
-                            layout=Layout(width='20%'), continuous_update=REACTIVE)
-        self.offset = widgets.FloatSlider(value=0.3, min=0.0, max=1.0, step=0.01,
-                            layout=Layout(width='20%'), continuous_update=REACTIVE)
-        self.peaks = widgets.Checkbox(value=False, layout=Layout(width='15%'))
-        self.integ = widgets.Checkbox(value=False, layout=Layout(width='15%'))
+        # spectrum control widgets
+        self.sptitle = widgets.Text(description='Scale',
+                            value=self.title, layout=Layout(width='40%'))
+        self.spcolor = widgets.Dropdown(description='Color',
+                            options=["steelblue"]+list(Colors),value='steelblue',
+                            layout=Layout(width='24%'))
+        self.splw = widgets.FloatText(description='Linewidth',
+                            value=1.0, step=0.1,
+                            layout=Layout(width='24%'))
+        SP = VBox([ widgets.HTML('<b>Spectrum</b>'),
+                    self.sptitle,
+                    HBox([self.spcolor, self.splw])])
+        # integral control widgets
+        self.integ = widgets.Checkbox(description='Show',
+                            value=False)
+        self.scaleint = widgets.FloatSlider(description='Scale',
+                            value=0.5, min=0.1, max=10, step=0.05,
+                            layout=Layout(width='40%'),
+                            continuous_update=REACTIVE)
+        self.offset = widgets.FloatSlider(description='Offset',
+                            value=0.4, min=0.0, max=1.0, step=0.01,
+                            layout=Layout(width='45%'),
+                            continuous_update=REACTIVE) 
+        self.intlw = widgets.FloatText(description='Linewidth',
+                            value=1.5, step=0.1,
+                            layout=Layout(width='24%'))
+        self.intcolor = widgets.Dropdown(description='Color',
+                            options=Colors,value='red',
+                            layout=Layout(width='45%'))
+        self.intlabelcolor = widgets.Dropdown(description='Label',
+                            options=Colors,value='crimson',
+                            layout=Layout(width='40%'))
+        self.labelx = widgets.FloatText(description='Label X pos',
+                            value=1, step=0.1,
+                            layout=Layout(width='24%'))
+        self.labely = widgets.FloatText(description='Y pos',
+                            value=-1, step=0.1,
+                            layout=Layout(width='24%'))
+        self.labelfont = widgets.BoundedFloatText(description='Size',
+                            value=9, mini=1, maxi=128, step=1,
+                            layout=Layout(width='24%'))
+        self.labelrot = widgets.BoundedFloatText(description='Rot',
+                            value=0, mini=-90, maxi=90, step=1,
+                            layout=Layout(width='24%'))
+        INT = VBox([HBox([widgets.HTML('<b>Integrals</b>'), self.integ]),
+                    HBox([self.scaleint,self.offset, self.intlw]),
+                    HBox([self.intcolor,self.intlabelcolor]),
+                    HBox([self.labelx,self.labely, self.labelfont, self.labelrot])
+                    ],layout=Layout(width='60%'))
+        # peaks control widgets
+        self.peaks = widgets.Checkbox(description='Show',
+                value=False)
+        markers = ['off','x','X','d','D','v','^', '<','>','|']
+        self.marker = widgets.Dropdown(description='Marker',
+                            options=markers,value="x",
+                            layout=Layout(width='20%'))
+        self.pkcolor = widgets.Dropdown(description='Color',
+                            options=Colors,value='darkblue',
+                            layout=Layout(width='40%'))
+        self.pkvalues = widgets.Checkbox(description='Values',
+                value=False, layout=Layout(width='30%'))
+        self.pkrotation = widgets.BoundedFloatText(description='Rot',
+                            value=45, mini=-90, maxi=90, step=1,
+                            layout=Layout(width='20%'))
+        self.pkfont = widgets.BoundedFloatText(description='Size',
+                            value=5, mini=1, maxi=128, step=1,
+                            layout=Layout(width='20%'))
+        PK = VBox([ HBox([widgets.HTML('<b>Peaks</b>'), self.peaks]),
+                    HBox([self.marker, self.pkcolor]),
+                    HBox([self.pkvalues, self.pkfont, self.pkrotation])
+                  ],layout=Layout(width='60%'))
 
         self.Chooser = FileChooser(base=base, filetype="*.gs1", mode='r', show=False)
         self.bsel = widgets.Button(description='Copy',layout=self.blay,
@@ -471,14 +545,18 @@ class Show1Dplus(Show1D):
         self.DataList[0].color.value = 'red'
         self.DataList[0].fig = True  # switches on the very first one
 
-        for widg in (self.scaleint, self.offset, self.peaks, self.integ):
+        for widg in (self.sptitle, self.spcolor, self.splw,
+                    self.peaks, self.integ, self.scaleint, self.offset, self.intlw,
+                    self.intcolor, self.intlabelcolor, self.labelx, self.labely, self.labelfont, self.labelrot,
+                    self.pkvalues, self.marker, self.pkcolor, self.pkrotation, self.pkfont ):
             widg.observe(self.ob)
 
         self.tabs = Tab()
+
+        orig = self.children
         self.tabs.children = [
-            VBox([  HBox([Label('Integral scale:'),self.scaleint,Label('offset:'),self.offset]),
-                    HBox([Label('Show Peaks'),self.peaks,Label('integrals'),self.integ]),
-                    HBox([VBox([self.blank, self.reset, self.scale]), self.fig.canvas])
+            VBox([  VBox([SP, INT, PK]),
+                    HBox(orig),
                     ]),
             VBox([  Label("Choose spectra to superimpose"),
                     HBox([self.Chooser, self.bsel, self.to])]+
@@ -510,18 +588,33 @@ class Show1Dplus(Show1D):
         else:
             zoom = None
         self.ax.clear()
-        self.data.display(scale=self.scale.value, new_fig=False, figure=self.ax, title=self.title, zoom=zoom)
+        self.data.display(scale=self.scale.value, new_fig=False, figure=self.ax, color=self.spcolor.value,
+                            title=self.sptitle.value, linewidth=self.splw.value, zoom=zoom)
         if self.integ.value:
             try:
-                print(self.data, self.scaleint.value, self.offset.value, zoom)
+                if self.labely.value == -1:
+                    labely = None
+                else:
+                    labely = self.labely.value
                 self.data.display_integral(label=True, integscale=self.scaleint.value,
-                    integoff=self.offset.value, figure=self.ax, zoom=zoom)
+                    integoff=self.offset.value,
+                    labelxposition=self.labelx.value,
+                    labelyposition=labely,
+                    curvedict = {'color':self.intcolor.value, 'linewidth':self.intlw.value},
+                    labeldict = {'color':self.intlabelcolor.value, 'fontsize':self.labelfont.value, 'rotation':self.labelrot.value},
+                    figure=self.ax, zoom=zoom)
             except:
                 print('no or wrong integrals (have you clicked on "Done" in the Integration tool ?)')
                 pass
         if self.peaks.value:
             try:
-                self.data.display_peaks(peak_label=True, figure=self.ax, scale=self.scale.value, zoom=zoom)
+                self.data.display_peaks(peak_label=self.pkvalues.value, 
+                                        color=self.pkcolor.value,
+                                        markersize=self.pkfont.value,
+                                        markerdict={'marker':self.marker.value},
+                                        labeldict={'rotation':self.pkrotation.value,
+                                                    'fontsize':self.pkfont.value},
+                                        figure=self.ax, scale=self.scale.value, zoom=zoom)
             except:
                 print('no or wrong peaklist (have you clicked on "Done" in the Peak-Picker tool ?)')
                 pass

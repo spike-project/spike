@@ -324,12 +324,14 @@ class Peak1DList(PeakList):
         """
         lst = [pk._report(f=f) for pk in self ]
         return "\n".join(lst)
-    def display(self, peak_label=False, peak_mode="marker", zoom=None, show=False, f=_identity, color = 'red', markersize=None, figure=None, scale=1.0, NbMaxPeaks=NbMaxDisplayPeaks):
+    def display(self, peak_label=False, peak_mode="marker", zoom=None, show=False, f=_identity, color='red',
+            marker='x', markersize=6, figure=None, scale=1.0, NbMaxPeaks=NbMaxDisplayPeaks,
+            markerdict=None, labeldict=None):
         """
         displays 1D peaks
         zoom is in index
         peak_mode is either "marker" or "bar"
-        NbMaxPeaks is the maximum number of peaks to displayin the zoom window (show only the largest)
+        NbMaxPeaks is the maximum number of peaks to display in the zoom window (show only the largest)
         f() should be a function which converts from points to current display scale - typically npk.axis1.itoc
         """
         if len(self) == 0:
@@ -353,9 +355,21 @@ class Peak1DList(PeakList):
         if len(pkl)>NbMaxPeaks:     # too many to display
             pkl.sort(reverse=True, key=lambda i: self[i].intens)
             pkl = pkl[:NbMaxPeaks]
+        # create arg for display
+        # default
+        mark = {'markersize':markersize,
+                'color':color}
+        label = {'color':color,
+                 'fontsize':7,
+                 'rotation':40}
+        # then update with args
+        if markerdict is None: markerdict = {}
+        mark.update(markerdict)
+        if labeldict is None: labeldict = {}
+        label.update(labeldict)
         # now display
         if peak_mode == "marker":
-            fig.plot(f(self.pos[pkl]), self.intens[pkl], "x", color=color)
+            fig.plot(f(self.pos[pkl]), self.intens[pkl], 'x', **mark)
         elif peak_mode == "bar":
             for i in pkl:
                 p = self[i]
@@ -367,8 +381,7 @@ class Peak1DList(PeakList):
                 p = self[i]
                 fig.annotate(p.label,(f(p.pos), p.intens),
                     xycoords='data', xytext=(0, 10), textcoords='offset points',
-                    rotation=40,color='red',fontsize=7,
-                    arrowprops=dict(arrowstyle='-'), horizontalalignment='left', verticalalignment='bottom')
+                    arrowprops=dict(arrowstyle='-'), horizontalalignment='left', verticalalignment='bottom', **label)
         if show: plot.show()
     # def merge(self, pklist, tolerance=1.0):
     #     """
@@ -668,7 +681,8 @@ def centroid(npkd, *arg, **kwarg):
         raise Exception("Centroid yet to be done")
     return npkd
 #-------------------------------------------------------
-def display_peaks(npkd, peak_label=False, peak_mode="marker", zoom=None, show=False, color=None, markersize=6, figure=None, scale=1.0, NbMaxPeaks=NbMaxDisplayPeaks):
+def display_peaks(npkd, peak_label=False, peak_mode="marker", zoom=None, show=False, color=None,
+markersize=6, figure=None, scale=1.0, NbMaxPeaks=NbMaxDisplayPeaks, markerdict=None, labeldict=None):
     """
     display the content of the peak list, 
     peak_mode is either "marker" (default) or "bar" (1D only)
@@ -680,7 +694,8 @@ def display_peaks(npkd, peak_label=False, peak_mode="marker", zoom=None, show=Fa
             ff1 = npkd.axis1.itoc
         else:
             ff1 = lambda x : npkd.axis1.itoc(2*x)
-        return npkd.peaks.display( peak_label=peak_label, peak_mode=peak_mode, zoom=(z1,z2), show=show, f=ff1, color=color, markersize=markersize, figure=figure, scale=scale, NbMaxPeaks=NbMaxPeaks)
+        return npkd.peaks.display( peak_label=peak_label, peak_mode=peak_mode, zoom=(z1,z2), show=show, f=ff1, color=color,
+                markersize=markersize, figure=figure, scale=scale, NbMaxPeaks=NbMaxPeaks, markerdict=markerdict, labeldict=labeldict)
     elif npkd.dim == 2:
         z1lo, z1up, z2lo, z2up = parsezoom(npkd, zoom)
         if npkd.axis1.itype == 0:  # if real
@@ -691,7 +706,8 @@ def display_peaks(npkd, peak_label=False, peak_mode="marker", zoom=None, show=Fa
             ff2 = npkd.axis2.itoc
         else:
             ff2 = lambda x : npkd.axis2.itoc(2*x)
-        return npkd.peaks.display( peak_label=peak_label, zoom=((z1lo,z1up),(z2lo,z2up)), show=show, f1=ff1, f2=ff2, color=color, markersize=markersize, figure=figure, NbMaxPeaks=NbMaxPeaks)
+        return npkd.peaks.display( peak_label=peak_label, zoom=((z1lo,z1up),(z2lo,z2up)), show=show, f1=ff1, f2=ff2, color=color,
+               markersize=markersize, figure=figure, NbMaxPeaks=NbMaxPeaks, markerdict=markerdict, labeldict=labeldict)
     else:
         raise Exception("to be done")
 #-------------------------------------------------------

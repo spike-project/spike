@@ -50,10 +50,12 @@ class Integrals(list):
     start and end are in index !
 
     """
-    def __init__(self, data, *args, calibration=None, bias=0.0, separation=3, wings=5, compute=True, **kwds):
+    def __init__(self, data, *args, autothresh=10.0, calibration=None, bias=0.0, separation=3, wings=5, compute=True, **kwds):
         """
         computes integral zones and values from peak list, 
+        called without arguments will compute integrals automatically
 
+        autothresh : in fully automated mode, noise is multiplied by this number to find peaks from which integrals are defined
         separation : if two peaks are less than separation x width n they are aggregated, default = 3
         wings : integrals sides are extended by wings x width, default = 5
         bias: this value is substracted to data before integration
@@ -66,6 +68,7 @@ class Integrals(list):
         #
         # additional kw are source: the originating dataset, compute: initialize values
         self.source = data
+        self.autothresh = autothresh
         self.calibration = calibration  # global calibration
         self.bias = bias          # global bias
         self.separation = separation
@@ -107,7 +110,7 @@ class Integrals(list):
         try:
             pk = data.peaks
         except AttributeError:
-            data.pp().centroid()            # create one if missing
+            data.pp(autothresh=self.autothresh).centroid()            # create one if missing
             pk = data.peaks
         # then build integral list
         if len(pk) == 0:
@@ -163,9 +166,25 @@ class Integrals(list):
         the given entry is set to the given value.
         """
         self.calibrate(calibration = calib_value/self[entry].curve[-1])
-    def display(self, integoff=0.3, integscale=0.5, color='red', label=False, 
-        labelyposition=None, regions=False, zoom=None, figure=None):
-        "displays integrals"
+    def display(self, integoff=0.3, integscale=0.5, color='red',
+            label=False, labelxposition=1, labelyposition=None,
+            regions=False, zoom=None, figure=None, curvedict=None, labeldict=None):
+        """
+        displays integrals
+
+        figure     mpl axes to draw on - will create one if None
+        zoom       zoom
+
+        integoff    offset of drawing 0..1
+        integscale  scale of the largest integral
+        color       color
+        regions     highlight regions
+        curvedict   additional parameters for the drawing
+        label       draw integral values
+        labelxposition  position of label in x 0..1 with respect to the integral drawing
+        labelyposition  position of label in y 0..1 with respect to the screen - None means top of integral
+        labeldict   additional parameters for the labels
+        """
         import matplotlib.transforms as transforms
         from spike.Display import testplot
         plt = testplot.plot()
@@ -178,21 +197,26 @@ class Integrals(list):
         trans = transforms.blended_transform_factory( ax.transData, ax.transAxes )
         z1, z2 = parsezoom(self.source, zoom)
         sumax = max([c.curve[-1] for c in self])
+        # copy color to dict if needed
+        if curvedict is None: curvedict = {}
+        if labeldict is None: labeldict = {}
+        for dico in (curvedict, labeldict):
+            if 'color' not in dico.keys():
+                dico['color'] = color
         for iint in self:
     #        print(a,b,max(c)/sumax)
             if iint.start>z2 or iint.end<z1:
                 continue   # we're outside
             xinteg = self.source.axis1.itoc( np.linspace(iint.start, iint.end, len(iint.curve)) )
             yinteg = integoff + integscale*iint.curve/sumax
-            ax.plot(xinteg, yinteg, transform=trans, color=color)
+            ax.plot(xinteg, yinteg, transform=trans, **curvedict)
             if label:
-                if labelyposition:
-                    xl = xinteg[0] + 0.3*(xinteg[-1]- xinteg[0])
+                xl = xinteg[0] + labelxposition*(xinteg[-1]- xinteg[0])
+                if labelyposition is not None:
                     yl = labelyposition
                 else:
-                    xl = xinteg[-1]
                     yl = yinteg[-1]
-                ax.text(xl,yl,"%.2f"%iint.value, transform=trans, color=color, fontsize=7)
+                ax.text(xl,yl,"%.2f"%iint.value, transform=trans, **labeldict)
             if regions:
                 ax.plot([xinteg[0],xinteg[0]], [0,1], transform=trans, color=color, alpha=0.1)
                 ax.plot([xinteg[-1],xinteg[-1]], [0,1], transform=trans, color=color, alpha=0.1 )
@@ -216,11 +240,13 @@ def calibrate(npkd, entry, calib_value):
     return npkd
 calibrate.__doc__ = Integrals.recalibrate.__doc__
 
-def display(npkd, integoff=0.3, integscale=0.5, color='red', label=False, 
-        labelyposition=None, regions=False, zoom=None, figure=None):
-    npkd.integrals.display(integoff=integoff, integscale=integscale, color=color, label=label, 
-        labelyposition=labelyposition, regions=regions, zoom=zoom, figure=figure)
+def display(npkd, integoff=0.3, integscale=0.5, color='red',
+        label=False, labelxposition=1, labelyposition=None, regions=False, zoom=None, figure=None, curvedict=None, labeldict=None):
+    npkd.integrals.display(integoff=integoff, integscale=integscale, color=color,
+        label=label, labelxposition=labelxposition, labelyposition=labelyposition,
+        regions=regions, zoom=zoom, figure=figure, curvedict=curvedict, labeldict=labeldict)
     return npkd
+display.__doc__ = Integrals.display.__doc__
 
 NPKData_plugin("integrate", integrate)
 NPKData_plugin("integral_calibrate", calibrate)

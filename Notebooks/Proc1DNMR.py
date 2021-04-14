@@ -84,6 +84,10 @@ print('Reading file ',FC.selected)
 d1 = Import_1D(FC.selected)
 d1.filename = FC.selected
 d1.set_unit('sec').display(title=FC.nmrname+" fid")
+d1.mplfigure.figure.canvas.header_visible = False
+
+# %%
+I.Show1D(d1)
 
 # %% [markdown]
 # In the current set-up, the figure can be resized and explored *(zoom, shift, resize, etc)* with the jupyter tools displayed  below the dataset.
@@ -161,9 +165,13 @@ ii = I.NMRIntegrate(D1);
 # ## Interactive composite display
 # Convenient to set-up your own figure
 # (spectral superposition is not operational)
+#
+# label y pos -1
 
 # %%
 # Composite display
+reload(I)
+reload(spike.plugins.Peaks)
 s = I.Show1Dplus(D1, title=FC.nmrname);
 
 # %% [markdown]
