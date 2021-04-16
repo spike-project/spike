@@ -19,4 +19,12 @@ Each Notebook provides a single set of functions, for instance
 This is still an early effort, and the number of *recipes* should grow rapidly - **SPIKE Users are welcome to provide their own !**
 
 The Notebooks can be migrated anywhere, as long as spike is installed and available.
-A typical usage is to copy a version close the data to be analysed, and to keep iy there, as a lab-book, holding the analysis, and eventually, your comments on the data.
+A typical usage is to copy a version close the data to be analysed, and to keep it there, as a lab-book, holding the analysis, and eventually your comments on the data.
+
+*remarks*
+
+*The notebooks are kept both as ` *.ipynb` (as reference) and as ` *.py` (to follow the difference between commit.) Both version are identical*
+
+```python
+
+```

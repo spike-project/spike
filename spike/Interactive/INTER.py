@@ -41,6 +41,7 @@ __version__ = "1.2.0"
 # True is good for inline mode / False is better for notebook mode
 REACTIVE = True
 HEAVY = False
+Activate_Wheel = True
 
 ##############################
 # First General Utilities
@@ -233,6 +234,10 @@ class Show1D(HBox):
         super().__init__()
         self.data = data
         self.title = title
+        # graphic set-up details
+        self.yaxis_visible = False
+        self.ax_spines = False
+        self.canvas_header_visible = False
         if figsize is None:
             figsize = mpl.rcParams['figure.figsize'] #(10,5)
         if reverse_scroll:
@@ -240,10 +245,19 @@ class Show1D(HBox):
         else:
             self.reverse_scroll = 1
         self.blay = Layout(width='80px')  # default layout for buttons
-        self.done = Button(description="Done", button_style='success',layout=self.blay)
+        self.done = Button(description="Done", button_style='success',layout=self.blay,
+            tooltip="Stop interactivity and store figure")
         self.done.on_click(self.on_done)
         self.reset = Button(description="Reset", button_style='success',layout=self.blay,
             tooltip="Reset to full spectrum")
+        self.savepdf = widgets.Button(description="Save figure", button_style='',layout=self.blay,
+                tooltip='Save the current figure as pdf')
+        def onsave(e):
+            name = self.fig.get_axes()[0].get_title()
+            name = name.replace('/','_')+'.pdf'
+            self.fig.savefig(name)
+            print('figure saved as: ',name)
+        self.savepdf.on_click(onsave)
         self.reset.on_click(self.on_reset)
         self.scale = widgets.FloatSlider(description='scale:', value=1.0, min=1.0, max=200, step=0.1,
                             layout=Layout(width='80px', height=str(0.8*2.54*figsize[1])+'cm'), continuous_update=REACTIVE,
@@ -252,20 +266,21 @@ class Show1D(HBox):
             widg.observe(self.ob)
         plt.ioff()
         fi,ax = plt.subplots(figsize=figsize)
+        plt.ion()
         self.ax = ax
         self.fig = fi
         self.xb = self.ax.get_xbound()
         self.blank = widgets.HTML("&nbsp;",layout=self.blay)
-        self.children = [  VBox([self.blank, self.reset, self.scale, self.done]), self.fig.canvas ]
+        self.children = [  VBox([self.reset, self.scale, self.savepdf, self.done]), self.fig.canvas ]
         self.set_on_redraw()
-        plt.ion()
         if show:
-            display( self )
-            self.data.display(figure=self.ax, title="Show 0")
-            self.fig.canvas.header_visible = False
+            #display( self )
+            #print('SHOW')
+            self.data.display(figure=self.ax, title=self.title)
+            self.fig.canvas.header_visible = self.canvas_header_visible
             for s in ["left", "top", "right"]:
-                self.ax.spines[s].set_visible(False)
-            self.ax.yaxis.set_visible(False)
+                self.ax.spines[s].set_visible(self.ax_spines)
+            self.ax.yaxis.set_visible(self.yaxis_visible)
     def on_done(self, b):
         self.close()
         display(self.fig)   # shows spectrum
@@ -281,11 +296,14 @@ class Show1D(HBox):
     def set_on_redraw(self):
         def on_scroll(event):
             self.scale_up(event.step)
-#        cids = self.fig.canvas.mpl_connect('scroll_event', on_scroll)
+        if Activate_Wheel:
+            self.fig.canvas.capture_scroll = True
+            cids = self.fig.canvas.mpl_connect('scroll_event', on_scroll)
     def disp(self):
+        #print('disp')
         self.xb = self.ax.get_xbound()
         self.ax.clear()
-        self.data.display(scale=self.scale.value, new_fig=False, figure=self.ax, title="Show")
+        self.data.display(scale=self.scale.value, new_fig=False, figure=self.ax, title=self.title)
         self.ax.set_xbound(self.xb)
         self.fig.canvas.header_visible = False
         for s in ["left", "top", "right"]:
@@ -294,58 +312,65 @@ class Show1D(HBox):
         #self.set_on_redraw()
 class baseline1D(Show1D):
     def __init__(self, data, figsize=None, reverse_scroll=False, show=True):
-        super().__init__( data, figsize=figsize, reverse_scroll=reverse_scroll, show=False)
+        super().__init__( data, figsize=figsize, reverse_scroll=reverse_scroll, show=show)
         self.data.real()
-        ppos = self.data.axis1.itop(self.data.axis1.size/2)
-        #self.ax.plot([ppos,ppos], self.ax.get_ybound())
-        self.select = widgets.FloatSlider(description='select:',
-                        min=0.0, max=self.data.size1,
-                        layout=Layout(width='100%'),
-                        value=0.5*self.data.size1, readout=False, continuous_update=REACTIVE)
+        a, b = self.itoc3(0.0), self.itoc3(self.data.size1)   # spectral borders
+        self.select = widgets.BoundedFloatText(description='select:',
+                        min=min(a,b), max=max(a,b),
+                        value=self.itoc3(0.5*self.data.size1), continuous_update=REACTIVE,
+                        tooltip='position of the selected point in %s'%(data.unit[0]))
         self.smooth = widgets.IntSlider(description='smooth:', min=0, max=20,  layout=Layout(width='70%'),
                                         tooltip='apply a local smoothing for pivot points',
                                          value=1, readout=True, continuous_update=REACTIVE)
         self.bsl_points = []
         for w in [self.select, self.smooth]:
             w.observe(self.ob)
-        bsize = '15%'
-        self.cancel = widgets.Button(description="Cancel", button_style='warning', layout=Layout(width='10%'))
+        self.cancel = widgets.Button(description="Cancel", button_style='warning', layout=self.blay,
+            tooltip='Exit without corrections')
         self.cancel.on_click(self.on_cancel)
-        self.auto = widgets.Button(description="Auto", button_style='success', layout=Layout(width=bsize),
+        self.auto = widgets.Button(description="Auto", button_style='success', layout=self.blay,
             tooltip='Automatic set of points')
         self.auto.on_click(self.on_auto)
-        self.set = widgets.Button(description="Add", button_style='success', layout=Layout(width=bsize),
+        self.set = widgets.Button(description="Add", button_style='success', layout=self.blay,
             tooltip='Add a baseline point at the selector position')
         self.set.on_click(self.on_set)
-        self.unset = widgets.Button(description="Rem", button_style='warning', layout=Layout(width=bsize),
+        self.unset = widgets.Button(description="Rem", button_style='warning', layout=self.blay,
             tooltip='Remove the baseline point closest to the selector')
         self.unset.on_click(self.on_unset)
         self.toshow = widgets.Dropdown( options=['baseline', 'corrected', 'points'],  description='Display:')
         self.toshow.observe(self.ob)
-        self.Box = VBox([
-            HBox([self.done, self.cancel, self.toshow,
-                widgets.HTML('Choose baseline points')]),
-            HBox([self.select,self.set, self.unset, self.auto, self.smooth]),
-            self])
+        orig = self.children
+        self.children = [VBox([
+            HBox([widgets.HTML('Choose baseline points'), self.auto, self.select, self.set, self.unset]),
+            HBox([self.cancel, self.toshow, self.smooth]),
+            HBox(orig)])]
+        # self.Box = VBox([
+        #     HBox([self.done, self.cancel, self.toshow,
+        #         widgets.HTML('Choose baseline points')]),
+        #     HBox([self.select,self.set, self.unset, self.auto, self.smooth]),
+        #     self])
         def on_press(event):
-            v = self.data.axis1.ptoi(event.xdata)
-            self.select.value = abs(v)
+            v = event.xdata
+            self.select.value = round(v,3)
         cids = self.fig.canvas.mpl_connect('button_press_event', on_press)
+        super().disp()
 
-        if show: self.show()
-    def show(self):
-        "create the widget and display the spectrum"
-        display(self.Box)
-        self.data.display(figure=self.ax)
-        self.xb = self.ax.get_xbound()  # initialize zoom
-        ppos = self.data.axis1.itop(self.select.value)
-        self.ax.plot([ppos,ppos], self.ax.get_ybound())
-        self.fig.canvas.header_visible = False
-    def close(self):
-        "close all widget"
-        for w in [ self.select, self.auto, self.set, self.unset, self.cancel, self.toshow, self.smooth, self.Box]:
-            w.close()
-        super().close()
+    #     if show: self.show()
+    # def show(self):
+    #     "create the widget and display the spectrum"
+    #     display(self.Box)
+    #     self.data.display(figure=self.ax)
+    #     self.xb = self.ax.get_xbound()  # initialize zoom
+    #     ppos = self.data.axis1.itop(self.select.value)
+    #     self.ax.plot([ppos,ppos], self.ax.get_ybound())
+    #     self.fig.canvas.header_visible = False
+    # def close(self):
+    #     "close all widget"
+    #     for w in [ self.select, self.auto, self.set, self.unset, self.cancel, self.toshow, self.smooth, self.Box]:
+    #         w.close()
+    #     super().close()
+    def itoc3(self,value):
+        return round(self.data.axis1.itoc(value), 3)
     def on_done(self, e):
         if self.bsl_points == []:
             jsalert('Please define control points before applying baseline correction')
@@ -357,19 +382,18 @@ class baseline1D(Show1D):
         display(self.fig)   # shows spectrum
     def on_auto(self, e):
         "automatically set baseline points"
-        self.bsl_points = [self.data.axis1.itop(x) for x in bcorr.autopoints(self.data)]
+        self.bsl_points = [self.data.axis1.itoc(x) for x in bcorr.autopoints(self.data)]
         self.disp()
     def on_cancel(self, e):
         self.close()
-        super().disp()
-        display(self.fig)   # shows spectrum
+        print('no baseline correction')
     def on_set(self, e):
         "add baseline points at selector"
-        self.bsl_points.append( self.selpos() )
+        self.bsl_points.append( self.select.value )
         self.disp()
     def on_unset(self, e):
         "remove baseline points closest from selector"
-        here = self.selpos()
+        here = self.select.value
         distclose = np.inf
         pclose = np.NaN
         for i,p in enumerate(self.bsl_points):
@@ -378,9 +402,6 @@ class baseline1D(Show1D):
                 distclose = abs(p-here)
         self.bsl_points.remove(pclose)
         self.disp()
-    def selpos(self):
-        "returns selector pos in ppm"
-        return self.data.axis1.itop(self.select.value)
     def smoothed(self):
         "returns a smoothed version of the data"
         from scipy.signal import fftconvolve
@@ -409,7 +430,7 @@ class baseline1D(Show1D):
         return value
     def disp(self):
         "compute and display the spectrum"
-        self.xb = self.ax.get_xbound()
+#        self.xb = self.ax.get_xbound()
         # box
         super().disp()
         # data
@@ -420,7 +441,7 @@ class baseline1D(Show1D):
                 self.ax.clear()
                 self.corrected().display(new_fig=False, figure=self.ax, color='r', scale=self.scale.value)
         # selector
-        ppos = self.selpos()
+        ppos = self.select.value
         self.ax.plot([ppos,ppos], self.ax.get_ybound())
         # pivots
         y = bcorr.get_ypoints(  self.data.get_buffer(), 
@@ -434,37 +455,12 @@ Colors = ('black','red','blue','green','orange',
 'blueviolet','crimson','turquoise','indigo',
 'magenta','gold','pink','purple','salmon','darkblue','sienna')
 
-class SpforSuper(object):
-    "a holder for SuperImpose"
-    def __init__(self, i, name):
-        j = i%len(Colors)
-        self.name = widgets.Text(value=name, layout=Layout(width='40em'))
-        self.color = widgets.Dropdown(options=Colors,value=Colors[j],layout=Layout(width='80px'))
-        self.direct = widgets.Dropdown(options=['up','down','off'],value='off', layout=Layout(width='70px'))
-        self.offset = widgets.FloatText(value=0.0, layout=Layout(width='70px'), tooltip="offset")
-        self.me = HBox([widgets.HTML(value="<b>%d</b>"%i),self.name, self.offset, self.color,self.direct])
-        self.fig = False
-    def display(self, unit='ppm'):
-        if self.name != 'None' and self.direct.value != 'off':
-            scale = 1
-            if self.direct.value == 'up':
-                mult = 1
-            elif self.direct.value == 'down':
-                mult = -1
-            else:
-                return
-            NMRData(name=self.name.value).set_unit(unit).mult(mult).display(
-                new_fig=self.fig,
-                scale=scale,
-                color=self.color.value,
-                label=op.basename(op.dirname(self.name.value)))
-
 class Show1Dplus(Show1D):
     def __init__(self, data, base='/DATA', N=9, figsize=None, title=None, reverse_scroll=False):
         from spike.Interactive.ipyfilechooser import FileChooser
         super().__init__( data, figsize=figsize, title=title, reverse_scroll=reverse_scroll)
         # spectrum control widgets
-        self.sptitle = widgets.Text(description='Scale',
+        self.sptitle = widgets.Text(description='Title',
                             value=self.title, layout=Layout(width='40%'))
         self.spcolor = widgets.Dropdown(description='Color',
                             options=["steelblue"]+list(Colors),value='steelblue',
@@ -472,8 +468,16 @@ class Show1Dplus(Show1D):
         self.splw = widgets.FloatText(description='Linewidth',
                             value=1.0, step=0.1,
                             layout=Layout(width='24%'))
+        self.savepdf = widgets.Button(description="Save figure", button_style='',
+                tooltip='Save the current figure as pdf')
+        def onsave(e):
+            name = self.fig.get_axes()[0].get_title()
+            name = name.replace('/','_')+'.pdf'
+            self.fig.savefig(name)
+            print('figure saved as: ',name)
+        self.savepdf.on_click(onsave)
         SP = VBox([ widgets.HTML('<b>Spectrum</b>'),
-                    self.sptitle,
+                    HBox([self.sptitle,self.blank,self.blank,self.savepdf]),
                     HBox([self.spcolor, self.splw])])
         # integral control widgets
         self.integ = widgets.Checkbox(description='Show',
@@ -535,15 +539,15 @@ class Show1Dplus(Show1D):
                     HBox([self.pkvalues, self.pkfont, self.pkrotation])
                   ],layout=Layout(width='60%'))
 
-        self.Chooser = FileChooser(base=base, filetype="*.gs1", mode='r', show=False)
-        self.bsel = widgets.Button(description='Copy',layout=self.blay,
-                button_style='info', # 'success', 'info', 'warning', 'danger' or ''
-                tooltip='copy selected data-set to entry below')
-        self.to = widgets.IntText(value=1,min=1,max=N,layout=Layout(width='10%'))
-        self.bsel.on_click(self.copy)
-        self.DataList = [SpforSuper(i+1,'None') for i in range(N)]
-        self.DataList[0].color.value = 'red'
-        self.DataList[0].fig = True  # switches on the very first one
+        # self.Chooser = FileChooser(base=base, filetype="*.gs1", mode='r', show=False)
+        # self.bsel = widgets.Button(description='Copy',layout=self.blay,
+        #         button_style='info', # 'success', 'info', 'warning', 'danger' or ''
+        #         tooltip='copy selected data-set to entry below')
+        # self.to = widgets.IntText(value=1,min=1,max=N,layout=Layout(width='10%'))
+        # self.bsel.on_click(self.copy)
+        # self.DataList = [SpforSuper(i+1,'None') for i in range(N)]
+        # self.DataList[0].color.value = 'red'
+        # self.DataList[0].fig = True  # switches on the very first one
 
         for widg in (self.sptitle, self.spcolor, self.splw,
                     self.peaks, self.integ, self.scaleint, self.offset, self.intlw,
@@ -554,19 +558,27 @@ class Show1Dplus(Show1D):
         self.tabs = Tab()
 
         orig = self.children
-        self.tabs.children = [
-            VBox([  VBox([SP, INT, PK]),
+        controls = [SP]
+        try:
+            self.data.peaks
+            controls.append(PK)
+        except:
+            pass
+        try:
+            self.data.integrals
+            controls.append(INT)
+        except:
+            pass
+        
+        self.children = [
+            VBox([  VBox(controls),
                     HBox(orig),
                     ]),
-            VBox([  Label("Choose spectra to superimpose"),
-                    HBox([self.Chooser, self.bsel, self.to])]+
-                [sp.me for sp in self.DataList]
-                )
+            # VBox([  Label("Choose spectra to superimpose"),
+            #         HBox([self.Chooser, self.bsel, self.to])]+
+            #     [sp.me for sp in self.DataList]
+            #     )
             ]
-        self.tabs.set_title(0, 'Spectrum')
-        self.tabs.set_title(1, 'Data-List')
-
-        self.children = [self.tabs] 
 
     def copy(self, event):
         if self.to.value <1 or self.to.value >len(self.DataList):
@@ -633,9 +645,11 @@ class Phaser1D(Show1D):
     def __init__(self, data, figsize=None, title=None, reverse_scroll=False, show=True):
         data.check1D()
         if data.itype == 0:
-            jsalert('Data is Real - Please redo Fourier Transform')
-            return
-        super().__init__( data, figsize=figsize, title=title, reverse_scroll=reverse_scroll, show=False)
+            jsalert('Data is Real - an Error will be generated \\n\\n Please redo Fourier Transform')
+            data.phase(0,0)
+        # we'll work on a copy of the data
+        super().__init__( data.copy(), figsize=figsize, title=title, reverse_scroll=reverse_scroll, show=show)
+        self.data_ref = data
         self.p0 = widgets.FloatSlider(description='P0:',min=-180, max=180, step=0.1,
                             layout=Layout(width='100%'), continuous_update=REACTIVE)
         self.p1 = widgets.FloatSlider(description='P1:',min=-360, max=360, step=1.0,
@@ -653,17 +667,16 @@ class Phaser1D(Show1D):
         self.cancel = widgets.Button(description="Cancel", button_style='warning')
         self.cancel.on_click(self.on_cancel)
         # remove done button and create an Apply one
-        self.done.close()
-        self.apply = widgets.Button(description="Done", button_style='success')
-        self.apply.on_click(self.on_Apply)
+        self.done.on_click(self.on_Apply)
         # draw HBox
+        orig = self.children
         self.children = [VBox([
-                            HBox([self.apply, self.cancel, self.pivot, widgets.HTML('<i>set with right-click on spectrum</i>')]),
+                            HBox([self.cancel, self.pivot, widgets.HTML('<i>set with right-click on spectrum</i>')]),
                             self.p0,
                             self.p1,
-                            HBox([VBox([self.blank, self.reset, self.scale]), self.fig.canvas]) ])]
+                            HBox(orig)])]
         # add interaction
-        for w in [self.p0, self.p1, self.scale]:
+        for w in [self.p0, self.p1]:
             w.observe(self.ob)
         self.pivot.observe(self.on_movepivot)
         # add right-click event on spectral window
@@ -672,26 +685,15 @@ class Phaser1D(Show1D):
                 self.pivot.value = round(event.xdata,2)
         cids = self.fig.canvas.mpl_connect('button_press_event', on_press)
         self.lp0, self.lp1 = self.ppivot()
-        if show: self.show()
-    def show(self):
-        self.data.display(figure=self.ax)
-        self.xb = self.ax.get_xbound()  # initialize zoom
-        ppos = self.pivot.value
-        self.ax.plot([ppos,ppos], self.ax.get_ybound())
-        display(self)
-        self.fig.canvas.header_visible = False
+#        self.disp()
 
     def on_cancel(self, b):
-        # self.p0.value = 0  # because widget remains active...
-        # self.p1.value = 0
         self.close()
         print("no applied phase")
     def on_Apply(self, b):
         self.close()
         lp0, lp1 = self.ppivot() # get centered values
-        self.data.phase(lp0, lp1)
-        self.disp()
-        self.on_done(b)
+        self.data_ref.phase(lp0, lp1)
         print("Applied: phase(%.1f,  %.1f)"%(lp0, lp1))
     def ppivot(self):
         "converts from pivot values to centered ones"
@@ -704,17 +706,18 @@ class Phaser1D(Show1D):
     def on_movepivot(self, event):
         if event['name']=='value':
             self.p0.value, self.p1.value = self.ctopivot(self.lp0, self.lp1)
-            self.phase()
+            # self.phase()
+            self.disp()
     def ob(self, event):
         "observe changes and start phasing"
         if event['name']=='value':
-            self.phase()
-    def phase(self):
-        "apply phase and display"
-        self.xb = self.ax.get_xbound()   # get current zoom
-        self.ax.clear()
+            self.data = self.data_ref.copy()
+            self.disp()
+    def disp(self):
+        "apply phase and display pivot - has to use Show1D.disp as it adds the pivot !"
         self.lp0, self.lp1 = self.ppivot()         # get centered values
-        self.data.copy().phase(self.lp0, self.lp1).display(scale=self.scale.value, new_fig=False, figure=self.ax)
+        self.data.phase(self.lp0, self.lp1)
+        Show1D.disp(self) 
         ppos = self.pivot.value
         self.ax.plot([ppos,ppos], self.ax.get_ybound())
         self.ax.set_xbound( self.xb )
@@ -765,7 +768,7 @@ class AvProc1D:
             value=True, description='AutoPhasing', tooltip='Perform AutoPhasing')
         self.wapmin.observe(self.apmin_select)
         self.wbcorr = widgets.Checkbox(
-            value=False, description='Baseline Correction', tooltip='Perform AutoPhasing')
+            value=False, description='Baseline Correction', tooltip='Perform Baseline Correction')
         self.wapod.observe(self.apod_select)
         self.bapod = widgets.Button(description='Show effect on FID')
         self.bapod.on_click(self.show_apod)
@@ -840,7 +843,7 @@ class NMRPeaker1D(Show1D):
     # self.peaks : the defined peaklis, copyied in and out of data
     # self.temppk : the last computed pklist
     def __init__(self, data, figsize=None, reverse_scroll=False, show=True):
-        super().__init__( data, figsize=figsize, reverse_scroll=reverse_scroll, show=False)
+        super().__init__( data, figsize=figsize, reverse_scroll=reverse_scroll, show=show)
         self.data = data.real()
         try:
             self.peaks = self.data.peaks
@@ -851,10 +854,9 @@ class NMRPeaker1D(Show1D):
             min=-1, max=2.0, base=10, step=0.01, layout=Layout(width='30%'),
             continuous_update=False, readout=True, readout_format='.2f')
         try: 
-            self.thresh.value = 100*self.data.peaks.threshold/self.data.absmax  # if already peak pickeds
+            self.thresh.value = 100*self.data.peaks.threshold/self.data.absmax  # if already peak picked
         except:
             self.thresh.value = 20.0
-            pass
         self.thresh.observe(self.pickpeak)
         self.peak_mode = widgets.Dropdown(options=['marker', 'bar'],value='marker',description='show as')
         self.peak_mode.observe(self.ob)
@@ -889,6 +891,7 @@ class NMRPeaker1D(Show1D):
                 w.disabled = False
         cids = self.fig.canvas.mpl_connect('button_press_event', on_press)
         # redefine Box
+        orig = self.children
         self.tabs = Tab()
         self.tabs.children = [
             VBox([
@@ -906,16 +909,16 @@ class NMRPeaker1D(Show1D):
 
         self.children = [VBox([HBox([self.done, self.cancel]),self.tabs])]
 
-        if show: self.show()
-    def show(self):
-        self.data.display(figure=self.ax)
-        self.xb = self.ax.get_xbound()  # initialize zoom
-        self.pp()
-        self.data.display(figure=self.ax)
-        self.fig.canvas.header_visible = False
-        self.ax.set_xbound( (self.data.axis1.itop(0),self.data.axis1.itop(self.data.size1)) )
-        self.disp()
-        display(self)
+        # if show: self.show()
+    # def show(self):
+    #     self.data.display(figure=self.ax)
+    #     self.xb = self.ax.get_xbound()  # initialize zoom
+    #     self.pp()
+    #     self.data.display(figure=self.ax)
+    #     self.fig.canvas.header_visible = False
+    #     self.ax.set_xbound( (self.data.axis1.itop(0),self.data.axis1.itop(self.data.size1)) )
+    #     self.disp()
+    #     display(self)
     def on_add(self, b):
         self.peaks = Peaks.peak_aggreg(self.peaks + self.temppk, distance=1.0)
         self.temppk = Peaks.Peak1DList()
@@ -942,11 +945,8 @@ class NMRPeaker1D(Show1D):
         # new figure
         self.disp()
         # and display        
-        tabs = Tab()
-        tabs.children = [self.fig.canvas, self.out]
-        tabs.set_title(0, '1D Display')
-        tabs.set_title(1, 'Peak Table')
-        display(tabs)
+        display(self.fig)
+        display(self.out)
         self.data.peaks = self.peaks  # and copy
 
     def on_setcalib(self, e):
@@ -1012,6 +1012,7 @@ class NMRPeaker1D(Show1D):
         zm = self.ax.get_xbound()
         self.data.set_unit('ppm').peakpick(threshold=th, verbose=False, zoom=zm).centroid()
         self.temppk = self.data.peaks
+        self.data.peaks = None
         self.disp()
         self.ax.annotate('%d peaks detected'%len(self.data.peaks) ,(0.05,0.95), xycoords='figure fraction')
 
@@ -1019,36 +1020,38 @@ from spike.plugins.Integrate import Integrals, Integralitem
 class NMRIntegrate(Show1D):
     "an integrator for NMR experiments"
     def __init__(self, data, figsize=None, reverse_scroll=False, show=True):
-        super().__init__( data, figsize=figsize, reverse_scroll=reverse_scroll, show=False)
+        super().__init__( data, figsize=figsize, reverse_scroll=reverse_scroll, show=show)
         try:
             self.Integ = data.integrals
         except:
             self.Integ = Integrals(data, compute=False)   # initialize with empty list
+        try:
+            self.peaks_reserved = self.data.peaks
+        except:
+            print('no peaks')
+            self.peaks_reserved = None
         self.thresh = widgets.FloatLogSlider(description='sensitivity',value=10.0,
             min=-1, max=2.0, base=10, step=0.01, layout=Layout(width='30%'),
-            continuous_update=HEAVY, readout=False, readout_format='.2f')
+            continuous_update=HEAVY, readout=True, readout_format='.1f',
+            tooltip='sensitivity to weak signals')
         self.bias = widgets.FloatSlider(
             description='bias', layout=Layout(width='20%'),
             value=0.0,min=-10.0, max=10.0, step=0.1,
-            continuous_update=HEAVY, readout=False, readout_format='.1f')
+            continuous_update=HEAVY, readout=True, readout_format='.1f')
         self.sep = widgets.FloatSlider(
             description='separation', layout=Layout(width='30%'),
             value=3.0,min=0.0, max=20.0, step=0.1,
-            continuous_update=HEAVY, readout=False, readout_format='.1f')
+            continuous_update=HEAVY, readout=True, readout_format='.1f')
         self.wings = widgets.FloatSlider(
             description='extension', layout=Layout(width='30%'),
             value=5.0,min=0.5, max=20.0, step=0.1,
-            continuous_update=HEAVY, readout=False, readout_format='.1f')
+            continuous_update=HEAVY, readout=True, readout_format='.1f')
         for w in (self.bias, self.sep, self.wings):
             w.observe(self.integrate)
         self.thresh.observe(self.peak_and_integrate)
         self.cancel = widgets.Button(description="Cancel", button_style='warning', layout=self.blay)
         self.cancel.on_click(self.on_cancel)
 
-        self.bprint = widgets.Button(description="Print", layout=self.blay,
-                button_style='success', # 'success', 'info', 'warning', 'danger' or ''
-                tooltip='Print to screen')
-        self.bprint.on_click(self.print)
         self.badd = widgets.Button(description="Add", layout=self.blay,
                 button_style='success', tooltip='Add an entry from current zoom')
         self.badd.on_click(self.on_add)
@@ -1065,19 +1068,20 @@ class NMRIntegrate(Show1D):
         self.set.on_click(self.set_value)
         self.out = Output(layout={'border': '1px solid red'})
         # redefine children
+        orig = self.children
         self.tabs = Tab()
         self.tabs.children = [
             VBox([
                 HBox([self.badd, self.brem,
                     Label("Use buttons to add and remove integrals in the current zoom window")]), 
-                HBox([VBox([self.blank, self.reset, self.scale]), self.fig.canvas]),
+                HBox(orig),
                 ]),
             VBox([HBox([self.bauto, Label("Define integral shapes using the sliders below")]),
                 HBox([self.thresh,  self.sep, self.wings]),
-                HBox([VBox([self.blank, self.reset, self.scale]), self.fig.canvas]),
+                HBox(orig),
                 ]),
             VBox([HBox([Label('Choose an integral for calibration'),
-                                self.entry, self.value, self.set, self.blank, self.bprint] ),
+                                self.entry, self.value, self.set] ),
                 self.out ])
             ]
         self.tabs.set_title(0, 'Manual integration')
@@ -1089,16 +1093,16 @@ class NMRIntegrate(Show1D):
         #                         self.entry, self.value, self.set, self.blank, self.bprint] ),
         #                     HBox([VBox([self.blank, self.reset, self.scale]), self.fig.canvas]),
         #                     self.out ])]
-        if show: self.show()
-    def show(self):
-        self.data.display(figure=self.ax)
-        self.xb = self.ax.get_xbound()  # initialize zoom
-        #self.int()
-        self.data.display(figure=self.ax)
-        self.fig.canvas.header_visible = False
-        self.ax.set_xbound( (self.data.axis1.itop(0),self.data.axis1.itop(self.data.size1)) )
+    # def show(self):
+    #     self.data.display(figure=self.ax)
+    #     self.xb = self.ax.get_xbound()  # initialize zoom
+    #     #self.int()
+    #     self.data.display(figure=self.ax)
+    #     self.fig.canvas.header_visible = False
+    #     self.ax.set_xbound( (self.data.axis1.itop(0),self.data.axis1.itop(self.data.size1)) )
+    #     self.disp()
+    #     display(self)
         self.disp()
-        display(self)
     def on_cancel(self, b):
         self.close()
         print("No integration")
@@ -1108,6 +1112,10 @@ class NMRIntegrate(Show1D):
         display(self.fig)
         display(self.out)
         self.data.integrals = self.Integ        # copy integrals
+        if self.peaks_reserved:
+            self.data.peaks = self.peaks_reserved
+        else:
+            del(self.data.peaks)
     def on_add(self, b):
         start, end = self.ax.get_xbound() 
         self.Integ.append( Integralitem(self.data.axis1.ptoi(start), self.data.axis1.ptoi(end), [], 0.0) )

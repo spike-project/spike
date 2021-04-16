@@ -30,40 +30,44 @@
 #
 # ***Remark*** *to use this program, you should have installed the following packages:*
 #
-# - *a complete scientific python environment* ( *tested with python 3.7 - [anaconda](https://www.anaconda.com/) does probably not work in python 2.7 *)
-# - [`spike`](https://www.bitbucket.org/delsuc/spike) ( *version 0.99.9 minimum* )
-# - [`ipywidgets`](https://ipywidgets.readthedocs.io/en/latest/)  ( *tested with version 7.1* )
-# - [`ipyml`](https://github.com/matplotlib/jupyter-matplotlib)  ( *adds interactivity in the notebook* )
+# - *a complete scientific python environment ( tested with python 3.7 / [anaconda](https://www.anaconda.com/)  with no support for python 2.7 )*
+# - [`spike`](https://www.bitbucket.org/delsuc/spike) ( *version 0.99.21 minimum* )
+# - [`ipywidgets`](https://ipywidgets.readthedocs.io/en/latest/)  ( *tested with version 7.6* )
+# - [`ipympl`](https://github.com/matplotlib/jupyter-matplotlib)  ( *adds interactivity in the notebook* )
 #
 # ## Initialization
 # the following cell should be run only once, at the beginning of the processing
 
 # %%
 # load all python and interactive tools - should be run only once
-from __future__ import print_function, division
 from IPython.display import display, HTML, Markdown, Image
 display(Markdown('## STARTING Environment...'))
 import matplotlib as mpl
 # %matplotlib widget
-import os.path as op
 import spike
 from spike.File.BrukerNMR import Import_1D
 from spike.Interactive import INTER as I
 from spike.Interactive.ipyfilechooser import FileChooser
 print("\nInteractive module version,",I.__version__)
+from datetime import datetime
+print('Run date:', datetime.now().isoformat() )
 display(Markdown('## ...program is Ready'))
-from importlib import reload  # the two following lines are debugging help
-mpl.rcParams['figure.figsize'] = (8,4)
-reload(I)                   # and can be removed safely when in production
+from importlib import reload  # this line is debugging help
 I.hidecode(message="")
 I.hidedoc()
+
+# configurable items
+mpl.rcParams['figure.figsize'] = (8,4)   # default figure size (X,Y)
+I.Activate_Wheel = True                  # wheel control in the graphic cells
 
 # %% [markdown]
 # ### Choose the file
 # The `FileChooser()` tool creates a dialog box which allows to choose a file on your disk
 #
-# - use the `Select` button, `..` is for going back in the directory tree
+# - use the `Select` button, click on the directory to move around `..` is for going back in the directory tree
+# - click on the file to select it
 # - modify the ( *optional* ) `path` argument, to start the exploration on a given location
+# - changing to `path='.'` will start the browsing from the current directory 
 # - After the selection, the selected filename is found in `FC.selected`
 
 # %%
@@ -77,32 +81,37 @@ display(FC)
 # This is simply done with the `Import_1D()` tool, which returns a `SPIKE` object.
 #
 # We store the dataset into a variable, typing the variable name shows a summary of the dataset. 
+#
+# We show the dataset with the command `I.Show1D()`, which is a high level tool, but you can use the low level tool:
+#
+# ```d1.display()  # and check all options, plus access to matplotlib details```
 
 # %%
 # Import dataset
 print('Reading file ',FC.selected)
-d1 = Import_1D(FC.selected)
-d1.filename = FC.selected
-d1.set_unit('sec').display(title=FC.nmrname+" fid")
-d1.mplfigure.figure.canvas.header_visible = False
-
-# %%
-I.Show1D(d1)
+d1 = Import_1D(FC.selected)                    # Import_1D creates a SPIKE NMRData object, from which everything is available
+d1.set_unit('sec')                             # it can be acted upon
+d1.filename = FC.selected                      # and be extended at will
+print('title:', d1.params['acqu']['title'])    # d1.params is a dictionary which contains the whole 'acqu' and 'proc' Bruker parameters
+I.Show1D(d1, title=FC.selected)
 
 # %% [markdown]
-# In the current set-up, the figure can be resized and explored *(zoom, shift, resize, etc)* with the jupyter tools displayed  below the dataset.
-# The figure can also be saved as a `png` graphic file.
+# In the current set-up, the figure can be resized and explored *(zoom, shift, resize, etc)* with the jupyter tools displayed  beside the dataset.
+# The figure can also be saved as a `png` graphic file with the *floppy disk* button.
+#
+# The `I.Show1D()` command adds a scale slider, and a `Save Figure` button, to store a pdf version, and a `Done` button to freeze the picture.
 #
 # ## Basic Processing
 # The following cell applies a basic processing, check the documentation for more advanced processing
 
 # %%
 # Basic Processing
-LB = 0.1        # you can adapte LB to your means
-D1 = d1.copy() # copy the imported data-set to another object for processing
+LB = 0.1                        # you can adapt LB to your means, in Hz
+D1 = d1.copy()                  # copy the imported data-set to another object for processing
 D1.apod_em(LB).zf(4).ft_sim().bk_corr().apmin()  # chaining  apodisation - zerofill - FT - Bruker correction - autophase
-D1.set_unit('ppm').display(title=FC.nmrname)  # chain  set to ppm unit - and display
-D1.mplfigure.figure.canvas.header_visible = False
+D1.set_unit('ppm')              # set to ppm unit ('Hz' and 'point' also available)
+                                # all Spike command can be pipelined at will - these 3 lines could be piped as one.
+I.Show1D(D1, title=FC.nmrname)  #  and display
 
 # %% [markdown]
 # <hr/>
@@ -114,14 +123,14 @@ D1.mplfigure.figure.canvas.header_visible = False
 #
 # Use `scale` (or mouse wheel) and the zoom box to tune the display; then use `P0, P1, pivot` to optimize the phase.
 #
-# `pivot` is where the $1^{st}$ order correction is not acting - and can be moved with the slider or by clicking on the spectrum
+# `pivot` is where the $1^{st}$ order correction is not acting - and can be moved with the slider or by right-clicking on the spectrum
 #
 # Once finished, click on `Done`
 
 # %%
 # rephasing
 reload(I)
-I.Phaser1D(D1);
+I.Phaser1D(D1, title=FC.nmrname)
 
 # %% [markdown]
 # ### Baseline correction
@@ -136,7 +145,7 @@ I.Phaser1D(D1);
 # %%
 # Baseline Correction
 reload(I)
-I.baseline1D(D1);
+I.baseline1D(D1)
 
 # %% [markdown]
 # ## Peak-Picker
@@ -148,7 +157,7 @@ I.baseline1D(D1);
 # %%
 # Peak Picker
 reload(I)
-ph = I.NMRPeaker1D(D1);
+I.NMRPeaker1D(D1)
 
 # %% [markdown]
 # ## Integrate
@@ -159,7 +168,7 @@ ph = I.NMRPeaker1D(D1);
 # Integration
 reload(I)
 D1.real()
-ii = I.NMRIntegrate(D1);
+I.NMRIntegrate(D1)
 
 # %% [markdown]
 # ## Interactive composite display
@@ -172,7 +181,14 @@ ii = I.NMRIntegrate(D1);
 # Composite display
 reload(I)
 reload(spike.plugins.Peaks)
-s = I.Show1Dplus(D1, title=FC.nmrname);
+I.Show1Dplus(D1, title=FC.nmrname)
+
+# %%
+t = s.fig.get_axes()[0].get_title()
+t.replace('/','_')
+
+# %%
+s.fig.savefig('compo2.pdf')
 
 # %% [markdown]
 # ---
