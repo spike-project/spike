@@ -10,6 +10,7 @@ Used to be inside NPKData
 """
 
 from __future__ import print_function, division
+import os
 import math
 import unittest
 import numpy as np
@@ -305,6 +306,9 @@ class NMRDataTests(unittest.TestCase):
             F.currentunit = u
             self.assertAlmostEqual( F.ctoi( F.itoc(4321)), 4321)
 
+
+from . import plugins
+plugins.loadfolder(os.path.join(plugins.__path__[0],'NMR'), debug=False)
 
 if __name__ == '__main__':
     # minitest

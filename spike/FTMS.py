@@ -13,6 +13,7 @@ Copyright (c) 2014 IGBMC. All rights reserved.
 """
 
 from __future__ import print_function
+import os
 import math
 import unittest
 import numpy as np
@@ -339,6 +340,8 @@ class FTMSData(NPKData._NPKData):
         self.name = name
         return self
 #-------------------------------------------------------------------------------
+from . import plugins
+plugins.loadfolder(os.path.join(plugins.__path__[0],'MS'), debug=False)
 
 if __name__ == '__main__':
     # minitest

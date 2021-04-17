@@ -32,23 +32,44 @@ import traceback
 import unittest
 from collections import defaultdict
 import glob, os
+from pathlib import Path
+
 #from ..NPKData import NPKData_plugin
 
 plugins = {}  # contains plugin modules loaded so far
 codes = defaultdict(list)  # loaded at plugin injection with all codes
 
 def load(debug=True):
-    "the load() function is called at initialization, and loads all files found in the plugins folder"
-# import all python code found here ( __path__[0] ) except me !
-    for pgfile in sorted( glob.glob( os.path.join(__path__[0],"*.py") ) ):
-        b = os.path.basename(pgfile)    # code.py
-        pgmod = os.path.splitext(b)[0]  # code
-        if not b.startswith('_'):
-            loadone(pgmod, pgfile, debug=debug)
-    print( "plugins loaded:\n" + 
-           " ".join(["{}, ".format(k) for k in plugins.keys()]) )
+    """
+    the load() function is called at initialization, and loads all files found in the plugins folders
+    typically
+        - plugins folder in distribution
+        - $HOME/Spike/plugins
+    """
+    for folder in [Path(__path__[0]), Path.home()/'Spike'/'plugins']:
+        loadfolder(folder, debug=debug)
     print( "\nspike.plugins.report() for a short description of each plugins")
     print( "spike.plugins.report('module_name') for complete documentation on one plugin") 
+
+
+def loadfolder(folder, debug=True):
+    """the loads plugins from a given folder
+    import all python code found here  except the ones with names starting with a _
+    """
+    done = []
+    try:
+        folder.name
+    except AttributeError:
+        folder = Path(folder)  # assume it was a string
+    for pgfile in sorted( folder.glob("*.py") ):
+        b = pgfile.name    # code.py
+        pgmod = pgfile.stem  # code
+        if not b.startswith('_'):
+            loadone(pgmod, str(pgfile), debug=debug)
+            done.append(pgmod)
+    if done:
+        print( "plugins loaded:\n" + 
+           " ".join(["{}, ".format(k) for k in done if k in plugins.keys()]) )
 
 
 def report(module=None, mode=None):
@@ -79,7 +100,7 @@ def report(module=None, mode=None):
 def loadone(pluginname, pgfile=None, debug=True):
     """
     loads the plugin "pluginname" found in file pgfile
-    if pgfile is None, the file is found in the plugins folder (without the .py extension)
+    if pgfile is None, the file is found in the plugins folder (adding the .py extension)
     """
     global plugins
     direc = __path__[0] # plugins folder
