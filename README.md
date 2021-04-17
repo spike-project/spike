@@ -1,3 +1,4 @@
+![SPIKE](spike/Interactive/Logo.png)
 # What is SPIKE ? #
 
 **SPIKE** a collaborative development for a FT-spectroscopy processing program.
