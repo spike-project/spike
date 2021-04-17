@@ -48,6 +48,7 @@ import spike
 from spike.File.BrukerNMR import Import_1D
 from spike.Interactive import INTER as I
 from spike.Interactive.ipyfilechooser import FileChooser
+I.Logo()
 print("\nInteractive module version,",I.__version__)
 from datetime import datetime
 print('Run date:', datetime.now().isoformat() )
@@ -183,19 +184,14 @@ reload(I)
 reload(spike.plugins.Peaks)
 I.Show1Dplus(D1, title=FC.nmrname)
 
-# %%
-t = s.fig.get_axes()[0].get_title()
-t.replace('/','_')
-
-# %%
-s.fig.savefig('compo2.pdf')
-
 # %% [markdown]
 # ---
 # optional steps
 #
 # ## Save the data-set
 # either as stand alone native SPIKE files, (there are other formats)
+
+# %%
 
 # %%
 D1.save('example1.gs1')
