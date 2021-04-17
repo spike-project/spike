@@ -11,7 +11,7 @@ Each Notebook provides a single set of functions, for instance
 - Processing and display of a 1D FT-ICR-MS dataset
 - Display of a 2D FT-ICR-MS dataset
 
-*to comme soon*
+*to come soon*
 
 - Display and comparison of a set of 1D NMR datasets
 - Processing and display of a 1D Orbitrap-MS dataset
