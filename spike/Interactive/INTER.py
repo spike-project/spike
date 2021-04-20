@@ -26,9 +26,8 @@ import ipywidgets as widgets
 from IPython.display import display, HTML, Javascript, Markdown, Image
 import numpy as np
 
+from .. import NMR
 from ..File.BrukerNMR import Import_1D
-from .. import NPKData
-from ..NMR import NMRData
 from .ipyfilechooser import FileChooser as FileChooser_code
 try:
     import spike.plugins.bcorr as bcorr
@@ -105,6 +104,13 @@ $(document).ready(doc_toggle);
 %s
 </form>'''%(init, message)))
 
+from . import __path__
+def Logofile():
+    "return the address on disk of the Logo file"
+    return op.join(__path__[0],'Logo.png')
+def Logo(width=150):
+    "display the Logo"
+    display(Image(filename=Logofile(),width=width))
 def jsalert(msg="Alert text"):
     "send a javascript alert"
     display(Javascript("alert('%s')"%msg))
@@ -286,7 +292,7 @@ class Show1D(HBox):
         display(self.fig)   # shows spectrum
     def on_reset(self, b):
         self.scale.value = 1.0
-        self.ax.set_xbound( (self.data.axis1.itop(0),self.data.axis1.itop(self.data.size1)) )
+        self.ax.set_xbound( (self.data.axis1.itoc(0),self.data.axis1.itoc(self.data.size1)) )
     def ob(self, event):
         "observe events and display"
         if event['name']=='value':
@@ -468,16 +474,19 @@ class Show1Dplus(Show1D):
         self.splw = widgets.FloatText(description='Linewidth',
                             value=1.0, step=0.1,
                             layout=Layout(width='24%'))
-        self.savepdf = widgets.Button(description="Save figure", button_style='',
-                tooltip='Save the current figure as pdf')
-        def onsave(e):
-            name = self.fig.get_axes()[0].get_title()
-            name = name.replace('/','_')+'.pdf'
-            self.fig.savefig(name)
-            print('figure saved as: ',name)
-        self.savepdf.on_click(onsave)
+        self.showlogo = widgets.Checkbox(description="Logo", 
+                            value = True)
+        self.axlogo = self.fig.add_axes([.92, .84, .08, .16], visible=True)
+        self.axlogo.imshow(plt.imread(Logofile(),'rb'))
+        self.axlogo.set_axis_off()
+        def switchlogo(e):
+            if self.showlogo.value:
+                self.axlogo.set_visible(True)
+            else:
+                self.axlogo.set_visible(False)
+        self.showlogo.observe(switchlogo)
         SP = VBox([ widgets.HTML('<b>Spectrum</b>'),
-                    HBox([self.sptitle,self.blank,self.blank,self.savepdf]),
+                    HBox([self.sptitle,self.blank,self.blank,self.showlogo]),
                     HBox([self.spcolor, self.splw])])
         # integral control widgets
         self.integ = widgets.Checkbox(description='Show',
@@ -1016,7 +1025,7 @@ class NMRPeaker1D(Show1D):
         self.disp()
         self.ax.annotate('%d peaks detected'%len(self.data.peaks) ,(0.05,0.95), xycoords='figure fraction')
 
-from spike.plugins.Integrate import Integrals, Integralitem
+from spike.plugins.NMR.Integrate import Integrals, Integralitem
 class NMRIntegrate(Show1D):
     "an integrator for NMR experiments"
     def __init__(self, data, figsize=None, reverse_scroll=False, show=True):

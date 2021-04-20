@@ -58,8 +58,8 @@ I.hidecode(message="")
 I.hidedoc()
 
 # configurable items
-mpl.rcParams['figure.figsize'] = (8,4)   # default figure size (X,Y)
-I.Activate_Wheel = True                  # wheel control in the graphic cells
+mpl.rcParams['figure.figsize'] = (8,4)   # (X,Y) default figure size
+I.Activate_Wheel = True                  # True/False wheel control in the graphic cells 
 
 # %% [markdown]
 # ### Choose the file
@@ -77,15 +77,11 @@ FC = FileChooser(path='/DATA/',filename='fid')
 display(FC)
 
 # %% [markdown]
-# ### Import dataset
+# ### Import dataset and display FID
 #
 # This is simply done with the `Import_1D()` tool, which returns a `SPIKE` object.
 #
-# We store the dataset into a variable, typing the variable name shows a summary of the dataset. 
-#
-# We show the dataset with the command `I.Show1D()`, which is a high level tool, but you can use the low level tool:
-#
-# ```d1.display()  # and check all options, plus access to matplotlib details```
+# We store the dataset into a variable, here called d1. 
 
 # %%
 # Import dataset
@@ -93,14 +89,34 @@ print('Reading file ',FC.selected)
 d1 = Import_1D(FC.selected)                    # Import_1D creates a SPIKE NMRData object, from which everything is available
 d1.set_unit('sec')                             # it can be acted upon
 d1.filename = FC.selected                      # and be extended at will
-print('title:', d1.params['acqu']['title'])    # d1.params is a dictionary which contains the whole 'acqu' and 'proc' Bruker parameters
+print(d1)                                      # print() of the dataset shows a summary of the parameters
+display(HTML('<b>title: </b>'+ d1.params['acqu']['title']))    # d1.params is a dictionary which contains the whole 'acqu' and 'proc' Bruker parameters
 I.Show1D(d1, title=FC.selected)
+# alternatively you can use the low-level tool below:
+# d1.display()  # with many options, plus access to matplotlib details
 
 # %% [markdown]
-# In the current set-up, the figure can be resized and explored *(zoom, shift, resize, etc)* with the jupyter tools displayed  beside the dataset.
-# The figure can also be saved as a `png` graphic file with the *floppy disk* button.
+# Spectra can be interactively explored with the jupyter tools displayed  on the side of the dataset:
 #
-# The `I.Show1D()` command adds a scale slider, and a `Save Figure` button, to store a pdf version, and a `Done` button to freeze the picture.
+# - zoom with <button class="jupyter-matplotlib-button jupyter-widgets jupyter-button" href="#" title="Zoom to rectangle" style="outline: currentcolor none medium;"><i class="center fa fa-square-o"></i></button>
+# - shift and resize
+# <button class="jupyter-matplotlib-button jupyter-widgets jupyter-button" href="#" title="Pan axes with left mouse, zoom with right" style="outline: currentcolor none medium;"><i class="center fa fa-arrows"></i></button>
+#  (with left and right click)
+# - <button class="jupyter-matplotlib-button jupyter-widgets jupyter-button" href="#" title="Back to previous view" style="outline: currentcolor none medium;"><i class="center fa fa-arrow-left"></i></button>
+# and
+# <button class="jupyter-matplotlib-button jupyter-widgets jupyter-button" href="#" title="Forward to next view" style="outline: currentcolor none medium;"><i class="center fa fa-arrow-right"></i></button>
+# allow to navigate in the zoom history
+#
+# - <button class="jupyter-matplotlib-button jupyter-widgets jupyter-button" href="#" title="Download plot" style="outline: currentcolor none medium;"><i class="center fa fa-fw fa-floppy-o"></i></button> is used to store a `png` graphic file of the current display.
+#
+# The drawing zone can be resized using the little grey triangle on the lower-right corner
+#
+# In addition, the `I.Show1D()` is a high level tool which adds a scale slider, a
+# <button class="p-Widget jupyter-widgets jupyter-button widget-button" style="width: 80px;" >Save figure</button>
+#  button, to store a high quality pdf version,
+#  and a
+# <button class="p-Widget jupyter-widgets jupyter-button widget-button mod-success" style="width: 80px;" >Done</button>
+# button to freeze the picture.
 #
 # ## Basic Processing
 # The following cell applies a basic processing, check the documentation for more advanced processing
@@ -130,7 +146,6 @@ I.Show1D(D1, title=FC.nmrname)  #  and display
 
 # %%
 # rephasing
-reload(I)
 I.Phaser1D(D1, title=FC.nmrname)
 
 # %% [markdown]
@@ -145,7 +160,6 @@ I.Phaser1D(D1, title=FC.nmrname)
 
 # %%
 # Baseline Correction
-reload(I)
 I.baseline1D(D1)
 
 # %% [markdown]
@@ -181,7 +195,6 @@ I.NMRIntegrate(D1)
 # %%
 # Composite display
 reload(I)
-reload(spike.plugins.Peaks)
 I.Show1Dplus(D1, title=FC.nmrname)
 
 # %% [markdown]
