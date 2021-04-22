@@ -1474,7 +1474,7 @@ class _NPKData(object):
         return test
     def display(self, scale = 1.0, autoscalethresh=3.0, absmax = None, show = False, label = None, new_fig = True, axis = None,
                 zoom = None, xlabel="_def_", ylabel = "_def_", title = None, figure = None,
-                linewidth=1, color = None, mpldic={}, mode3D = False, NbMaxVect=None):
+                linewidth=1, color = None, mpldic={}, NbMaxVect=None):
         """
         not so quick and dirty display using matplotlib 
         
@@ -1494,10 +1494,9 @@ class _NPKData(object):
                 if new_fig is a dict, it will be passed as is to plt.figure()
         figure  if not None, will be used directly to display instead of using its own
                 figure is actually a "matplotlib.axes" object, not a "matplotlib.figure"
-        mode3D  obsolete
         zoom    is a tuple defining the zoom window (left,right) or   ((F1_limits),(F2_limits))
                 defined in the current axis unit (points, ppm, m/z etc ....)
-        linewidth: linewidth for the plots (useful for example when using seaborn)
+        linewidth: linewidth for the plots
         mpldic: a dictionnary passed as is to the plot command 
         NbMaxVect: if set to a number, will limit the number of displayed vectors to that number by decimating the data (in 1D only so far)
 

@@ -122,7 +122,7 @@ class Tests(unittest.TestCase):
         cp = NPKConfigParser()
         cp.read(filename("test.mscf"))
         print('sections:', list(cp.sections()))
-        for sec in ['import', 'processing', 'visu2d']:   # check sctions
+        for sec in ['import', 'processing']:   # check sections
             self.assertTrue(sec in  list(cp.sections()) )
         fname = cp.get("import", "apex", verbose=True, default="def_apex")
         self.assertEqual("ubiquitine_2D_000002.d", fname)              # string
