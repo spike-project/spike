@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.3.4
+#       jupytext_version: 1.11.1
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -48,14 +48,12 @@ import spike
 from spike.File.BrukerNMR import Import_1D
 from spike.Interactive import INTER as I
 from spike.Interactive.ipyfilechooser import FileChooser
-I.Logo()
 print("\nInteractive module version,",I.__version__)
 from datetime import datetime
 print('Run date:', datetime.now().isoformat() )
+I.initialize()
 display(Markdown('## ...program is Ready'))
 from importlib import reload  # this line is debugging help
-I.hidecode(message="")
-I.hidedoc()
 
 # configurable items
 mpl.rcParams['figure.figsize'] = (8,4)   # (X,Y) default figure size
@@ -84,7 +82,6 @@ display(FC)
 # We store the dataset into a variable, here called d1. 
 
 # %%
-# Import dataset
 print('Reading file ',FC.selected)
 d1 = Import_1D(FC.selected)                    # Import_1D creates a SPIKE NMRData object, from which everything is available
 d1.set_unit('sec')                             # it can be acted upon
@@ -146,6 +143,7 @@ I.Show1D(D1, title=FC.nmrname)  #  and display
 
 # %%
 # rephasing
+reload(I)
 I.Phaser1D(D1, title=FC.nmrname)
 
 # %% [markdown]
@@ -203,8 +201,6 @@ I.Show1Dplus(D1, title=FC.nmrname)
 #
 # ## Save the data-set
 # either as stand alone native SPIKE files, (there are other formats)
-
-# %%
 
 # %%
 D1.save('example1.gs1')

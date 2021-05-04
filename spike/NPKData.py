@@ -1279,6 +1279,7 @@ class _NPKData(object):
             return c
     #--------------------------------------------------------------------------
     def diag2D(self):
+        "extract the diagonal of a 2D experiment"
         self.check2D()
         Data = type(self)   # NPKData get subclassed, so subclass creator is to be used
         if self.size1 > self.size2:
@@ -1309,7 +1310,8 @@ class _NPKData(object):
         """returns a 1D extracted from the current 2D at position 0<=i<=size2-1 """
         self.check2D()
         Data = type(self)   # NPKData get subclassed, so subclass creator is to be used
-        c = Data(buffer = self.buffer[:,i].copy())
+        ii = int(round(i))
+        c = Data(buffer = self.buffer[:,ii].copy())
         c.axis1 = self.axis1.copy()
         try:
             c.params = copy.deepcopy(self.params)
@@ -1324,7 +1326,8 @@ class _NPKData(object):
         d1D.check1D()
         if d1D.axis1.itype != self.axis1.itype:
             warnings.warn("column and 2D types do not match", UserWarning)
-        self.buffer[:,i] = d1D.buffer
+        ii = int(round(i))
+        self.buffer[:,ii] = d1D.buffer
         return self
     #----------------------------------------------
     def xcol(self, start=0, stop=None, step=1):
@@ -1355,7 +1358,8 @@ class _NPKData(object):
         """returns a 1D extracted from the current 2D at position 0<=i<=size1-1 """
         self.check2D()
         Data = type(self)   # NPKData get subclassed, so subclass creator is to be used
-        r = Data(buffer = self.buffer[i,:].copy())
+        ii = int(round(i))
+        r = Data(buffer = self.buffer[ii,:].copy())
         r.axis1 = self.axis2.copy()
         try:
             r.params = copy.deepcopy(self.params)
@@ -1370,7 +1374,8 @@ class _NPKData(object):
         d1D.check1D()
         if d1D.axis1.itype != self.axis2.itype:
             warnings.warn("row and 2D types do not match", UserWarning)
-        self.buffer[i,:] = d1D.buffer[:]
+        ii = int(round(i))
+        self.buffer[ii,:] = d1D.buffer[:]
         return self
     #----------------------------------------------
     def xrow(self, start=0, stop=None, step=1):
@@ -1401,18 +1406,19 @@ class _NPKData(object):
         todo = self.test_axis(axis)
         self.check3D()
         Data = type(self)   # NPKData get subclassed, so subclass creator is to be used        
+        ii = int(round(i))
         if todo == 1 :
-            r = Data(buffer = self.buffer[i,:,:].copy())
+            r = Data(buffer = self.buffer[ii,:,:].copy())
             r.axis1 = self.axis2.copy()
             r.axis2 = self.axis3.copy()
             return r
         elif todo == 2:
-            r = Data(buffer = self.buffer[:,i,:].copy())
+            r = Data(buffer = self.buffer[:,ii,:].copy())
             r.axis1 = self.axis1.copy()
             r.axis2 = self.axis3.copy()
             return r
         elif todo == 3:
-            r = Data(buffer = self.buffer[:,:,i].copy())
+            r = Data(buffer = self.buffer[:,:,ii].copy())
             r.axis1 = self.axis1.copy()
             r.axis2 = self.axis2.copy()
             return r
@@ -1424,12 +1430,13 @@ class _NPKData(object):
         todo = self.test_axis(axis)
         self.check3D()
         d2D.check2D()
+        ii = int(round(i))
         if todo == 1 :
-            self.buffer[i,:,:] = d2D.buffer[:,:]
+            self.buffer[ii,:,:] = d2D.buffer[:,:]
         elif todo == 2:
-            self.buffer[:,i,:] = d2D.buffer[:,:]
+            self.buffer[:,ii,:] = d2D.buffer[:,:]
         elif todo == 3:
-            self.buffer[:,:,i] = d2D.buffer[:,:]
+            self.buffer[:,:,ii] = d2D.buffer[:,:]
         else:
             raise NPKError("problem with plane axis selection")
         return self
@@ -1548,38 +1555,35 @@ class _NPKData(object):
             if not absmax:  # absmax is the largest point on spectrum, either given from call, or handled internally
                 absmax = self.absmax
 #            print _absmax, self._absmax
-            if mode3D:
-                print("3D not implemented")
+            if self.level:
+                level = self.level
             else:
-                if self.level:
-                    level = self.level
+                # d.absmax*0.05/scale = 3*noise   // scale = d.absmax*0.05/(3*noise)
+                if scale == "auto":
+                    noise = findnoiselevel_2D(self.buffer)
+                    m = autoscalethresh*noise/0.05
+                    print("computed scale: %.2f"%(absmax/m,))
                 else:
-                    # d.absmax*0.05/scale = 3*noise   // scale = d.absmax*0.05/(3*noise)
-                    if scale == "auto":
-                        noise = findnoiselevel_2D(self.buffer)
-                        m = autoscalethresh*noise/0.05
-                        print("computed scale: %.2f"%(absmax/m,))
-                    else:
-                        m = absmax/scale
+                    m = absmax/scale
 #                    level = (m*0.5, m*0.25, m*0.1, m*0.05)
-                    level = sorted([m*0.05, m*0.1, m*0.25, m*0.5])  # correction for matplotlib 1.5.1
-                    # print("level ", level)
-                    # print("m ",  m)
-                    if xlabel == "" and ylabel == "":
-                        fig.set_xticklabels('')
-                        fig.set_yticklabels('')
-                if axis is None:
-                    axis = (self.axis1.unit_axis(), self.axis2.unit_axis())
-                fig.set_yscale(self.axis1.units[self.axis1.currentunit].scale)  # set unit scale (log / linear)
-                if self.axis1.units[self.axis1.currentunit].reverse:# and new_fig:
-                        fig.set_ylim(axis[0][z1lo], axis[0][z1up]) #fig.invert_yaxis()
-                fig.set_xscale(self.axis2.units[self.axis2.currentunit].scale)  # set unit scale (log / linear)
-                if self.axis2.units[self.axis2.currentunit].reverse:# and new_fig:
-                        fig.set_xlim(axis[1][z2lo], axis[1][z2up])# fig.invert_xaxis()
-                fig.contour(axis[1][z2lo:z2up:step2],
-                    axis[0][z1lo:z1up:step1],
-                    self.buffer[z1lo:z1up:step1,z2lo:z2up:step2],
-                    level, colors=color, **mpldic)
+                level = sorted([m*0.05, m*0.1, m*0.25, m*0.5])  # correction for matplotlib 1.5.1
+                # print("level ", level)
+                # print("m ",  m)
+                if xlabel == "" and ylabel == "":
+                    fig.set_xticklabels('')
+                    fig.set_yticklabels('')
+            if axis is None:
+                axis = (self.axis1.unit_axis(), self.axis2.unit_axis())
+            fig.set_yscale(self.axis1.units[self.axis1.currentunit].scale)  # set unit scale (log / linear)
+            if self.axis1.units[self.axis1.currentunit].reverse:# and new_fig:
+                    fig.set_ylim(axis[0][z1lo], axis[0][z1up]) #fig.invert_yaxis()
+            fig.set_xscale(self.axis2.units[self.axis2.currentunit].scale)  # set unit scale (log / linear)
+            if self.axis2.units[self.axis2.currentunit].reverse:# and new_fig:
+                    fig.set_xlim(axis[1][z2lo], axis[1][z2up])# fig.invert_xaxis()
+            fig.contour(axis[1][z2lo:z2up:step2],
+                axis[0][z1lo:z1up:step1],
+                self.buffer[z1lo:z1up:step1,z2lo:z2up:step2],
+                level, colors=color, **mpldic)
             if xlabel == "_def_":
                 xlabel = self.axis2.currentunit
             if ylabel == "_def_":

@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.3.4
+#       jupytext_version: 1.11.1
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -15,7 +15,6 @@
 # ---
 
 # %% [markdown]
-# ** *This notebook is unfinished and still under development* **
 #
 # # 2D NMR Processing and Display
 #
@@ -29,10 +28,9 @@
 #
 # ***Remark*** *to use this program, you should have installed the following packages:*
 #
-# - *a complete scientific python environment* ( *tested with python 3.6 - [anaconda](https://www.anaconda.com/) 
-#  but it should also work in python 2.7*)
-# - [`spike`](https://www.bitbucket.org/delsuc/spike) ( *version 0.99.9 minimum* )
-# - [`ipywidgets`](https://ipywidgets.readthedocs.io/en/latest/)  ( *tested with version 7.1* )
+# - *a complete scientific python environment ( tested with python 3.7 - [anaconda](https://www.anaconda.com/))*
+# - [`spike`](https://www.bitbucket.org/delsuc/spike) ( *version 0.99.21 minimum* )
+# - [`ipywidgets`](https://ipywidgets.readthedocs.io/en/latest/)  ( *tested with version 7.6* )
 # - [`ipyml`](https://github.com/matplotlib/jupyter-matplotlib)  ( *adds interactivity in the notebook* )
 #
 # ## Initialization
@@ -51,13 +49,20 @@ from spike.File.BrukerNMR import Import_2D
 from spike.Interactive import INTER as I
 from spike.Interactive import INTER_2D as I2D
 from spike.Interactive.ipyfilechooser import FileChooser
+print("\nInteractive module version,",I.__version__)
+from datetime import datetime
+print('Run date:', datetime.now().isoformat() )
+I.initialize()
 display(Markdown('## ...program is Ready'))
 from importlib import reload  # the two following lines are debugging help
-reload(I)                   # and can be removed safely when in production
-I.hidecode(message="")
-I.hidedoc()
+
+# configurable items
+plt.rcParams['figure.figsize'] = (8,4)   # (X,Y) default figure size
+I.Activate_Wheel = True                  # True/False wheel control in the graphic cells 
 
 # %% [markdown]
+# ---
+#
 # ### Choose the file
 # The `FileChooser()` tool creates a dialog box which allows to choose a file on your disk
 #
@@ -66,7 +71,7 @@ I.hidedoc()
 # - After the selection, the selected filename is found in `FC.selected`
 
 # %%
-FC = FileChooser(path='/DATA/',filename='ser')
+FC = FileChooser(path='/home/mad/Documents/',filename='ser')
 display(FC)
 
 # %% [markdown]
@@ -74,22 +79,22 @@ display(FC)
 #
 # This is simply done with the `Import_2D()` tool, which returns a `SPIKE` object.
 #
-# We store the dataset into a variable, typing the variable name shows a summary of the dataset. 
+# We store the dataset into a variable called d2. 
 
 # %%
 print('Reading file ',FC.selected)
 d2 = Import_2D(FC.selected)
 d2.filename = FC.selected
 d2.pulprog = d2.params['acqu']['$PULPROG']
-print (d2.params['acqu']['title'])
+print(d2)                                      # print() of the dataset shows a summary of the parameters
+print(d2.pulprog)
+display(HTML('<b>title: </b>'+ d2.params['acqu']['title']))    # d1.params is a dictionary which contains the whole 'acqu' and 'proc' Bruker parameters
 #d2.set_unit('sec').display(title="%s %s"%(FC.nmrname,d2.pulprog), scale='auto')
-plt.imshow(d2.get_buffer().imag, cmap="seismic"); #  "Accent")
+plt.figure()
+plt.imshow(d2.get_buffer().real, cmap="seismic");
 
 # %% [markdown]
-# In the current set-up, the figure can be explored *(zoom, shift, resize, etc)* with the jupyter tools displayed  below the dataset.
-# The figure can also be saved as a `png` graphic file.
-#
-# At anytime, the figure can be frozen by clicking on the blue button on the upper right corner, just rerun the cell to make it interactive again.
+# *Check Proc1DNMR NoteBook for documentation on spectral display*
 #
 # ## Basic Processing
 # We are going to use a basic processing set-up, check the documentation for advanced processing
@@ -102,12 +107,8 @@ D2 = d2.copy() # copy the imported data-set to another object for processing
 D2.apod_sin(maxi=0.5,axis='F2').zf(1,2).bk_ftF2()  # chaining  apodisation - zerofill - FT
 D2.apod_sin(maxi=0.5,axis='F1').zf(2,1).bk_ftF1()  # chaining  apodisation - zerofill - FT
 D2.modulus().set_unit('ppm').rem_ridge()
-D2.display(scale="auto", autoscalethresh=100.0, title="%s %s"%(FC.nmrname,d2.pulprog))  # chain  set to ppm unit - and display
-
-# %% [markdown]
-# `I.Show2D` is a convinient tool to explore 2D's
-#
-# you can 
+#D2.display(scale="auto", autoscalethresh=100.0, title="%s %s"%(FC.nmrname,d2.pulprog))  # chain  set to ppm unit - and display
+I2D.Show2D(D2)
 
 # %% [markdown]
 # ### Advanced Phase sensitive processing
@@ -120,18 +121,47 @@ D2 = d2.copy() # copy the imported data-set to another object for processing
 D2.apod_sin(maxi=0,axis='F2').zf(1,2).bk_ftF2().bk_pk()  # chaining  apodisation - zerofill - FT - phase
 D2.apod_sin(maxi=0,axis='F1').zf(2,1).bk_ftF1()  # chaining  apodisation - zerofill - FT
 D2.set_unit('ppm').rem_ridge()
-D2.display(scale="auto",  autoscalethresh=6.0, title="%s %s"%(FC.nmrname,d2.pulprog))  # chain  set to ppm unit - and display
+#D2.display(scale="auto",  autoscalethresh=6.0, title="%s %s"%(FC.nmrname,d2.pulprog))  # chain  set to ppm unit - and display
+reload(I2D)
+I2D.Show2D(D2)
 
 # %% [markdown]
 # ### Rephasing
-# ( *This is a temporary tool* )
+# Pivot
+#
+# Use the sliders to adjust the phase parameters,   the pivot can be set with a right click on the spectrum
+# Top and Side spectra are taken at the pivot level.
+# Reste à faire, trait dans les sides, click droit
+#
+
+# %% [markdown]
+# **Reste à faire,**
+# - valider movepivot
+# - apply et cancel
+# - Reset
+# - Doc
+#
 
 # %%
 reload(I2D)
-I2D.Phaser2D(D2)
+P = I2D.Phaser2D(D2)
+P
 
 # %% [markdown]
 # # An interactive Display
+# - show2D +
+# - projections
+# - color maps
+# - title
+#
+# # todo
+# - peak picking
+
+# %%
+D2.row(33)
+
+# %%
+len(D2.axis2.itoc( D2.axis2.points_axis() ))
 
 # %%
 D2.set_unit('ppm')
@@ -171,4 +201,6 @@ else:
     D2.bucket2d(zoom=Zoom, bsize=BucketSize)
 
 # %% [markdown]
-# *Tools in this page is under intensive development - things are going to change rapidly.*
+# *Tools in this page is under intensive development - don't expect things to remain as they are.*
+
+# %%

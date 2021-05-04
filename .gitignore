@@ -50,8 +50,10 @@ spikedoc/
 target/
 
 # IPython notebook
-.ipynb_checkpoints/
+*.ipynb_checkpoints/
+Untitled*.ipynb
 
 # other
 attic/
-
+.swp
+*~

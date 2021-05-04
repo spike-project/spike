@@ -45,6 +45,21 @@ Activate_Wheel = True
 ##############################
 # First General Utilities
 ##############################
+def initialize():
+    "initialize notebook interface for Spike"
+    hidecode(message="")
+    hidedoc()
+    initCSS()
+    Logo()
+def initCSS():
+    "adapt some CSS"
+    display(HTML('''
+<style>
+hr         {height: 2px; border: 0;border-top: 1px solid #ccc;margin: 1em 0;padding: 0; }
+.container {width:100% !important; }
+</style>
+    '''))
+
 def hidecode(initial='show', message="<i>usefull to show/print a clean screen when processing is finished</i>"):
     """
     this func adds a button to hide/show the code on a jupyter page
@@ -57,10 +72,6 @@ def hidecode(initial='show', message="<i>usefull to show/print a clean screen wh
     elif initial == 'hide':
         init = 'true'
     display(HTML('''
-<style>
-hr         {height: 2px; border: 0;border-top: 1px solid #ccc;margin: 1em 0;padding: 0; }
-.container {width:100%% !important; }
-</style>
 <script>
 code_show=%s; 
 function code_toggle()
@@ -88,7 +99,6 @@ def hidedoc(initial='show', message="<i>usefull to show/print a clean screen whe
     elif initial == 'hide':
         init = 'true'
     display(HTML('''
-<style>hr {height: 2px; border: 0;border-top: 1px solid #ccc;margin: 1em 0;padding: 0; }</style>
 <script>
 doc_show=%s; 
 function doc_toggle()
@@ -230,7 +240,7 @@ class Show1D(HBox):
         Show1D(spectrum)
     to be developped for peaks and integrals
     """
-    def __init__(self, data, title=None, figsize=None, reverse_scroll=False, show=True):
+    def __init__(self, data, title=None, figsize=None, reverse_scroll=False, show=True, create_children=True):
         """
         data : to be displayed
         title : text for window
@@ -251,6 +261,7 @@ class Show1D(HBox):
         else:
             self.reverse_scroll = 1
         self.blay = Layout(width='80px')  # default layout for buttons
+        self.blank = widgets.HTML("&nbsp;",layout=self.blay)
         self.done = Button(description="Done", button_style='success',layout=self.blay,
             tooltip="Stop interactivity and store figure")
         self.done.on_click(self.on_done)
@@ -261,6 +272,8 @@ class Show1D(HBox):
         def onsave(e):
             name = self.fig.get_axes()[0].get_title()
             name = name.replace('/','_')+'.pdf'
+            if name.startswith('.'):
+                name = 'Figure'+name
             self.fig.savefig(name)
             print('figure saved as: ',name)
         self.savepdf.on_click(onsave)
@@ -270,23 +283,23 @@ class Show1D(HBox):
                             orientation='vertical')
         for widg in (self.scale,):
             widg.observe(self.ob)
-        plt.ioff()
-        fi,ax = plt.subplots(figsize=figsize)
-        plt.ion()
-        self.ax = ax
-        self.fig = fi
-        self.xb = self.ax.get_xbound()
-        self.blank = widgets.HTML("&nbsp;",layout=self.blay)
-        self.children = [  VBox([self.reset, self.scale, self.savepdf, self.done]), self.fig.canvas ]
-        self.set_on_redraw()
-        if show:
-            #display( self )
-            #print('SHOW')
-            self.data.display(figure=self.ax, title=self.title)
-            self.fig.canvas.header_visible = self.canvas_header_visible
-            for s in ["left", "top", "right"]:
-                self.ax.spines[s].set_visible(self.ax_spines)
-            self.ax.yaxis.set_visible(self.yaxis_visible)
+        if create_children:
+            plt.ioff()
+            fi,ax = plt.subplots(figsize=figsize)
+            plt.ion()
+            self.ax = ax
+            self.fig = fi
+            self.xb = self.ax.get_xbound()
+            self.children = [  VBox([self.reset, self.scale, self.savepdf, self.done]), self.fig.canvas ]
+            if show:
+                #display( self )
+                #print('SHOW')
+                self.data.display(figure=self.ax, title=self.title)
+                self.fig.canvas.header_visible = self.canvas_header_visible
+                for s in ["left", "top", "right"]:
+                    self.ax.spines[s].set_visible(self.ax_spines)
+                self.ax.yaxis.set_visible(self.yaxis_visible)
+            self.set_on_redraw()
     def on_done(self, b):
         self.close()
         display(self.fig)   # shows spectrum
@@ -659,6 +672,7 @@ class Phaser1D(Show1D):
         # we'll work on a copy of the data
         super().__init__( data.copy(), figsize=figsize, title=title, reverse_scroll=reverse_scroll, show=show)
         self.data_ref = data
+        self.done.description = 'Apply'
         self.p0 = widgets.FloatSlider(description='P0:',min=-180, max=180, step=0.1,
                             layout=Layout(width='100%'), continuous_update=REACTIVE)
         self.p1 = widgets.FloatSlider(description='P1:',min=-360, max=360, step=1.0,

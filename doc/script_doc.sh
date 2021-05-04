@@ -3,15 +3,20 @@
 rm -R spike_make_sphinx/* dist/* build/*
 
 # get doc from source
-sphinx-apidoc -F -o spike_make_sphinx spike
-# copy rst files and configuration
+Version=$(grep "version = '.*'" spike/version.py |grep -o [0-9\.]*)
+sphinx-apidoc --full -V $Version -A M-A.Delsuc -o spike_make_sphinx_sep spike
+# copy rst files
 cp  doc/*.rst   spike_make_sphinx/
-cp  doc/conf.py   spike_make_sphinx/
+# modiy configuration
+
+
 pandoc README.md -t rst -o README.rst
-pandoc README.md -s -t latex -o README.pdf
-cp README.rst spike_make_sphinx/Readme.rst
+mv README.rst spike_make_sphinx/Readme.rst
 pandoc release_notes.md -t rst -o spike_make_sphinx/release_notes.rst
-pandoc release_notes.md -s -t latex -o release_notes.pdf
+Presentation
+DevelopmentGuide
+
+#pandoc release_notes.md -s -t latex -o release_notes.pdf
 
 # build the doc
 make -C spike_make_sphinx html

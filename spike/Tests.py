@@ -55,7 +55,7 @@ mod_file = ("File.BrukerNMR", "File.GifaFile", 'File.HDF5File', 'File.Apex', 'Fi
 mod_basicproc = ("NPKData", "NMR", "FTICR", "Orbitrap", 'NPKConfigParser')
 mod_user = ('processing', )
 
-list_of_modules = mod_basicproc + mod_file  + mod_util + mod_algo + mod_plugins # + mod_user
+list_of_modules = mod_basicproc + mod_file  + mod_util + mod_algo + mod_plugins + mod_user
 
 # end of configuration
 #############################################################################

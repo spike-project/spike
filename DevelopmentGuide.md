@@ -11,8 +11,8 @@ You will find here some advices on using SPIKE.
 
 SPIKE mostly defines a dataset `NPKData` structure (usually called `d` in the doc), which is composed of:
 
- - a large n-dimensional real `numpy` array that contains the actual spectroscopic data
-     - accessed with the `d.get_buffer()` and `d.set_buffer()` methods
+ - a large n-dimensional real `numpy` nparray object that contains the actual spectroscopic data
+     - modified by all the processing methods, called `buffer` and accessed with the `d.get_buffer()` and `d.set_buffer()` methods
  - one Axis() object per dimension, which contains all the characteristics along the given axis (calibration, data-type, size, etc…)
       - `d.axis1` for a 1D spectrum
       - `d.axis1` and `d.axis2` for a 2D spectrum - with the `d.axes(i)` convenient method
@@ -22,14 +22,14 @@ SPIKE mostly defines a dataset `NPKData` structure (usually called `d` in the do
 
 the same organization is used  regardless we are handling NMR Orbitrap or FTICR Data, however in each case, the Axis() object is just overloaded with the corresponding version for each analytical method
 
-These several kind of NPK dataset are defined in `spike.NMR spike.FTICR` and `spike.Orbitrap` which are typically imported in the beginning of a program.
+These several kind of NPK dataset are defined in `spike.NMR` `spike.FTICR` and `spike.Orbitrap` which are typically imported in the beginning of a program.
 
-These codes defines the basic objects `NMRData FTICRData OrbiData` 
+These codes defines the basic objects `NMRData` `FTICRData` `OrbiData` 
 
 The initialisation methods of these object contain several options (creating from a file, a buffer, etc...), check the documentation.
 
 An even easier way of creating a dataset is by importing from a spectroscopic data-format.
-The formats handled by the program are defined in the `File ` folder, with format from NMR, FTICR and Orbitrap.
+The formats handled by the program are defined in the `File` folder, with format from NMR, FTICR and Orbitrap.
 
 
 ## working with the SPIKE dataset
@@ -54,7 +54,7 @@ d = Import_1D(myfile).hanning().zf(2).rfft().modulus().display()    # as a pipel
 ```
 if you are just interested in the picture, you don't even have to store the result
 
-Another very typical usage is to Import the dataset and just at some feature without modifying it. 
+Another very typical usage is to Import the dataset and just test some feature without modifying it. 
 For this, the `.copy()` which duplicates the whole objet, comes very handy:
 ```python
 d = Import_1D(myfile)       # use the specific importer to load the dataset
@@ -97,6 +97,9 @@ d.axis1.htomz(1000)     # returns the mz value located at 1000 Hz
 These are just a few examples.
 
 Note that the `i` (index) unit does not have to be integer. So if you want to access the buffer at this value, you have to do `int(d.axis1.ptoi(5.5))` or even better `int(round(d.axis1.ptoi(5.5)))` 
+
+In FTICR, the `ML1` `ML2` `ML3` parameters in Bruker are imported as `CalibA`, `CalibB`, `CalibC` attribute of a FTICR `Axis()` (with the caveat that Spike uses a homogeneous convention, while Bruker inverses `ML2` depending on the fact that `ML3` is 0 or non-null.
+
 <!-- #endregion -->
 
 ## Displaying and Saving datasets
@@ -316,7 +319,3 @@ Previous authors:
 Covered code is provided under this license on an "as is" basis, without warranty of any kind, either expressed or implied, including, without limitation, warranties that the covered code is free of defects. The entire risk as to the quality and performance of the covered code is with you. Should any covered code prove defective in any respect, you (not the initial developer or any other contributor) assume the cost of any necessary servicing, repair or correction.
 
 Downloading code and datasets from this page signifies acceptance of the hereunder License Agreement. The code distributed here is covered under the CeCILL license : http://www.cecill.info/index.en.html
-
-```python
-
-```

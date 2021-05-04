@@ -76,4 +76,5 @@ def movepivot(p0, p1, p2, pvbef, pvaft):
         p0p += 360
     
     return p0p, p1p, p2p, pvaft
-NPKData_plugin("phase", phase)  # supercede the regular phase correction code
+# NPKData_plugin("phase", phase)  # supercede the regular phase correction code - not compatible with Test suite !
+NPKData_plugin("phaseMS", phase)

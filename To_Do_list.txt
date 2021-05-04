@@ -4,33 +4,24 @@ More Doc !
 
 NB
 ==
-- more user examples in jupyter
-	- 1H 1D proc / visu
-	- 13C 1D proc / visu
-	- 1H 2D proc / visu
-	- HSQC 2D proc / visu
-	- HSQC 2D NUS proc
-	- HSQC 2D NUS visu
-	- 2D FTICR visu
-	- 2D FTICR proc
-- 
+- more user examples in jupyter:
+    - HSQC 2D NUS proc and visu
+    - phased FTICR experiment
+    - 2D FTICR proc
 
 Core
 ====
-- finish add() !!! - not fully implemented -
-- develop more cuda functions
-- fermer le pool ou MPI en sortant via register.
-- delta peak-picker 
+- develop more cuda functions (thanks to a new computer just arrived)
+- close the pool or MPI on exit (via register).
+- delta peak-picker plugin
 - finalize and generalize tests and data_tests
 
 MS
 ==
 - truncated 2D file in processing, for smaller files
-- more apodisations (Kilgour, Traficante, ...)
+- processing for phased 2D
 - spikecalib.py
 - move dowsampling outside processing
-- correct wrong downsampling in F2
-- test avec SubP-2015
 - Apex vs Solarix
     dans dossier .m
         <method version="solariXcontrol_2" > dans l'entete de  apexAcquisition.method
@@ -40,11 +31,8 @@ MS
 
 NMR
 ===
-- colors for peak display in bar mode
 - phase after baseline in NB
-- points below spectrum in NB
-- pivot and zoom in NB
-- Fichier pour RMN
-- model pour RMN
+- HDF5 Files for NMR
+- import of NMRNotebook files (easy)
 - shearing
 
