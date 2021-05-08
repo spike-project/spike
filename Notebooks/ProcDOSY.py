@@ -7,16 +7,12 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.3.4
+#       jupytext_version: 1.11.1
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
 #     name: python3
 # ---
-
-# %% [markdown] toc=true
-# <h1>Table of Contents<span class="tocSkip"></span></h1>
-# <div class="toc"><ul class="toc-item"><li><span><a href="#Principle" data-toc-modified-id="Principle-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>Principle</a></span></li><li><span><a href="#Usage" data-toc-modified-id="Usage-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>Usage</a></span></li><li><span><a href="#Initialization" data-toc-modified-id="Initialization-3"><span class="toc-item-num">3&nbsp;&nbsp;</span>Initialization</a></span><ul class="toc-item"><li><span><a href="#Choose-the-file" data-toc-modified-id="Choose-the-file-3.1"><span class="toc-item-num">3.1&nbsp;&nbsp;</span>Choose the file</a></span></li><li><span><a href="#Import-dataset" data-toc-modified-id="Import-dataset-3.2"><span class="toc-item-num">3.2&nbsp;&nbsp;</span>Import dataset</a></span></li></ul></li><li><span><a href="#Data-Preparation" data-toc-modified-id="Data-Preparation-4"><span class="toc-item-num">4&nbsp;&nbsp;</span>Data Preparation</a></span><ul class="toc-item"><li><span><a href="#Fourier-Transform" data-toc-modified-id="Fourier-Transform-4.1"><span class="toc-item-num">4.1&nbsp;&nbsp;</span>Fourier Transform</a></span></li><li><span><a href="#Optimize-phase" data-toc-modified-id="Optimize-phase-4.2"><span class="toc-item-num">4.2&nbsp;&nbsp;</span>Optimize phase</a></span></li><li><span><a href="#baseline-correction" data-toc-modified-id="baseline-correction-4.3"><span class="toc-item-num">4.3&nbsp;&nbsp;</span>baseline correction</a></span></li><li><span><a href="#Verify-your-data" data-toc-modified-id="Verify-your-data-4.4"><span class="toc-item-num">4.4&nbsp;&nbsp;</span>Verify your data</a></span></li></ul></li><li><span><a href="#PALMA-processing" data-toc-modified-id="PALMA-processing-5"><span class="toc-item-num">5&nbsp;&nbsp;</span>PALMA processing</a></span><ul class="toc-item"><li><span><a href="#And-display-result" data-toc-modified-id="And-display-result-5.1"><span class="toc-item-num">5.1&nbsp;&nbsp;</span>And display result</a></span></li></ul></li><li><span><a href="#Save-the-data-set" data-toc-modified-id="Save-the-data-set-6"><span class="toc-item-num">6&nbsp;&nbsp;</span>Save the data-set</a></span></li></ul></div>
 
 # %% [markdown]
 #
@@ -67,7 +63,7 @@ display(Markdown('## STARTING Environment...'))
 import os.path as op
 import spike
 from spike.File.BrukerNMR import Import_2D
-from spike.plugins.PALMA import Import_DOSY
+from spike.plugins.NMR.PALMA import Import_DOSY
 from spike.Interactive import INTER as I
 from spike.Interactive.ipyfilechooser import FileChooser
 display(Markdown('## ...program is Ready'))
@@ -84,7 +80,7 @@ I.hidecode()
 # - After the selection, the selected filename is found in `FC.selected`
 
 # %%
-FC = FileChooser(path='/NO-BCK/pharma/',filename='ser')
+FC = FileChooser(path='/home/mad',filename='ser')
 display(FC)
 
 # %% [markdown]

@@ -116,36 +116,28 @@ I2D.Show2D(D2)
 #
 
 # %%
-D2 = d2.copy() # copy the imported data-set to another object for processing
+D2ph = d2.copy() # copy the imported data-set to another object for processing
 # bk_ftF2 and bk_ftF1 (define in the Bruker plugin) find which FT to apply depending on FnMODE
-D2.apod_sin(maxi=0,axis='F2').zf(1,2).bk_ftF2().bk_pk()  # chaining  apodisation - zerofill - FT - phase
-D2.apod_sin(maxi=0,axis='F1').zf(2,1).bk_ftF1()  # chaining  apodisation - zerofill - FT
-D2.set_unit('ppm').rem_ridge()
+D2ph.apod_sin(maxi=0,axis='F2').zf(1,2).bk_ftF2().bk_pk()  # chaining  apodisation - zerofill - FT - phase
+D2ph.apod_sin(maxi=0,axis='F1').zf(2,1).bk_ftF1()  # chaining  apodisation - zerofill - FT
+D2ph.set_unit('ppm').rem_ridge()
 #D2.display(scale="auto",  autoscalethresh=6.0, title="%s %s"%(FC.nmrname,d2.pulprog))  # chain  set to ppm unit - and display
 reload(I2D)
-I2D.Show2D(D2)
+S = I2D.Show2D(D2ph)           # note that you can create the view and store it in a var wiothout displaying it
+S.negview.value = True         # and set some parameters (here negative view) before display
+S
 
 # %% [markdown]
 # ### Rephasing
-# Pivot
 #
 # Use the sliders to adjust the phase parameters,   the pivot can be set with a right click on the spectrum
 # Top and Side spectra are taken at the pivot level.
-# Reste à faire, trait dans les sides, click droit
 #
-
-# %% [markdown]
-# **Reste à faire,**
-# - valider movepivot
-# - apply et cancel
-# - Reset
-# - Doc
 #
 
 # %%
 reload(I2D)
-P = I2D.Phaser2D(D2)
-P
+I2D.Phaser2D(D2ph)
 
 # %% [markdown]
 # # An interactive Display
@@ -158,10 +150,11 @@ P
 # - peak picking
 
 # %%
-D2.row(33)
+F1slice = 3.3    # select a F1 (vertical) slice in current unit (here ppm) 
+F2slice = 2.05   # select a F2 (horizontal) slice in current unit (here ppm) 
 
-# %%
-len(D2.axis2.itoc( D2.axis2.points_axis() ))
+D2ph.col( D2ph.axis2.ctoi(F1slice)).display(title='F1 slice at F2=%.3f ppm'%(F1slice,))
+D2ph.row( D2ph.axis1.ctoi(F2slice)).display(title='F2 slice at F1=%.3f ppm'%(F2slice,))
 
 # %%
 D2.set_unit('ppm')

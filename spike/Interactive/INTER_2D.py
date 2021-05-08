@@ -264,9 +264,9 @@ class Phaser2D(Show2D):
         "observe changes and start phasing"
         if event['name']=='value':
             self.phase()
-    def close(self):
-        for w in [self.F1p0, self.F1p1, self.F2p0, self.F2p1, self.scale, self.done, self.cancel]:
-            w.close()
+    # def close(self):
+    #     for w in [self.F1p0, self.F1p1, self.F2p0, self.F2p1, self.scale, self.done, self.cancel]:
+    #         w.close()
     def on_cancel(self, b):
         print("No action")
         self.ax.clear()
@@ -276,12 +276,13 @@ class Phaser2D(Show2D):
         self.close()
     def on_Apply(self, b):
         self.lF1p0, self.lF1p1, self.lF2p0, self.lF2p1 = self.ppivot()         # get centered values
-        print("Applied: phase(%.1f,%.1f,axis='F1').phase(%.1f,%.1f,axis='F')"%(self.lF1p0, self.lF1p1, self.lF2p0, self.lF2p1))
         self.data.phase(self.lF2p0, self.lF2p1, axis='F2').phase(self.lF1p0, self.lF1p1, axis='F1')
         self.data.display(figure=self.ax,scale=self.scale.value)
         self.ax.set_xlim(xmin=self.data.axis2.itop(0), xmax=self.data.axis2.itop(self.data.size2))
         self.ax.set_ylim(ymin=self.data.axis1.itop(0), ymax=self.data.axis1.itop(self.data.size1))
         self.close()
+        print("Applied: phase(%.1f,%.1f,axis='F1').phase(%.1f,%.1f,axis='F2')"%(self.lF1p0, self.lF1p1, self.lF2p0, self.lF2p1))
+        
     def disp(self,todisplay=None, new=False):
         "display either the current data or the one provided - red and blue"
         if not todisplay:
