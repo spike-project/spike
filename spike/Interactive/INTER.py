@@ -476,7 +476,6 @@ Colors = ('black','red','blue','green','orange',
 
 class Show1Dplus(Show1D):
     def __init__(self, data, base='/DATA', N=9, figsize=None, title=None, reverse_scroll=False):
-        from spike.Interactive.ipyfilechooser import FileChooser
         super().__init__( data, figsize=figsize, title=title, reverse_scroll=reverse_scroll)
         # spectrum control widgets
         self.sptitle = widgets.Text(description='Title',

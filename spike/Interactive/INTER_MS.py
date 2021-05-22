@@ -35,7 +35,7 @@ except:
     print('Baseline correction plugin not installed !')
 
 try:
-    from spike.plugins.PhaseMS import movepivot
+    from spike.plugins.MS.PhaseMS import movepivot
     PHASEQUAD = True
 except:
     print('Quadratic phase correction plugin not installed !')
@@ -101,10 +101,10 @@ class Phaser1D(Show1D):
             return
         super().__init__( data, figsize=figsize, title=title, reverse_scroll=reverse_scroll, show=False)
         self.p0 = widgets.FloatSlider(description='P0:',min=-200, max=200, step=1,
-                            layout=Layout(width='50%'), continuous_update=REACTIVE)
+                            layout=Layout(width='50%'), continuous_update=HEAVY)
         
         self.p1 = widgets.FloatSlider(description='P1:',min=-10000000, max=10000000, step=1000.0,
-                            layout=Layout(width='100%'), continuous_update=REACTIVE)
+                            layout=Layout(width='100%'), continuous_update=HEAVY)
         self.p1 = FloatButt(4, description='P1  ', layout=Layout(width='100%'))
         self.p2 = FloatButt(4, description='P2  ', layout=Layout(width='100%'))
         if self.data.axis1.currentunit == 'm/z':
@@ -196,14 +196,16 @@ class Phaser1D(Show1D):
         if PHASEQUAD:
             pv = self.data.axis1.ctoi(self.lpv)/self.data.size1
             lp00, lp10, lp20, _ = movepivot(lp0, lp1, lp2, pv, 0.0)
-            self.data.phase(lp00, lp10, lp20, 0)
+            self.data.phaseMS(lp00, lp10, lp20, 0)
+            msg = "Applied: phaseMS(%.1f,  %.1f, %.1f, %.2f)"%(lp00, lp10, lp20, 0)
         else:
             self.data.phase(lp0, lp1)
+            msg = "Applied: phase(%.1f,  %.1f)"%(lp0, lp1)
         self.disp()
         for pv in self.list.keys():
             self.ax.plot(self.data.axis1.itoc(pv), self.data[2*(int(pv)//2)], 'ro')
         self.on_done(b)
-        print("Applied: phase(%.1f,  %.1f, %.1f, %.2f)"%(lp00, lp10, lp20, 0))
+        print(msg)
 
     def ppivot(self):
         "converts current pivot values to centered ones - not used in PHASEQUAD"
@@ -239,7 +241,7 @@ class Phaser1D(Show1D):
         self.lp0, self.lp1, self.lp2, self.lpv = self.ppivot()         # get centered values
         if PHASEQUAD:
             pv = self.data.axis1.ctoi(self.lpv)/self.data.size1  #  0...1
-            self.data.copy().phase(self.lp0, self.lp1, self.lp2, pv).display(scale=self.scale.value, new_fig=False, figure=self.ax)
+            self.data.copy().phaseMS(self.lp0, self.lp1, self.lp2, pv).display(scale=self.scale.value, new_fig=False, figure=self.ax)
         else:
             self.data.copy().phase(self.lp0, self.lp1).display(scale=self.scale.value, new_fig=False, figure=self.ax)
         ppos = self.pivot.value

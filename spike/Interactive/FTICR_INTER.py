@@ -6,9 +6,6 @@ A tool to display 2D FT-ICR data-sets
 
 to be embedded in jupyter notebook
 
-First version MAD jan 2019
-preliminary and not fully tested !
-
 """
 import os.path as op
 import tables
@@ -20,7 +17,7 @@ import numpy as np
 
 from .. import FTICR
 from ..NPKData import flatten, parsezoom
-from .INTER import FileChooser
+from .ipyfilechooser import FileChooser
 from ..FTMS import FTMSData
 from ..FTICR import FTICRData
 
