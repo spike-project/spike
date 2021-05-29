@@ -14,7 +14,7 @@ from codecs import decode
 
 ProgramName = "SPIKE"
 VersionName = "Development version"
-VersionInfo = ["0", "99", "21"]   # Major - Minor - Micro
+VersionInfo = ["0", "99", "23"]   # Major - Minor - Micro
 
 # 1.0 will probably be when interactive Notebooks are really usefull !
 # And NMR.py validated
@@ -30,7 +30,13 @@ VersionInfo = ["0", "99", "21"]   # Major - Minor - Micro
 # Release Notes in md syntax !
 release_notes="""
 # SPIKE Relase Notes
-#### 0.99.22 - April 2021
+#### 0.99.23 - May 2021
+- first interactive notebook for phasing of FTICR-MS spectra - still a bit rough
+- slight improvements in apmin() (NMR automatic phaser) better search algorithm
+- slight improvements in bcorr() (baseline correction), when working on complex spectra
+- new doc is still in development and missing, sorry (phasing is keeping me busy) 
+
+#### 0.99.22 - April 2021 - not released
 - change in the plugin set up, there can now be distributed in several directories (in that order)
     - `(distrib dir)/spike/plugins`  - basic plugins allways loaded
     - `$HOME/spike/plugins`  - plugins specific to the user allways loaded
@@ -38,7 +44,7 @@ release_notes="""
     - `(distrib dir)/spike/plugins/MS`  - plugins specific to MS, loaded with `import spike.FTMS`
     - and as before, plugins with a name starting with a `_` are not loaded
 - new `PhaseMS` plugin, which implements quadratic phase correction and permits to phase FTICR spectra
-- a .tm() apodisation (trapeze) § which emulates D.Kilgour apodisation for phase sensitive FTICR-MS
+- a .tm() apodisation (trapeze) which emulates D.Kilgour apodisation for phase sensitive FTICR-MS
 - rewrote and reorganized  README and documentation
 
 #### 0.99.21 - Feb 2021
