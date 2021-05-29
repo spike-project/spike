@@ -123,7 +123,7 @@ def bcorr_auto(npkd, iterations=10, nbchunks=40, degree=1, nbcores=2, smooth=Tru
     npkd.set_buffer( npkd.get_buffer() - bl)
     return npkd
 
-def autopoints(npkd, Npoints=8):
+def autopoints(npkd, Npoints=8, modulus=True):
     """
     computes Npoints (defaut 8) positions for a spline baseline correction
     """
@@ -131,7 +131,10 @@ def autopoints(npkd, Npoints=8):
         N = 8
     else:
         N = Npoints
-    bf = npkd.get_buffer().copy()
+    if npkd.itype == 1 and modulus:
+        bf = npkd.copy().modulus().get_buffer()
+    else:  
+        bf = npkd.copy().get_buffer()
     bf -= np.percentile(bf,20)  # assumes at least ~20% of data-set is baseline...
     bf = abs(bf)
     L = len(bf)
@@ -142,7 +145,7 @@ def autopoints(npkd, Npoints=8):
         xpoints *= 2
     return xpoints
 
-def bcorr(npkd, method='spline', xpoints=None, nsmooth=0):
+def bcorr(npkd, method='spline', xpoints=None, nsmooth=0, modulus=True):
     """
     recapitulate all baseline correction methods, only 1D so far
     
@@ -160,13 +163,15 @@ def bcorr(npkd, method='spline', xpoints=None, nsmooth=0):
     if xpoints is a list of integers, there will used as pivots
 
     if nsmooth >0, buffer is smoothed by moving average over 2*nsmooth+1 positions around pivots.
+    if dataset is complex, the xpoints are computed on the modulus spectrum, unless modulus is False
+
     default is spline with automatic detection of 8 baseline points
     """
     if method=='auto':
         return bcorr_auto(npkd)
     else:
         if xpoints is None or isinstance(xpoints,int):
-            xpoints = autopoints(npkd, xpoints)
+            xpoints = autopoints(npkd, xpoints, modulus=modulus)
     if method=='linear':
         return linear_interpolate(npkd, xpoints, nsmooth=nsmooth)
     elif method=='spline':

@@ -83,6 +83,46 @@ class FloatButt(HBox):
         self.field.value = value
     value = property(_gvalue, _svalue)
 
+def firstguess(data):
+    """
+    compute phase initial guess - still quite imprecise
+    """
+    import math
+    if data.params['SwpDir'] != '0':
+        print('*** WARNING pulse with Increasing frequencies ***')
+    sw = float(data.params['SW_h'])
+    try:
+        f0 = data.axis1.highfreq[0]
+        f1 = data.axis1.lowfreq[0]
+    except:
+        f0 = data.axis1.highfreq
+        f1 = data.axis1.lowfreq
+    deltaf = f1-f0
+    te = 3.5E-3
+    p3 = float(data.params['P_3'])*1E-6
+    l31 = int(data.params['L_31'])
+    tau = (l31+1)*p3
+    ph1 = tau*f1/deltaf + te 
+    ph2 = -tau/deltaf/2
+    return (ph1*sw, ph2*sw*sw)
+
+def firstguess0(data):
+    """
+    as firstguess but for old Bruker systems (with acqus file)
+    """
+    import math
+    acqu = data.params['acqu']
+    sw = float(acqu['$SW_h'])
+    f0 = sw
+    f1 = float(acqu['$FR_low'])
+    deltaf = f1-f0
+    te = 3.5E-3
+    p3 = float(acqu['$P'][3])*1E-6
+    l31 = int(acqu['$L'][31])
+    tau = (l31+1)*p3
+    ph1 = tau*f1/deltaf + te 
+    ph2 = -tau/deltaf/2
+    return (ph1*sw, ph2*sw*sw)
 class Phaser1D(Show1D):
     """
     An interactive phaser in 1D MS
@@ -107,6 +147,8 @@ class Phaser1D(Show1D):
                             layout=Layout(width='100%'), continuous_update=HEAVY)
         self.p1 = FloatButt(4, description='P1  ', layout=Layout(width='100%'))
         self.p2 = FloatButt(4, description='P2  ', layout=Layout(width='100%'))
+        P1, P2 = firstguess(data)
+        self.p1.value, self.p2.value = round(P1), round(P2)
         if self.data.axis1.currentunit == 'm/z':
             pvmin = self.data.axis1.lowmass
             pvmax = self.data.axis1.highmass
@@ -114,11 +156,10 @@ class Phaser1D(Show1D):
             pvmin = 0
             pvmax = self.data.axis1.itoc(self.data.size1)
         self.pivot = widgets.BoundedFloatText(description='Pivot',
-                        value=self.data.axis1.itoc(0.5*self.data.size1), 
+                        value=0, 
                         min=self.data.axis1.itoc(0),
                         max=self.data.axis1.itoc(self.data.size1),
                         step=0.1, layout=Layout(width='20%'))
-        
         self.cancel = widgets.Button(description="Cancel", button_style='warning')
         self.cancel.on_click(self.on_cancel)
         # remove done button and create an Apply one
@@ -178,12 +219,18 @@ class Phaser1D(Show1D):
         self.ax.plot(self.data.axis1.itoc(pv), self.data[2*(int(pv)//2)], 'ro')
         self.ax.set_xbound( self.xb )
     def show(self):
-        self.data.display(figure=self.ax)
+#        self.data.display(figure=self.ax)
+        if PHASEQUAD:
+            pv = self.data.axis1.ctoi(self.lpv)/self.data.size1  #  0...1
+            self.data.copy().phaseMS(self.lp0, self.lp1, self.lp2, pv).display(scale=self.scale.value, new_fig=False, figure=self.ax)
+        else:
+            self.data.copy().phase(self.lp0, self.lp1).display(scale=self.scale.value, new_fig=False, figure=self.ax)
+
         self.xb = self.ax.get_xbound()  # initialize zoom
         ppos = self.pivot.value
         self.ax.plot([ppos,ppos], self.ax.get_ybound())
         for pv in self.list.keys():
-            self.ax.plot(self.data.axis1.itoc(pv), self.data[2*(int(pv)//2)], 'ro')
+            self.ax.plot(self.data.axis1.itoc(pv), 0, 'ro')
         display(self)
     def on_cancel(self, b):
         # self.p0.value = 0  # because widget remains active...
@@ -247,7 +294,7 @@ class Phaser1D(Show1D):
         ppos = self.pivot.value
         self.ax.plot([ppos,ppos], self.ax.get_ybound())
         for pv in self.list.keys():
-            self.ax.plot(self.data.axis1.itoc(pv), self.data[2*(int(pv)//2)], 'ro')
+            self.ax.plot(self.data.axis1.itoc(pv), 0, 'ro')
         self.ax.set_xbound( self.xb )
 
 # if __name__ == '__main__':

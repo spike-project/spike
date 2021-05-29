@@ -16,7 +16,7 @@ import numpy as np
 from spike.NPKData import NPKData_plugin
 #from spike.Algo.BC import correctbaseline as cbl
 
-def neg_wing(d, bcorr=False, inwater=False, apt=False):
+def neg_wing(d, bcorr=False, bcpoints=6, inwater=False, apt=False):
     """ measure negative wing power of NPKData d 
     
     if bcorr == True, a baseline correction is applied
@@ -28,7 +28,7 @@ def neg_wing(d, bcorr=False, inwater=False, apt=False):
     if inwater:
         dd[int(0.45*d.size1):int(0.55*d.size1)] = 0.0
     if bcorr:   # complete baseline corr
-        dd.bcorr(method="spline",  xpoints=4)
+        dd.bcorr(method="spline",  xpoints=bcpoints)
 
     data = dd.get_buffer()
     lendata = len(data)
@@ -59,7 +59,7 @@ def phase_pivot(d, p0, p1, pivot=0.5):
     d.phase(lp0, lp1)
     return (lp0, lp1)
 
-def apmin(d, first_order=True, inwater=False, baselinecorr=True, apt=False, debug=False):
+def apmin(d, first_order=True, inwater=False, baselinecorr=True, bcpoints=6, apt=False, debug=False):
     """automatic 1D phase correction
     phase by minimizing the negative wing of the 1D spectrum
     
@@ -105,7 +105,7 @@ def apmin(d, first_order=True, inwater=False, baselinecorr=True, apt=False, debu
         while(moved):
             moved=0
             if first_order:
-                PPlist = ((P0step,0),(-P0step,0),(0,P1step),(0,-P1step))
+                PPlist = ((P0step,0),(-P0step,0),(0,P1step),(0,-P1step), (P0step,P1step),(-P0step,-P1step),(-P0step,P1step),(P0step,-P1step))
                 # if abs(P1min)>360:
                 #     print("1st order correction too large - reseting algo")
                 #     P1min = 0.0
@@ -116,7 +116,7 @@ def apmin(d, first_order=True, inwater=False, baselinecorr=True, apt=False, debu
                 neval = neval+1
                 dd = d.copy()
                 phase_pivot(dd, P0min+dP0, P1min+dP1,pivot)
-                pw = neg_wing(dd, bcorr=bcorr, inwater=inwater, apt=apt)
+                pw = neg_wing(dd, bcorr=bcorr, bcpoints=bcpoints, inwater=inwater, apt=apt)
                 if debug: print (" %.2f %.2f %g"%(P0min+dP0, P1min+dP1, pw))
                 if (pw<valmin):
                     moved=1
