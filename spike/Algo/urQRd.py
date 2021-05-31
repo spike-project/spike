@@ -72,7 +72,7 @@ def urQRd(data, k, orda=None, iterations=1):
     if np.allclose(data,0.0):   # dont do anything if data is empty
         return data
     if not orda:
-        orda = data.size//2
+        orda = int(data.size//2)
     if (2*orda > data.size):
         raise(Exception('order is too large'))
     if (k >= orda):
