@@ -1,44 +1,50 @@
 <!-- DO NOT MODIFY this file, it is generated automatically from dev_setup ! -->
 # SPIKE Relase Notes
+#### 0.99.24 - June 2021
+- added a `maxdist` flag in the peak aggregator in plugins.Peaks  (default to 10*distance)
+- NMR: corrected a bug introduced in 0.99.22 in the interactive phasing when moving the pivot
+
 #### 0.99.23 - May 2021
-- first interactive notebook for phasing of FTICR-MS spectra - still a bit rough
-- slight improvements in apmin() (NMR automatic phaser) better search algorithm
+- MS: first interactive notebook for phasing of FTICR-MS spectra - still a bit rough
+- NMR: slight improvements in apmin() (automatic phaser) better search algorithm
 - slight improvements in bcorr() (baseline correction), when working on complex spectra
+- The logo shows up when loading interactive notebooks - and also a nicer set-up  
 - new doc is still in development and missing, sorry (phasing is keeping me busy) 
 
-#### 0.99.22 - April 2021 - not released
+#### 0.99.22 - April 2021 - not released on pypi -
 - change in the plugin set up, there can now be distributed in several directories (in that order)
     - `(distrib dir)/spike/plugins`  - basic plugins allways loaded
     - `$HOME/spike/plugins`  - plugins specific to the user allways loaded
     - `(distrib dir)/spike/plugins/NMR`  - plugins specific to NMR, loaded with `import spike.NMR`
     - `(distrib dir)/spike/plugins/MS`  - plugins specific to MS, loaded with `import spike.FTMS`
     - and as before, plugins with a name starting with a `_` are not loaded
-- new `PhaseMS` plugin, which implements quadratic phase correction and permits to phase FTICR spectra
+- MS: new `PhaseMS` plugin, which implements quadratic phase correction and permits to phase FTICR spectra
 - a .tm() apodisation (trapeze) which emulates D.Kilgour apodisation for phase sensitive FTICR-MS
 - rewrote and reorganized  README and documentation
 
 #### 0.99.21 - Feb 2021
-- plugin which implements .diagonal() for computing the diagonal of 2D FTICR spectra 
-- changed the logic to generate downsampled 2D FTICR spectra - smaller files, smaller vignettes
+- MS: 
+    - plugin which implements .diagonal() for computing the diagonal of 2D FTICR spectra 
+    - changed the logic to generate downsampled 2D FTICR spectra - smaller files, smaller vignettes
+    - correction when reading Apex MS dataset for pulse frequency limits - thanks to Maria van Agthoven
+    - correction ThermoFisher/Orbitrap import code - thanks to Will Kew
 - small correction in urQRd  - thanks to Will Kew
-- correction when reading Apex MS dataset for pulse frequency limits - thanks to Maria van Agthoven
-- correction ThermoFisher/Orbitrap import code - thanks to Will Kew
 - small corrections when opening files
 - many small bugs corrected
 
 #### 0.99.20 - Nov 2020
-- corrected a bad bug which corrupted F1 calibration when loading a 2D-FTICRMS experiment
+- MS: corrected a bad bug which corrupted F1 calibration when loading a 2D-FTICRMS experiment
     this bug was introduced in the 0.99.14 release but was not detected at that time
 
 #### 0.99.19 - May 2020 
-- corrected a bug in BrukerNMR importer...
+- NMR: corrected a bug in BrukerNMR importer... 
 
 #### 0.99.17 - April 2020 
-- corrected a bug in BrukerMS importer...
+- MS: corrected a bug in BrukerMS importer...
 
 #### 0.99.16 - April 2020 
-- FTICR a new Apex0 bruker importer - to access old datasets, with the "NMR" setup (acqus pdata ...)
-- FTICR a global BrukerMS importer - Import1D - Import2D
+- MS a new Apex0 bruker importer - to access old datasets, with the "NMR" setup (acqus pdata ...)
+- MS a global BrukerMS importer - Import1D - Import2D
 - a few corrected bugs
 
 #### 0.99.15 - March 2020 
@@ -77,7 +83,7 @@ to create an empty dataset not associated to any spectroscopy
 - still improvements in notebooks
 - 
 - NMR: improvement in the SpinIt importer
-- FTICR: added a Bo attribute
+- MS: added a Bo attribute
 - added the NbMaxPeaks flag in Peak display
 - added the self.kind attribute in the Axis class - easier to use than self.NMR !
 - small bugs corrections

@@ -653,17 +653,16 @@ class Show1Dplus(Show1D):
                 pass
         self.ax.set_xbound(self.xb)
 
-
 class Phaser1D(Show1D):
     """
     An interactive phaser in 1D NMR
 
-        Phaser1D(spectrum)
+        Phaser1D(spectrum, ...)
 
     requires %matplotlib widget
 
     """
-    def __init__(self, data, figsize=None, title=None, reverse_scroll=False, show=True):
+    def __init__(self, data, figsize=None, title=None, reverse_scroll=False, maxfirstorder = 360, show=True):
         data.check1D()
         if data.itype == 0:
             jsalert('Data is Real - an Error will be generated \\n\\n Please redo Fourier Transform')
@@ -672,18 +671,20 @@ class Phaser1D(Show1D):
         super().__init__( data.copy(), figsize=figsize, title=title, reverse_scroll=reverse_scroll, show=show)
         self.data_ref = data
         self.done.description = 'Apply'
-        self.p0 = widgets.FloatSlider(description='P0:',min=-180, max=180, step=0.1,
+        self.p0 = widgets.FloatSlider(description='P0:',min=-200, max=200, step=0.1,
                             layout=Layout(width='100%'), continuous_update=REACTIVE)
-        self.p1 = widgets.FloatSlider(description='P1:',min=-360, max=360, step=1.0,
+        self.p1 = widgets.FloatSlider(description='P1:',min=-maxfirstorder, max=maxfirstorder, step=1.0,
                             layout=Layout(width='100%'), continuous_update=REACTIVE)
         # self.pivot = widgets.FloatSlider(description='pivot:',
         #                 min=0.0, max=self.data.size1,
         #                 step=1, layout=Layout(width='80%'),
         #                 value=0.5*self.data.size1, readout=False, continuous_update=REACTIVE)
+        pivl=self.data.axis1.itoc(self.data.size1)
+        pivr=self.data.axis1.itoc(0)
         self.pivot = widgets.BoundedFloatText(description='Pivot',
                         value=round(self.data.axis1.itoc(0.5*self.data.size1),2), 
-                        min=self.data.axis1.itoc(self.data.size1),
-                        max=self.data.axis1.itoc(0),
+                        min=min(pivr, pivl),
+                        max=max(pivr, pivl),
                         format='%.2f',
                         step=0.1, layout=Layout(width='20%'))
         self.cancel = widgets.Button(description="Cancel", button_style='warning')
@@ -707,7 +708,7 @@ class Phaser1D(Show1D):
                 self.pivot.value = round(event.xdata,2)
         cids = self.fig.canvas.mpl_connect('button_press_event', on_press)
         self.lp0, self.lp1 = self.ppivot()
-#        self.disp()
+        self.disp()
 
     def on_cancel(self, b):
         self.close()
@@ -719,16 +720,22 @@ class Phaser1D(Show1D):
         print("Applied: phase(%.1f,  %.1f)"%(lp0, lp1))
     def ppivot(self):
         "converts from pivot values to centered ones"
-        pp = 1.0-(self.data.axis1.ptoi(self.pivot.value)/self.data.size1)
+        pp = 1.0-(self.data.axis1.ctoi(self.pivot.value)/self.data.size1)
         return (self.p0.value + (pp-0.5)*self.p1.value, self.p1.value)
     def ctopivot(self, p0, p1):
         "convert from centered to pivot values"
-        pp = 1.0-(self.data.axis1.ptoi(self.pivot.value)/self.data.size1)
-        return p0- (pp-0.5)*p1, p1
+        pp = 1.0-(self.data.axis1.ctoi(self.pivot.value)/self.data.size1)
+        p0p = p0 - (pp-0.5)*p1
+        while p0p > 180:
+            p0p -= 360
+        while p0p < -180:
+            p0p += 360
+        return p0p, p1
     def on_movepivot(self, event):
         if event['name']=='value':
             self.p0.value, self.p1.value = self.ctopivot(self.lp0, self.lp1)
             # self.phase()
+            self.data = self.data_ref.copy()
             self.disp()
     def ob(self, event):
         "observe changes and start phasing"

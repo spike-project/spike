@@ -250,22 +250,28 @@ class PeakList(list):
     # def __getitem__(self,i):
     #     #print('getitem')
     #     return type(self)(list.__getitem__(self,i))
-def peak_aggreg(pklist, distance):
+def peak_aggreg(pklist, distance, maxdist=None):
     """
     aggregates peaks in peaklist if peaks are closer than a given distance in pixel
-    distance : if two peaks are less than distance (in points),  they are aggregated
+    distance : if two consecutive peaks are less than distance (in points),  they are aggregated
+    if maxdist is not None, this is the maximal distance to the largest peak 
     """
     pkl = sorted(pklist, key = lambda p: p.pos)   # first, sort the list in position
     newlist = Peak1DList()
     prev = pkl[0]
-    ipk = 1
-    maxgrp = (prev.intens, 0)  # maintain maxval and index of max peak
-    newgrp = [0,]
+    ipk = 1                    # runs on peak index
+    maxgrp = (prev.intens, 0)  # maintains maxval and index of max peak
+    newgrp = [0,]              # current group
+    if maxdist is None:
+        dmax = 10*distance
+    else:
+        dmax = maxdist
     while ipk < len(pkl):
         current = pkl[ipk]
-        #print (current.pos, int(current.pos-prev.pos), distance)
-        if abs(current.pos-prev.pos) <= distance:  # start aggregating
-            #print(ipk, current.pos)
+        # print (current.pos, int(current.pos-prev.pos), distance)
+        if (abs(current.pos-prev.pos) <= distance) and   \
+            (abs(pkl[maxgrp[1]].pos-current.pos) <= dmax):  # aggregates
+            # print(ipk, current.pos)
             newgrp.append(ipk)                     # add to list
             if current.intens>maxgrp[0]:           # check summit
                 maxgrp = (current.intens, ipk)
