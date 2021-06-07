@@ -25,6 +25,4 @@ A typical usage is to copy a version close the data to be analysed, and to keep 
 
 *The notebooks are kept both as ` *.ipynb` (as reference) and as ` *.py` (to follow the difference between commit.) Both version are identical*
 
-```python
 
-```

@@ -3,7 +3,7 @@
 
 **SPIKE** a collaborative development for a FT-spectroscopy processing library.
 
-*This is the version 0.99.21 - April 2021*
+*This is the version 0.99.25 - June 2021*
 
 **WARNING - version 0.99.14 to 0.99.19 should be avoided for FTICR handling because of a hidden bug that corrupted m/z calibration.**
 
@@ -32,7 +32,6 @@ It is still in very active development, but also the basis for our research.
 Many features are missing, and many other while present, are not fully fixed.
 However, considering the amount of efforts already present in this code, we decided to make it available.
 We believe that even in this current development stage, this program might prove useful for certain usages.
-
 
 # 2/ Documentation
 Basic presentation of functionalities can be found [Here](Presentation.md)
@@ -69,14 +68,17 @@ If you already have SPIKE installed and want to upgrade to the last version do:
 ### Installing additional tools
 Several additional tools may be of interest.
 
-**a/ Interactive jupyter notebooks**
+**a/ Interactive jupyter notebooks from SpI**
 can be found in the [Notebooks](Notebooks) directory or on [github](https://github.com/spike-project/spike/tree/master/Notebooks). 
 You will find there fully developed interactive notebooks allowing data analysis without any knowledge in python programming, as well as examples to starting writing small pyhton programs for specific needs.
 
-Note that many needs the tool `ipympl` to be installed (it may not be installed along the scientific environment)
+First the tool `ipympl` needs to be installed (it may not be installed along the scientific environment)
 To install it, simply do:
 
     pip install ipympl
+
+Then copy the related NotBooks to a directory by typing `python -m spike.installSpI` in a terminal in this directory.
+
 
 **b/ additional plugins** are available in the [plugins/special](spike/plugins/special) directory in the source tree. [check on github](https://github.com/spike-project/spike/tree/master/spike/plugins/specials).
 

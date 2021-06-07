@@ -1,5 +1,13 @@
 <!-- DO NOT MODIFY this file, it is generated automatically from dev_setup ! -->
 # SPIKE Relase Notes
+#### 0.99.25 - June 2021
+*0.99.24 was short lived, because additional bugs, introduced in.22 were found and corrected*
+
+- correction for plugins not updated correctly in the pip distribution since 0.99.22, 
+was making errors in interactive tools
+- added the NoteBook installation tool: do `python -m spike.installSpI`
+- NMR: corrections in `Proc1DNMR` notebook in integration tool and 
+
 #### 0.99.24 - June 2021
 - added a `maxdist` flag in the peak aggregator in plugins.Peaks  (default to 10*distance)
 - NMR: corrected a bug introduced in 0.99.22 in the interactive phasing when moving the pivot

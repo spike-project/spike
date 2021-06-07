@@ -48,6 +48,7 @@ setuptools.setup(
 # How-To
 # python QC.py
 # cd spike; python dev_setup.py
+# vi README.md -> change date and version   #****
 # doc/script_doc.sh
 # python3 setup.py sdist
 # rsync -av spikedoc/* /media/web/CASC4DE/softwares/spike/spikedoc    

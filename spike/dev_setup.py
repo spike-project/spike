@@ -14,7 +14,7 @@ from codecs import decode
 
 ProgramName = "SPIKE"
 VersionName = "Development version"
-VersionInfo = ["0", "99", "24"]   # Major - Minor - Micro
+VersionInfo = ["0", "99", "25"]   # Major - Minor - Micro
 
 # 1.0 will probably be when interactive Notebooks are really usefull !
 # And NMR.py validated
@@ -30,6 +30,14 @@ VersionInfo = ["0", "99", "24"]   # Major - Minor - Micro
 # Release Notes in md syntax !
 release_notes="""
 # SPIKE Relase Notes
+#### 0.99.25 - June 2021
+*0.99.24 was short lived, because additional bugs, introduced in.22 were found and corrected*
+
+- correction for plugins not updated correctly in the pip distribution since 0.99.22, 
+was making errors in interactive tools
+- added the NoteBook installation tool: do `python -m spike.installSpI`
+- NMR: corrections in `Proc1DNMR` notebook in integration tool and 
+
 #### 0.99.24 - June 2021
 - added a `maxdist` flag in the peak aggregator in plugins.Peaks  (default to 10*distance)
 - NMR: corrected a bug introduced in 0.99.22 in the interactive phasing when moving the pivot

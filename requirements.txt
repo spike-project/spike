@@ -1,0 +1,8 @@
+numpy
+flask
+spike-py
+scipy
+psutil
+python-dateutil
+matplotlib
+tables

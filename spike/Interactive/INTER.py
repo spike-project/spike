@@ -685,7 +685,7 @@ class Phaser1D(Show1D):
                         value=round(self.data.axis1.itoc(0.5*self.data.size1),2), 
                         min=min(pivr, pivl),
                         max=max(pivr, pivl),
-                        format='%.2f',
+                        format='%.3f',
                         step=0.1, layout=Layout(width='20%'))
         self.cancel = widgets.Button(description="Cancel", button_style='warning')
         self.cancel.on_click(self.on_cancel)
@@ -1091,8 +1091,10 @@ class NMRIntegrate(Show1D):
                 button_style='success', tooltip='Automatic definition of integrals')
         self.bauto.on_click(self.peak_and_integrate)
 
-        self.entry = widgets.IntText(value=0,description='Entry',min=0,layout=Layout(width='15%'))
-        self.value = widgets.FloatText(value=100,description='Value',layout=Layout(width='15%'))
+        self.entry = widgets.IntText(value=0,description='Entry',min=0,layout=Layout(width='25%'),
+                                    tooltip='Index of the calibrating integral')
+        self.value = widgets.FloatText(value=100,description='Value',layout=Layout(width='25%'),
+                                    tooltip='Value of the calibrating integral')
         self.set = widgets.Button(description="Set", button_style='success', layout=Layout(width='10%'))
         self.set.on_click(self.set_value)
         self.out = Output(layout={'border': '1px solid red'})
@@ -1154,7 +1156,7 @@ class NMRIntegrate(Show1D):
     def on_rem(self, b):
         start, end = self.ax.get_xbound()
         start, end = self.data.axis1.ptoi(start), self.data.axis1.ptoi(end)
-        start, end = (min(start, end), max(start, end))
+        start, end = (min(start, end)-1, max(start, end)+1)  #-1,+1 needed sometimes...
         to_rem = []
         for ii in self.Integ:
             if ii.start>start and ii.end<end:
