@@ -12,7 +12,6 @@
    8.13  spike/File/csv.py                           1
    8.11  spike/Algo/savitzky_golay.py                1
    8.06  spike/File/GifaFile.py                1    24 
-   8.02  spike/plugins/NMR/Bruker_NMR_FT.py    2     2 
    8.01  spike/util/mpiutil.py                       3
    8.00  spike/File/Apex0.py                         0
    7.89  spike/util/near_prime.py                    0
@@ -39,7 +38,7 @@
    7.00  spike/Display/testplot.py                   0
    6.92  spike/plugins/Fitter.py                    11
    6.88  spike/Algo/SL0_test.py                4     3 
-   6.85  spike/Tests.py                        2     5 
+   6.83  spike/Tests.py                        2     5 
    6.79  spike/NPKConfigParser.py              1     4 
    6.72  spike/Interactive/FTICR_INTER_v2.py   4    58 
    6.67  spike/plugins/test.py                       0
@@ -51,25 +50,27 @@
    6.39  spike/util/ConfigForm.py              4    26 
    6.36  spike/File/Spinit.py                       20
    6.36  spike/Algo/sane_old.py                     16
+   6.28  spike/Interactive/INTER.py           13    88 
    6.25  spike/util/counter.py                       3
    6.25  spike/plugins/sane.py                       3
-   6.23  spike/Interactive/INTER.py           13    88 
    6.20  spike/Algo/Laplace.py                 1     3 
    6.18  spike/File/Apex.py                    4    13 
+   6.15  spike/plugins/NMR/Bruker_NMR_FT.py    9     2 
    6.15  spike/Algo/urQRd.py                         3
    6.13  spike/File/HDF5File.py                7    42 
    6.04  spike/Algo/rQRd.py                    2     3 
    6.00  spike/plugins/rem_ridge.py                  2
-M  6.00  spike/dev_setup.py                         12
+   6.00  spike/dev_setup.py                         12
    6.00  spike/NPKError.py                           1
    5.90  spike/Orbitrap.py                           4
    5.85  spike/Algo/sane.py                    1    21 
    5.83  spike/__init__.py                           0
    5.82  spike/Algo/Cadzow.py                  3     2 
+   5.79  spike/installSpI.py                         3
    5.75  spike/File/Solarix.py                 5    25 
+   5.71  setup.py                                    0
    5.68  spike/Interactive/INTER_MS.py         2    38 
    5.46  spike/Algo/Cadzow_mpi2.py             5     0 
-   5.45  setup.py                                    0
    5.43  spike/util/shift_comments.py                5
    5.37  spike/util/simple_logger2.py                4
    5.15  spike/util/ValErr.py                        3
@@ -101,6 +102,9 @@ M  6.00  spike/dev_setup.py                         12
    1.52  spike/util/debug_tools.py             2     8 
    1.25  spike/version.py                            0
 *******************************************************
+   0.00  spike/plugins/specials/__init__.py          0
+   0.00  spike/plugins/NMR/__init__.py               0
+   0.00  spike/plugins/MS/__init__.py                0
    0.00  spike/Interactive/__init__.py               0
   -2.25  spike/util/mail_error_logger.py       7    32 
   -4.04  spike/util/mail.py                    7    18 
@@ -108,10 +112,10 @@ M  6.00  spike/dev_setup.py                         12
   ******  spike/processingPH.py               HAS SYNTAX ERRORS
 -------------------------------------------------------
 
-Overall aggregated note value is :  6.94/10
+Overall aggregated note value is :  6.81/10
 
-score is 72 / 26 / 4  (top / med / low)
-Mean - Median note values are :  5.54/10 -  6.25/10
-Total number of errors : 10145 on a total of 102 files
+score is 73 / 29 / 4  (top / med / low)
+Mean - Median note values are :  5.37/10 -  6.18/10
+Total number of errors : 10152 on a total of 106 files
 (but quite a few errors are just correct code not understood by pylint)
 -------------------------------------------------------
