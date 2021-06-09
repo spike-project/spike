@@ -395,7 +395,9 @@ class baseline1D(Show1D):
             jsalert('Please define control points before applying baseline correction')
             return
         self.close()
-        print('Applied correction:\n', sorted(self.bsl_points))
+        printlist = [round(i,3) for i in sorted(self.bsl_points)]
+        print("Applied correction:\ndata.bcorr(xpoints={0}, nsmooth={1})".format(printlist, self.smooth.value))
+        #print('Applied correction:\n', sorted(self.bsl_points))
         self.data.set_buffer( self.data.get_buffer() - self.correction() )
         super().disp()
         display(self.fig)   # shows spectrum
@@ -705,7 +707,7 @@ class Phaser1D(Show1D):
         # add right-click event on spectral window
         def on_press(event):
             if event.button == 3:
-                self.pivot.value = round(event.xdata,2)
+                self.pivot.value = round(event.xdata,4)
         cids = self.fig.canvas.mpl_connect('button_press_event', on_press)
         self.lp0, self.lp1 = self.ppivot()
         self.disp()
@@ -717,7 +719,7 @@ class Phaser1D(Show1D):
         self.close()
         lp0, lp1 = self.ppivot() # get centered values
         self.data_ref.phase(lp0, lp1)
-        print("Applied: phase(%.1f,  %.1f)"%(lp0, lp1))
+        print("Applied: data.phase(%.1f,  %.1f)"%(lp0, lp1))
     def ppivot(self):
         "converts from pivot values to centered ones"
         pp = 1.0-(self.data.axis1.ctoi(self.pivot.value)/self.data.size1)
@@ -1216,7 +1218,7 @@ class NMRIntegrate(Show1D):
             zoom = None
         self.data.display(new_fig=False, figure=self.ax, scale=self.scale.value, zoom=zoom)
         try:
-            self.Integ.display(label=True, figure=self.ax, labelyposition=0.01, regions=False, zoom=zoom)
+            self.Integ.display(label=True, figure=self.ax, labelyposition=None, regions=False, zoom=zoom)
         except:
             pass
         self.ax.set_xbound(self.xb)

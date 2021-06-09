@@ -15,11 +15,18 @@ import re
 _version_re = re.compile(r"version\s+=\s+'(.*)'")
 _rev_re = re.compile(r"revision\s+=\s+'(.*)'")
 
+# get version
 with open('spike/version.py', 'rb') as f:
     F = f.read()
     version = str(_version_re.search(F.decode('utf-8')).group(1))
 print("version :",version)
 
+# copy Logo
+with open('spike/Logo.png', 'rb') as fin:
+    with open('spike/Interactive/Logo.png','wb') as fout:
+        fout.write( fin.read() )
+        
+# get description
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
@@ -31,7 +38,7 @@ setuptools.setup(
     description="The SPIKE program. A collaborative development for a FT-spectroscopy processing program",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://bitbucket.org/delsuc/spike",
+    url="https://github.com/spike-project/spike",
     packages=setuptools.find_packages(),
     license="CeCILL-2.1",
     provides=["spike"],
@@ -52,7 +59,7 @@ setuptools.setup(
 # doc/script_doc.sh
 # python3 setup.py sdist
 # rsync -av spikedoc/* /media/web/CASC4DE/softwares/spike/spikedoc    
-# twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+# twine upload --repository-url https://test.pypi.org/legacy/ dist/*.tar.gz
 # conda create -n test999 numpy scipy matplotlib pytables pandas
 # conda activate test999
 # conda install ipympl

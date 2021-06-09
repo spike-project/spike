@@ -6,7 +6,7 @@
 - correction for plugins not updated correctly in the pip distribution since 0.99.22, 
 was making errors in interactive tools
 - added the NoteBook installation tool: do `python -m spike.installSpI`
-- NMR: corrections in `Proc1DNMR` notebook in integration tool and 
+- NMR: corrections in `Proc1DNMR` notebook in integration tool- added the installSpI tool to install Spike Interactive tools
 
 #### 0.99.24 - June 2021
 - added a `maxdist` flag in the peak aggregator in plugins.Peaks  (default to 10*distance)

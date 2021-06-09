@@ -55,5 +55,6 @@ Untitled*.ipynb
 
 # other
 attic/
-.swp
+*.swp
+*.swo
 *~

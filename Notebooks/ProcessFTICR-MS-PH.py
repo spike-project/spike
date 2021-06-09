@@ -88,7 +88,8 @@ d1
 # %%
 D1md = d1.copy() # copy the imported data-set to another object for processing
 D1md.kaiser(4).zf(4).rfft().modulus() # kaiser(4) is an apodisation well adapted to FTICR, slightly more resolution than hamming(
-D1md.set_unit('m/z').display(title=FC.selected_path)  # set to ppm unit - and display
+D1md.set_unit('m/z')  # set to ppm unit - and display
+I.Show1D(D1md, title=FC.selected_path)
 
 # %% [markdown]
 # # the interactive phaser.
@@ -133,7 +134,7 @@ D1ph.apod_sq_sin(maxi=0.15).chsize(simax).zf(2).rfft()
 #D1ph.apod_sin(maxi=0.35).rfft()
 reload(IMS)
 print ("initial values P1: %.0f   P2: %.0f"%IMS.firstguess(d1))
-IMS.Phaser1D(D1ph.set_unit('Hz'));
+IMS.Phaser1D(D1ph.set_unit('Hz'), title=FC.selected_path);
 
 # %% [markdown]
 # ### And now compute the full version

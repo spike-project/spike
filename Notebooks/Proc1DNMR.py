@@ -125,6 +125,7 @@ D1 = d1.copy()                  # copy the imported data-set to another object f
 D1.apod_em(LB).zf(4).ft_sim().bk_corr().apmin()  # chaining  apodisation - zerofill - FT - Bruker correction - autophase
 D1.set_unit('ppm')              # set to ppm unit ('Hz' and 'point' also available)
                                 # all Spike command can be pipelined at will - these 3 lines could be piped as one.
+reload(I)
 I.Show1D(D1, title=FC.nmrname)  #  and display
 
 # %% [markdown]
@@ -158,6 +159,7 @@ I.Phaser1D(D1, title=FC.nmrname)
 
 # %%
 # Baseline Correction
+reload(I)
 I.baseline1D(D1)
 
 # %% [markdown]
