@@ -7,9 +7,6 @@ setup.py
 """
 import setuptools
 # version.py defines static version names
-#from .version import version
-#from .version import revision
-#from .version import ProgramName
 import re
 
 _version_re = re.compile(r"version\s+=\s+'(.*)'")
@@ -21,10 +18,10 @@ with open('spike/version.py', 'rb') as f:
     version = str(_version_re.search(F.decode('utf-8')).group(1))
 print("version :",version)
 
-# copy Logo
-with open('spike/Logo.png', 'rb') as fin:
-    with open('spike/Interactive/Logo.png','wb') as fout:
-        fout.write( fin.read() )
+# # copy Logo
+# with open('Notebooks/Logo.png', 'rb') as fin:
+#     with open('spike/Interactive/Logo.png','wb') as fout:
+#         fout.write( fin.read() )
         
 # get description
 with open("README.md", "r") as fh:
@@ -40,6 +37,8 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/spike-project/spike",
     packages=setuptools.find_packages(),
+    include_package_data = True,
+    package_data={ "Notebooks": ["*.ipynb"]},
     license="CeCILL-2.1",
     provides=["spike"],
     requires=["matplotlib", "numpy", 'scipy', 'tables'],

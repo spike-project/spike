@@ -3,7 +3,7 @@ from pathlib import Path
 # This little program copies the current Notebooks to the local directory
 
 print('--------------------------------------------------------')
-nbdir = Path(__file__).resolve().parent.parent/'Notebooks'
+nbdir = Path(__file__).resolve().parent/'Notebooks'
 lfiles = [i.name for i in nbdir.glob('*.ipynb')]+['README.md']
 
 print("""

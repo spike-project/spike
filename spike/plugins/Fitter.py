@@ -5,8 +5,7 @@
 
 Very First functionnal - Not finished !
 
-
-reqruies the Peaks plugin installed 
+requires the Peaks plugin installed 
 
 July 2016 M-A Delsuc
 """
@@ -163,7 +162,8 @@ def fit(npkd, zoom=None):
     chi2 = tofit(results,x,Y)   # computes error and store it
     npkd.peaks.chi2 = chi2
     # copy back
-    for i,pk in enumerate(npkd.peaks):
+    i = 0
+    for pk in npkd.peaks:
         if pk.pos>=z1 and pk.pos<=z2:
             pk.intens = results[3*i]
             pk.pos = results[3*i+1]
@@ -171,6 +171,7 @@ def fit(npkd, zoom=None):
             pk.intens_err = errors[3*i]
             pk.pos_err = errors[3*i+1]
             pk.width_err = errors[3*i+2]
+            i += 1
     return npkd
 
 def display_fit(npkd, **kw):

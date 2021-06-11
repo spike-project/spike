@@ -1,5 +1,8 @@
 # see https://docs.python.org/3/distutils/commandref.html#sdist-cmd
-graft Notebooks
+recursive-include spike/Notebooks *.ipynb *.md
+exclude spike/Notebooks/*.py
 recursive-include spikedoc *.html *.js *.inv *.gif *.png *.css
+include spike/Interactive/*.png
 global-exclude .ipynb_checkpoints/*
+prune Notebooks
 include README.pdf README.md LICENSE release_notes.md release_notes.pdf
