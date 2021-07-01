@@ -36,10 +36,10 @@
 # - [`ipympl`](https://github.com/matplotlib/jupyter-matplotlib)  ( *adds interactivity in the notebook* )
 #
 # ## Initialization
-# the following cell should be run only once, at the beginning of the processing
+# the following cell is to be run once, at the beginning of the processing
 
 # %%
-# load all python and interactive tools - should be run only once
+# load all python and interactive tools - has to be run only once (but it does not hurt to rerun...)
 from IPython.display import display, HTML, Markdown, Image
 display(Markdown('## STARTING Environment...'))
 import matplotlib as mpl
@@ -48,16 +48,17 @@ import spike
 from spike.File.BrukerNMR import Import_1D
 from spike.Interactive import INTER as I
 from spike.Interactive.ipyfilechooser import FileChooser
-print("\nInteractive module version,",I.__version__)
 from datetime import datetime
-print('Run date:', datetime.now().isoformat() )
 I.initialize()
+print('Run date:', datetime.now().isoformat() )
 display(Markdown('## ...program is Ready'))
 from importlib import reload  # this line is debugging help
 
-# configurable items
+# configurable items - you may change them to fit you preferences
+verbose = 1                              # chose from 0 (terse) to 3 more verbose
 mpl.rcParams['figure.figsize'] = (8,4)   # (X,Y) default figure size
-I.Activate_Wheel = True                  # True/False wheel control in the graphic cells 
+I.Activate_Wheel = True                  # True/False    scale with wheel control in the graphic cells 
+
 
 # %% [markdown]
 # ### Choose the file
@@ -214,6 +215,37 @@ D1.save('example1.gs1')
 
 # %%
 D1.copy().real().save_csv('example.csv')
+
+# %% [markdown]
+# ### Load a saved dataset
+# and use it as if it was just processed, (it scratches the previous one)
+#
+# you can
+# - baseline correct
+# - pick-peak
+# - integrate
+# - display
+#
+
+# %%
+# Choose
+FC2 = FileChooser(path='/DATA/',filename='*.gs1')
+display(FC2)
+
+# %%
+# and valid
+from spike.NMR import NMRData
+print('Reading file ',FC2.selected)
+D1 = NMRData(name=FC2.selected)                 # read file, creates a SPIKE NMRData object, from which everything is available
+D1.set_unit('ppm')                             # it can be acted upon
+D1.filename = FC2.selected                      # and be extended at will
+print(D1)                                      # print() of the dataset shows a summary of the parameters
+try:
+    display(HTML('<b>title: </b>'+ D1.params['acqu']['title']))    # d1.params is a dictionary which contains the whole 'acqu' and 'proc' Bruker parameters
+except:
+    pass
+I.Show1D(D1, title=FC2.selected)
+
 
 # %% [markdown]
 # ### Save the peak list to a csv file

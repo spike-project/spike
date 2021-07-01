@@ -30,6 +30,9 @@ VersionInfo = ["0", "99", "25"]   # Major - Minor - Micro
 # Release Notes in md syntax !
 release_notes="""
 # SPIKE Relase Notes
+#### 0.99.26 - June 2021
+- bug corrections in the 2D peak centroid and display
+
 #### 0.99.25 - June 2021
 *0.99.24 was short lived, because additional bugs, introduced in.22 were found and corrected*
 
@@ -534,7 +537,7 @@ def report():
     ========================'''.format(ProgramName, version, rev_date, revision)
 print(report())
 """)
-    #print 'SPIKE version', version, 'date',date "
+    #print ('SPIKE version', version, 'date',date )
     f.close()
 
 def do(arg):
@@ -553,7 +556,10 @@ def plier():
     if UsingHG:
       do( ["hg", "clone", ".", dirn] )
     do( ["zip", "-r", zipn, dirn] )
-    
+
+def copynb():
+    "copie les notebooks"
+    do( ["python", "../Notebooks/copy.py"] )
     
 if __name__ == '__main__':
     # generate version file
@@ -569,5 +575,6 @@ Revision Id  :  %s
     generate_file("version.py")
     generate_file_rev("version_rev.py")
     generate_notes("../release_notes.md")
+    copynb()
 #    plier()
     

@@ -442,7 +442,9 @@ class Peak2DList(PeakList):
         """
         lst = [pk._report(f1=f1, f2=f2) for pk in self ]
         return "\n".join(lst)
-    def display(self, axis = None, peak_label=False, zoom=None, show=False, f1=_identity, f2=_identity, color=None, markersize=6, figure=None, NbMaxPeaks=NbMaxDisplayPeaks):
+    def display(self, axis = None, peak_label=False, zoom=None, show=False, f1=_identity, f2=_identity, color=None,
+            markersize=6, figure=None, NbMaxPeaks=NbMaxDisplayPeaks,
+            markerdict=None, labeldict=None):
         """
         displays 2D peak list
         zoom is in index
@@ -464,14 +466,26 @@ class Peak2DList(PeakList):
         else:
             pk = range(len(self))
         if debug>0:  print("plotting %d peaks"%len(pk))
+        # create arg for display
+        # default
+        mark = {'markersize':markersize,
+                'color':color}
+        label = {'color':color,
+                 'fontsize':7,
+                 'rotation':40}
+        # then update with args
+        if markerdict is None: markerdict = {}
+        mark.update(markerdict)
+        if labeldict is None: labeldict = {}
+        label.update(labeldict)
         if axis is None:
             plF1 = self.posF1 # these are ndarray !
             plF2 = self.posF2
-            fig.plot(f2(plF2[pk]), f1(plF1[pk]), "x", color=color, markersize=markersize)
+            fig.plot(f2(plF2[pk]), f1(plF1[pk]), "x", **mark)
             if peak_label:
                 for p in pk:
                     plp = self[p]
-                    fig.text(1.01*plp.posF2, 1.01*plp.posF1, plp.label, color=color, markersize=markersize)
+                    fig.text(1.01*plp.posF2, 1.01*plp.posF1, plp.label, **label)
         else:
             raise Exception("to be done")
         if show: fig.show()
@@ -489,7 +503,7 @@ def _peaks2d(npkd, threshold = 0.1, zoom = None, value = False, zones=0):
             print (z)
 
 #----------------------------------------------------------
-def peakpick(npkd, threshold = None, zoom = None, autothresh=3.0, verbose=True):
+def peakpick(npkd, threshold = None, zoom = None, autothresh=3.0, verbose=False):
     """
     performs a peak picking of the current experiment
     threshold is the level above which peaks are picked
@@ -532,11 +546,11 @@ def peaks2d(npkd, threshold, zoom):
     '''
     npkd.check2D()
     #print threshold
-    print("########## in peaks2d ")
-    print("zoom ", zoom)
+    # print("########## in peaks2d ")
+    # print("zoom ", zoom)
     z1lo, z1up, z2lo, z2up = parsezoom(npkd, zoom)
     
-    print("z1lo, z1up, z2lo, z2up ", z1lo, z1up, z2lo, z2up)
+    # print("z1lo, z1up, z2lo, z2up ", z1lo, z1up, z2lo, z2up)
     buff = npkd.get_buffer()[z1lo:z1up, z2lo:z2up]            # take the zoom window
     if npkd.itype != 0:
         buff = buff.real
@@ -646,7 +660,7 @@ def centroid2d(npkd, npoints_F1=3, npoints_F2=3):
     noff1 = (int(nF1)-1)/2
     noff2 = (int(nF2)-1)/2
     if (2*noff1+1 != nF1) or (nF1<3) or (2*noff2+1 != nF2) or (nF2<3):
-        raise NPKError("npoints must odd and >2 ",data=npkd)
+        raise NPKError("npoints must be odd and >2 ",data=npkd)
     for pk in npkd.peaks:
         st1 = int(round(pk.posF1-noff1))
         end1 = int(round(pk.posF1+noff1+1))
@@ -667,7 +681,7 @@ def centroid2d(npkd, npoints_F1=3, npoints_F2=3):
         pk.widthF1 = np.sqrt(2.0)*popt[3]
         pk.widthF2 = np.sqrt(2.0)*popt[4]
         errors = np.sqrt(np.diag(pcov))
-        print(errors)
+#        print(errors)
         pk.posF1_err = errors[0]
         pk.posF2_err = errors[1]
         pk.intens_err = errors[2]

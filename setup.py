@@ -64,5 +64,5 @@ setuptools.setup(
 # conda install ipympl
 # pip install --extra-index-url https://testpypi.python.org/pypi spike-py
 # python -m spike.Tests -D /DATA/DATA_test
-# twine upload  dist/*
+# twine upload  dist/*.tar.gz
 

@@ -7,7 +7,7 @@ A set of utilities to use spike in NMR or FTMS within jupyter
 
 First version MAD june 2017
 Intermediate version MAD october 2019
-Improvements MAD April 2021
+Improvements MAD April-June 2021
 """
 
 from __future__ import print_function, division
@@ -15,6 +15,7 @@ import unittest
 import sys
 import os
 import os.path as op
+from pathlib import Path 
 import glob
 
 import matplotlib as mpl
@@ -34,7 +35,7 @@ try:
 except:
     print('Baseline correction plugins not installed !')
 
-__version__ = "1.2.0"
+__version__ = "1.2.1"  # 1.3.0 will be for faster yscale
 
 # REACTIVE modify callback behaviour
 # True is good for inline mode / False is better for notebook mode
@@ -45,12 +46,19 @@ Activate_Wheel = True
 ##############################
 # First General Utilities
 ##############################
-def initialize():
+def initialize(verb=1):
     "initialize notebook interface for Spike"
-    hidecode(message="")
-    hidedoc()
+    if verb>0:
+        print("\nInteractive module version,",__version__)
+    if verb>1:
+        hidecode()
+        hidedoc()
+    else:
+        hidecode(message="")
+        hidedoc(message="")
     initCSS()
     Logo()
+
 def initCSS():
     "adapt some CSS"
     display(HTML('''
@@ -60,7 +68,7 @@ hr         {height: 2px; border: 0;border-top: 1px solid #ccc;margin: 1em 0;padd
 </style>
     '''))
 
-def hidecode(initial='show', message="<i>usefull to show/print a clean screen when processing is finished</i>"):
+def hidecode(initial='show', message="<i>useful to show/print a clean screen when processing is finished</i>"):
     """
     this func adds a button to hide/show the code on a jupyter page
     initial is either 'show' or 'hide'
@@ -87,7 +95,7 @@ $(document).ready(code_toggle);
 %s
 </form>'''%(init, message)))
 
-def hidedoc(initial='show', message="<i>usefull to show/print a clean screen when processing is finished</i>"):
+def hidedoc(initial='show', message="<i>useful to show/print a clean screen when processing is finished</i>"):
     """
     this func adds a button to hide/show the doc on a jupyter page
     initial is either 'show' or 'hide'
@@ -115,6 +123,13 @@ $(document).ready(doc_toggle);
 </form>'''%(init, message)))
 
 from . import __path__
+def UserLogofile():
+    "return the address on disk of the User Logo file - located in $HOME/Spike/Logo.png"
+    ufile = Path.home()/'Spike'/'Logo.png'
+    if ufile.exists():
+        return ufile
+    else:
+        return Logofile()
 def Logofile():
     "return the address on disk of the Logo file"
     return op.join(__path__[0],'Logo.png')
