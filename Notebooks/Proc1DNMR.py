@@ -121,9 +121,9 @@ I.Show1D(d1, title=FC.selected)
 
 # %%
 # Basic Processing
-LB = 0.1                        # you can adapt LB to your means, in Hz
+LB = 0.3                        # you can adapt LB to your means, in Hz
 D1 = d1.copy()                  # copy the imported data-set to another object for processing
-D1.apod_em(LB).zf(4).ft_sim().bk_corr().apmin()  # chaining  apodisation - zerofill - FT - Bruker correction - autophase
+D1.center().apod_em(LB).zf(4).ft_sim().bk_corr().apmin()  # chaining  centering - apodisation - zerofill - FT - Bruker correction - autophase
 D1.set_unit('ppm')              # set to ppm unit ('Hz' and 'point' also available)
                                 # all Spike command can be pipelined at will - these 3 lines could be piped as one.
 reload(I)

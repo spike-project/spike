@@ -1,5 +1,10 @@
 <!-- DO NOT MODIFY this file, it is generated automatically from dev_setup ! -->
 # SPIKE Relase Notes
+#### 0.99.26 - July 2021
+- new command zero_dsp() and rem_dsp() to zero or remove the FID header created by the DSP.
+- added support for NarrowBand FTICR acqusition - first steps, need to be completed
+- bug corrections in the 2D peak centroid and display
+
 #### 0.99.25 - June 2021
 *0.99.24 was short lived, because additional bugs, introduced in.22 were found and corrected*
 

@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.3.4
+#       jupytext_version: 1.11.1
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -29,11 +29,11 @@
 # the following cell should be run only once, at the beginning of the processing
 
 # %%
-# load all python and interactive tools
-from __future__ import print_function, division
+# load all python and interactive tools - has to be run only once (but it does not hurt to rerun...)
 from IPython.display import display, HTML, Markdown, Image
 display(Markdown('## STARTING Environment...'))
-# %matplotlib notebook
+import matplotlib as mpl
+# %matplotlib widget
 import os.path as op
 import numpy as np
 import spike
@@ -41,12 +41,26 @@ from spike.Interactive import INTER as I
 from spike.Interactive import FTICR_INTER as FI
 from spike.Interactive.ipyfilechooser import FileChooser
 from spike.File import BrukerMS
-display(Markdown('## ... program is Ready'))
-I.hidecode()
+from datetime import datetime
+I.initialize()
+print('Run date:', datetime.now().isoformat() )
+display(Markdown('## ...program is Ready'))
+from importlib import reload  # this line is debugging help
+
+# configurable items - you may change them to fit you preferences
+verbose = 1                              # chose from 0 (terse) to 3 more verbose
+mpl.rcParams['figure.figsize'] = (8,4)   # (X,Y) default figure size
+I.Activate_Wheel = True                  # True/False    scale with wheel control in the graphic cells 
 
 # %% [markdown]
 # ### Choose the file
-# Use `FileChooser()` to choose a file on your disk - The optional `base` argument, starts the exploration on a given location.
+# The `FileChooser()` tool creates a dialog box which allows to choose a file on your disk
+#
+# - use the `Select` button, click on the directory to move around `..` is for going back in the directory tree
+# - click on the file to select it
+# - modify the ( *optional* ) `path` argument, to start the exploration on a given location
+# - changing to `path='.'` will start the browsing from the current directory 
+# - After the selection, the selected filename is found in `FC.selected`
 #
 # Bruker files are named `fid` and are contained in a `*.d` directory.
 
@@ -55,9 +69,11 @@ FC = FileChooser(path='/DATA', filetype='fid')
 display(FC)
 
 # %% [markdown]
-# (After the selection, the selected filename is found in the `FC.selected` variable)
-# ### Import dataset
+# ### Import dataset and display FID
 #
+# This is simply done with the `Import_1D()` tool, which returns a `SPIKE` object.
+#
+# We store the dataset into a variable, here called d1. 
 
 # %%
 # This is simply done with the `Import_1D()` tool, which returns a `SPIKE` object.
@@ -69,10 +85,24 @@ d1.set_unit('sec').display(title=FC.selected_path+" transient")
 d1
 
 # %% [markdown]
-# In the current set-up, the figure can be explored *(zoom, shift, resize, etc)* with the jupyter tools displayed  below the dataset.
-# The figure can also be saved as a `png` graphic file.
+# Spectra can be interactively explored with the jupyter tools displayed  on the side of the dataset:
 #
-# At anytime, the figure can be frozen by clicking on the blue button on the upper right corner, just rerun the cell for changing it.
+# - zoom with <button class="jupyter-matplotlib-button jupyter-widgets jupyter-button" href="#" title="Zoom to rectangle" style="outline: currentcolor none medium;"><i class="center fa fa-square-o"></i></button>
+# - shift and resize
+# <button class="jupyter-matplotlib-button jupyter-widgets jupyter-button" href="#" title="Pan axes with left mouse, zoom with right" style="outline: currentcolor none medium;"><i class="center fa fa-arrows"></i></button>
+#  (with left and right click)
+# - <button class="jupyter-matplotlib-button jupyter-widgets jupyter-button" href="#" title="Back to previous view" style="outline: currentcolor none medium;"><i class="center fa fa-arrow-left"></i></button>
+# and
+# <button class="jupyter-matplotlib-button jupyter-widgets jupyter-button" href="#" title="Forward to next view" style="outline: currentcolor none medium;"><i class="center fa fa-arrow-right"></i></button>
+# allow to navigate in the zoom history
+#
+# - <button class="jupyter-matplotlib-button jupyter-widgets jupyter-button" href="#" title="Download plot" style="outline: currentcolor none medium;"><i class="center fa fa-fw fa-floppy-o"></i></button> is used to store a `png` graphic file of the current display.
+#
+# The drawing zone can be resized using the little grey triangle on the lower-right corner
+#
+#
+# ## Basic Processing
+# The following cell applies a basic processing, check the documentation for more advanced processing
 
 # %% [markdown]
 # ### Compute Spectrum
@@ -85,8 +115,9 @@ d1
 #
 
 # %%
-D1 = d1.copy() # copy the imported data-set to another object for processing
-D1.kaiser(4).zf(4).rfft().modulus() # kaiser(4) is an apodisation well adapted to FTICR, slightly more resolution than hamming(
+D1 = d1.copy()                               # copy the imported data-set to another object for processing
+D1.center().kaiser(4).zf(4).rfft().modulus() # chaining  centering - apodisation - zerofill - FT - modulus 
+                                             # kaiser(4) is an apodisation well adapted to FTICR, slightly more resolution than hamming - try varying the argument !
 D1.set_unit('m/z').display(title=FC.selected_path)  # set to ppm unit - and display
 
 # %% [markdown]

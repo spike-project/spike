@@ -110,6 +110,35 @@ def bruker_corr(self):
     return self
 NPKData_plugin("bruker_corr", bruker_corr)
 NPKData_plugin("bk_corr", bruker_corr)
+
+#-------------------------------------------------------------------------------
+def rem_dsp(self,coeff=1.0):
+    """
+    remove the leading part of the fid created by the DSP
+    coeff allows to extend or reduce the zone, 1.0 is exactly the zone 
+    see zero_dsp
+    """
+    ax = self.axes(self.dim)
+    zone = int(round(coeff*ax.stoi(0)))
+    buf = self.get_buffer()
+    self.set_buffer(buf[zone:])
+    ax.zerotime -= coeff*ax.zerotime
+    return self
+NPKData_plugin("rem_dsp", rem_dsp)
+#-------------------------------------------------------------------------------
+def zero_dsp(self,coeff=1.0):
+    """
+    set to 0.0 the leading part of the fid created by the DSP
+    coeff allows to extend or reduce the zone, 1.0 is exactly the zone 
+    a value slightly larger than 1.0 can remove some strong baseline problems.
+    see rem_dsp
+    """
+    ax = self.axes(self.dim)
+    zone = int(round(coeff*ax.stoi(0)))
+    self.buffer[0:zone] = 0
+    return self
+NPKData_plugin("zero_dsp", zero_dsp)
+
 #-------------------------------------------------------------------------------
 def bruker_proc_phase(self):
     """

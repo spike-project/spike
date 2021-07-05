@@ -14,7 +14,7 @@ from codecs import decode
 
 ProgramName = "SPIKE"
 VersionName = "Development version"
-VersionInfo = ["0", "99", "25"]   # Major - Minor - Micro
+VersionInfo = ["0", "99", "26"]   # Major - Minor - Micro
 
 # 1.0 will probably be when interactive Notebooks are really usefull !
 # And NMR.py validated
@@ -30,7 +30,9 @@ VersionInfo = ["0", "99", "25"]   # Major - Minor - Micro
 # Release Notes in md syntax !
 release_notes="""
 # SPIKE Relase Notes
-#### 0.99.26 - June 2021
+#### 0.99.26 - July 2021
+- new command zero_dsp() and rem_dsp() to zero or remove the FID header created by the DSP.
+- added support for NarrowBand FTICR acqusition - first steps, need to be completed
 - bug corrections in the 2D peak centroid and display
 
 #### 0.99.25 - June 2021

@@ -3,7 +3,7 @@
 
 **SPIKE** a collaborative development for a FT-spectroscopy processing library.
 
-*This is the version 0.99.25 - June 2021*
+*This is the version 0.99.26 - July 2021*
 
 **WARNING - version 0.99.14 to 0.99.19 should be avoided for FTICR handling because of a hidden bug that corrupted m/z calibration.**
 

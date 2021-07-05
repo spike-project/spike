@@ -157,11 +157,25 @@ def Import_1D(inifolder, outfile = "", compress=False):
     
     if os.path.isfile(os.path.join(folder, "fid")):
         fname = os.path.join(folder, "fid")
-    else:
+    elif os.path.isfile(os.path.join(folder, "ser")):
         raise Exception("You are dealing with 2D data, you should use Import_2D")
+    else:
+        raise Exception("No file found")
     data = FTICRData( dim = 1 )   # create dummy 1D
     data.axis1.size = sizeF1    # then set parameters
+    data.axis1.calibA = float(params["ML1"])
+    data.axis1.calibB = float(params["ML2"])
+    data.axis1.calibC = float(params["ML3"])
+    if not math.isclose(data.axis1.calibC,0.0):
+        print('Using 3 parameters calibration,  Warning calibB is -ML2')
+        data.axis1.calibB *= -1
     data.axis1.specwidth = float(params["SW_h"])
+    # Test for NarrowBand
+    if params["AQ_mod"] == '1':
+        NarrowMode = True
+    else:
+        NarrowMode = False
+
     try:  #CR for compatibility with Apex format as there is no EXciteSweep file
         l,h = read_ExciteSweep(locate_ExciteSweep(folder))
     except:
@@ -169,15 +183,18 @@ def Import_1D(inifolder, outfile = "", compress=False):
         data.axis1.lowfreq = float(params["EXC_Freq_Low"])
     else:
         data.axis1.lowfreq, data.axis1.highfreq = l,h
-    data.axis1.highmass = float(params["MW_high"])
-    data.axis1.left_point = 0
-    data.axis1.offset = 0.0
-    data.axis1.calibA = float(params["ML1"])
-    data.axis1.calibB = float(params["ML2"])
-    data.axis1.calibC = float(params["ML3"])
-    if not math.isclose(data.axis1.calibC,0.0):
-        print('Using 3 parameters calibration,  Warning calibB is -ML2')
-        data.axis1.calibB *= -1
+    if NarrowMode:
+        if params["SW_h"] != params["SW_h_Narrowband"]:
+            print("""Warning - there is some inconsistencies in spectral width definition - dataset assumed in NarrowBand mode""")
+            data.axis1.specwidth = float(params["SW_h_Narrowband"])
+        data.axis1.offsetfreq = float(params['O1'])- data.axis1.specwidth
+        data.axis1.lowfreq = data.axis1.offsetfreq
+        data.axis1.highmass = data.axis1.htomz(data.axis1.offsetfreq)
+        data.axis1.left_point = 0.0
+    else:
+        data.axis1.highmass = float(params["MW_high"])
+        data.axis1.left_point = 0
+        data.axis1.offsetfreq = 0.0
 
     #print(float(params["ML1"]),float(params["ML2"]),float(params["ML3"]))
 
@@ -194,6 +211,8 @@ def Import_1D(inifolder, outfile = "", compress=False):
         # I need a link back to the file in order to close it, however this creates a loop - experimental ! 
     else:
         data.buffer = np.zeros((sizeF1))
+    if NarrowMode:
+        data.axis1.itype = 1         # then assume data is complex
     data.adapt_size()
     with open(fname,"rb") as f:
         tbuf = f.read(4*sizeF1)

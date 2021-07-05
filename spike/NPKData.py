@@ -2735,11 +2735,11 @@ class _NPKData(object):
             if tm2 != -1:
                 e[tm2:]    = np.linspace(1, 0, ftm2)
         elif it ==1:
-            e[0:ftm1:2]  = np.linspace(0, 1, ftm1/2)
-            e[1:ftm1:2]  = np.linspace(0, 1, ftm1/2)
+            e[0:ftm1:2]  = np.linspace(0, 1, ftm1//2)
+            e[1:ftm1:2]  = np.linspace(0, 1, ftm1//2)
             if tm2 != -1:
-                e[tm2::2]    = np.linspace(1, 0, ftm2/2)
-                e[tm2+1::2]  = np.linspace(1, 0, ftm2/2)
+                e[tm2::2]    = np.linspace(1, 0, ftm2//2)
+                e[tm2+1::2]  = np.linspace(1, 0, ftm2//2)
 #        print("APOD_TM still to be doublechecked",e)
         return self.apod_apply(axis,e)
     #-------------------------------------------------------------------------------

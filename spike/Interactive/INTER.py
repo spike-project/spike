@@ -29,6 +29,7 @@ import numpy as np
 
 from .. import NMR
 from ..File.BrukerNMR import Import_1D
+
 from .ipyfilechooser import FileChooser as FileChooser_code
 try:
     import spike.plugins.bcorr as bcorr
