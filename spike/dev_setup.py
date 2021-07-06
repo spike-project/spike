@@ -561,7 +561,7 @@ def plier():
 
 def copynb():
     "copie les notebooks"
-    do( ["python", "../Notebooks/copy.py"] )
+    do( ["python", "../Notebooks/nbcopy.py"] )
     
 if __name__ == '__main__':
     # generate version file
