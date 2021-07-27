@@ -1,5 +1,13 @@
 <!-- DO NOT MODIFY this file, it is generated automatically from dev_setup ! -->
 # SPIKE Relase Notes
+#### 0.99.27 - July 2021
+- spike interactive in FTICR - many improvements
+    - isotopic pattern simulation using imported `isotope` module
+    (and fine isotopic as well - thanks to the excellent prgm neutronstar !)
+    - processing of narrowband acquisition is correct now
+    - better calibration - (still in progress)
+    - superimposition of spectra should work now
+
 #### 0.99.26 - July 2021
 - new command zero_dsp() and rem_dsp() to zero or remove the FID header created by the DSP.
 - added support for NarrowBand FTICR acqusition - first steps, need to be completed

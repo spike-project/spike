@@ -14,7 +14,7 @@ from codecs import decode
 
 ProgramName = "SPIKE"
 VersionName = "Development version"
-VersionInfo = ["0", "99", "26"]   # Major - Minor - Micro
+VersionInfo = ["0", "99", "27"]   # Major - Minor - Micro
 
 # 1.0 will probably be when interactive Notebooks are really usefull !
 # And NMR.py validated
@@ -30,6 +30,14 @@ VersionInfo = ["0", "99", "26"]   # Major - Minor - Micro
 # Release Notes in md syntax !
 release_notes="""
 # SPIKE Relase Notes
+#### 0.99.27 - July 2021
+- spike interactive in FTICR - many improvements
+    - isotopic pattern simulation using imported `isotope` module
+    (and fine isotopic as well - thanks to the excellent prgm neutronstar !)
+    - processing of narrowband acquisition is correct now
+    - better calibration - (still in progress)
+    - superimposition of spectra should work now
+
 #### 0.99.26 - July 2021
 - new command zero_dsp() and rem_dsp() to zero or remove the FID header created by the DSP.
 - added support for NarrowBand FTICR acqusition - first steps, need to be completed
