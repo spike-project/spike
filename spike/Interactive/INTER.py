@@ -7,7 +7,7 @@ A set of utilities to use spike in NMR or FTMS within jupyter
 
 First version MAD june 2017
 Intermediate version MAD october 2019
-Improvements MAD April-June 2021
+Improvements MAD spring - summer 2021
 """
 
 from __future__ import print_function, division
@@ -139,6 +139,7 @@ def Logo(width=150):
     display(Image(filename=Logofile(),width=width))
 def jsalert(msg="Alert text"):
     "send a javascript alert"
+    # use \\n if you want to add several lines
     display(Javascript("alert('%s')"%msg))
 
 class _FileChooser:

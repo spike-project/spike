@@ -552,15 +552,42 @@ class Calib(object):
                 button_style='success', # 'success', 'info', 'warning', 'danger' or ''
                 tooltip='restore dataset to initial values')
         self.bback.on_click(self.back)
-        display(VBox([  HBox([self.A, widgets.Label('Hz/Th')]),
+        self.message = HTML(' ')
+        self.validatebox = VBox([  HBox([self.A, widgets.Label('Hz/Th')]),
                         HBox([self.B, widgets.Label('Hz')]),
                         HBox([self.C, widgets.Label('Hz/Th^2')]),
-                        HBox([self.bupdate, self.bback])]))
+                        HBox([self.bupdate, self.bback]),
+                        self.message ])
+    
+        self.referencesig = widgets.FloatText(description="Observed")
+        self.referenceval = widgets.FloatText(description="Theoretical")
+        self.bsetref = widgets.Button(description="Set to reference",
+                button_style='success',
+                tooltip='set A value from reference peak above')
+        self.bsetref.on_click(self.setref)
+        vbox_layout = Layout(display='flex',
+            flex_flow='column',
+            align_items='center')
+
+        self.calibbox = VBox( [ Label('Use a reference peak to calibrate A'),
+                                HBox([self.referencesig, widgets.Label('m/z')]),
+                                HBox([self.referenceval, widgets.Label('m/z')]),
+                                self.bsetref, ],
+                                layout=vbox_layout )
+        hbox_layout = Layout(display='flex',
+                    flex_flow='row',
+                    justify_content='space-around',
+                    width='80%')
+        vbox_layout = Layout(display='flex',
+                    flex_flow='row',
+                    align_items='flex-end')
+        self.box = HBox([self.validatebox, self.calibbox], layout=hbox_layout)
+        display(self.box)
     def update(self,event):
         self.data.axis1.calibA = self.A.value
         self.data.axis1.calibB = self.B.value
         self.data.axis1.calibC = self.C.value
-        print("Set - don't forget to rerun the Peak Picker")
+        self.message.value = "Done - <i>don't forget to rerun the Peak Picker</i>"
     def back(self,event):
         self.data.axis1.calibA = self.res[0]
         self.data.axis1.calibB = self.res[1]
@@ -568,6 +595,10 @@ class Calib(object):
         self.A.value = self.res[0]
         self.B.value = self.res[1]
         self.C.value = self.res[2]
+        self.message.value = "Values restored"
+    def setref(self, e=None):
+        self.A.value *= (self.referenceval.value / self.referencesig.value)
+        self.message.value = 'use "Update" button to validate'
 
 Colors = ('black','red','blue','green','orange',
 'blueviolet','crimson','turquoise','indigo',
@@ -600,9 +631,10 @@ class SpforSuper(object):
 class SuperImpose(object):
     "a tool to superimpose spectra"
     def __init__(self, base=None, filetype='*.msh5', N=None):
+        from spike.Interactive.INTER import _FileChooser
         if N is None:
             N = int(input('how many spectra do you want to compare:  '))
-        self.Chooser = FileChooser(base=base, filetype=filetype, mode='r', show=False)
+        self.Chooser = _FileChooser(base=base, filetype=filetype, mode='r', show=False)
         self.bsel = widgets.Button(description='Copy',layout=Layout(width='10%'),
                 button_style='info', # 'success', 'info', 'warning', 'danger' or ''
                 tooltip='copy selected data-set to entry below')

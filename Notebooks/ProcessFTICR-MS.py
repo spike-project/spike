@@ -36,9 +36,11 @@ import matplotlib as mpl
 # %matplotlib widget
 import os.path as op
 import numpy as np
+import pandas as pd
 import spike
 from spike.Interactive import INTER as I
 from spike.Interactive import FTICR_INTER as FI
+from spike.Interactive import MSIsotopic as ISO
 from spike.Interactive.ipyfilechooser import FileChooser
 from spike.File import BrukerMS
 from datetime import datetime
@@ -100,11 +102,12 @@ d1
 #
 # The drawing zone can be resized using the little grey triangle on the lower-right corner
 #
+
+# %% [markdown]
 #
 # ## Basic Processing
 # The following cell applies a basic processing, check the documentation for more advanced processing
-
-# %% [markdown]
+#
 # ### Compute Spectrum
 #
 # many processing methods are available, they can be either applied one by one, or piped by chaining them.
@@ -116,8 +119,13 @@ d1
 
 # %%
 D1 = d1.copy()                               # copy the imported data-set to another object for processing
-D1.center().kaiser(4).zf(4).rfft().modulus() # chaining  centering - apodisation - zerofill - FT - modulus 
-                                             # kaiser(4) is an apodisation well adapted to FTICR, slightly more resolution than hamming - try varying the argument !
+D1.center().kaiser(4).zf(4)   # chaining  centering - apodisation - zerofill
+                              # kaiser(4) is an apodisation well adapted to FTICR, slightly more resolution than hamming - try varying the argument !
+if D1.axis1.itype == 0:       # means data is real (common case)
+    D1.rfft().modulus()           # chaining  real FT - modulus
+else:     # is 1              data is complex, in Narrow-band acquisition
+    D1.fft().modulus()            # chaining  complex FT - modulus
+D1.bcorr(xpoints=50)
 D1.set_unit('m/z').display(title=FC.selected_path)  # set to ppm unit - and display
 
 # %% [markdown]
@@ -132,23 +140,33 @@ print("number of on-screen peaks is limited to %d - zoom in with the top tool to
 FI.MSPeaker(D1, pkname);
 
 # %% [markdown]
-# ### Calibration
+# ## Superpose experimental and computed spectra
+#
+# If the spectrum requires recalibration - eventually run the Calibration tool below, and rerun this tool.
+
+# %% slideshow={"slide_type": "fragment"}
+from importlib import reload
+reload(ISO)
+IS = ISO.Isotope()
+IS.full(D1)
+
+# %% [markdown]
+# ---
+# ### Calibration and reference peaks
+#
 # The calibration used by SPIKE is based on a 2 or 3 parameters equation :
 # $$
 # f = \frac{A}{m/z} - B + \frac{C}{(m/z)^2}
 # $$
-# You can change them below:
+# You can change them below.
+#
+# For the moment you can recalibrate on a single reference peak, 
+# this modifies the first order $A$ parameter only.
 #
 
 # %%
+reload(FI)
 FI.Calib(D1);
-
-# %% [markdown]
-# ---
-#
-# ### Calibration on reference peaks
-# #### *To come soon !*
-#
 
 # %% [markdown]
 # ### Save processed data
@@ -174,8 +192,9 @@ print("File is stored as %s"%csvname)
 # you can superimpose several spectra stored as `.msh5` files in order to compare them
 
 # %%
+reload(FI)
 from IPython.display import display
-SP = FI.SuperImpose(base='/DATA',N=6).Show()
+SP = FI.SuperImpose(base='/DATA',N=3).Show()
 
 # %% [markdown]
 # *the following cell display the colormap used here*
