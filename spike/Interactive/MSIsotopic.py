@@ -65,7 +65,8 @@ class Isotope():
             layout=Layout(flex='2', width='auto'))
         self.quality.observe(self.compute)
         self.docinput = Button(description='?',
-             layout=Layout(flex='1', width='auto'))
+            tooltip="documentation on entering formula",
+            layout=Layout(flex='1', width='auto'))
         self.docinput.on_click(self.showdoc)
         # flex 20
 
@@ -89,7 +90,8 @@ class Isotope():
         self.color = Dropdown( options=I.Colors, value='red',
             layout=Layout(flex='2', width='auto'))
         self.bdraw = Button(description='Draw', button_style='success',
-             layout=Layout(flex='2', width='auto'))
+            tooltip="Draw simulated isotopic patterns",
+            layout=Layout(flex='2', width='auto'))
         self.bdraw.on_click(self.draw)
         # flex 10
 
@@ -97,14 +99,17 @@ class Isotope():
         self.atom_form = HTML(
             value='<span style="color: grey;font-style: italic;">results will come here</span>',
             layout=Layout(flex='10', width='auto'))
-        self.bmass = Button(description='Sorted by Mass', 
-             layout=Layout(flex='2', width='auto'))
+        self.bmass = Button(description='Sorted by Mass',
+            tooltip="List isotopes by increasing mass value",
+            layout=Layout(flex='2', width='auto'))
         self.bmass.on_click(self.masstable)
         self.babund = Button(description='Sorted by Abundance',
-             layout=Layout(flex='2', width='auto'))
+            tooltip="List isotopes by decreasing abundance",
+            layout=Layout(flex='2', width='auto'))
         self.babund.on_click(self.abundtable)
         self.table = Output(width='100%')
         self.bcleartable = Button(description='clear table',
+            tooltip="Clear the on-screen list",
             disabled=True,
             layout=Layout(flex='2', width='auto'))
         self.bcleartable.on_click(self.cleartable)
