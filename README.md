@@ -3,7 +3,7 @@
 
 **SPIKE** a collaborative development for a FT-spectroscopy processing library.
 
-*This is the version 0.99.26 - July 2021*
+*This is the version 0.99.27 - July 2021*
 
 **WARNING - version 0.99.14 to 0.99.19 should be avoided for FTICR handling because of a hidden bug that corrupted m/z calibration.**
 
@@ -176,6 +176,3 @@ Covered code is provided under this license on an "as is" basis, without warrant
 
 Downloading code and datasets from this page signifies acceptance of the hereunder License Agreement. The code distributed here is covered under the CeCILL license : http://www.cecill.info/index.en.html
 
-```bash
-
-```

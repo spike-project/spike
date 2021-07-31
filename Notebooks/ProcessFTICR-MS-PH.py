@@ -130,7 +130,7 @@ I.Show1D(D1md, title=FC.selected_path)
 # %%
 simax = min(512*1024, d1.size1)
 D1ph = d1.copy()       # copy the imported data-set to another object for processing
-D1ph.apod_sq_sin(maxi=0.15).chsize(simax).zf(2).rfft()
+D1ph.apod_sq_sin(maxi=0).chsize(simax).zf(2).rfft()
 #D1ph.apod_sin(maxi=0.35).rfft()
 reload(IMS)
 print ("initial values P1: %.0f   P2: %.0f"%IMS.firstguess(d1))

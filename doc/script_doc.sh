@@ -10,8 +10,7 @@ cp  doc/*.rst   spike_make_sphinx/
 # modiy configuration
 
 
-pandoc README.md -t rst -o README.rst
-mv README.rst spike_make_sphinx/Readme.rst
+pandoc README.md -t rst -o spike_make_sphinx/Readme.rst
 pandoc release_notes.md -t rst -o spike_make_sphinx/release_notes.rst
 Presentation
 DevelopmentGuide
