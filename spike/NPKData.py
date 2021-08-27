@@ -2514,9 +2514,8 @@ class _NPKData(object):
     #---------------------------------------------------------------------------
     def transpose(self, axis=0):
         """
-        Transposes the 2D matrix or planes of the 3D cube. The sizes of 
-        the matrix must be a power of two for this command to be used. After 
-        transposition, the two dimensions are completely permuted
+        Transposes the 2D matrix or planes of the 3D cube. 
+        After transposition, the two dimensions are completely permuted
         
         axis is used in 3D to tell which submatrices should be transposed
         

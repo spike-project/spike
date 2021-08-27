@@ -459,7 +459,7 @@ class GifaFile(object):
         self.load_header()
         self.fileB.seek(self.headersize) #CR binary handler for data
         if self.dim == 1:
-            print("loading 1D")
+#            print("loading 1D")
             sz = self.size1
             fbuf = self.fileB.read(4*sz)   # Gifa data are in 4 byte floats CR binary handler for data
             abuf = array.array('f', fbuf)    # simple precision 4 bytes
@@ -470,7 +470,7 @@ class GifaFile(object):
             # for i in xrange(sz):      # this is 3-10 times slower
             #     fbuf[i] = abuf[i]
         elif self.dim == 2:
-            print("loading 2D")
+#            print("loading 2D")
             sz1 = self.size1
             sz2 = self.size2
             if self.debug > 0: print("2D", sz1, sz2)
