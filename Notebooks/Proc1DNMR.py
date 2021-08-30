@@ -46,7 +46,7 @@ import matplotlib as mpl
 # %matplotlib widget
 import spike
 from spike.File.BrukerNMR import Import_1D
-from spike.Interactive import INTER as I
+from spike.Interactive import INTER_yb as I
 from spike.Interactive.ipyfilechooser import FileChooser
 from datetime import datetime
 I.initialize()
@@ -89,6 +89,7 @@ d1.set_unit('sec')                             # it can be acted upon
 d1.filename = FC.selected                      # and be extended at will
 print(d1)                                      # print() of the dataset shows a summary of the parameters
 display(HTML('<b>title: </b>'+ d1.params['acqu']['title']))    # d1.params is a dictionary which contains the whole 'acqu' and 'proc' Bruker parameters
+reload(I)
 I.Show1D(d1, title=FC.selected)
 # alternatively you can use the low-level tool below:
 # d1.display()  # with many options, plus access to matplotlib details
@@ -161,7 +162,8 @@ I.Phaser1D(D1, title=FC.nmrname)
 # %%
 # Baseline Correction
 reload(I)
-I.baseline1D(D1)
+B = I.baseline1D(D1)
+B
 
 # %% [markdown]
 # ## Peak-Picker
@@ -189,20 +191,32 @@ I.NMRIntegrate(D1)
 # %% [markdown]
 # ## Interactive composite display
 # Convenient to set-up your own figure
-# (spectral superposition is not operational)
 #
-# label y pos -1
+# Chose
+#
+# - to display integrals and/or peakpicking
+# - the color the linewidth and placement of every elements
+# - superimpose different data-set
+#     - additional data-sets should have been stored before hand in SPIKE format ( `*.gs1` )
+#     - excerpt from current data-set can be added using " Self " as data name
+#
 
 # %%
 # Composite display
 reload(I)
-I.Show1Dplus(D1, title=FC.nmrname)
+Sp = I.Show1Dplus(D1, title=FC.nmrname)
+Sp
 
 # %% [markdown]
 # ---
-# optional steps
+# # optional steps
 #
-# ## Save the data-set
+#
+
+# %% [markdown]
+# ---
+#
+# ## Save the data-set and reload
 # either as stand alone native SPIKE files, (there are other formats)
 
 # %%
@@ -248,13 +262,17 @@ I.Show1D(D1, title=FC2.selected)
 
 
 # %% [markdown]
-# ### Save the peak list to a csv file
+# ---
+# ## Export integrals and peak lists
+
+# %% [markdown]
+# ### Export the peak list to a csv file
 
 # %%
 D1.pk2pandas().to_csv('peaklist.csv')
 
 # %% [markdown]
-# ### Save the integrals to a csv file
+# ### Export the integrals to a csv file
 
 # %%
 D1.integrals.to_pandas().to_csv('integrals.csv')

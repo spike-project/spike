@@ -28,6 +28,8 @@ from IPython.display import display, HTML, Javascript, Markdown, Image
 import numpy as np
 
 from .. import NMR
+from ..NMR import NMRData
+
 from ..File.BrukerNMR import Import_1D
 
 from .ipyfilechooser import FileChooser as FileChooser_code
@@ -43,6 +45,11 @@ __version__ = "1.2.1"  # 1.3.0 will be for faster yscale
 REACTIVE = True
 HEAVY = False
 Activate_Wheel = True
+
+# default color set
+Colors = ('black','red','blue','green','orange',
+'blueviolet','crimson','turquoise','indigo',
+'magenta','gold','pink','purple','salmon','darkblue','sienna')
 
 ##############################
 # First General Utilities
@@ -141,7 +148,6 @@ def jsalert(msg="Alert text"):
     "send a javascript alert"
     # use \\n if you want to add several lines
     display(Javascript("alert('%s')"%msg))
-
 class _FileChooser:
     """a simple file chooser for Jupyter - obsolete - not used any more"""
     def __init__(self, base=None, filetype=['fid','ser'], mode='r', show=True):
@@ -489,10 +495,109 @@ class baseline1D(Show1D):
         # set zoom
         self.ax.set_xbound(self.xb)
 
-Colors = ('black','red','blue','green','orange',
-'blueviolet','crimson','turquoise','indigo',
-'magenta','gold','pink','purple','salmon','darkblue','sienna')
+class SpforSuper(object):
+    "a holder for SuperImpose"
+    def __init__(self, i, filename='None', axref=False, ref=None):
+        """
+        filename is the dataset to show
+        axref is the axes of the caller, where to display
+        ref is a dataset in case filename is Self 
+        """
+        self.axref = axref
+        self.ref = ref
+        self.filename = widgets.Text(value=filename, layout=Layout(width='30em'))
+        def nactivate(e):
+            if self.filename.value != 'None':
+                self.direct.value = 'up'  # will call self.activate()
+        self.filename.observe(nactivate)
+        j = i%len(Colors)
+        self.color = widgets.Dropdown(options=Colors,value=Colors[j],layout=Layout(width='90px'))
+        self.direct = widgets.Dropdown(options=['up','down','off'], value='off', layout=Layout(width='60px'))
+        self.direct.observe(self.activate)
+        self.zmleft = widgets.FloatText(value=1000,layout=Layout(width='70px'))
+        self.zmright = widgets.FloatText(value=-1000,layout=Layout(width='70px'))
+        self.label = widgets.Checkbox(value=False, indent=False, layout=Layout(width='40px'))
+        self.scale = widgets.FloatText(value=1.0,layout=Layout(width='70px')) 
+        self.offset = widgets.FloatText(value=0.0, layout=Layout(width='60px'), tooltip="offset")
+        self.splw = widgets.FloatText(value=1.0, step=0.1, layout=Layout(width='50px'))
 
+        self.me = HBox([self.B(str(i)),
+                        self.filename,
+                        self.scale,
+                        self.direct,
+                        self.offset,
+                        self.zmleft,
+                        self.zmright,
+                        self.splw,
+                        self.color,
+                        self.label,
+                        ])
+        self. header = HBox([self.B('Id','40px'),
+                            self.B('name','5em'),
+                            self.I('(use "Self" for spectrum excerpts)', '26em'),
+                            self.B('scale','60px'),
+                            self.B('direction','60px'),
+                            self.B('offset','50px'),
+                            self.B(' ','50px'), self.B('Zoom','90px'),
+                            self.B('Linewidth','80px'),
+                            self.B('color','70px'),
+                            self.B('label')
+                            ])
+        self.activate(None)
+    def activate(self, e):
+        for w in (self.scale,self.offset,self.zmleft,self.zmright,self.splw,self.color,self.label):
+            if self.direct.value == 'off':
+                w.disabled = True
+            else:
+                w.disabled = False
+        if self.filename.value == 'None':
+            self.direct.disabled = True
+        else:
+            self.direct.disabled = False
+    def B(self, text, size='auto'):
+        return widgets.HTML(value="<b>%s</b>"%text, layout=widgets.Layout(width=size))
+    def I(self, text, size='auto'):
+        return widgets.HTML(value="<i>%s</i>"%text, layout=widgets.Layout(width=size))
+    def display(self, unit='ppm'):
+        if self.filename.value != 'None' and self.direct.value != 'off':
+            if self.direct.value == 'up':
+                mult = self.scale.value
+            elif self.direct.value == 'down':
+                mult = -self.scale.value
+            else:
+                return
+            if self.label.value:
+                lb = self.nmrname
+            else:
+                lb = None
+            if self.filename.value == 'Self':
+                d = self.ref.copy().set_unit(unit).mult(mult)
+            else:
+                try:
+                    d = NMRData(name=self.filename.value).set_unit(unit).mult(mult)
+                except:
+                    jsalert('%s : File not found'%self.filename.value)
+            zml = min(self.zmleft.value, d.axis1.itoc(0))
+            zmr = max(self.zmright.value, d.axis1.itoc(d.size1))
+            d.display(
+                figure=self.axref,
+                zoom=(zml,zmr),
+                color=self.color.value,
+                linewidth=self.splw.value,
+                label=lb)
+    @property
+    def nmrname(self):
+        fnm = self.filename.value
+        if fnm not in ('None','Self'):
+            return op.join(op.basename(op.dirname(fnm)), op.basename(fnm))
+        elif fnm =='Self':
+            return 'excerpt'
+        else:
+            return None
+    def simpledisplay(self):
+        "a simplified widget "
+        lb = widgets.Label(self.nmrname)
+        return HBox([lb, self.scale])
 class Show1Dplus(Show1D):
     def __init__(self, data, base='/DATA', N=9, figsize=None, title=None, reverse_scroll=False):
         super().__init__( data, figsize=figsize, title=title, reverse_scroll=reverse_scroll)
@@ -506,7 +611,7 @@ class Show1Dplus(Show1D):
                             value=1.0, step=0.1,
                             layout=Layout(width='24%'))
         self.showlogo = widgets.Checkbox(description="Logo", 
-                            value = True)
+                            value = True, layout=widgets.Layout(left='200px'))
         self.axlogo = self.fig.add_axes([.92, .84, .08, .16], visible=True)
         self.axlogo.imshow(plt.imread(Logofile(),'rb'))
         self.axlogo.set_axis_off()
@@ -516,8 +621,7 @@ class Show1Dplus(Show1D):
             else:
                 self.axlogo.set_visible(False)
         self.showlogo.observe(switchlogo)
-        SP = VBox([ widgets.HTML('<b>Spectrum</b>'),
-                    HBox([self.sptitle,self.blank,self.blank,self.showlogo]),
+        SP = VBox([ HBox([self.sptitle,self.showlogo]),
                     HBox([self.spcolor, self.splw])])
         # integral control widgets
         self.integ = widgets.Checkbox(description='Show',
@@ -579,23 +683,20 @@ class Show1Dplus(Show1D):
                     HBox([self.pkvalues, self.pkfont, self.pkrotation])
                   ],layout=Layout(width='60%'))
 
-        # self.Chooser = FileChooser(base=base, filetype="*.gs1", mode='r', show=False)
-        # self.bsel = widgets.Button(description='Copy',layout=self.blay,
-        #         button_style='info', # 'success', 'info', 'warning', 'danger' or ''
-        #         tooltip='copy selected data-set to entry below')
-        # self.to = widgets.IntText(value=1,min=1,max=N,layout=Layout(width='10%'))
-        # self.bsel.on_click(self.copy)
-        # self.DataList = [SpforSuper(i+1,'None') for i in range(N)]
-        # self.DataList[0].color.value = 'red'
-        # self.DataList[0].fig = True  # switches on the very first one
+        self.Chooser = FileChooser_code(path='/DATA/',filename='.gs1') #(base=base, filetype="*.gs1", mode='r', show=False)
+        self.bsel = widgets.Button(description='Copy',layout=self.blay,
+                 button_style='info', # 'success', 'info', 'warning', 'danger' or ''
+                 tooltip='copy selected data-set to entry below')
+        self.to = widgets.IntText(value=1,min=1,max=N,layout=Layout(width='10%'))
+        self.bsel.on_click(self.copy)
+        self.DataList = [SpforSuper(i+1, axref=self.ax, ref=self.data) for i in range(N)]
+        self.DataList[0].color.value = 'red'
 
         for widg in (self.sptitle, self.spcolor, self.splw,
                     self.peaks, self.integ, self.scaleint, self.offset, self.intlw,
                     self.intcolor, self.intlabelcolor, self.labelx, self.labely, self.labelfont, self.labelrot,
                     self.pkvalues, self.marker, self.pkcolor, self.pkrotation, self.pkfont ):
             widg.observe(self.ob)
-
-        self.tabs = Tab()
 
         orig = self.children
         controls = [SP]
@@ -610,23 +711,34 @@ class Show1Dplus(Show1D):
         except:
             pass
         
-        self.children = [
+        self.tabs = Tab()
+
+        self.tabs.children = [
             VBox([  VBox(controls),
                     HBox(orig),
                     ]),
-            # VBox([  Label("Choose spectra to superimpose"),
-            #         HBox([self.Chooser, self.bsel, self.to])]+
-            #     [sp.me for sp in self.DataList]
-            #     )
+            VBox([  Label("Choose spectra to superimpose"),
+                    HBox([self.Chooser, self.bsel, self.to]),
+                    self.DataList[0].header] +
+                    [sp.me for sp in self.DataList]
+                )
             ]
+
+        self.tabs.set_title(0, 'Spectrum')
+        self.tabs.set_title(1, 'Superimpose')
+
+        self.children = [self.tabs]
 
     def copy(self, event):
         if self.to.value <1 or self.to.value >len(self.DataList):
-            print('Destination is out of range !')
+            I.jsalert('Destination is out of range !')
         else:
-            self.DataList[self.to.value-1].name.value = self.Chooser.selected
-            self.DataList[self.to.value-1].direct.value = 'up'
-        self.to.value = min(self.to.value, len(self.DataList)) +1
+            entry = self.DataList[self.to.value-1] 
+            entry.filename.value = self.Chooser.selected
+            entry.direct.value = 'up'
+            for w in entry.me.children:
+                w.observe(self.ob)
+            self.to.value = min(self.to.value, len(self.DataList)) +1
     def on_done(self, e):
         self.close()
         self.disp(zoom=True)
@@ -670,6 +782,10 @@ class Show1Dplus(Show1D):
             except:
                 print('no or wrong peaklist (have you clicked on "Done" in the Peak-Picker tool ?)')
                 pass
+        # superimposition
+        for i,s in enumerate(self.DataList):
+            s.display()
+
         self.ax.set_xbound(self.xb)
 
 class Phaser1D(Show1D):

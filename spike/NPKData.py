@@ -1507,6 +1507,8 @@ class _NPKData(object):
         mpldic: a dictionnary passed as is to the plot command 
         NbMaxVect: if set to a number, will limit the number of displayed vectors to that number by decimating the data (in 1D only so far)
 
+        create the self.disp_artist matplotlib object
+
         can actually be called without harm, even if no graphic is available, it will just do nothing.
         
         """
@@ -1543,7 +1545,7 @@ class _NPKData(object):
             if NbMaxVect is not None:
                 while abs(z2-z1+1)/step > NbMaxVect:     # if too many vectors to display !
                     step += self.axis1.itype+1
-            fig.plot(ax[z1:z2:step], self.buffer[z1:z2:step].clip(mmin,mmax), label=label, linewidth=linewidth, color=color, **mpldic)
+            self.disp_artist = fig.plot(ax[z1:z2:step], self.buffer[z1:z2:step].clip(mmin,mmax), label=label, linewidth=linewidth, color=color, **mpldic)
             if xlabel == "_def_":
                 xlabel = self.axis1.currentunit
             if ylabel == "_def_":
@@ -1583,7 +1585,7 @@ class _NPKData(object):
             fig.set_xscale(self.axis2.units[self.axis2.currentunit].scale)  # set unit scale (log / linear)
             if self.axis2.units[self.axis2.currentunit].reverse:# and new_fig:
                     fig.set_xlim(axis[1][z2lo], axis[1][z2up])# fig.invert_xaxis()
-            fig.contour(axis[1][z2lo:z2up:step2],
+            self.disp_artist = fig.contour(axis[1][z2lo:z2up:step2],
                 axis[0][z1lo:z1up:step1],
                 self.buffer[z1lo:z1up:step1,z2lo:z2up:step2],
                 level, colors=color, **mpldic)
