@@ -301,28 +301,23 @@ class Show1D(HBox):
             print('figure saved as: ',name)
         self.savepdf.on_click(onsave)
         self.reset.on_click(self.on_reset)
-        self.scale = widgets.FloatSlider(description='scale:', value=1.0, min=1.0, max=200, step=0.1,
+        self.scale = widgets.FloatSlider(description='scale:', value=1.0, min=0.1, max=200, step=0.1,
                             layout=Layout(width='80px', height=str(0.8*2.54*figsize[1])+'cm'), continuous_update=REACTIVE,
                             orientation='vertical')
         for widg in (self.scale,):
-            widg.observe(self.ob)
+            widg.observe(self.obdisp)
         if create_children:
             plt.ioff()
             fi,ax = plt.subplots(figsize=figsize)
             plt.ion()
             self.ax = ax
             self.fig = fi
-            self.xb = self.ax.get_xbound()
+#            self.xb = self.ax.get_xbound()
             self.children = [  VBox([self.reset, self.scale, self.savepdf, self.done]), self.fig.canvas ]
             if show:
-                #display( self )
-                #print('SHOW')
-                self.data.display(figure=self.ax, title=self.title)
-                self.fig.canvas.header_visible = self.canvas_header_visible
-                for s in ["left", "top", "right"]:
-                    self.ax.spines[s].set_visible(self.ax_spines)
-                self.ax.yaxis.set_visible(self.yaxis_visible)
-            self.set_on_redraw()
+                self.draw()
+#                self.disp(redraw=True)
+    # call backs
     def on_done(self, b):
         self.close()
         display(self.fig)   # shows spectrum
@@ -330,6 +325,10 @@ class Show1D(HBox):
         self.scale.value = 1.0
         self.ax.set_xbound( (self.data.axis1.itoc(0),self.data.axis1.itoc(self.data.size1)) )
     def ob(self, event):
+        "observe events and redraw"
+        if event['name']=='value':
+            self.draw()
+    def obdisp(self, event):
         "observe events and display"
         if event['name']=='value':
             self.disp()
@@ -341,20 +340,26 @@ class Show1D(HBox):
         if Activate_Wheel:
             self.fig.canvas.capture_scroll = True
             cids = self.fig.canvas.mpl_connect('scroll_event', on_scroll)
-    def disp(self):
-        #print('disp')
-        self.xb = self.ax.get_xbound()
+    def draw(self):
+        "builds and display the picture"
         self.ax.clear()
-        self.data.display(scale=self.scale.value, new_fig=False, figure=self.ax, title=self.title)
-        self.ax.set_xbound(self.xb)
+        self.data.display(new_fig=False, figure=self.ax)
+        try:
+            self.ax.set_xbound(self.xb)
+            self.ax.set_ybound(self.yb0/self.scale.value)
+        except AttributeError:               # the very first time
+            self.xb = self.ax.get_xbound()
+            self.yb0 = np.array(self.ax.get_ybound())
         self.fig.canvas.header_visible = False
         for s in ["left", "top", "right"]:
             self.ax.spines[s].set_visible(False)
         self.ax.yaxis.set_visible(False)
-        #self.set_on_redraw()
+        self.set_on_redraw()
+    def disp(self):
+        self.ax.set_ybound(self.yb0/self.scale.value)
 class baseline1D(Show1D):
     def __init__(self, data, figsize=None, reverse_scroll=False, show=True):
-        super().__init__( data, figsize=figsize, reverse_scroll=reverse_scroll, show=show)
+        super().__init__( data, figsize=figsize, reverse_scroll=reverse_scroll, show=False)
         self.data.real()
         a, b = self.itoc3(0.0), self.itoc3(self.data.size1)   # spectral borders
         self.select = widgets.BoundedFloatText(description='select:',
@@ -364,9 +369,12 @@ class baseline1D(Show1D):
         self.smooth = widgets.IntSlider(description='smooth:', min=0, max=20,  layout=Layout(width='70%'),
                                         tooltip='apply a local smoothing for pivot points',
                                          value=1, readout=True, continuous_update=REACTIVE)
+        self.toshow = widgets.Dropdown( options=['baseline', 'corrected', 'points'],  description='Display:')
+        for w in [self.select, self.smooth, self.toshow]:
+            w.observe(self.obdisp)
+
         self.bsl_points = []
-        for w in [self.select, self.smooth]:
-            w.observe(self.ob)
+        self.baseline = np.zeros_like(self.data.buffer)
         self.cancel = widgets.Button(description="Cancel", button_style='warning', layout=self.blay,
             tooltip='Exit without corrections')
         self.cancel.on_click(self.on_cancel)
@@ -379,25 +387,18 @@ class baseline1D(Show1D):
         self.unset = widgets.Button(description="Rem", button_style='warning', layout=self.blay,
             tooltip='Remove the baseline point closest to the selector')
         self.unset.on_click(self.on_unset)
-        self.toshow = widgets.Dropdown( options=['baseline', 'corrected', 'points'],  description='Display:')
-        self.toshow.observe(self.ob)
         orig = self.children
         self.children = [VBox([
             HBox([widgets.HTML('Choose baseline points'), self.auto, self.select, self.set, self.unset]),
             HBox([self.cancel, self.toshow, self.smooth]),
             HBox(orig)])]
-        # self.Box = VBox([
-        #     HBox([self.done, self.cancel, self.toshow,
-        #         widgets.HTML('Choose baseline points')]),
-        #     HBox([self.select,self.set, self.unset, self.auto, self.smooth]),
-        #     self])
         def on_press(event):
             v = event.xdata
             self.select.value = round(v,3)
         cids = self.fig.canvas.mpl_connect('button_press_event', on_press)
-        super().disp()
+        if show:
+            self.draw()
 
-    #     if show: self.show()
     # def show(self):
     #     "create the widget and display the spectrum"
     #     display(self.Box)
@@ -422,6 +423,8 @@ class baseline1D(Show1D):
         print("Applied correction:\ndata.bcorr(xpoints={0}, nsmooth={1})".format(printlist, self.smooth.value))
         #print('Applied correction:\n', sorted(self.bsl_points))
         self.data.set_buffer( self.data.get_buffer() - self.correction() )
+        self.selector.set_visible(False)
+        self.selector.set_visible(False)
         super().disp()
         display(self.fig)   # shows spectrum
     def on_auto(self, e):
@@ -472,31 +475,52 @@ class baseline1D(Show1D):
         value = self.data.copy()
         value.set_buffer( value.get_buffer() - self.correction() )
         return value
-    def disp(self):
-        "compute and display the spectrum"
-#        self.xb = self.ax.get_xbound()
-        # box
-        super().disp()
-        # data
-        if len(self.bsl_points)>0:
-            if self.toshow.value == 'baseline':
-                ( self.data.copy()-self.corrected() ).display(new_fig=False, figure=self.ax, color='r')
-            elif self.toshow.value == 'corrected':
-                self.ax.clear()
-                self.corrected().display(new_fig=False, figure=self.ax, color='r', scale=self.scale.value)
+    def draw(self):
+        "used to create the view with additional artists"
+        super().draw()
+        # baseline
+        self.drbaseline = self.ax.plot(self.data.axis1.unit_axis(), self.baseline, color='r')[0]
+        self.drbaseline.set_visible(False)
+        # corrected spectrum
+        self.drspectrum = self.ax.plot(self.data.axis1.unit_axis(), self.data.get_buffer()-self.correction(), color='r' )[0]
+        self.drspectrum.set_visible(False)
         # selector
         ppos = self.select.value
-        self.ax.plot([ppos,ppos], self.ax.get_ybound())
+        self.selector = self.ax.plot([ppos,ppos], self.ax.get_ybound())[0]   # visible !
+        # pivot points
+        y = bcorr.get_ypoints(  self.data.get_buffer(), 
+                                self.data.axis1.ptoi( np.array(self.bsl_points)),
+                                nsmooth=self.smooth.value )
+        self.drpivot = self.ax.scatter(self.bsl_points, y,  c='r', marker='o')
+
+    def disp(self):
+        "used to refresh view"
+        if len(self.bsl_points)>0:
+            if self.toshow.value == 'baseline':
+#                ( self.data.copy()-self.corrected() ).display(new_fig=False, figure=self.ax, color='r')
+                self.drbaseline.set_visible(True)
+                self.drspectrum.set_visible(False)
+                self.drbaseline.set_ydata( self.correction() )
+            elif self.toshow.value == 'corrected':
+#                self.corrected().display(new_fig=False, figure=self.ax, color='r', scale=self.scale.value)
+                self.drbaseline.set_visible(False)
+                self.drspectrum.set_visible(True)
+                self.drspectrum.set_ydata( self.data.get_buffer() - self.correction() )
+        # selector
+        ppos = self.select.value
+        self.selector.set_xdata([ppos,ppos])
+        self.selector.set_ydata(self.ax.get_ybound())
         # pivots
         y = bcorr.get_ypoints(  self.data.get_buffer(), 
                                 self.data.axis1.ptoi( np.array(self.bsl_points)),
                                 nsmooth=self.smooth.value )
-        self.ax.scatter(self.bsl_points, y, c='r', marker='o')
+        del(self.drpivot)
+        self.drpivot = self.ax.scatter(self.bsl_points, y,  c='r', marker='o')
         # set zoom
-        self.ax.set_xbound(self.xb)
+        super().disp()
 
-class SpforSuper(object):
-    "a holder for SuperImpose"
+class SpforSuper():
+    "a holder for one spectrum to SuperImpose"
     def __init__(self, i, filename='None', axref=False, ref=None):
         """
         filename is the dataset to show
@@ -505,13 +529,14 @@ class SpforSuper(object):
         """
         self.axref = axref
         self.ref = ref
+        self.drartist = None
         self.filename = widgets.Text(value=filename, layout=Layout(width='30em'))
         def nactivate(e):
             if self.filename.value != 'None':
                 self.direct.value = 'up'  # will call self.activate()
         self.filename.observe(nactivate)
         j = i%len(Colors)
-        self.color = widgets.Dropdown(options=Colors,value=Colors[j],layout=Layout(width='90px'))
+        self.color = widgets.Dropdown(options=["steelblue"]+list(Colors),value=Colors[j],layout=Layout(width='90px'))
         self.direct = widgets.Dropdown(options=['up','down','off'], value='off', layout=Layout(width='60px'))
         self.direct.observe(self.activate)
         self.zmleft = widgets.FloatText(value=1000,layout=Layout(width='70px'))
@@ -520,7 +545,9 @@ class SpforSuper(object):
         self.scale = widgets.FloatText(value=1.0,layout=Layout(width='70px')) 
         self.offset = widgets.FloatText(value=0.0, layout=Layout(width='60px'), tooltip="offset")
         self.splw = widgets.FloatText(value=1.0, step=0.1, layout=Layout(width='50px'))
-
+        # for w in (self.color, self.direct, self.zmleft, self.zmright, self.label, self.scale, self.offset, self.splw):
+        #     w.observe(self.ob)
+        #control bar
         self.me = HBox([self.B(str(i)),
                         self.filename,
                         self.scale,
@@ -533,19 +560,27 @@ class SpforSuper(object):
                         self.label,
                         ])
         self. header = HBox([self.B('Id','40px'),
-                            self.B('name','5em'),
-                            self.I('(use "Self" for spectrum excerpts)', '26em'),
+                            self.B('file name','5em'),
+                            self.I('or "Self" for spectrum excerpts', '26em'),
                             self.B('scale','60px'),
                             self.B('direction','60px'),
-                            self.B('offset','50px'),
+                            self.B('%offset','50px'),
                             self.B(' ','50px'), self.B('Zoom','90px'),
                             self.B('Linewidth','80px'),
                             self.B('color','70px'),
                             self.B('label')
                             ])
         self.activate(None)
+    def ob(self, event):
+        "observe events and display"
+        if event['name']=='value':
+            self.draw()
+    def injectobserve(self, method):
+        "used to to observe form outer object for draw"
+        for w in (self.color,  self.zmleft, self.zmright, self.label, self.splw, self.direct,   self.scale, self.offset):
+            w.observe(method)
     def activate(self, e):
-        for w in (self.scale,self.offset,self.zmleft,self.zmright,self.splw,self.color,self.label):
+        for w in (self.color, self.zmleft, self.zmright, self.label, self.scale, self.offset, self.splw):
             if self.direct.value == 'off':
                 w.disabled = True
             else:
@@ -558,33 +593,71 @@ class SpforSuper(object):
         return widgets.HTML(value="<b>%s</b>"%text, layout=widgets.Layout(width=size))
     def I(self, text, size='auto'):
         return widgets.HTML(value="<i>%s</i>"%text, layout=widgets.Layout(width=size))
-    def display(self, unit='ppm'):
-        if self.filename.value != 'None' and self.direct.value != 'off':
-            if self.direct.value == 'up':
-                mult = self.scale.value
-            elif self.direct.value == 'down':
-                mult = -self.scale.value
-            else:
+    def draw(self, unit='ppm'):
+        if self.filename.value == 'None' or self.direct.value == 'off':
+            return  # nothing to do
+        # else
+        if self.drartist is not None:   # remove previous ones
+            del(self.drartist)
+        # label
+        if self.label.value:
+            lb = self.nmrname
+        else:
+            lb = None
+        # load
+        if self.filename.value == 'Self':
+            d = self.ref.copy().set_unit(unit)
+        else:
+            try:
+                d = NMRData(name=self.filename.value).set_unit(unit)
+            except:
+                jsalert('%s : File not found'%self.filename.value)
                 return
-            if self.label.value:
-                lb = self.nmrname
-            else:
-                lb = None
-            if self.filename.value == 'Self':
-                d = self.ref.copy().set_unit(unit).mult(mult)
-            else:
-                try:
-                    d = NMRData(name=self.filename.value).set_unit(unit).mult(mult)
-                except:
-                    jsalert('%s : File not found'%self.filename.value)
-            zml = min(self.zmleft.value, d.axis1.itoc(0))
-            zmr = max(self.zmright.value, d.axis1.itoc(d.size1))
-            d.display(
-                figure=self.axref,
-                zoom=(zml,zmr),
-                color=self.color.value,
-                linewidth=self.splw.value,
-                label=lb)
+        # draw
+        zml = min(self.zmleft.value, d.axis1.itoc(0))
+        zmr = max(self.zmright.value, d.axis1.itoc(d.size1))
+        d.display(
+            scale=1,
+            figure=self.axref,
+            zoom=(zml,zmr),
+            color=self.color.value,
+            linewidth=self.splw.value,
+            label=lb)
+        self.drartist = d.disp_artist[0]
+        self.ydata = self.drartist.get_ydata()   # store spectral data
+        # adapt to scale and direction
+        self.drartist.set_ydata(  self.move_ydata()  )
+        # text
+        self.text = self.axref.text(zmr, self.ydata[-1], ' ', color=self.color.value) # will be changed by disp()
+        self.disp()
+    def move_ydata(self):
+        "adapt self.ydata to direct, scale, and offset and return the value"
+        # add offset
+        off = self.axref.get_ybound()[1] * self.offset.value/100   # relative to screen in spectral unit
+        return self.mult*self.ydata + off 
+    def disp(self):
+        " refresh "
+        if self.filename.value == 'None' or self.direct.value == 'off':
+            return  # nothing to do
+        yd = self.move_ydata()
+        self.drartist.set_ydata( yd )
+        m = self.mult
+        if m != 1:
+            tt = "x%.1f"%(m,)
+            self.text.set_text(tt)
+            self.text.set_y(yd[-1])
+        else:
+            self.text.set_text(" ")
+
+    @property
+    def mult(self):
+        if self.direct.value == 'up':
+            mult = self.scale.value
+        elif self.direct.value == 'down':
+            mult = -self.scale.value
+        else:
+            mult = 1
+        return mult
     @property
     def nmrname(self):
         fnm = self.filename.value
@@ -599,8 +672,8 @@ class SpforSuper(object):
         lb = widgets.Label(self.nmrname)
         return HBox([lb, self.scale])
 class Show1Dplus(Show1D):
-    def __init__(self, data, base='/DATA', N=9, figsize=None, title=None, reverse_scroll=False):
-        super().__init__( data, figsize=figsize, title=title, reverse_scroll=reverse_scroll)
+    def __init__(self, data, base='/DATA', N=9, figsize=None, title=None, reverse_scroll=False, show=True):
+        super().__init__( data, figsize=figsize, title=title, reverse_scroll=reverse_scroll, show=False)
         # spectrum control widgets
         self.sptitle = widgets.Text(description='Title',
                             value=self.title, layout=Layout(width='40%'))
@@ -690,6 +763,8 @@ class Show1Dplus(Show1D):
         self.to = widgets.IntText(value=1,min=1,max=N,layout=Layout(width='10%'))
         self.bsel.on_click(self.copy)
         self.DataList = [SpforSuper(i+1, axref=self.ax, ref=self.data) for i in range(N)]
+        for s in self.DataList:
+            s.injectobserve(self.ob)
         self.DataList[0].color.value = 'red'
 
         for widg in (self.sptitle, self.spcolor, self.splw,
@@ -728,6 +803,9 @@ class Show1Dplus(Show1D):
         self.tabs.set_title(1, 'Superimpose')
 
         self.children = [self.tabs]
+        if show:
+            self.draw()
+
 
     def copy(self, event):
         if self.to.value <1 or self.to.value >len(self.DataList):
@@ -743,16 +821,15 @@ class Show1Dplus(Show1D):
         self.close()
         self.disp(zoom=True)
         display(self.fig)
-    def disp(self, zoom=False):
+    def draw(self, zoom=False):
         "refresh display - if zoom is True, display only in xbound"
+        super().draw()
         self.xb = self.ax.get_xbound()
-        # self.yb = self.ax.get_ybound()
         if zoom:
             zoom = self.xb
         else:
             zoom = None
-        self.ax.clear()
-        self.data.display(scale=self.scale.value, new_fig=False, figure=self.ax, color=self.spcolor.value,
+        self.data.display(new_fig=False, figure=self.ax, color=self.spcolor.value,
                             title=self.sptitle.value, linewidth=self.splw.value, zoom=zoom)
         if self.integ.value:
             try:
@@ -783,10 +860,22 @@ class Show1Dplus(Show1D):
                 print('no or wrong peaklist (have you clicked on "Done" in the Peak-Picker tool ?)')
                 pass
         # superimposition
-        for i,s in enumerate(self.DataList):
-            s.display()
+        for s in self.DataList:
+            s.draw()
 
         self.ax.set_xbound(self.xb)
+    def disp(self, zoom=False):
+        self.xb = self.ax.get_xbound()
+        if zoom:
+            zoom = self.xb
+        else:
+            zoom = None
+        super().disp()
+        for s in self.DataList:
+            s.disp()
+
+
+
 
 class Phaser1D(Show1D):
     """
@@ -877,14 +966,16 @@ class Phaser1D(Show1D):
         if event['name']=='value':
             self.data = self.data_ref.copy()
             self.disp()
-    def disp(self):
+    def disp(self, redraw=False):
         "apply phase and display pivot - has to use Show1D.disp as it adds the pivot !"
-        self.lp0, self.lp1 = self.ppivot()         # get centered values
-        self.data.phase(self.lp0, self.lp1)
-        Show1D.disp(self) 
-        ppos = self.pivot.value
-        self.ax.plot([ppos,ppos], self.ax.get_ybound())
-        self.ax.set_xbound( self.xb )
+        if redraw:
+            self.lp0, self.lp1 = self.ppivot()         # get centered values
+            self.data.phase(self.lp0, self.lp1)
+            Show1D.disp(self, redraw=True) 
+            ppos = self.pivot.value
+            self.ax.plot([ppos,ppos], self.ax.get_ybound())
+            self.ax.set_xbound( self.xb )
+        self.ax.set_ybound(self.yb0/self.scale.value)
 
 
 class AvProc1D:

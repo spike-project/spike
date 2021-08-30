@@ -46,7 +46,7 @@ import matplotlib as mpl
 # %matplotlib widget
 import spike
 from spike.File.BrukerNMR import Import_1D
-from spike.Interactive import INTER_yb as I
+from spike.Interactive import INTER as I
 from spike.Interactive.ipyfilechooser import FileChooser
 from datetime import datetime
 I.initialize()
