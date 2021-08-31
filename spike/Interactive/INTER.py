@@ -17,6 +17,7 @@ import os
 import os.path as op
 from pathlib import Path 
 import glob
+import math as m
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -892,8 +893,9 @@ class Phaser1D(Show1D):
             jsalert('Data is Real - an Error will be generated \\n\\n Please redo Fourier Transform')
             data.phase(0,0)
         # we'll work on a copy of the data
-        super().__init__( data.copy(), figsize=figsize, title=title, reverse_scroll=reverse_scroll, show=show)
-        self.data_ref = data
+        super().__init__( data, figsize=figsize, title=title, reverse_scroll=reverse_scroll, show=False)
+        self.ydata = data.get_buffer()   # store (complex) buffer
+    
         self.done.description = 'Apply'
         self.p0 = widgets.FloatSlider(description='P0:',min=-200, max=200, step=0.1,
                             layout=Layout(width='100%'), continuous_update=REACTIVE)
@@ -932,7 +934,8 @@ class Phaser1D(Show1D):
                 self.pivot.value = round(event.xdata,4)
         cids = self.fig.canvas.mpl_connect('button_press_event', on_press)
         self.lp0, self.lp1 = self.ppivot()
-        self.disp()
+        if show:
+            self.draw()
 
     def on_cancel(self, b):
         self.close()
@@ -940,7 +943,7 @@ class Phaser1D(Show1D):
     def on_Apply(self, b):
         self.close()
         lp0, lp1 = self.ppivot() # get centered values
-        self.data_ref.phase(lp0, lp1)
+        self.data.phase(lp0, lp1)
         print("Applied: data.phase(%.1f,  %.1f)"%(lp0, lp1))
     def ppivot(self):
         "converts from pivot values to centered ones"
@@ -958,24 +961,53 @@ class Phaser1D(Show1D):
     def on_movepivot(self, event):
         if event['name']=='value':
             self.p0.value, self.p1.value = self.ctopivot(self.lp0, self.lp1)
-            # self.phase()
-            self.data = self.data_ref.copy()
-            self.disp()
     def ob(self, event):
         "observe changes and start phasing"
         if event['name']=='value':
-            self.data = self.data_ref.copy()
-            self.disp()
-    def disp(self, redraw=False):
-        "apply phase and display pivot - has to use Show1D.disp as it adds the pivot !"
-        if redraw:
-            self.lp0, self.lp1 = self.ppivot()         # get centered values
-            self.data.phase(self.lp0, self.lp1)
-            Show1D.disp(self, redraw=True) 
-            ppos = self.pivot.value
-            self.ax.plot([ppos,ppos], self.ax.get_ybound())
-            self.ax.set_xbound( self.xb )
+            self.phase_n_disp()
+    def draw(self):
+        "copied from super() as it does not display the spectrum !"
+        self.ax.clear()
+        self.drspectrum = self.ax.plot(self.data.axis1.unit_axis()[::2] , self.ydata.real )[0]
+        try:
+            self.ax.set_xbound(self.xb)
+        except AttributeError:               # the very first time
+            self.xb = self.ax.get_xbound()
+            y1,y2 = self.ax.get_ybound()
+            my = max(abs(y1), abs(y2))
+            self.yb0 = np.array([my,-my/2])
         self.ax.set_ybound(self.yb0/self.scale.value)
+        self.fig.canvas.header_visible = False
+        for s in ["left", "top", "right"]:
+            self.ax.spines[s].set_visible(False)
+        self.ax.yaxis.set_visible(False)
+        self.set_on_redraw()
+        self.phase()
+        ppos = self.pivot.value
+        self.drpivot = self.ax.plot([ppos,ppos], self.ax.get_ybound())[0]
+    def phase(self):
+        self.lp0, self.lp1 = self.ppivot()         # get centered values
+        size = len(self.ydata)
+        # compute correction in e
+        if self.lp0==0:  # we can optimize a little
+            e = np.exp(1J*m.radians(self.lp0)) * np.ones( size, dtype=complex)   # e = exp(j ph0)
+        else:
+            le = m.radians(self.lp0) + (m.radians(self.lp1))*np.linspace(-0.5, 0.5, size)
+            e = np.cos(le) + 1J*np.sin(le)
+        # then apply
+        y = (e*self.ydata).real
+        self.drspectrum.set_ydata( y )   # multiply and keep only real values
+    def phase_n_disp(self):
+        "apply phase and disp"
+        self.phase()
+        self.disp()
+    def disp(self):
+        "update display and display pivot"
+        super().disp()
+        ppos = self.pivot.value
+        self.drpivot.set_xdata([ppos,ppos])
+        self.drpivot.set_ydata(self.ax.get_ybound())
+
 
 
 class AvProc1D:
