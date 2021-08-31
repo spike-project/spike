@@ -968,7 +968,7 @@ class Phaser1D(Show1D):
     def draw(self):
         "copied from super() as it does not display the spectrum !"
         self.ax.clear()
-        self.drspectrum = self.ax.plot(self.data.axis1.unit_axis()[::2] , self.ydata.real )[0]
+        self.drspectrum = self.ax.plot(self.data.axis1.unit_axis()[::-2] , self.ydata.real )[0]
         try:
             self.ax.set_xbound(self.xb)
         except AttributeError:               # the very first time
