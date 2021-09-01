@@ -939,7 +939,7 @@ class Phaser1D(Show1D):
 
     def on_cancel(self, b):
         self.close()
-        print("no applied phase")
+        print("no applied phase correction")
     def on_Apply(self, b):
         self.close()
         lp0, lp1 = self.ppivot() # get centered values
@@ -960,7 +960,10 @@ class Phaser1D(Show1D):
         return p0p, p1
     def on_movepivot(self, event):
         if event['name']=='value':
-            self.p0.value, self.p1.value = self.ctopivot(self.lp0, self.lp1)
+            if self.p1.value != 0:   # in that case values do not change 
+                self.p0.value, self.p1.value = self.ctopivot(self.lp0, self.lp1)
+            else:
+                self.disp()
     def ob(self, event):
         "observe changes and start phasing"
         if event['name']=='value':
@@ -968,11 +971,12 @@ class Phaser1D(Show1D):
     def draw(self):
         "copied from super() as it does not display the spectrum !"
         self.ax.clear()
-        self.drspectrum = self.ax.plot(self.data.axis1.unit_axis()[::-2] , self.ydata.real )[0]
+        self.drspectrum = self.ax.plot(self.data.axis1.unit_axis()[::2] , self.ydata.real, lw=1 )[0]
         try:
             self.ax.set_xbound(self.xb)
         except AttributeError:               # the very first time
-            self.xb = self.ax.get_xbound()
+            xxb = self.ax.get_xbound()
+            self.ax.set_xlim(xxb[1],xxb[0])
             y1,y2 = self.ax.get_ybound()
             my = max(abs(y1), abs(y2))
             self.yb0 = np.array([my,-my/2])
@@ -985,6 +989,7 @@ class Phaser1D(Show1D):
         self.phase()
         ppos = self.pivot.value
         self.drpivot = self.ax.plot([ppos,ppos], self.ax.get_ybound())[0]
+
     def phase(self):
         self.lp0, self.lp1 = self.ppivot()         # get centered values
         size = len(self.ydata)
