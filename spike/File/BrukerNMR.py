@@ -89,7 +89,7 @@ def find_proc_down(dire, proclist):
                     break
             break
     else:
-        raise Exception("No proc file found in "+dire)
+        raise Exception("No proc file found in %s/pdata/*"%dire)
     return(fname)
 
 ################################################################

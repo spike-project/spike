@@ -310,6 +310,7 @@ class Show1D(HBox):
         if create_children:
             plt.ioff()
             fi,ax = plt.subplots(figsize=figsize)
+            fi.set_tight_layout(True)
             plt.ion()
             self.ax = ax
             self.fig = fi
@@ -344,7 +345,7 @@ class Show1D(HBox):
     def draw(self):
         "builds and display the picture"
         self.ax.clear()
-        self.data.display(new_fig=False, figure=self.ax)
+        self.data.display(new_fig=False, figure=self.ax, title=self.title)
         try:
             self.ax.set_xbound(self.xb)
             self.ax.set_ybound(self.yb0/self.scale.value)
@@ -355,6 +356,8 @@ class Show1D(HBox):
         for s in ["left", "top", "right"]:
             self.ax.spines[s].set_visible(False)
         self.ax.yaxis.set_visible(False)
+        visible_ticks = {   "top": False,   "right": False}
+        self.ax.tick_params(axis="x", which="both", **visible_ticks)
         self.set_on_redraw()
     def disp(self):
         self.ax.set_ybound(self.yb0/self.scale.value)
@@ -875,9 +878,6 @@ class Show1Dplus(Show1D):
         for s in self.DataList:
             s.disp()
 
-
-
-
 class Phaser1D(Show1D):
     """
     An interactive phaser in 1D NMR
@@ -887,13 +887,13 @@ class Phaser1D(Show1D):
     requires %matplotlib widget
 
     """
-    def __init__(self, data, figsize=None, title=None, reverse_scroll=False, maxfirstorder = 360, show=True):
+    def __init__(self, data, figsize=None, title=None, reverse_scroll=False, maxfirstorder = 360, show=True, create_children=True):
         data.check1D()
         if data.itype == 0:
             jsalert('Data is Real - an Error will be generated \\n\\n Please redo Fourier Transform')
             data.phase(0,0)
         # we'll work on a copy of the data
-        super().__init__( data, figsize=figsize, title=title, reverse_scroll=reverse_scroll, show=False)
+        super().__init__( data, figsize=figsize, title=title, reverse_scroll=reverse_scroll, show=False, create_children=create_children)
         self.ydata = data.get_buffer()   # store (complex) buffer
     
         self.done.description = 'Apply'
@@ -918,12 +918,13 @@ class Phaser1D(Show1D):
         # remove done button and create an Apply one
         self.done.on_click(self.on_Apply)
         # draw HBox
-        orig = self.children
-        self.children = [VBox([
-                            HBox([self.cancel, self.pivot, widgets.HTML('<i>set with right-click on spectrum</i>')]),
-                            self.p0,
-                            self.p1,
-                            HBox(orig)])]
+        if create_children:
+            orig = self.children
+            self.children = [VBox([
+                                HBox([self.cancel, self.pivot, widgets.HTML('<i>set with right-click on spectrum</i>')]),
+                                self.p0,
+                                self.p1,
+                                HBox(orig)])]
         # add interaction
         for w in [self.p0, self.p1]:
             w.observe(self.ob)

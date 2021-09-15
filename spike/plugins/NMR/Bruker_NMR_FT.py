@@ -140,14 +140,17 @@ def zero_dsp(self,coeff=1.0):
 NPKData_plugin("zero_dsp", zero_dsp)
 
 #-------------------------------------------------------------------------------
-def bruker_proc_phase(self):
+def bruker_proc_phase(self, correct_zerotime=True):
     """
-    applies a correction on the spectrum for the time offset in the FID and from proc file parameters.
+    applies a phase correction on the spectrum from proc file parameters.
+    correct_zerotime == True (default) the zerotime correct ( bruker_corr ) is also applied
     """
     ph1 = -float(self.params['proc']['$PHC1'])
     ph0 = -float(self.params['proc']['$PHC0'])+ph1/2
-    zero = -360*self.axes(self.dim).zerotime
-    self.phase(ph0, ph1+zero) #Performs the phase correction from proc file
+    if correct_zerotime:
+        zero = -360*self.axes(self.dim).zerotime
+        ph1 += zero
+    self.phase(ph0, ph1) #Performs the phase correction from proc file
     self.axis1.P0 = ph0
     self.axis1.P1 = ph1
     return self
