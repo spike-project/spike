@@ -124,12 +124,12 @@ class Show2D(Show1D):
 
         self.children = [  VBox([self.topbar, self.middlebar ]) ]
         self.set_on_redraw()
-        self.disp(new=True)
+        self.draw(new=True)
     def on_reset(self, b):
         self.scale.value = 1.0
         self.ax.set_ybound( (self.data.axis1.itoc(0),self.data.axis1.itoc(self.data.size1)) )
         self.ax.set_xbound( (self.data.axis2.itoc(0),self.data.axis2.itoc(self.data.size2)) )
-    def disp(self,new=False):
+    def draw(self,new=False):
         if new:
             self.proj2.display(figure=self.top_ax, title=self.title)
             xb = self.top_ax.get_xbound()
@@ -158,7 +158,11 @@ class Show2D(Show1D):
         for s in [ "top", "right", "bottom"]:
             self.side_ax.spines[s].set_visible(False)
         self.side_ax.xaxis.set_visible(False)
-
+    def disp(self):
+        if self.posview.value:
+            self.data.display(scale=self.scale.value, new_fig=False, figure=self.spec_ax, mpldic={'cmap':'winter'})
+        if self.negview.value:
+            self.data.display(scale=-self.scale.value, new_fig=False, figure=self.spec_ax, mpldic={'cmap':'YlOrRd'})
 
 def sidedisplay(dt1d, ax):
     step = dt1d.axis1.itype+1
