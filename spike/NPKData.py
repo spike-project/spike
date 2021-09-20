@@ -2041,13 +2041,13 @@ class _NPKData(object):
     #-------------------------------------------------------------------------------
     def swap(self, axis=0):
         """
-        swap both parth to complex
-        this is the opposite of swa()
+        swap each half of data as odd and even entries
+        this is the opposite of unswap()
         >>>aa=NPKData(buffer=arange(8.))
         >>>aa.axis1.itype=1
         >>>print aa.buffer
         array([ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.])
-        >>>print aa.swa().buffer
+        >>>print aa.swap().buffer
         array([ 0.,  4.,  1.,  5.,  2.,  6.,  3.,  7.])
         """
         todo = self.test_axis(axis)
@@ -2076,6 +2076,7 @@ class _NPKData(object):
     #-------------------------------------------------------------------------------
     def unswap(self, axis=0):
         """
+        separate odd and even entries
         this is the opposite of swap()
         >>>aa=NPKData(buffer=arange(8.))
         >>>aa.axis1.itype=1
@@ -2423,6 +2424,37 @@ class _NPKData(object):
         see test_axis for information on axis
         """
         self._fft_nD(_base_ifftr,axis,0,1)
+        return self
+    #-------------------------------------------------------------------------------
+    def hilbert(self, axis=0):
+        """
+        computes the Hilbert transform,
+        takes real data and return its virtual imaginary part as real data
+
+        see test_axis for information on axis
+        """
+        self.ifftr(axis=axis).phase(90,0,axis=axis).fftr(axis=axis)
+        return self
+    #-------------------------------------------------------------------------------
+    def ihilbert(self, axis=0):
+        """
+        computes the inverse Hilbert transform,
+        takes real data and return its virtual imaginary part as real data
+
+        see test_axis for information on axis
+        """
+        self.ifftr(axis=axis).phase(-90,0,axis=axis).fftr(axis=axis)
+        return self
+    #-------------------------------------------------------------------------------
+    def real2cpx(self):
+        """
+        use the Hilbert transform to build a complex dataset,
+        takes real data and use Hilbert trf to build its virtual imaginary
+        return complex dataset
+        1D only so far !
+        """
+        self.check1D()
+        self.ifftr().zf(2).fft()
         return self
     #-------------------------------------------------------------------------------
     def _fft_nD(self, fft_base, axis, it_before, it_after):

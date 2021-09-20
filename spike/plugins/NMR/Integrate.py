@@ -115,6 +115,7 @@ class Integrals(list):
         # then build integral list
         if len(pk) == 0:
                 return []                   # return [] if empty peaklist
+        pk.sort(key = lambda p:p.pos)
         prev = data.peaks[0]    # initialize
         start = prev.pos - self.wings*prev.width
         for pk in data.peaks[1:]: # then through remaining

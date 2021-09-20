@@ -26,7 +26,6 @@
 # The SPIKE code used for processing is visible in the cells, and can be used as a minimal tutorial.
 # You can hide it when done to present a clean NoteBook.
 #
-# `reverse_scroll` inverse the direction of the mouse wheel, whether it is `True` or `False`
 #
 # ***Remark*** *to use this program, you should have installed the following packages:*
 #
@@ -58,6 +57,7 @@ from importlib import reload  # this line is debugging help
 verbose = 1                              # chose from 0 (terse) to 3 more verbose
 mpl.rcParams['figure.figsize'] = (8,4)   # (X,Y) default figure size
 I.Activate_Wheel = True                  # True/False    scale with wheel control in the graphic cells 
+I.reverse_scroll = False                 # inverse the direction of the mouse wheel, whether it is `True` (TrackPad) or `False` (Mouse)
 
 
 # %% [markdown]
@@ -89,7 +89,6 @@ d1.set_unit('sec')                             # it can be acted upon
 d1.filename = FC.selected                      # and be extended at will
 print(d1)                                      # print() of the dataset shows a summary of the parameters
 display(HTML('<b>title: </b>'+ d1.params['acqu']['title']))    # d1.params is a dictionary which contains the whole 'acqu' and 'proc' Bruker parameters
-reload(I)
 I.Show1D(d1, title=FC.selected)
 # alternatively you can use the low-level tool below:
 # d1.display()  # with many options, plus access to matplotlib details
@@ -127,7 +126,6 @@ D1 = d1.copy()                  # copy the imported data-set to another object f
 D1.center().apod_em(LB).zf(4).ft_sim().bk_corr().apmin()  # chaining  centering - apodisation - zerofill - FT - Bruker correction - autophase
 D1.set_unit('ppm')              # set to ppm unit ('Hz' and 'point' also available)
                                 # all Spike command can be pipelined at will - these 3 lines could be piped as one.
-reload(I)
 I.Show1D(D1, title=FC.nmrname)  #  and display
 
 # %% [markdown]
@@ -140,20 +138,19 @@ I.Show1D(D1, title=FC.nmrname)  #  and display
 #
 # Use `scale` (or mouse wheel) and the zoom box to tune the display; then use `P0, P1, pivot` to optimize the phase.
 #
-# `pivot` is where the $1^{st}$ order correction is not acting - and can be moved with the slider or by right-clicking on the spectrum
+# `pivot` is where the $1^{st}$ order correction is not acting - and can be moved by typing the value or by right-clicking on the spectrum
 #
 # Once finished, click on `Done`
 
 # %%
 # rephasing
-reload(I)
 I.Phaser1D(D1, title=FC.nmrname)
 
 # %% [markdown]
 # ### Baseline correction
 # A simple interactive baseline correction tool
 #
-# Choose positions on the baseline of the spectrum with the `select` slider or  by clicking on the baseline.
+# Choose positions on the baseline of the spectrum with the `select` entry or  by right-clicking on the baseline.
 # `Add` a control point and see its effect either on the spectrum, or the computed baseline.
 #
 # You can also `Rem`ove the control point closest to the selector.
@@ -161,9 +158,7 @@ I.Phaser1D(D1, title=FC.nmrname)
 
 # %%
 # Baseline Correction
-reload(I)
-B = I.baseline1D(D1)
-B
+I.baseline1D(D1)
 
 # %% [markdown]
 # ## Peak-Picker
@@ -174,7 +169,6 @@ B
 
 # %%
 # Peak Picker
-reload(I)
 I.NMRPeaker1D(D1)
 
 # %% [markdown]
@@ -184,7 +178,6 @@ I.NMRPeaker1D(D1)
 
 # %%
 # Integration
-reload(I)
 D1.real()
 I.NMRIntegrate(D1)
 
@@ -203,7 +196,6 @@ I.NMRIntegrate(D1)
 
 # %%
 # Composite display
-reload(I)
 Sp = I.Show1Dplus(D1, title=FC.nmrname)
 Sp
 

@@ -28,7 +28,8 @@ import numpy as np
 from ..File.BrukerNMR import Import_1D
 from .. import NPKData
 from ..NMR import NMRData
-from ..Interactive.INTER import Show1D, Colors, baseline1D
+from ..Interactive.INTER import Show1D, Colors, baseline1D, debounce
+from spike.util.signal_tools import findnoiselevel_2D
 
 try:
     import spike.plugins.bcorr as bcorr
@@ -58,8 +59,8 @@ class Show2D(Show1D):
     Show2D(spectrum) where spectrum is a NPKData object
     - special display for DOSY.
     """
-    def __init__(self, data, title=None, figsize=None):
-        super().__init__(data, title=title, create_children=False)
+    def __init__(self, data, title=None, figsize=None, **kw):
+        super().__init__(data, title=title, create_children=False, **kw)
         self.isDOSY =  isinstance(data.axis1, NPKData.LaplaceAxis)
         try:
             self.proj2 = data.projF2
@@ -71,18 +72,22 @@ class Show2D(Show1D):
             self.proj1 = data.proj(axis=1).real()
         # Controls
         self.scale.min = 0.2
+        if data.noise == 0.0:
+            data.noise = findnoiselevel_2D(data.get_buffer().real)
+#            mean, std = data.robust_stats()
+        self.scale.max = data.absmax*0.05/data.noise   # we do not want levels to plunge into noise
         self.posview = widgets.Checkbox(value=True,description='Positive', tooltip='Display Positive levels', layout=Layout(width='20%'))
         self.negview = widgets.Checkbox(value=False,description='Negative', tooltip='Display Negative levels', layout=Layout(width='20%'))
         self.cursors = widgets.Checkbox(value=False,description='Cursors', tooltip='show cursors (cpu intensive !)', layout=Layout(width='20%'))
-        self.showlogo = widgets.Checkbox(description="Logo", value = True)
-        def switchlogo(e):
-            if self.showlogo.value:
-                self.axlogo.set_visible(True)
-            else:
-                self.axlogo.set_visible(False)
-        self.showlogo.observe(switchlogo)
+        # self.showlogo = widgets.Checkbox(description="Logo", value = True)
+        # def switchlogo(e):
+        #     if self.showlogo.value:
+        #         self.axlogo.set_visible(True)
+        #     else:
+        #         self.axlogo.set_visible(False)
+        # self.showlogo.observe(switchlogo)
         for w in (self.scale, self.posview, self.negview, self.cursors):
-            w.observe(self.ob)
+            w.observe(self.disp, names='value')
         # Grid
         grid = {'height_ratios':[1,4],'hspace':0,'wspace':0}
         if self.isDOSY:
@@ -125,11 +130,13 @@ class Show2D(Show1D):
         self.children = [  VBox([self.topbar, self.middlebar ]) ]
         self.set_on_redraw()
         self.draw(new=True)
-    def on_reset(self, b):
+        self.on_reset()
+    def on_reset(self, e=None):
         self.scale.value = 1.0
         self.ax.set_ybound( (self.data.axis1.itoc(0),self.data.axis1.itoc(self.data.size1)) )
         self.ax.set_xbound( (self.data.axis2.itoc(0),self.data.axis2.itoc(self.data.size2)) )
-    def draw(self,new=False):
+    @debounce(0.2)
+    def draw(self,new=True):
         if new:
             self.proj2.display(figure=self.top_ax, title=self.title)
             xb = self.top_ax.get_xbound()
@@ -158,11 +165,17 @@ class Show2D(Show1D):
         for s in [ "top", "right", "bottom"]:
             self.side_ax.spines[s].set_visible(False)
         self.side_ax.xaxis.set_visible(False)
-    def disp(self):
+    @debounce(0.1)
+    def disp(self, e=None):
+        yb = self.side_ax.get_ybound()
+        xb = self.top_ax.get_xbound()
+        self.spec_ax.clear()
         if self.posview.value:
             self.data.display(scale=self.scale.value, new_fig=False, figure=self.spec_ax, mpldic={'cmap':'winter'})
         if self.negview.value:
             self.data.display(scale=-self.scale.value, new_fig=False, figure=self.spec_ax, mpldic={'cmap':'YlOrRd'})
+        self.spec_ax.set_xbound(xb)
+        self.spec_ax.set_ybound(yb)
 
 def sidedisplay(dt1d, ax):
     step = dt1d.axis1.itype+1
@@ -176,11 +189,10 @@ class Phaser2D(Show2D):
         Phaser2D(spec)
 
     """
-    def __init__(self, data):
+    def __init__(self, data, **kw):
         if data.itype != 3:
-            print('Dataset should be complex along both axes, Phasing is not possible')
-            return
-        super().__init__(data)
+            raise('Dataset should be complex along both axes, Phasing is not possible')
+        super().__init__(data, **kw)
         self.data_ref = data
         # print('WARNING this tool is not functional/tested yet')
         # create additional widgets
@@ -287,7 +299,7 @@ class Phaser2D(Show2D):
         self.close()
         print("Applied: phase(%.1f,%.1f,axis='F1').phase(%.1f,%.1f,axis='F2')"%(self.lF1p0, self.lF1p1, self.lF2p0, self.lF2p1))
         
-    def disp(self,todisplay=None, new=False):
+    def draw(self,todisplay=None, new=True):
         "display either the current data or the one provided - red and blue"
         if not todisplay:
             todisplay = self.data
@@ -324,11 +336,47 @@ class Phaser2D(Show2D):
         # self.ax.set_xlim(xmin=self.data.axis2.itop(0), xmax=self.data.axis2.itop(self.data.size2))
         # self.ax.set_ylim(ymin=self.data.axis1.itop(0), ymax=self.data.axis1.itop(self.data.size1))
 
+    def phdisp(self, todisplay=None):
+        "display either the current data or the one provided - red and blue"
+        if not todisplay:
+            todisplay = self.data
+        
+            yb = self.spec_ax.get_ybound()
+            xb = self.spec_ax.get_xbound()
+            for axx in (self.spec_ax, self.top_ax, self.side_ax):
+                axx.clear()
+            icol = todisplay.axis2.ctoi(self.pivotF2.value)
+            irow = todisplay.axis1.ctoi(self.pivotF1.value)
+            todisplay.row(irow).display(figure=self.top_ax, title=self.title)
+            sidedisplay( todisplay.col(icol), self.side_ax) 
+        if self.posview.value:
+            todisplay.display(scale=self.scale.value, new_fig=False, figure=self.spec_ax,color='blue')
+        if self.negview.value:
+            todisplay.display(scale=-self.scale.value, new_fig=False, figure=self.spec_ax, color='red')
+        if new:
+            yb = self.spec_ax.get_ybound()
+            xb = self.spec_ax.get_xbound()
+        else:
+            self.spec_ax.set_xbound(xb)
+            self.spec_ax.set_ybound(yb)
+            self.spec_ax.scatter(self.pivotF2.value, self.pivotF1.value, s=200, c='r', alpha=0.5)
+            self.spec_ax.plot([self.pivotF2.value, self.pivotF2.value], self.spec_ax.get_ybound(), 'r--', alpha=0.5)
+            self.spec_ax.plot(self.spec_ax.get_xbound(), [self.pivotF1.value, self.pivotF1.value], 'r--', alpha=0.5)
+        self.fig.canvas.header_visible = False
+        self.fig.canvas.header_visible = False
+        for s in ["left", "top", "right"]:
+            self.top_ax.spines[s].set_visible(False)
+        self.top_ax.yaxis.set_visible(False)
+        for s in [ "top", "right", "bottom"]:
+            self.side_ax.spines[s].set_visible(False)
+        self.side_ax.xaxis.set_visible(False)
+        # self.ax.set_xlim(xmin=self.data.axis2.itop(0), xmax=self.data.axis2.itop(self.data.size2))
+        # self.ax.set_ylim(ymin=self.data.axis1.itop(0), ymax=self.data.axis1.itop(self.data.size1))
     def phase(self):
         "compute phase and display"
         self.lF1p0, self.lF1p1, self.lF2p0, self.lF2p1 = self.ppivot()         # get centered values
         dp = self.data.copy().phase(self.lF2p0, self.lF2p1, axis='F2').phase(self.lF1p0, self.lF1p1, axis='F1')
-        self.disp(dp)
+        self.phdisp(dp)
     # def phase(self, scale, F1p0, F1p1, F2p0, F2p1):
     #     self.data.copy().phase(F1p0,F1p1,axis='F1').phase(F2p0,F2p1,axis='F2').display(scale=scale);
 

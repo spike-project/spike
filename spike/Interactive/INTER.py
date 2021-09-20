@@ -18,6 +18,7 @@ import os.path as op
 from pathlib import Path 
 import glob
 import math as m
+import time
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -45,7 +46,10 @@ __version__ = "1.2.1"  # 1.3.0 will be for faster yscale
 # True is good for inline mode / False is better for notebook mode
 REACTIVE = True
 HEAVY = False
+# Activate_Wheel: scale with wheel control in the graphic cells 
 Activate_Wheel = True
+# reverse_scroll : if True, reverses direction of mouse scroll
+reverse_scroll = True
 
 # default color set
 Colors = ('black','red','blue','green','orange',
@@ -253,6 +257,39 @@ class _FileChooser:
     def basename(self):
         "the basename of the chosen file"
         return op.basename(self.wfile.value)
+import asyncio
+
+class Timer:
+    def __init__(self, timeout, callback):
+        self._timeout = timeout
+        self._callback = callback
+
+    async def _job(self):
+        await asyncio.sleep(self._timeout)
+        self._callback()
+
+    def start(self):
+        self._task = asyncio.ensure_future(self._job())
+
+    def cancel(self):
+        self._task.cancel()
+
+def debounce(wait):
+    """ Decorator that will postpone a function's
+        execution until after `wait` seconds
+        have elapsed since the last time it was invoked. """
+    def decorator(fn):
+        timer = None
+        def debounced(*args, **kwargs):
+            nonlocal timer
+            def call_it():
+                fn(*args, **kwargs)
+            if timer is not None:
+                timer.cancel()
+            timer = Timer(wait, call_it)
+            timer.start()
+        return debounced
+    return decorator
 
 ##############################
 # Then 1D NMR Tools
@@ -264,12 +301,11 @@ class Show1D(HBox):
         Show1D(spectrum)
     to be developped for peaks and integrals
     """
-    def __init__(self, data, title=None, figsize=None, reverse_scroll=False, show=True, create_children=True):
+    def __init__(self, data, title=None, figsize=None, show=True, create_children=True):
         """
         data : to be displayed
         title : text for window
         figsize : size in inches (x,y)
-        reverse_scroll : if True, reverses direction of mouse scroll
         """
         super().__init__()
         self.data = data
@@ -362,8 +398,8 @@ class Show1D(HBox):
     def disp(self):
         self.ax.set_ybound(self.yb0/self.scale.value)
 class baseline1D(Show1D):
-    def __init__(self, data, figsize=None, reverse_scroll=False, show=True):
-        super().__init__( data, figsize=figsize, reverse_scroll=reverse_scroll, show=False)
+    def __init__(self, data, figsize=None, show=True):
+        super().__init__( data, figsize=figsize, show=False)
         self.data.real()
         a, b = self.itoc3(0.0), self.itoc3(self.data.size1)   # spectral borders
         self.select = widgets.BoundedFloatText(description='select:',
@@ -676,8 +712,8 @@ class SpforSuper():
         lb = widgets.Label(self.nmrname)
         return HBox([lb, self.scale])
 class Show1Dplus(Show1D):
-    def __init__(self, data, base='/DATA', N=9, figsize=None, title=None, reverse_scroll=False, show=True):
-        super().__init__( data, figsize=figsize, title=title, reverse_scroll=reverse_scroll, show=False)
+    def __init__(self, data, base='/DATA', N=9, figsize=None, title=None, show=True):
+        super().__init__( data, figsize=figsize, title=title, show=False)
         # spectrum control widgets
         self.sptitle = widgets.Text(description='Title',
                             value=self.title, layout=Layout(width='40%'))
@@ -887,13 +923,13 @@ class Phaser1D(Show1D):
     requires %matplotlib widget
 
     """
-    def __init__(self, data, figsize=None, title=None, reverse_scroll=False, maxfirstorder = 360, show=True, create_children=True):
+    def __init__(self, data, figsize=None, title=None, maxfirstorder = 360, show=True, create_children=True):
         data.check1D()
         if data.itype == 0:
             jsalert('Data is Real - an Error will be generated \\n\\n Please redo Fourier Transform')
             data.phase(0,0)
         # we'll work on a copy of the data
-        super().__init__( data, figsize=figsize, title=title, reverse_scroll=reverse_scroll, show=False, create_children=create_children)
+        super().__init__( data, figsize=figsize, title=title, show=False, create_children=create_children)
         self.ydata = data.get_buffer()   # store (complex) buffer
     
         self.done.description = 'Apply'
@@ -965,9 +1001,19 @@ class Phaser1D(Show1D):
                 self.p0.value, self.p1.value = self.ctopivot(self.lp0, self.lp1)
             else:
                 self.disp()
+    @debounce(1.0)
+    def rescale_p1(self):
+        "shifts by +/- 180°  if P1 hits the border"
+        if self.p1.value == self.p1.max:
+            self.p1.max += 180
+            self.p1.min += 180
+        if self.p1.value == self.p1.min:
+            self.p1.max -= 180
+            self.p1.min -= 180
     def ob(self, event):
         "observe changes and start phasing"
         if event['name']=='value':
+            self.rescale_p1()
             self.phase_n_disp()
     def draw(self):
         "copied from super() as it does not display the spectrum !"
@@ -1135,8 +1181,8 @@ class NMRPeaker1D(Show1D):
     """
     # self.peaks : the defined peaklis, copyied in and out of data
     # self.temppk : the last computed pklist
-    def __init__(self, data, figsize=None, reverse_scroll=False, show=True):
-        super().__init__( data, figsize=figsize, reverse_scroll=reverse_scroll, show=show)
+    def __init__(self, data, figsize=None, show=True):
+        super().__init__( data, figsize=figsize, show=show)
         self.data = data.real()
         try:
             self.peaks = self.data.peaks
@@ -1312,8 +1358,8 @@ class NMRPeaker1D(Show1D):
 from spike.plugins.NMR.Integrate import Integrals, Integralitem
 class NMRIntegrate(Show1D):
     "an integrator for NMR experiments"
-    def __init__(self, data, figsize=None, reverse_scroll=False, show=True):
-        super().__init__( data, figsize=figsize, reverse_scroll=reverse_scroll, show=show)
+    def __init__(self, data, figsize=None, show=True):
+        super().__init__( data, figsize=figsize, show=show)
         try:
             self.Integ = data.integrals
         except:

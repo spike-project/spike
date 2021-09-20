@@ -336,7 +336,7 @@ class Peak1DList(PeakList):
         """
         displays 1D peaks
         zoom is in index
-        peak_mode is either "marker" or "bar"
+        peak_mode is either "marker"  "bar" or "None" (to be used to just add labels)
         NbMaxPeaks is the maximum number of peaks to display in the zoom window (show only the largest)
         f() should be a function which converts from points to current display scale - typically npk.axis1.itoc
         """
@@ -380,7 +380,7 @@ class Peak1DList(PeakList):
             for i in pkl:
                 p = self[i]
                 fig.plot( [f(p.pos),f(p.pos)], [0,p.intens], '-', color=color)
-        else:
+        elif peak_mode != "None":                 # no plot - 
             raise Exception("wrong peak_mode")
         if peak_label:
             for i in pkl:
@@ -611,7 +611,7 @@ def center2d(yx, yo, xo, intens, widthy, widthx):
     y = yx[::2]
     x = yx[1::2]
     return intens*(1 - ((x-xo)/widthx)**2)*(1 - ((y-yo)/widthy)**2)
-def centroid1d(npkd, npoints=3, reset_label=True):
+def centroid1d(npkd, npoints=3, reset_label=True, cure_outliers=True):
     """
     from peak lists determined with peak()
     realize a centroid fit of the peak summit and width,
@@ -619,6 +619,7 @@ def centroid1d(npkd, npoints=3, reset_label=True):
     computes Full width at half maximum
     updates in data peak list
     reset_label when True (default) reset the labels of FTMS datasets
+    cure_outliers : restore peaks with pathological parameters
     TODO : update uncertainties
     """
     from scipy import polyfit
@@ -628,19 +629,23 @@ def centroid1d(npkd, npoints=3, reset_label=True):
         raise NPKError("npoints must odd and >2 ",data=npkd)
     buff = npkd.get_buffer().real
     for pk in npkd.peaks:
-        xdata = np.arange(int(round(pk.pos-noff)), int(round(pk.pos+noff+1)))
+        xdata = np.arange(int(pk.pos-noff), int(pk.pos+noff+1))
         ydata = buff[xdata]
         try:
             popt, pcov = curve_fit(center, xdata, ydata, p0=[pk.pos, pk.intens, 1.0] ) # fit
         except RuntimeError:
             print ( "peak %d (id %s) centroid could not be fitted"%(pk.Id, pk.label) )
-        pk.pos = popt[0]
-        pk.intens = popt[1]
-        pk.width = np.sqrt(2.0)*popt[2]
-        errors = np.sqrt(np.diag(pcov))
-        pk.pos_err = errors[0]
-        pk.intens_err = errors[1]
-        pk.width_err = np.sqrt(2.0)*errors[2]
+        if cure_outliers and (popt[0]>npkd.size1 or popt[0]<0):  # peak is outside
+            continue
+        else:
+            pk.pos = popt[0]
+            pk.intens = popt[1]
+            pk.width = np.sqrt(2.0)*popt[2]
+            errors = np.sqrt(np.diag(pcov))
+            pk.pos_err = errors[0]
+            pk.intens_err = errors[1]
+            pk.width_err = np.sqrt(2.0)*errors[2]
+
     if reset_label:
         npkd.peaks.pos2label()
 

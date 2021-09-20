@@ -7,9 +7,9 @@ Each Notebook provides a single set of functions, for instance
 
 - Processing and display of a 1D NMR dataset
 - Processing and display of a 2D NMR dataset
-- Processing and display of a DOSY dataset
-- Processing and display of a 1D FT-ICR-MS dataset
-- Display of a 2D FT-ICR-MS dataset
+- Processing and display of a DOSY dataset   (still in progress)
+- Processing and display of a 1D FT-ICR-MS dataset  (still in progress)
+- Display of a 2D FT-ICR-MS dataset  (still in progress)
 
 *to come soon*
 

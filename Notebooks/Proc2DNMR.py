@@ -42,6 +42,7 @@ from __future__ import print_function, division
 from IPython.display import display, HTML, Markdown, Image
 display(Markdown('## STARTING Environment...'))
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 # %matplotlib widget
 import os.path as op
 import spike
@@ -56,9 +57,11 @@ I.initialize()
 display(Markdown('## ...program is Ready'))
 from importlib import reload  # the two following lines are debugging help
 
-# configurable items
-plt.rcParams['figure.figsize'] = (8,4)   # (X,Y) default figure size
-I.Activate_Wheel = True                  # True/False wheel control in the graphic cells 
+# configurable items - you may change them to fit you preferences
+verbose = 1                              # chose from 0 (terse) to 3 more verbose
+mpl.rcParams['figure.figsize'] = (8,4)   # (X,Y) default figure size
+I.Activate_Wheel = True                  # True/False    scale with wheel control in the graphic cells 
+I.reverse_scroll = False                 # inverse the direction of the mouse wheel, whether it is `True` (TrackPad) or `False` (Mouse)
 
 # %% [markdown]
 # ---
@@ -71,7 +74,7 @@ I.Activate_Wheel = True                  # True/False wheel control in the graph
 # - After the selection, the selected filename is found in `FC.selected`
 
 # %%
-FC = FileChooser(path='/home/mad/Documents/',filename='ser')
+FC = FileChooser(path='/DATA/',filename='ser')
 display(FC)
 
 # %% [markdown]
@@ -122,8 +125,7 @@ D2ph.apod_sin(maxi=0,axis='F2').zf(1,2).bk_ftF2().bk_pk()  # chaining  apodisati
 D2ph.apod_sin(maxi=0,axis='F1').zf(2,1).bk_ftF1()  # chaining  apodisation - zerofill - FT
 D2ph.set_unit('ppm').rem_ridge()
 #D2.display(scale="auto",  autoscalethresh=6.0, title="%s %s"%(FC.nmrname,d2.pulprog))  # chain  set to ppm unit - and display
-reload(I2D)
-S = I2D.Show2D(D2ph)           # note that you can create the view and store it in a var wiothout displaying it
+S = I2D.Show2D(D2ph)           # note that you can create the view and store it in a var without displaying it
 S.negview.value = True         # and set some parameters (here negative view) before display
 S
 
@@ -137,7 +139,8 @@ S
 
 # %%
 reload(I2D)
-I2D.Phaser2D(D2ph)
+P = I2D.Phaser2D(D2ph)
+P
 
 # %% [markdown]
 # # An interactive Display
