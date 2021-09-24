@@ -125,13 +125,15 @@ def find_proc3(dir=".", down=True):
         return( find_acqu_proc_gene(dir,('proc3s','proc3','PROC3S','PROC3')) )
 
 ################################################################
-def read_param(filename="acqus"):
+def read_param(filename="acqus", get_title=True):
     """ 
     load a Bruker acqu or proc file as a dictionnary
     
     arrayed values are stored in python array
     
     comments (lines starting with $$) are stored in the special entry [comments]
+
+    get_title == False does not try to access the title file, thus allowing to read a stand alone parameter file.
     
     M-A Delsuc jan 2006
     oct 2006 : added support for array
@@ -182,7 +184,8 @@ def read_param(filename="acqus"):
                     dico[key] = val
                     continue
 # add title
-    dico['title'] = read_title(filename)
+    if get_title:
+        dico['title'] = read_title(filename)
 # find topspin version
     version = 'unknown'
     try:
