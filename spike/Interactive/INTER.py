@@ -31,7 +31,7 @@ from IPython.display import display, HTML, Javascript, Markdown, Image
 import numpy as np
 
 from .. import version
-if version.revision != "532":
+if version.revision != "533":
     warnmsg = """
 There is version missmatch between the core program and the interactive tools
 You may experiment some difficulties or halting with this notebook
@@ -49,7 +49,7 @@ try:
 except ModuleNotFoundError:
     print('Baseline correction plugins not installed !')
 
-__version__ = "1.2.1"  # 1.3.0 will be for faster yscale
+__version__ = "1.3.0
 
 # REACTIVE modify callback behaviour
 # True is good for inline mode / False is better for notebook mode
@@ -1186,7 +1186,7 @@ class NMRPeaker1D(Show1D):
     """
     a peak-picker for NMR experiments
     """
-    # self.peaks : the defined peaklis, copyied in and out of data
+    # self.peaks : the defined peaklist, copyied in and out of data
     # self.temppk : the last computed pklist
     def __init__(self, data, figsize=None, show=True):
         super().__init__( data, figsize=figsize, show=show)
@@ -1194,8 +1194,8 @@ class NMRPeaker1D(Show1D):
         try:
             self.peaks = self.data.peaks
         except AttributeError:
-            self.peaks = Peaks.Peak1DList()
-        self.temppk = Peaks.Peak1DList()
+            self.peaks = Peaks.Peak1DList(source=self.data)
+        self.temppk = Peaks.Peak1DList(source=self.data)
         self.thresh = widgets.FloatLogSlider(value=20.0,
             min=-1, max=2.0, base=10, step=0.01, layout=Layout(width='30%'),
             continuous_update=False, readout=True, readout_format='.2f')
@@ -1255,19 +1255,13 @@ class NMRPeaker1D(Show1D):
 
         self.children = [VBox([HBox([self.done, self.cancel]),self.tabs])]
 
-        # if show: self.show()
-    # def show(self):
-    #     self.data.display(figure=self.ax)
-    #     self.xb = self.ax.get_xbound()  # initialize zoom
-    #     self.pp()
-    #     self.data.display(figure=self.ax)
-    #     self.fig.canvas.header_visible = False
-    #     self.ax.set_xbound( (self.data.axis1.itop(0),self.data.axis1.itop(self.data.size1)) )
-    #     self.disp()
-    #     display(self)
+        self.pickpeak({'name':'value'})
+        self.disp()
     def on_add(self, b):
-        self.peaks = Peaks.peak_aggreg(self.peaks + self.temppk, distance=1.0)
-        self.temppk = Peaks.Peak1DList()
+        self.peaks.pkadd(self.temppk)
+        self.peaks = Peaks.peak_aggreg(self.peaks, distance=1.0)
+        self.peaks.source = self.data
+        self.temppk = Peaks.Peak1DList(source=self.data)
         self.disp()
     def on_rem(self, b):
         (up,down) = self.ax.get_xbound()
@@ -1299,17 +1293,25 @@ class NMRPeaker1D(Show1D):
         off = self.selval.value-self.newval.value
         self.data.axis1.offset -= off*self.data.axis1.frequency   # off is in ppm, axis1.offset is in Hz
         self.selval.value = self.newval.value
-        self.pp()
+#        self.pp()
+        self.peaks.pos2label()
+        self.temppk.pos2label()
+        self.disp()
     def pkprint(self,event):
         self.out.clear_output(wait=True)
         with self.out:
             if len(self.temppk)>0:
-                self.data.peaks = self.temppk
                 display(HTML("<p style=color:red> Transient peak list </p>"))
+                self.data.peaks = self.temppk
                 display(HTML(self.data.pk2pandas().to_html()))
+            else:
+                display(HTML("<p style=color:red> Transient peak list Empty</p>"))
+            if len(self.peaks)>0:
                 display(HTML("<p style=color:blue> Defined peak list </p>"))
-            self.data.peaks = self.peaks
-            display(HTML(self.data.pk2pandas().to_html()))
+                self.data.peaks = self.peaks
+                display(HTML(self.data.pk2pandas().to_html()))
+            else:
+                display(HTML("<p style=color:blue> Defined peak list Empty</p>"))
     def _pkprint(self,event):
         self.out.clear_output(wait=True)
         with self.out:
@@ -1361,6 +1363,7 @@ class NMRPeaker1D(Show1D):
         self.data.peaks = None
         self.disp()
         self.ax.annotate('%d peaks detected'%len(self.data.peaks) ,(0.05,0.95), xycoords='figure fraction')
+        self.pkprint({'name':'value'})
 
 from spike.plugins.NMR.Integrate import Integrals, Integralitem
 class NMRIntegrate(Show1D):

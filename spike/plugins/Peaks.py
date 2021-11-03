@@ -109,12 +109,12 @@ class Peak1D(Peak):
     """
     report_format = "{}, {}, {:.2f}, {:.2f}"
     full_format = "{}, "*8
-    def __init__(self, Id, label, intens, pos):
+    def __init__(self, Id, label, intens, pos, pos_err=0.0, width=0.0, width_err=0.0 ):
         super(Peak1D, self).__init__(Id, label, intens)
         self.pos = float(pos)
-        self.pos_err = 0.0
-        self.width = 0.0
-        self.width_err = 0.0
+        self.pos_err = float(pos_err)
+        self.width = float(width)
+        self.width_err = float(width_err)
     def report(self, f=_identity, format=None):
         """
         print the peak list
@@ -152,6 +152,7 @@ class Peak1D(Peak):
         list is : Id, label, pos intens, widthF1, width, pos_err, intens_err, width_err
         """
         return self.report(f=f, format=self.full_format)
+
         
 class Peak2D(Peak):
     """a class to store a single 2D peak
@@ -252,7 +253,7 @@ class PeakList(list):
     #     return type(self)(list.__getitem__(self,i))
 def peak_aggreg(pklist, distance, maxdist=None):
     """
-    aggregates peaks in peaklist if peaks are closer than a given distance in pixel
+    aggregates 1D peaks in peaklist if peaks are closer than a given distance in pixel
     distance : if two consecutive peaks are less than distance (in points),  they are aggregated
     if maxdist is not None, this is the maximal distance to the largest peak 
     """
@@ -330,6 +331,15 @@ class Peak1DList(PeakList):
         """
         lst = [pk._report(f=f) for pk in self ]
         return "\n".join(lst)
+    def pkadd(self, pkl2):
+        """adds the 1D peaklist pkl2 to self  - (no check on pkl2)"""
+        if len(self)>0:
+            maxId = max((pk.Id for pk in self))
+            inc = maxId+1
+        else:
+            inc = 0
+        for pk in pkl2:
+            self.append( Peak1D(pk.Id+inc, pk.label, pk.intens, pk.pos, pk.pos_err, pk.width, pk.width_err) )
     def display(self, peak_label=False, peak_mode="marker", zoom=None, show=False, f=_identity, color='red',
             marker='x', markersize=6, figure=None, scale=1.0, NbMaxPeaks=NbMaxDisplayPeaks,
             markerdict=None, labeldict=None):
