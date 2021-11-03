@@ -31,7 +31,7 @@ from IPython.display import display, HTML, Javascript, Markdown, Image
 import numpy as np
 
 from .. import version
-if version.revision != "534":
+if version.revision < "533":
     warnmsg = """
 There is version missmatch between the core program and the interactive tools
 You may experiment some difficulties or halting with this notebook
