@@ -1,8 +1,13 @@
 <!-- DO NOT MODIFY this file, it is generated automatically from dev_setup ! -->
 # SPIKE Relase Notes
 #### 0.99.30 - not released yet
-- rowc() and colc() method get rows and columns in 2D using current unit instead od index (I don't know why this was not done earlier...)
-
+- spike Interactive NMR
+    - in 1D, corrected errors in managing peaks and calibration
+    - corrected displaying integrals
+- General
+    - rowc() and colc() method get rows and columns in 2D using current unit instead od index (I don't know why this was not done earlier...)
+    - added a method Peaks.Peaklist1D.pkadd() to add a peak list to an existing one
+    - added a method Peaks.Peaklist1D.pkaggreg(distance) to aggregate close peaks  
 #### 0.99.29 - Sept 2021
 - spike Interactive FTICR - not tested yet -
 - spike Interactive NMR

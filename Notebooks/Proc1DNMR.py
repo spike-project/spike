@@ -67,7 +67,7 @@ I.reverse_scroll = False                 # inverse the direction of the mouse wh
 # - use the `Select` button, click on the directory to move around `..` is for going back in the directory tree
 # - click on the file to select it
 # - modify the ( *optional* ) `path` argument, to start the exploration on a given location
-# - changing to `path='.'` will start the browsing from the current directory 
+# - changing `path='/DATA/'` to `path='.'` will start the browsing from the current directory 
 # - After the selection, the selected filename is found in `FC.selected`
 
 # %%
@@ -109,7 +109,7 @@ I.Show1D(d1, title=FC.selected)
 #
 # The drawing zone can be resized using the little grey triangle on the lower-right corner
 #
-# In addition, the `I.Show1D()` is a high level tool which adds a scale slider, a
+# In addition, the `I.Show1D()` is a higher level tool which adds a scale slider, a
 # <button class="p-Widget jupyter-widgets jupyter-button widget-button" style="width: 80px;" >Save figure</button>
 #  button, to store a high quality pdf version,
 #  and a

@@ -31,7 +31,7 @@ from IPython.display import display, HTML, Javascript, Markdown, Image
 import numpy as np
 
 from .. import version
-if version.revision < "533":
+if version.revision < "536":
     warnmsg = """
 There is version missmatch between the core program and the interactive tools
 You may experiment some difficulties or halting with this notebook
@@ -570,7 +570,7 @@ class SpforSuper():
     "a holder for one spectrum to SuperImpose"
     def __init__(self, i, filename='None', axref=False, ref=None):
         """
-        filename is the dataset to show
+        filename is the dataset to show  (None or Self possible)
         axref is the axes of the caller, where to display
         ref is a dataset in case filename is Self 
         """
@@ -637,8 +637,10 @@ class SpforSuper():
         else:
             self.direct.disabled = False
     def B(self, text, size='auto'):
+        "bold HTML widget"
         return widgets.HTML(value="<b>%s</b>"%text, layout=widgets.Layout(width=size))
     def I(self, text, size='auto'):
+        "Italic HTML widget"
         return widgets.HTML(value="<i>%s</i>"%text, layout=widgets.Layout(width=size))
     def draw(self, unit='ppm'):
         if self.filename.value == 'None' or self.direct.value == 'off':
@@ -1367,7 +1369,6 @@ from spike.plugins.NMR.Integrate import Integrals, Integralitem
 class NMRIntegrate(Show1D):
     "an integrator for NMR experiments"
     def __init__(self, data, figsize=None, show=True):
-        super().__init__( data, figsize=figsize, show=show)
         try:
             self.Integ = data.integrals
         except:
@@ -1375,8 +1376,11 @@ class NMRIntegrate(Show1D):
         try:
             self.peaks_reserved = self.data.peaks
         except:
-            print('no peaks')
+            #print('no peaks')
             self.peaks_reserved = None
+        self.idisp = 0
+        self.idraw = 0
+        super().__init__( data, figsize=figsize, show=show)
         self.thresh = widgets.FloatLogSlider(description='sensitivity',value=10.0,
             min=-1, max=2.0, base=10, step=0.01, layout=Layout(width='30%'),
             continuous_update=HEAVY, readout=True, readout_format='.1f',
@@ -1437,27 +1441,19 @@ class NMRIntegrate(Show1D):
         self.tabs.set_title(1, 'Automatic')
         self.tabs.set_title(2, 'Integral Table & Calibration')
         self.children = [VBox([HBox([self.done, self.cancel]),self.tabs])]
-        # self.children = [VBox([HBox([self.done, self.cancel, self.bias, self.sep, self.wings]),
-        #                     HBox([Label('Choose an integral for calibration'),
-        #                         self.entry, self.value, self.set, self.blank, self.bprint] ),
-        #                     HBox([VBox([self.blank, self.reset, self.scale]), self.fig.canvas]),
-        #                     self.out ])]
-    # def show(self):
-    #     self.data.display(figure=self.ax)
-    #     self.xb = self.ax.get_xbound()  # initialize zoom
-    #     #self.int()
-    #     self.data.display(figure=self.ax)
-    #     self.fig.canvas.header_visible = False
-    #     self.ax.set_xbound( (self.data.axis1.itop(0),self.data.axis1.itop(self.data.size1)) )
-    #     self.disp()
-    #     display(self)
         self.disp()
+    # def set_on_redraw(self):
+    #     def on_scrollI(event):
+    #         self.scale_up(np.sign(event.step))
+    #     if Activate_Wheel:
+    #         self.fig.canvas.capture_scroll = True
+    #         cids = self.fig.canvas.mpl_connect('scroll_event', on_scrollI)
     def on_cancel(self, b):
         self.close()
         print("No integration")
     def on_done(self, b):
         self.close()
-        self.disp(zoom=True)
+        self.draw()
         display(self.fig)
         display(self.out)
         self.data.integrals = self.Integ        # copy integrals
@@ -1485,7 +1481,7 @@ class NMRIntegrate(Show1D):
         self.print(None)
     def set_value(self,b):
         self.Integ.recalibrate(self.entry.value, self.value.value)
-        self.disp()
+        self.draw()
         self.print(None)
     def print(self,event):
         self.out.clear_output()
@@ -1519,24 +1515,19 @@ class NMRIntegrate(Show1D):
                 bias=self.data.absmax*self.bias.value/100)
         self.Integ.calibrate(calibration=calib)
         self.print(None)
-        self.disp()
+        self.draw()
     def ob(self, event):
         if event['name']=='value':
-            self.disp()
-    def disp(self, zoom=False):
+            self.draw()
+    def disp(self):
+        self.ax.set_ybound(self.yb0/self.scale.value)
+        self.idisp += 1
+    def draw(self):
         "refresh display from event - if zoom is True, display only in xbound"
-        self.xb = self.ax.get_xbound()
         # self.yb = self.ax.get_ybound()
-        self.ax.clear()
-        if zoom:
-            zoom = self.xb
-        else:
-            zoom = None
-        self.data.display(new_fig=False, figure=self.ax, scale=self.scale.value, zoom=zoom)
-        try:
-            self.Integ.display(label=True, figure=self.ax, labelyposition=None, regions=False, zoom=zoom)
-        except:
-            pass
+        super().draw()
+        self.idraw += 1
+        self.Integ.display(label=True, figure=self.ax, labelyposition=None, regions=False, zoom=self.xb)
         self.ax.set_xbound(self.xb)
         # self.ax.set_ybound(self.yb)
 

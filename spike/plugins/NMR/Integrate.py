@@ -188,6 +188,8 @@ class Integrals(list):
         """
         import matplotlib.transforms as transforms
         from spike.Display import testplot
+        if len(self) == 0:
+            return
         plt = testplot.plot()
         if figure is None:
             ax = plt.subplot(111)
