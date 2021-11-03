@@ -31,7 +31,7 @@ from IPython.display import display, HTML, Javascript, Markdown, Image
 import numpy as np
 
 from .. import version
-if version.revision != "533":
+if version.revision != "534":
     warnmsg = """
 There is version missmatch between the core program and the interactive tools
 You may experiment some difficulties or halting with this notebook
@@ -49,7 +49,7 @@ try:
 except ModuleNotFoundError:
     print('Baseline correction plugins not installed !')
 
-__version__ = "1.3.0
+__version__ = "1.3.0"
 
 # REACTIVE modify callback behaviour
 # True is good for inline mode / False is better for notebook mode
@@ -1304,8 +1304,6 @@ class NMRPeaker1D(Show1D):
                 display(HTML("<p style=color:red> Transient peak list </p>"))
                 self.data.peaks = self.temppk
                 display(HTML(self.data.pk2pandas().to_html()))
-            else:
-                display(HTML("<p style=color:red> Transient peak list Empty</p>"))
             if len(self.peaks)>0:
                 display(HTML("<p style=color:blue> Defined peak list </p>"))
                 self.data.peaks = self.peaks
