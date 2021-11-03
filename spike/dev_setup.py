@@ -14,7 +14,7 @@ from codecs import decode
 
 ProgramName = "SPIKE"
 VersionName = "Development version"
-VersionInfo = ["0", "99", "29"]   # Major - Minor - Micro
+VersionInfo = ["0", "99", "30"]   # Major - Minor - Micro
 
 # 1.0 will probably be when interactive Notebooks are really usefull !
 # And NMR.py validated
@@ -30,6 +30,9 @@ VersionInfo = ["0", "99", "29"]   # Major - Minor - Micro
 # Release Notes in md syntax !
 release_notes="""
 # SPIKE Relase Notes
+#### 0.99.30 - not released yet
+- rowc() and colc() method get rows and columns in 2D using current unit instead od index (I don't know why this was not done earlier...)
+
 #### 0.99.29 - Sept 2021
 - spike Interactive FTICR - not tested yet -
 - spike Interactive NMR

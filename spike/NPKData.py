@@ -1320,6 +1320,11 @@ class _NPKData(object):
             # warning('params is missing')
         return c
     #----------------------------------------------
+    def colc(self, colval):
+        """returns a 1D extracted from the current 2D at position colval expressed in current unit """
+        ii = self.axis2.ctoi(colval)
+        return self.col(ii)
+    #----------------------------------------------
     def set_col(self, i, d1D):
         """set into the current 2D the given 1D, as the column at position 0<=i<=size2-1 """
         self.check2D()
@@ -1367,6 +1372,11 @@ class _NPKData(object):
             pass
             # warning('params is missing')
         return r
+    #----------------------------------------------
+    def rowc(self, rowval):
+        """returns a 1D extracted from the current 2D at position rowval expressed in current unit """
+        ii = self.axis1.ctoi(rowval)
+        return self.row(ii)
     #----------------------------------------------
     def set_row(self, i, d1D):
         """set into the current 2D the given 1D, as the row at position 0<=i<=size1-1 """

@@ -19,6 +19,7 @@ from pathlib import Path
 import glob
 import math as m
 import time
+import warnings
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -29,6 +30,14 @@ import ipywidgets as widgets
 from IPython.display import display, HTML, Javascript, Markdown, Image
 import numpy as np
 
+from .. import version
+if version.revision != "532":   # add 1 to value given by dev_setup before commiting
+    warnmsg = """
+There is version missmatch between the core program and the interactive tools
+You may experiment some difficulties or halting with this notebook
+"""
+    warnings.warn(warnmsg)
+
 from .. import NMR
 from ..NMR import NMRData
 
@@ -37,7 +46,7 @@ from ..File.BrukerNMR import Import_1D
 from .ipyfilechooser import FileChooser as FileChooser_code
 try:
     import spike.plugins.bcorr as bcorr
-except:
+except ModuleNotFoundError:
     print('Baseline correction plugins not installed !')
 
 __version__ = "1.2.1"  # 1.3.0 will be for faster yscale
@@ -87,7 +96,6 @@ def hidecode(initial='show', message="<i>useful to show/print a clean screen whe
     initial is either 'show' or 'hide'
     inspired from: https://stackoverflow.com/questions/27934885/how-to-hide-code-from-cells-in-ipython-notebook-visualized-with-nbviewer/28073228#28073228
     """
-    from IPython.display import display, HTML, Markdown
     if initial == 'show':
         init = 'false'
     elif initial == 'hide':
@@ -114,7 +122,6 @@ def hidedoc(initial='show', message="<i>useful to show/print a clean screen when
     initial is either 'show' or 'hide'
     inspired from: https://stackoverflow.com/questions/27934885/how-to-hide-code-from-cells-in-ipython-notebook-visualized-with-nbviewer/28073228#28073228
     """
-    from IPython.display import display, HTML, Markdown
     if initial == 'show':
         init = 'false'
     elif initial == 'hide':
@@ -849,7 +856,7 @@ class Show1Dplus(Show1D):
 
     def copy(self, event):
         if self.to.value <1 or self.to.value >len(self.DataList):
-            I.jsalert('Destination is out of range !')
+            jsalert('Destination is out of range !')
         else:
             entry = self.DataList[self.to.value-1] 
             entry.filename.value = self.Chooser.selected

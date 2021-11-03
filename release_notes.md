@@ -1,5 +1,8 @@
 <!-- DO NOT MODIFY this file, it is generated automatically from dev_setup ! -->
 # SPIKE Relase Notes
+#### 0.99.30 - not released yet
+- rowc() and colc() method get rows and columns in 2D using current unit instead od index (I don't know why this was not done earlier...)
+
 #### 0.99.29 - Sept 2021
 - spike Interactive FTICR - not tested yet -
 - spike Interactive NMR
