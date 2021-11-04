@@ -8,6 +8,7 @@
     - rowc() and colc() method get rows and columns in 2D using current unit instead od index (I don't know why this was not done earlier...)
     - added a method Peaks.Peaklist1D.pkadd() to add a peak list to an existing one
     - added a method Peaks.Peaklist1D.pkaggreg(distance) to aggregate close peaks  
+    - corrected a bug when aggregating peak lists
 #### 0.99.29 - Sept 2021
 - spike Interactive FTICR - not tested yet -
 - spike Interactive NMR

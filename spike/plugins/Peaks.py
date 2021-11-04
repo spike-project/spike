@@ -65,14 +65,14 @@ Sept 2015 M-A Delsuc
 """
 
 from __future__ import print_function
-import numpy as np
+import warnings
 import unittest
+import numpy as np
+from scipy.optimize import curve_fit
 ###
 from spike import NPKError
 from spike.NPKData import NPKData_plugin, _NPKData, flatten, parsezoom
 from spike.util.counter import timeit
-from scipy.optimize import curve_fit
-import warnings
 #from spike.util.signal_tools import findnoiselevel, findnoiselevel_2D
 
 debug = 0
@@ -98,7 +98,7 @@ class Peak(object):
         self.area = 0.0         # area under the curve
         self.intens_err = 0.0      # uncertainty on intensity
         self.area_err = 0.0     # uncertainty on area
-        
+
 class Peak1D(Peak):
     """a class to store a single 1D peak
     defines in addition to Peak
@@ -292,7 +292,7 @@ def peak_aggreg(pklist, distance, maxdist=None):
         inewpk = newgrp[0]   # isolated peak
     else:
         inewpk =  maxgrp[1]  # larger peak of the aggregate
-    newlist.append( pklist[inewpk] )
+    newlist.append( pkl[inewpk] )
     return newlist 
 class Peak1DList(PeakList):
     """
@@ -338,8 +338,8 @@ class Peak1DList(PeakList):
             inc = maxId+1
         else:
             inc = 0
-        for pk in pkl2:
-            self.append( Peak1D(pk.Id+inc, pk.label, pk.intens, pk.pos, pk.pos_err, pk.width, pk.width_err) )
+        for pk2 in pkl2:
+            self.append( Peak1D(pk2.Id+inc, pk2.label, pk2.intens, pk2.pos, pk2.pos_err, pk2.width, pk2.width_err) )
     def display(self, peak_label=False, peak_mode="marker", zoom=None, show=False, f=_identity, color='red',
             marker='x', markersize=6, figure=None, scale=1.0, NbMaxPeaks=NbMaxDisplayPeaks,
             markerdict=None, labeldict=None):
