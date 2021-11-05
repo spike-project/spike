@@ -31,7 +31,7 @@ from IPython.display import display, HTML, Javascript, Markdown, Image
 import numpy as np
 
 from .. import version
-if version.revision < "536":
+if version.revision < "538":
     warnmsg = """
 There is version missmatch between the core program and the interactive tools
 You may experiment some difficulties or halting with this notebook
@@ -1374,8 +1374,8 @@ class NMRIntegrate(Show1D):
         except:
             self.Integ = Integrals(data, compute=False)   # initialize with empty list
         try:
-            self.peaks_reserved = self.data.peaks
-        except:
+            self.peaks_reserved = data.peaks
+        except AttributeError:
             #print('no peaks')
             self.peaks_reserved = None
         self.idisp = 0
@@ -1441,7 +1441,7 @@ class NMRIntegrate(Show1D):
         self.tabs.set_title(1, 'Automatic')
         self.tabs.set_title(2, 'Integral Table & Calibration')
         self.children = [VBox([HBox([self.done, self.cancel]),self.tabs])]
-        self.disp()
+        self.draw()
     # def set_on_redraw(self):
     #     def on_scrollI(event):
     #         self.scale_up(np.sign(event.step))
@@ -1457,15 +1457,18 @@ class NMRIntegrate(Show1D):
         display(self.fig)
         display(self.out)
         self.data.integrals = self.Integ        # copy integrals
-        if self.peaks_reserved:
+        if self.peaks_reserved:                # restore peaks 
             self.data.peaks = self.peaks_reserved
         else:
-            del(self.data.peaks)
+            try:
+                del(self.data.peaks)
+            except AttributeError:    # if no peaks
+                pass
     def on_add(self, b):
         start, end = self.ax.get_xbound() 
         self.Integ.append( Integralitem(self.data.axis1.ptoi(start), self.data.axis1.ptoi(end), [], 0.0) )
         self.Integ.zonestocurves()
-        self.disp()
+        self.draw()
         self.print(None)
     def on_rem(self, b):
         start, end = self.ax.get_xbound()
@@ -1477,7 +1480,7 @@ class NMRIntegrate(Show1D):
                 to_rem.append(ii)
         for ii in to_rem:
             self.Integ.remove(ii)
-        self.disp()
+        self.draw()
         self.print(None)
     def set_value(self,b):
         self.Integ.recalibrate(self.entry.value, self.value.value)
