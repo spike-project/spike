@@ -7,7 +7,7 @@ A set of utilities to use spike in NMR or FTMS within jupyter
 
 First version MAD june 2017
 Intermediate version MAD october 2019
-Improvements MAD spring - summer 2021
+Improvements MAD spring - summer - automn  2021
 """
 
 from __future__ import print_function, division
@@ -29,6 +29,7 @@ from ipywidgets import fixed, Layout, HBox, VBox, Label, Output, Button, Tab
 import ipywidgets as widgets
 from IPython.display import display, HTML, Javascript, Markdown, Image
 import numpy as np
+from numpy.core.overrides import array_function_dispatch
 
 from .. import version
 if version.revision < "538":
@@ -302,6 +303,14 @@ def debounce(wait):
 # Then 1D NMR Tools
 ##############################
 
+"""
+There is a hierarchic structure of the tools,
+- Show1D creates the basic environement
+    it sets 2 functions called back by all actions
+    - draw() which build the whole picture
+    - disp()
+"""
+
 class Show1D(HBox):
     """
     An interactive display, 1D NMR
@@ -422,7 +431,7 @@ class baseline1D(Show1D):
 
         self.bsl_points = []
         self.baseline = np.zeros_like(self.data.buffer)
-        self.cancel = widgets.Button(description="Cancel", button_style='warning', layout=self.blay,
+        self.cancel = widgets.Button(description="Exit", button_style='warning', layout=self.blay,
             tooltip='Exit without corrections')
         self.cancel.on_click(self.on_cancel)
         self.auto = widgets.Button(description="Auto", button_style='success', layout=self.blay,
@@ -735,7 +744,7 @@ class Show1Dplus(Show1D):
         self.showlogo = widgets.Checkbox(description="Logo", 
                             value = True, layout=widgets.Layout(left='200px'))
         self.axlogo = self.fig.add_axes([.92, .84, .08, .16], visible=True)
-        self.axlogo.imshow(plt.imread(Logofile(),'rb'))
+        self.axlogo.imshow(plt.imread(UserLogofile(),'rb'))
         self.axlogo.set_axis_off()
         def switchlogo(e):
             if self.showlogo.value:
@@ -772,9 +781,9 @@ class Show1Dplus(Show1D):
                             value=-1, step=0.1,
                             layout=Layout(width='24%'))
         self.labelfont = widgets.BoundedFloatText(description='Size',
-                            value=9, mini=1, maxi=128, step=1,
+                            value=8, mini=1, maxi=128, step=1,
                             layout=Layout(width='24%'))
-        self.labelrot = widgets.BoundedFloatText(description='Rot',
+        self.labelrot = widgets.BoundedFloatText(description='Angle',
                             value=0, mini=-90, maxi=90, step=1,
                             layout=Layout(width='24%'))
         INT = VBox([HBox([widgets.HTML('<b>Integrals</b>'), self.integ]),
@@ -794,11 +803,11 @@ class Show1Dplus(Show1D):
                             layout=Layout(width='40%'))
         self.pkvalues = widgets.Checkbox(description='Values',
                 value=False, layout=Layout(width='30%'))
-        self.pkrotation = widgets.BoundedFloatText(description='Rot',
+        self.pkrotation = widgets.BoundedFloatText(description='Angle',
                             value=45, mini=-90, maxi=90, step=1,
                             layout=Layout(width='20%'))
         self.pkfont = widgets.BoundedFloatText(description='Size',
-                            value=5, mini=1, maxi=128, step=1,
+                            value=8, mini=1, maxi=128, step=1,
                             layout=Layout(width='20%'))
         PK = VBox([ HBox([widgets.HTML('<b>Peaks</b>'), self.peaks]),
                     HBox([self.marker, self.pkcolor]),
@@ -958,7 +967,7 @@ class Phaser1D(Show1D):
                         max=max(pivr, pivl),
                         format='%.3f',
                         step=0.1, layout=Layout(width='20%'))
-        self.cancel = widgets.Button(description="Cancel", button_style='warning')
+        self.cancel = widgets.Button(description="Exit", button_style='warning',tooltip='Exit without corrections')
         self.cancel.on_click(self.on_cancel)
         # remove done button and create an Apply one
         self.done.on_click(self.on_Apply)
@@ -1215,7 +1224,7 @@ class NMRPeaker1D(Show1D):
         self.badd.on_click(self.on_add)
         self.brem = widgets.Button(description="Rem", button_style='warning', layout=self.blay)
         self.brem.on_click(self.on_rem)
-        self.cancel = widgets.Button(description="Cancel", button_style='warning', layout=self.blay)
+        self.cancel = widgets.Button(description="Exit", button_style='warning', layout=self.blay, tooltip='Exit without corrections')
         self.cancel.on_click(self.on_cancel)
         self.selval = widgets.FloatText(
             value=0.0, description='selection', layout=Layout(width='20%'), step=0.001, disabled = True)
@@ -1400,7 +1409,7 @@ class NMRIntegrate(Show1D):
         for w in (self.bias, self.sep, self.wings):
             w.observe(self.integrate)
         self.thresh.observe(self.peak_and_integrate)
-        self.cancel = widgets.Button(description="Cancel", button_style='warning', layout=self.blay)
+        self.cancel = widgets.Button(description="Exit", button_style='warning', layout=self.blay,tooltip='Exit without corrections')
         self.cancel.on_click(self.on_cancel)
 
         self.badd = widgets.Button(description="Add", layout=self.blay,
