@@ -304,11 +304,18 @@ def debounce(wait):
 ##############################
 
 """
-There is a hierarchic structure of the tools,
+There is a hierarchic structure of the tools
+All these tools are Jupyter widgets which can be mixed with other regulat ipywidgets
 - Show1D creates the basic environement
     it sets 2 functions called back by all actions
     - draw() which build the whole picture
-    - disp()
+    - disp() which refresh only the bounding box (in x and y), and eventually modify simple objects
+    - Reset which redraw and reset to default display parameter
+    - on-done() which freezes the current display as a static 
+- Phaser1D, NMRPeaker1D, NMRIntegrate, baseline1D  are surcharging Show1d, 
+    with new methods, and eventually surcharging draw() and disp()
+- Show1Dplus() which presents all the options
+
 """
 
 class Show1D(HBox):
@@ -342,7 +349,7 @@ class Show1D(HBox):
             tooltip="Stop interactivity and store figure")
         self.done.on_click(self.on_done)
         self.reset = Button(description="Reset", button_style='success',layout=self.blay,
-            tooltip="Reset to full spectrum")
+            tooltip="Reset to default display")
         self.savepdf = widgets.Button(description="Save figure", button_style='',layout=self.blay,
                 tooltip='Save the current figure as pdf')
         def onsave(e):
@@ -412,6 +419,9 @@ class Show1D(HBox):
         self.ax.tick_params(axis="x", which="both", **visible_ticks)
         self.set_on_redraw()
     def disp(self):
+        # scale = self.ax.get_ybound()
+        # self.scale.value = self.yb0/scale
+        self.xb = self.ax.get_xbound()
         self.ax.set_ybound(self.yb0/self.scale.value)
 class baseline1D(Show1D):
     def __init__(self, data, figsize=None, show=True):
@@ -480,13 +490,12 @@ class baseline1D(Show1D):
         #print('Applied correction:\n', sorted(self.bsl_points))
         self.data.set_buffer( self.data.get_buffer() - self.correction() )
         self.selector.set_visible(False)
-        self.selector.set_visible(False)
         super().disp()
         display(self.fig)   # shows spectrum
     def on_auto(self, e):
         "automatically set baseline points"
         self.bsl_points = [self.data.axis1.itoc(x) for x in bcorr.autopoints(self.data)]
-        self.disp()
+        self.draw()
     def on_cancel(self, e):
         self.close()
         print('no baseline correction')
@@ -496,21 +505,18 @@ class baseline1D(Show1D):
         self.disp()
     def on_unset(self, e):
         "remove baseline points closest from selector"
-        here = self.select.value
+        if len(self.bsl_points) == 0:
+            return
+        here = self.select.value   # find
         distclose = np.inf
         pclose = np.NaN
         for i,p in enumerate(self.bsl_points):
             if abs(p-here)< distclose:
                 pclose = p
+                ipclose = i
                 distclose = abs(p-here)
-        self.bsl_points.remove(pclose)
-        self.disp()
-    def smoothed(self):
-        "returns a smoothed version of the data"
-        from scipy.signal import fftconvolve
-        buf = self.data.get_buffer()
-        mask = np.array([1,1,1,1,1])
-        return fftconvolve(buf, mask, mode='same')
+        self.bsl_points.remove(pclose)  # remove and clean display
+        self.draw()
     def correction(self):
         "returns the correction to apply as a numpy array"
         ibsl_points = self.data.axis1.ptoi( np.array(self.bsl_points) ).astype(int)
@@ -543,12 +549,7 @@ class baseline1D(Show1D):
         # selector
         ppos = self.select.value
         self.selector = self.ax.plot([ppos,ppos], self.ax.get_ybound())[0]   # visible !
-        # pivot points
-        y = bcorr.get_ypoints(  self.data.get_buffer(), 
-                                self.data.axis1.ptoi( np.array(self.bsl_points)),
-                                nsmooth=self.smooth.value )
-        self.drpivot = self.ax.scatter(self.bsl_points, y,  c='r', marker='o')
-
+        self.disp()
     def disp(self):
         "used to refresh view"
         if len(self.bsl_points)>0:
@@ -567,11 +568,12 @@ class baseline1D(Show1D):
         self.selector.set_xdata([ppos,ppos])
         self.selector.set_ydata(self.ax.get_ybound())
         # pivots
+        # pivot points
         y = bcorr.get_ypoints(  self.data.get_buffer(), 
                                 self.data.axis1.ptoi( np.array(self.bsl_points)),
                                 nsmooth=self.smooth.value )
-        del(self.drpivot)
-        self.drpivot = self.ax.scatter(self.bsl_points, y,  c='r', marker='o')
+        #self.drpivot = self.ax.scatter(self.bsl_points, y,  c='r', marker='o')
+        self.drpivot = self.ax.plot(self.bsl_points, y,  c='r', marker='o',linestyle="None")[0]#, markersize=12)
         # set zoom
         super().disp()
 
@@ -1200,16 +1202,19 @@ class NMRPeaker1D(Show1D):
     # self.peaks : the defined peaklist, copyied in and out of data
     # self.temppk : the last computed pklist
     def __init__(self, data, figsize=None, show=True):
-        super().__init__( data, figsize=figsize, show=show)
+        super().__init__( data, figsize=figsize, show=False)
         self.data = data.real()
         try:
-            self.peaks = self.data.peaks
+            if self.data.peaks is None:  # might happen
+                self.peaks = Peaks.Peak1DList(source=self.data)   # empty peak list
+            else:
+                self.peaks = self.data.peaks
         except AttributeError:
-            self.peaks = Peaks.Peak1DList(source=self.data)
-        self.temppk = Peaks.Peak1DList(source=self.data)
+            self.peaks = Peaks.Peak1DList(source=self.data)   # empty peak list
+        self.temppk = Peaks.Peak1DList(source=self.data)      # empty peak list
         self.thresh = widgets.FloatLogSlider(value=20.0,
             min=-1, max=2.0, base=10, step=0.01, layout=Layout(width='30%'),
-            continuous_update=False, readout=True, readout_format='.2f')
+            continuous_update=True, readout=True, readout_format='.2f')
         try: 
             self.thresh.value = 100*self.data.peaks.threshold/self.data.absmax  # if already peak picked
         except:
@@ -1252,28 +1257,28 @@ class NMRPeaker1D(Show1D):
         self.tabs = Tab()
         self.tabs.children = [
             VBox([
-                HBox([self.badd, self.brem, Label('threshold - % largest signal'), self.thresh, self.peak_mode]),
-                HBox([VBox([self.blank, self.reset, self.scale]), self.fig.canvas])
+                HBox([Label('threshold - % largest signal'), self.thresh, self.badd, self.brem, self.peak_mode]),
+                HBox([VBox([self.blank, self.reset, self.scale, self.done]), self.fig.canvas])
                 ]),
             VBox([
                 HBox([ Label('Select a peak with mouse and set calibrated values'), self.selval, self.newval, self.setcalib]),
-                HBox([VBox([self.blank, self.reset, self.scale]), self.fig.canvas])
+                HBox([VBox([self.blank, self.reset, self.scale, self.done]), self.fig.canvas])
                 ]),
             self.out]
         self.tabs.set_title(0, 'Peak Picker')
         self.tabs.set_title(1, 'calibration')
         self.tabs.set_title(2, 'Peak Table')
 
-        self.children = [VBox([HBox([self.done, self.cancel]),self.tabs])]
+        self.children = [VBox([HBox([self.cancel]),self.tabs])]
 
-        self.pickpeak({'name':'value'})
-        self.disp()
+        self.pp()
+        self.draw()
     def on_add(self, b):
         self.peaks.pkadd(self.temppk)
         self.peaks = Peaks.peak_aggreg(self.peaks, distance=1.0)
         self.peaks.source = self.data
         self.temppk = Peaks.Peak1DList(source=self.data)
-        self.disp()
+        self.draw()
     def on_rem(self, b):
         (up,down) = self.ax.get_xbound()
         iup = self.data.axis1.ptoi(up)
@@ -1285,16 +1290,19 @@ class NMRPeaker1D(Show1D):
                 to_rem.append(pk)
         for pk in to_rem:
             self.peaks.remove(pk)
-        self.disp()
+        self.draw()
     def on_cancel(self, b):
         self.close()
         del self.data.peaks
         print("no Peak-Picking done")
+    def on_reset(self, b):
+        self.thresh.value = 20.0
+        super.on_reset()
     def on_done(self, b):
         self.temppk = Peaks.Peak1DList()  # clear temp peaks        
         self.close()
         # new figure
-        self.disp()
+        self.draw()
         # and display        
         display(self.fig)
         display(self.out)
@@ -1307,7 +1315,7 @@ class NMRPeaker1D(Show1D):
 #        self.pp()
         self.peaks.pos2label()
         self.temppk.pos2label()
-        self.disp()
+        self.draw()
     def pkprint(self,event):
         self.out.clear_output(wait=True)
         with self.out:
@@ -1339,40 +1347,44 @@ class NMRPeaker1D(Show1D):
     def ob(self, event):
         if event['name']=='value':
             self.disp()        
-    def disp(self):
-        "interactive wrapper to peakpick"
-        self.xb = self.ax.get_xbound()
-        #self.yb = self.ax.get_ybound()
-        self.ax.clear()
-        #super().disp()
-        self.data.display(scale=self.scale.value, new_fig=False, figure=self.ax, title=self.title)
-        x = [self.data.axis1.itoc(z) for z in (0, self.data.size1) ]
-        y = [self.data.absmax*self.thresh.value/100]*2
-        self.ax.plot(x,y,':r')
-        try:
-            self.temppk.display(peak_label=False, peak_mode=self.peak_mode.value, f=self.data.axis1.itoc, figure=self.ax,color='red')
-            self.peaks.display(peak_label=False, peak_mode=self.peak_mode.value, f=self.data.axis1.itoc, color='blue', figure=self.ax)
-        except:
-            rrr("problem")
-        self.temppk.display(peak_label=True, peak_mode=self.peak_mode.value, color='red', figure=self.ax)
-        self.ax.set_xbound(self.xb)
-        self.ax.set_ylim(ymax=self.data.absmax/self.scale.value)
-        self.pkprint({'name':'value'})  # send pseudo event to display peak table
     def pickpeak(self, event):
-        "interactive wrapper to peakpick"
+        "interactive wrapper to pp"
         if event['name']=='value':
+            self.disp()
             self.pp()
+    @debounce(1.0)
     def pp(self):
-        "do the peak-picking calling pp().centroid()"
-        #self.spec.clear_output(wait=True)
+        "do the peak-picking calling pp().centroid() within the current zoom"
         th = self.data.absmax*self.thresh.value/100
         zm = self.ax.get_xbound()
         self.data.set_unit('ppm').peakpick(threshold=th, verbose=False, zoom=zm).centroid()
         self.temppk = self.data.peaks
         self.data.peaks = None
-        self.disp()
+        self.draw()
         self.ax.annotate('%d peaks detected'%len(self.data.peaks) ,(0.05,0.95), xycoords='figure fraction')
         self.pkprint({'name':'value'})
+    def draw(self):
+        "interactive wrapper to peakpick"
+        super().draw()
+        self.xb = self.ax.get_xbound()
+        x = [self.data.axis1.itoc(z) for z in (0, self.data.size1) ]
+        y = [self.data.absmax*self.thresh.value/100]*2
+        self.threshline = self.ax.plot(x,y,':r')[0]
+        if True: #try:
+            self.temppk.display(peak_label=False, peak_mode=self.peak_mode.value, f=self.data.axis1.itoc, figure=self.ax,color='red')
+            self.peaks.display(peak_label=False, peak_mode=self.peak_mode.value, f=self.data.axis1.itoc, color='blue', figure=self.ax)
+        else: #except:
+            rrr("problem")
+        self.temppk.display(peak_label=True, peak_mode=self.peak_mode.value, color='red', figure=self.ax)
+        self.ax.set_xbound(self.xb)
+        #self.ax.set_ylim(ymax=self.data.absmax/self.scale.value)
+        self.pkprint({'name':'value'})  # send pseudo event to display peak table
+        self.disp()
+    def disp(self):
+        y = [self.data.absmax*self.thresh.value/100]*2
+        self.threshline.set_ydata(y)
+        super().disp()
+
 
 from spike.plugins.NMR.Integrate import Integrals, Integralitem
 class NMRIntegrate(Show1D):
