@@ -372,12 +372,16 @@ class Show1D(HBox):
             fi.set_tight_layout(True)
             plt.ion()
             self.ax = ax
+            # def update_box(axes):
+            #     self.xb = self.ax.get_xbound()
+            #     self.ax.set_ybound(self.yb0/self.scale.value)
+            # self.ax.add_callback(self.update_box)
             self.fig = fi
 #            self.xb = self.ax.get_xbound()
             self.children = [  VBox([self.reset, self.scale, self.savepdf, self.done]), self.fig.canvas ]
             if show:
                 self.draw()
-#                self.disp(redraw=True)
+
     # call backs
     def on_done(self, b):
         self.close()
@@ -1446,11 +1450,11 @@ class NMRIntegrate(Show1D):
         self.tabs = Tab()
         self.tabs.children = [
             VBox([
-                HBox([self.badd, self.brem,
-                    Label("Use buttons to add and remove integrals in the current zoom window")]), 
+                HBox([widgets.HTML("Use buttons to add and remove integrals in the current zoom window&nbsp;&nbsp;"),
+                self.badd, self.brem]), 
                 HBox(orig),
                 ]),
-            VBox([HBox([self.bauto, Label("Define integral shapes using the sliders below")]),
+            VBox([HBox([widgets.HTML("Define integral shapes using the sliders below (erases the current integrals)&nbsp;&nbsp;"), self.bauto]),
                 HBox([self.thresh,  self.sep, self.wings]),
                 HBox(orig),
                 ]),
@@ -1461,8 +1465,9 @@ class NMRIntegrate(Show1D):
         self.tabs.set_title(0, 'Manual integration')
         self.tabs.set_title(1, 'Automatic')
         self.tabs.set_title(2, 'Integral Table & Calibration')
-        self.children = [VBox([HBox([self.done, self.cancel]),self.tabs])]
+        self.children = [VBox([self.cancel,self.tabs])]
         self.draw()
+        self.print(None)
     # def set_on_redraw(self):
     #     def on_scrollI(event):
     #         self.scale_up(np.sign(event.step))
