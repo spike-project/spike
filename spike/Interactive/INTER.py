@@ -604,8 +604,10 @@ class SpforSuper():
         self.zmleft = widgets.FloatText(value=1000,layout=Layout(width='70px'))
         self.zmright = widgets.FloatText(value=-1000,layout=Layout(width='70px'))
         self.label = widgets.Checkbox(value=False, indent=False, layout=Layout(width='40px'))
-        self.scale = widgets.FloatText(value=1.0,layout=Layout(width='70px')) 
-        self.offset = widgets.FloatText(value=0.0, layout=Layout(width='60px'), tooltip="offset")
+        self.scale = widgets.FloatText(value=1.0,layout=Layout(width='70px'), tooltip="relative intensity scale")
+        self.stretch = widgets.FloatText(value=1.0,layout=Layout(width='70px'), tooltip="stretching along x")
+        self.xoffset = widgets.FloatText(value=0.0, layout=Layout(width='60px'), tooltip="x offset in spec unit")
+        self.yoffset = widgets.FloatText(value=0.0, layout=Layout(width='60px'), tooltip="y offset in %")
         self.splw = widgets.FloatText(value=1.0, step=0.1, layout=Layout(width='50px'))
         # for w in (self.color, self.direct, self.zmleft, self.zmright, self.label, self.scale, self.offset, self.splw):
         #     w.observe(self.ob)
@@ -613,8 +615,10 @@ class SpforSuper():
         self.me = HBox([self.B(str(i)),
                         self.filename,
                         self.scale,
+                        self.stretch,
                         self.direct,
-                        self.offset,
+                        self.xoffset,
+                        self.yoffset,
                         self.zmleft,
                         self.zmright,
                         self.splw,
@@ -625,8 +629,10 @@ class SpforSuper():
                             self.B('file name','5em'),
                             self.I('or "Self" for spectrum excerpts', '26em'),
                             self.B('scale','60px'),
+                            self.B('stretching','60px'),
                             self.B('direction','60px'),
-                            self.B('%offset','50px'),
+                            self.B('xoffset','50px'),
+                            self.B('yoffset(%)','50px'),
                             self.B(' ','50px'), self.B('Zoom','90px'),
                             self.B('Linewidth','80px'),
                             self.B('color','70px'),
@@ -639,10 +645,12 @@ class SpforSuper():
             self.draw()
     def injectobserve(self, method):
         "used to to observe form outer object for draw"
-        for w in (self.color,  self.zmleft, self.zmright, self.label, self.splw, self.direct,   self.scale, self.offset):
+        for w in (self.color,  self.zmleft, self.zmright, self.label, self.splw, self.direct, 
+                    self.scale, self.stretch, self.xoffset, self.yoffset):
             w.observe(method)
     def activate(self, e):
-        for w in (self.color, self.zmleft, self.zmright, self.label, self.scale, self.offset, self.splw):
+        for w in (self.color, self.zmleft, self.zmright, self.label, self.scale, self.stretch,
+                    self.xoffset, self.yoffset, self.splw):
             if self.direct.value == 'off':
                 w.disabled = True
             else:
@@ -669,6 +677,8 @@ class SpforSuper():
         else:
             lb = None
         # load
+        if self.filename.value in 'Sel':    # happens while typing Self ... 
+            return
         if self.filename.value == 'Self':
             d = self.ref.copy().set_unit(unit)
         else:
@@ -689,27 +699,40 @@ class SpforSuper():
             label=lb)
         self.drartist = d.disp_artist[0]
         self.ydata = self.drartist.get_ydata()   # store spectral data
+        self.xdata = self.drartist.get_xdata()
         # adapt to scale and direction
         self.drartist.set_ydata(  self.move_ydata()  )
+        self.drartist.set_xdata(  self.move_xdata()  )
         # text
         self.text = self.axref.text(zmr, self.ydata[-1], ' ', color=self.color.value) # will be changed by disp()
         self.disp()
+    def move_xdata(self):
+        "adapt self.xdata to  offset and stretching, then  return the value"
+        # get starting value
+        start = self.xdata[0]
+        # affine transform
+        return self.xdata[0] + self.stretch.value*(self.xdata - start)  + self.xoffset.value
     def move_ydata(self):
         "adapt self.ydata to direct, scale, and offset and return the value"
         # add offset
-        off = self.axref.get_ybound()[1] * self.offset.value/100   # relative to screen in spectral unit
+        off = self.axref.get_ybound()[1] * self.yoffset.value/100   # relative to screen in spectral unit
+        # and multiply
         return self.mult*self.ydata + off 
     def disp(self):
         " refresh "
         if self.filename.value == 'None' or self.direct.value == 'off':
             return  # nothing to do
         yd = self.move_ydata()
+        xd = self.move_xdata()
         self.drartist.set_ydata( yd )
+        self.drartist.set_xdata( xd )
         m = self.mult
-        if m != 1:
+        if not (abs(m) == 1 or m == 0):
             tt = "x%.1f"%(m,)
             self.text.set_text(tt)
             self.text.set_y(yd[-1])
+            self.text.set_x(xd[-1])
+
         else:
             self.text.set_text(" ")
 
