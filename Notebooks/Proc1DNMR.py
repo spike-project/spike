@@ -58,6 +58,7 @@ verbose = 1                              # chose from 0 (terse) to 3 more verbos
 mpl.rcParams['figure.figsize'] = (8,4)   # (X,Y) default figure size
 I.Activate_Wheel = True                  # True/False    scale with wheel control in the graphic cells 
 I.reverse_scroll = False                 # inverse the direction of the mouse wheel, whether it is `True` (TrackPad) or `False` (Mouse)
+I.ParamList = ['PULPROG', 'SFO1', 'NS', 'TE', 'TD', 'RG', 'SW', 'O1', 'D1','P1']    # the list of important parameters to display
 
 
 # %% [markdown]
@@ -87,9 +88,10 @@ print('Reading file ',FC.selected)
 d1 = Import_1D(FC.selected)                    # Import_1D creates a SPIKE NMRData object, from which everything is available
 d1.set_unit('sec')                             # it can be acted upon
 d1.filename = FC.selected                      # and be extended at will
-print(d1)                                      # print() of the dataset shows a summary of the parameters
-display(HTML('<b>title: </b>'+ d1.params['acqu']['title']))    # d1.params is a dictionary which contains the whole 'acqu' and 'proc' Bruker parameters
-I.Show1D(d1, title=FC.selected)
+#print(d1)                                     # print() of the dataset shows a summary of the parameters
+display(I.summary(d1, output='HTML'))          # but summary is nicer and more informative
+
+I.Show1D(d1, title=FC.selected)                # and display
 # alternatively you can use the low-level tool below:
 # d1.display()  # with many options, plus access to matplotlib details
 

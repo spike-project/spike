@@ -20,6 +20,7 @@ import glob
 import math as m
 import time
 import warnings
+import re
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -161,6 +162,12 @@ def jsalert(msg="Alert text"):
     "send a javascript alert"
     # use \\n if you want to add several lines
     display(Javascript("alert('%s')"%msg))
+def space(width="80px"):
+    "defines a layout of width, width should be a string in CSS syntax"
+    return widgets.Layout(width=width)
+def spacer(width="80px"):
+    "defines a spacer to be used in widgets.Box - width should be a string in CSS syntax"
+    return widget.HTML("&nbsp;",layout=space(width))
 class _FileChooser:
     """a simple file chooser for Jupyter - obsolete - not used any more"""
     def __init__(self, base=None, filetype=['fid','ser'], mode='r', show=True):
@@ -170,12 +177,12 @@ class _FileChooser:
             self.curdir = base
         self.filetype = filetype
         self.mode = mode
-        self.wfile = widgets.Text(layout=Layout(width='70%'),description='File to load')
+        self.wfile = widgets.Text(layout=space('70%'),description='File to load')
         self.ldir = widgets.Label(value="Chosen dir:  "+self.curdir)
         self.wdir = widgets.Select(
             options=self.dirlist(),
             description='Choose Dir',
-            layout=Layout(width='70%'))
+            layout=space('70%'))
         if mode=='r':
             self.wchooser = widgets.Select(
                 options=self.filelist(),
@@ -189,13 +196,13 @@ class _FileChooser:
             self.wchooser = widgets.Select(
                 options=self.filelist(),
                 description='Files',
-                layout=Layout(width='70%'))
+                layout=space('70%'))
         else:
             raise Exception('Only "r" and  "w" modes supported')
-        self.wsetdir = Button(description='❯',layout=Layout(width='20%'),
+        self.wsetdir = Button(description='❯',layout=space('20%'),
                 button_style='success', # 'success', 'info', 'warning', 'danger' or ''
                 tooltip='descend in directory')
-        self.wup = Button(description='❮',layout=Layout(width='20%'),
+        self.wup = Button(description='❮',layout=space('20%'),
                 button_style='success', # 'success', 'info', 'warning', 'danger' or ''
                 tooltip='up to previous directory')
         self.wsetdir.on_click(self.setdir)
@@ -267,6 +274,90 @@ class _FileChooser:
         return op.basename(self.wfile.value)
 import asyncio
 
+
+# the following set of utilities is to display a nice summary of a SPIKE/Bruker dataset
+
+# first parse parameters in dictionary derived from acqus or procs
+# for the program to recognize arrays, the arrayname should be given below ( | separated, no space)
+arraynames = 'D|P|PL|PCPD|SP'
+
+def readplist(paramtoadd, paramdict):
+    "parse lists from acqus files - only that ones defined in arraynames"
+    m = (re.match('(%s)([0-9]+)'%(arraynames,),paramtoadd))
+    if m :    # arrays are special !
+        i = int(m.group(2))
+        pp = paramdict['$'+m.group(1)]
+        val = pp[i]
+    else:
+        val = paramdict['$%s'%paramtoadd]
+    return val
+
+ParamList = ['PULPROG', 'SFO1', 'NS', 'TE', 'TD', 'RG', 'SW', 'O1','D1','P1']
+def param_line(acqus, paramlist=None, output='string'):
+    """
+    given a acqus dictionary, and a list of parameters to extract, 
+    this functions return either a plain text or a HTML table depending on output value
+    either "string" or "HTML" )
+    """
+    head = []
+    lines = []
+    if paramlist == None:
+        paramlist = ParamList
+
+    for k in paramlist:
+        val = str(readplist(k, acqus) )
+        if val.startswith('<'):
+            val = val[1:-1]
+        lines.append(val)
+        if k.startswith("$"):
+            head.append(k[1:])
+        else:
+            head.append(k)
+    if output == "string":
+        res = "\t".join(head) + "\n" + "\t".join(lines)
+    elif output == "HTML":
+        Head = '<table class="dataframe" border="1"><thead><tr>' 
+        Head += '<th style="text-align: center;">' + '</th><th style="text-align: center;">'.join(head) + '</th>'
+        Head += '</tr></thead>'
+        Lines = '<tbody><tr><td>' + '</td><td>'.join(lines) + '</tr></tbody></table>'
+        res = HTML(Head + Lines)
+    return res
+
+def param_table(data, output='string'):
+    """ return the complete parameter table held into data
+    output is either "string" or "HTML
+    """
+    lines = []
+    acqus = data.params['acqu']
+    if output == 'string':
+        for k in acqus.keys():
+            lines.append("%s : %s"%(k,acqus[k]))
+        res = "\n".join(lines)
+    if output == 'HTML':
+        st = '<table class="dataframe" border="1"><thead><tr><th><b>Parameter</b></th><th style="text-align: left;">value</th></tr>'
+        st += '</thead><tbody>\n'
+        for k in acqus.keys():
+            lines.append('<tr><td>%s</td><td style="text-align: left;">%s</td></tr>'%(k,acqus[k]))
+        st += ( '\n'.join(lines) + '</tbody></table>\n')
+        res = HTML(st)
+    return res
+
+def summary(data, param=True, output='string'):
+    """ produces a summary of the data set
+    if param is True, a short list of 1D parameters is given
+    output is either "string" or "HTML"
+    """
+    if output == 'string':
+        res = data.params['acqu']['title']
+        if param:
+            res += r"\n" + param_line(data.params['acqu'], output='string')
+    elif output == 'HTML':
+        res = HTML('<b>'+ data.params['acqu']['title'] + '</b>')
+        if param:
+            res2 = param_line(data.params['acqu'], output='HTML')
+            res = HTML(res.data + res2.data)
+    return res
+#########################################################²
 class Timer:
     def __init__(self, timeout, callback):
         self._timeout = timeout
@@ -343,7 +434,7 @@ class Show1D(HBox):
             self.reverse_scroll = -1
         else:
             self.reverse_scroll = 1
-        self.blay = Layout(width='80px')  # default layout for buttons
+        self.blay = space('80px')       # default layout for buttons
         self.blank = widgets.HTML("&nbsp;",layout=self.blay)
         self.done = Button(description="Done", button_style='success',layout=self.blay,
             tooltip="Stop interactivity and store figure")
@@ -429,21 +520,27 @@ class Show1D(HBox):
         self.ax.set_ybound(self.yb0/self.scale.value)
 class baseline1D(Show1D):
     def __init__(self, data, figsize=None, show=True):
+        try:
+            self.BslPoints = data.BslPoints    # recover from previous correction
+        except:
+            self.BslPoints = []   # initialize with empty list
+
         super().__init__( data, figsize=figsize, show=False)
         self.data.real()
         a, b = self.itoc3(0.0), self.itoc3(self.data.size1)   # spectral borders
-        self.select = widgets.BoundedFloatText(description='select:',
+        self.select = widgets.FloatSlider(description='Manually:',
                         min=min(a,b), max=max(a,b),
                         value=self.itoc3(0.5*self.data.size1), continuous_update=REACTIVE,
+                        layout=space('40%'),
                         tooltip='position of the selected point in %s'%(data.unit[0]))
-        self.smooth = widgets.IntSlider(description='smooth:', min=0, max=20,  layout=Layout(width='70%'),
+        self.smooth = widgets.IntSlider(description='smooth:', min=0, max=20,  layout=space('40%'),
                                         tooltip='apply a local smoothing for pivot points',
                                          value=1, readout=True, continuous_update=REACTIVE)
         self.toshow = widgets.Dropdown( options=['baseline', 'corrected', 'points'],  description='Display:')
         for w in [self.select, self.smooth, self.toshow]:
             w.observe(self.obdisp)
 
-        self.bsl_points = []
+        self.bsl_points = self.BslPoints
         self.baseline = np.zeros_like(self.data.buffer)
         self.cancel = widgets.Button(description="Exit", button_style='warning', layout=self.blay,
             tooltip='Exit without corrections')
@@ -456,10 +553,17 @@ class baseline1D(Show1D):
         self.set.on_click(self.on_set)
         self.unset = widgets.Button(description="Rem", button_style='warning', layout=self.blay,
             tooltip='Remove the baseline point closest to the selector')
+        self.nbautopoints = widgets.IntText(value=8, layout=space('4em'))
         self.unset.on_click(self.on_unset)
         orig = self.children
         self.children = [VBox([
-            HBox([widgets.HTML('Choose baseline points'), self.auto, self.select, self.set, self.unset]),
+            HBox([Label('Baseline points'),
+                self.nbautopoints,
+                Label("points"),
+                self.auto,
+                self.blank,
+                self.select,
+                self.set, self.unset]),
             HBox([self.cancel, self.toshow, self.smooth]),
             HBox(orig)])]
         def on_press(event):
@@ -493,12 +597,16 @@ class baseline1D(Show1D):
         print("Applied correction:\ndata.bcorr(xpoints={0}, nsmooth={1})".format(printlist, self.smooth.value))
         #print('Applied correction:\n', sorted(self.bsl_points))
         self.data.set_buffer( self.data.get_buffer() - self.correction() )
-        self.selector.set_visible(False)
-        super().disp()
+        self.ax.clear()
+        self.data.display(new_fig=False, figure=self.ax, title=self.title)
+        y = np.zeros(len(self.bsl_points) )
+        self.ax.plot(self.bsl_points, y,  c='r', marker='o',linestyle="None")
+
         display(self.fig)   # shows spectrum
+        self.data.BslPoints = self.bsl_points
     def on_auto(self, e):
         "automatically set baseline points"
-        self.bsl_points = [self.data.axis1.itoc(x) for x in bcorr.autopoints(self.data)]
+        self.bsl_points = [self.data.axis1.itoc(x) for x in bcorr.autopoints(self.data, Npoints=self.nbautopoints.value)]
         self.draw()
     def on_cancel(self, e):
         self.close()
@@ -598,17 +706,17 @@ class SpforSuper():
                 self.direct.value = 'up'  # will call self.activate()
         self.filename.observe(nactivate)
         j = i%len(Colors)
-        self.color = widgets.Dropdown(options=["steelblue"]+list(Colors),value=Colors[j],layout=Layout(width='90px'))
-        self.direct = widgets.Dropdown(options=['up','down','off'], value='off', layout=Layout(width='60px'))
+        self.color = widgets.Dropdown(options=["steelblue"]+list(Colors),value=Colors[j],layout=space('90px'))
+        self.direct = widgets.Dropdown(options=['up','down','off'], value='off', layout=space('60px'))
         self.direct.observe(self.activate)
-        self.zmleft = widgets.FloatText(value=1000,layout=Layout(width='70px'))
-        self.zmright = widgets.FloatText(value=-1000,layout=Layout(width='70px'))
-        self.label = widgets.Checkbox(value=False, indent=False, layout=Layout(width='40px'))
-        self.scale = widgets.FloatText(value=1.0,layout=Layout(width='70px'), tooltip="relative intensity scale")
-        self.stretch = widgets.FloatText(value=1.0,layout=Layout(width='70px'), tooltip="stretching along x")
-        self.xoffset = widgets.FloatText(value=0.0, layout=Layout(width='60px'), tooltip="x offset in spec unit")
-        self.yoffset = widgets.FloatText(value=0.0, layout=Layout(width='60px'), tooltip="y offset in %")
-        self.splw = widgets.FloatText(value=1.0, step=0.1, layout=Layout(width='50px'))
+        self.zmleft = widgets.FloatText(value=1000,layout=space('70px'))
+        self.zmright = widgets.FloatText(value=-1000,layout=space('70px'))
+        self.label = widgets.Checkbox(value=False, indent=False, layout=space('40px'))
+        self.scale = widgets.FloatText(value=1.0,layout=space('70px'), tooltip="relative intensity scale")
+        self.stretch = widgets.FloatText(value=1.0,layout=space('70px'), tooltip="stretching along x")
+        self.xoffset = widgets.FloatText(value=0.0, layout=space('60px'), tooltip="x offset in spec unit")
+        self.yoffset = widgets.FloatText(value=0.0, layout=space('60px'), tooltip="y offset in %")
+        self.splw = widgets.FloatText(value=1.0, step=0.1, layout=space('50px'))
         # for w in (self.color, self.direct, self.zmleft, self.zmright, self.label, self.scale, self.offset, self.splw):
         #     w.observe(self.ob)
         #control bar
@@ -763,13 +871,13 @@ class Show1Dplus(Show1D):
         super().__init__( data, figsize=figsize, title=title, show=False)
         # spectrum control widgets
         self.sptitle = widgets.Text(description='Title',
-                            value=self.title, layout=Layout(width='40%'))
+                            value=self.title, layout=space('40%'))
         self.spcolor = widgets.Dropdown(description='Color',
                             options=["steelblue"]+list(Colors),value='steelblue',
-                            layout=Layout(width='24%'))
+                            layout=space('24%'))
         self.splw = widgets.FloatText(description='Linewidth',
                             value=1.0, step=0.1,
-                            layout=Layout(width='24%'))
+                            layout=space('24%'))
         self.showlogo = widgets.Checkbox(description="Logo", 
                             value = True, layout=widgets.Layout(left='200px'))
         self.axlogo = self.fig.add_axes([.92, .84, .08, .16], visible=True)

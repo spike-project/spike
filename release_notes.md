@@ -2,7 +2,9 @@
 # SPIKE Relase Notes
 #### 0.99.30 - not released yet
 - spike Interactive NMR
+    - display of some acquisition parameters
     - in 1D, corrected errors in managing peaks and calibration
+    - better handling of baseline corrections
     - corrected displaying integrals
 - General
     - rowc() and colc() method get rows and columns in 2D using current unit instead od index (I don't know why this was not done earlier...)
