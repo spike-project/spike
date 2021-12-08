@@ -58,7 +58,7 @@ verbose = 1                              # chose from 0 (terse) to 3 more verbos
 mpl.rcParams['figure.figsize'] = (8,4)   # (X,Y) default figure size
 I.Activate_Wheel = True                  # True/False    scale with wheel control in the graphic cells 
 I.reverse_scroll = False                 # inverse the direction of the mouse wheel, whether it is `True` (TrackPad) or `False` (Mouse)
-I.ParamList = ['PULPROG', 'SFO1', 'NS', 'TE', 'TD', 'RG', 'SW', 'O1', 'D1','P1']    # the list of important parameters to display
+I.ParamList = ['SOLVENT', 'PULPROG', 'SFO1', 'NS', 'TE', 'TD', 'RG', 'SW', 'O1', 'D1','P1']    # the list of important parameters to display
 
 
 # %% [markdown]
@@ -90,6 +90,7 @@ d1.set_unit('sec')                             # it can be acted upon
 d1.filename = FC.selected                      # and be extended at will
 #print(d1)                                     # print() of the dataset shows a summary of the parameters
 display(I.summary(d1, output='HTML'))          # but summary is nicer and more informative
+# I.popup_param_table(d1)                      # this command pops up a window with the complete parameter table
 
 I.Show1D(d1, title=FC.selected)                # and display
 # alternatively you can use the low-level tool below:
@@ -125,9 +126,11 @@ I.Show1D(d1, title=FC.selected)                # and display
 # Basic Processing
 LB = 0.3                        # you can adapt LB to your means, in Hz
 D1 = d1.copy()                  # copy the imported data-set to another object for processing
-D1.center().apod_em(LB).zf(4).ft_sim().bk_corr().apmin()  # chaining  centering - apodisation - zerofill - FT - Bruker correction - autophase
+D1.center().apod_em(LB).zf(4).ft_sim()  # chaining   centering - apodisation - zerofill - FT
+D1.bk_corr().apmin()            #  Bruker DSP correction - autophase
+# D1.bk_pk()                    #  alternatively from previous line:  stored Bruker correction
 D1.set_unit('ppm')              # set to ppm unit ('Hz' and 'point' also available)
-                                # all Spike command can be pipelined at will - these 3 lines could be piped as one.
+                                # all Spike command can be pipelined at will - these lines could be piped as one.
 I.Show1D(D1, title=FC.nmrname)  #  and display
 
 # %% [markdown]

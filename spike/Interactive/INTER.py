@@ -10,7 +10,6 @@ Intermediate version MAD october 2019
 Improvements MAD spring - summer - automn  2021
 """
 
-from __future__ import print_function, division
 import unittest
 import sys
 import os
@@ -21,6 +20,7 @@ import math as m
 import time
 import warnings
 import re
+from datetime import datetime
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -168,7 +168,7 @@ def space(width="80px"):
     return widgets.Layout(width=width)
 def spacer(width="80px"):
     "defines a spacer to be used in widgets.Box - width should be a string in CSS syntax"
-    return widget.HTML("&nbsp;",layout=space(width))
+    return widgets.HTML("&nbsp;",layout=space(width))
 class _FileChooser:
     """a simple file chooser for Jupyter - obsolete - not used any more"""
     def __init__(self, base=None, filetype=['fid','ser'], mode='r', show=True):
@@ -468,7 +468,8 @@ class Show1D(HBox):
                 tooltip='Save the current figure as pdf')
         def onsave(e):
             name = self.fig.get_axes()[0].get_title()
-            name = name.replace('/','_')+'.pdf'
+            datedext = datetime.strftime(datetime.now(), " %y-%m-%d_%H:%M:%S.pdf")
+            name = name.replace('/','_') + datedext
             if name.startswith('.'):
                 name = 'Figure'+name
             self.fig.savefig(name)
@@ -1159,10 +1160,11 @@ class Phaser1D(Show1D):
         for w in [self.p0, self.p1]:
             w.observe(self.ob)
         self.pivot.observe(self.on_movepivot)
-        # add right-click event on spectral window
+        # add click event on spectral window
         def on_press(event):
-            if event.button == 3:
-                self.pivot.value = round(event.xdata,4)
+            # if event.button == 3:                      # would be right-click
+            v = event.xdata
+            self.select.value = round(v,4)
         cids = self.fig.canvas.mpl_connect('button_press_event', on_press)
         self.lp0, self.lp1 = self.ppivot()
         if show:
