@@ -66,7 +66,8 @@ reverse_scroll = True
 Colors = ('black','red','blue','green','orange',
 'blueviolet','crimson','turquoise','indigo',
 'magenta','gold','pink','purple','salmon','darkblue','sienna')
-
+Cursor = dict( linestyle='--', color='darkblue', linewidth=0.8)   # used for running cursors
+Contrast = dict( color="crimson")  # used for contrasting spectra
 ##############################
 # First General Utilities
 ##############################
@@ -337,14 +338,21 @@ def param_table(data, output='string'):
         st = '<table class="dataframe" border="1"><thead><tr><th><b>Parameter</b></th><th style="text-align: left;">value</th></tr>'
         st += '</thead><tbody>\n'
         for k in acqus.keys():
-            lines.append('<tr><td>%s</td><td style="text-align: left;">%s</td></tr>'%(k,acqus[k]))
-        st += ( '\n'.join(lines) + '</tbody></table>\n')
-        res = HTML(st)
+            val = str(acqus[k]).replace("'","") \
+                                .replace("&",'&amp;') \
+                                .replace("[",'') \
+                                .replace("]",'') \
+                                .replace("<",'&lsaquo;') \
+                                .replace(">",'&rsaquo;') \
+                                .replace('"','&quot;')
+            lines.append('<tr><td>%s</td><td style="text-align: left;">%s</td></tr>'%(k, val))
+        st += ( '\n'.join(lines) + '\n</tbody></table>\n')
+        res = st
     return res
 
 def summary(data, param=True, output='string'):
     """ produces a summary of the data set
-    if param is True, a short list of 1D parameters is given
+    if param is True, a short list of 1D parameters is given, using the globally defined Paramlist
     output is either "string" or "HTML"
     """
     if output == 'string':
@@ -357,6 +365,20 @@ def summary(data, param=True, output='string'):
             res2 = param_line(data.params['acqu'], output='HTML')
             res = HTML(res.data + res2.data)
     return res
+def popup_param_table(data):
+    css = """<style>
+    table { border-collapse: collapse; border: 3px solid #eee; }
+    table tr th:first-child { background-color: #eeeeee; color: #333; font-weight: bold }
+    table thead th { background-color: #eee; color: #000; }
+    tr, th, td { border: 1px solid #ccc; border-width: 1px 0 0 1px; border-collapse: collapse;
+    padding: 3px; font-family: monospace; font-size: 10px }</style>
+    """
+    s  = '<script type="text/Javascript">'
+    s += 'var win = window.open("", "Parameters", "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=780, height=200, top="+(screen.height-400)+", left="+(screen.width-840));'
+    s += 'win.document.body.innerHTML = \''
+    s += (param_table(data, output='HTML') + css).replace("\n",'\\') + '\';'
+    s += '</script>'
+    return(HTML(s+css))
 #########################################################²
 class Timer:
     def __init__(self, timeout, callback):
@@ -423,6 +445,7 @@ class Show1D(HBox):
         """
         super().__init__()
         self.data = data
+        (_, self.noise) = data.robust_stats()    # noise will be handy !
         self.title = title
         # graphic set-up details
         self.yaxis_visible = False
@@ -538,7 +561,7 @@ class baseline1D(Show1D):
                                          value=1, readout=True, continuous_update=REACTIVE)
         self.toshow = widgets.Dropdown( options=['baseline', 'corrected', 'points'],  description='Display:')
         for w in [self.select, self.smooth, self.toshow]:
-            w.observe(self.obdisp)
+            w.observe(self.ob)
 
         self.bsl_points = self.BslPoints
         self.baseline = np.zeros_like(self.data.buffer)
@@ -569,6 +592,7 @@ class baseline1D(Show1D):
         def on_press(event):
             v = event.xdata
             self.select.value = round(v,3)
+            self.disp()
         cids = self.fig.canvas.mpl_connect('button_press_event', on_press)
         if show:
             self.draw()
@@ -653,39 +677,54 @@ class baseline1D(Show1D):
         "used to create the view with additional artists"
         super().draw()
         # baseline
-        self.drbaseline = self.ax.plot(self.data.axis1.unit_axis(), self.baseline, color='r')[0]
-        self.drbaseline.set_visible(False)
+        self.drbaseline = self.ax.plot(self.data.axis1.unit_axis(), self.baseline, **Contrast)[0]
+        # self.drbaseline.set_visible(False)
         # corrected spectrum
-        self.drspectrum = self.ax.plot(self.data.axis1.unit_axis(), self.data.get_buffer()-self.correction(), color='r' )[0]
-        self.drspectrum.set_visible(False)
+        corrected = self.data.get_buffer()-self.correction()
+        yoffset = 0.1*self.ax.get_ybound()[1]
+        self.drspectrum = self.ax.plot(self.data.axis1.unit_axis(), corrected+yoffset, alpha=0.5, **Contrast )[0]
+        self.drhoriz = self.ax.axhline(yoffset, **Cursor)
+        # self.drspectrum.set_visible(False)
+        # self.drhoriz.set_visible(False)
         # selector
         ppos = self.select.value
-        self.selector = self.ax.plot([ppos,ppos], self.ax.get_ybound())[0]   # visible !
+        self.selector = self.ax.axvline(ppos, **Cursor)
         self.disp()
     def disp(self):
         "used to refresh view"
         if len(self.bsl_points)>0:
             if self.toshow.value == 'baseline':
-#                ( self.data.copy()-self.corrected() ).display(new_fig=False, figure=self.ax, color='r')
-                self.drbaseline.set_visible(True)
                 self.drspectrum.set_visible(False)
+                self.drhoriz.set_visible(False)
                 self.drbaseline.set_ydata( self.correction() )
+                self.drhoriz.set_ydata(0.0)
+                self.drbaseline.set_visible(True)
             elif self.toshow.value == 'corrected':
-#                self.corrected().display(new_fig=False, figure=self.ax, color='r', scale=self.scale.value)
                 self.drbaseline.set_visible(False)
+                yoffset = 0.1*self.ax.get_ybound()[1]
+                self.drspectrum.set_ydata( self.data.get_buffer() - self.correction() + yoffset)
+                self.drhoriz.set_ydata(yoffset)
+                self.drhoriz.set_visible(True)
                 self.drspectrum.set_visible(True)
-                self.drspectrum.set_ydata( self.data.get_buffer() - self.correction() )
+            elif self.toshow.value == 'points':
+                self.drbaseline.set_visible(False)
+                self.drspectrum.set_visible(False)
+                self.drhoriz.set_visible(False)
+        else:
+            self.drbaseline.set_visible(False)
+            self.drspectrum.set_visible(False)
+            self.drhoriz.set_visible(False)
+
         # selector
         ppos = self.select.value
         self.selector.set_xdata([ppos,ppos])
-        self.selector.set_ydata(self.ax.get_ybound())
         # pivots
         # pivot points
         y = bcorr.get_ypoints(  self.data.get_buffer(), 
                                 self.data.axis1.ptoi( np.array(self.bsl_points)),
                                 nsmooth=self.smooth.value )
         #self.drpivot = self.ax.scatter(self.bsl_points, y,  c='r', marker='o')
-        self.drpivot = self.ax.plot(self.bsl_points, y,  c='r', marker='o',linestyle="None")[0]#, markersize=12)
+        self.drpivot = self.ax.plot(self.bsl_points, y, marker='o',linestyle="None", **Contrast)[0]#, markersize=12)
         # set zoom
         super().disp()
 
@@ -1190,8 +1229,8 @@ class Phaser1D(Show1D):
         self.set_on_redraw()
         self.phase()
         ppos = self.pivot.value
-        self.drpivot = self.ax.plot([ppos,ppos], self.ax.get_ybound())[0]
-
+        self.drpivot = self.ax.axvline(ppos, **Cursor)
+#        self.drpivot = self.ax.plot([ppos,ppos], self.ax.get_ybound())[0]
     def phase(self):
         self.lp0, self.lp1 = self.ppivot()         # get centered values
         size = len(self.ydata)
