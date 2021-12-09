@@ -445,7 +445,10 @@ class Show1D(HBox):
         """
         super().__init__()
         self.data = data
-        (_, self.noise) = data.robust_stats()    # noise will be handy !
+        try:
+            (_, self.noise) = data.robust_stats()    # noise will be handy !
+        except AttributeError:
+            self.noise = 0
         self.title = title
         # graphic set-up details
         self.yaxis_visible = False
@@ -512,7 +515,9 @@ class Show1D(HBox):
         "observe events and display"
         if event['name']=='value':
             self.disp()
+    @debounce(0.005)
     def scale_up(self, step):
+        sign = np.sign(step)
         self.scale.value *= 1.1892**(self.reverse_scroll*step) # 1.1892 is 4th root of 2.0
     def set_on_redraw(self):
         def on_scroll(event):
@@ -598,19 +603,6 @@ class baseline1D(Show1D):
         if show:
             self.draw()
 
-    # def show(self):
-    #     "create the widget and display the spectrum"
-    #     display(self.Box)
-    #     self.data.display(figure=self.ax)
-    #     self.xb = self.ax.get_xbound()  # initialize zoom
-    #     ppos = self.data.axis1.itop(self.select.value)
-    #     self.ax.plot([ppos,ppos], self.ax.get_ybound())
-    #     self.fig.canvas.header_visible = False
-    # def close(self):
-    #     "close all widget"
-    #     for w in [ self.select, self.auto, self.set, self.unset, self.cancel, self.toshow, self.smooth, self.Box]:
-    #         w.close()
-    #     super().close()
     def itoc3(self,value):
         return round(self.data.axis1.itoc(value), 3)
     def on_done(self, e):
@@ -682,7 +674,7 @@ class baseline1D(Show1D):
         # self.drbaseline.set_visible(False)
         # corrected spectrum
         corrected = self.data.get_buffer()-self.correction()
-        yoffset = 0.1*self.ax.get_ybound()[1]
+        yoffset = 0.2*self.ax.get_ybound()[1]
         self.drspectrum = self.ax.plot(self.data.axis1.unit_axis(), corrected+yoffset, alpha=0.5, **Contrast )[0]
         self.drhoriz = self.ax.axhline(yoffset, **Cursor)
         # self.drspectrum.set_visible(False)
@@ -702,7 +694,7 @@ class baseline1D(Show1D):
                 self.drbaseline.set_visible(True)
             elif self.toshow.value == 'corrected':
                 self.drbaseline.set_visible(False)
-                yoffset = 0.1*self.ax.get_ybound()[1]
+                yoffset = 0.2*self.ax.get_ybound()[1]
                 self.drspectrum.set_ydata( self.data.get_buffer() - self.correction() + yoffset)
                 self.drhoriz.set_ydata(yoffset)
                 self.drhoriz.set_visible(True)
@@ -741,10 +733,7 @@ class SpforSuper():
         self.ref = ref
         self.drartist = None
         self.filename = widgets.Text(value=filename, layout=Layout(width='30em'))
-        def nactivate(e):
-            if self.filename.value != 'None':
-                self.direct.value = 'up'  # will call self.activate()
-        self.filename.observe(nactivate)
+        self.filename.observe(self.nactivate)
         j = i%len(Colors)
         self.color = widgets.Dropdown(options=["steelblue"]+list(Colors),value=Colors[j],layout=space('90px'))
         self.direct = widgets.Dropdown(options=['up','down','off'], value='off', layout=space('60px'))
@@ -786,7 +775,7 @@ class SpforSuper():
                             self.B('color','70px'),
                             self.B('label')
                             ])
-        self.activate(None)
+        self.nactivate(None)
     def ob(self, event):
         "observe events and display"
         if event['name']=='value':
@@ -796,17 +785,25 @@ class SpforSuper():
         for w in (self.color,  self.zmleft, self.zmright, self.label, self.splw, self.direct, 
                     self.scale, self.stretch, self.xoffset, self.yoffset):
             w.observe(method)
+    def nactivate(self, e):
+        "called to check name validity, when name is entered"
+        fileexists = (self.filename.value == 'Self' or \
+            (self.filename.value not in ('None', '') and Path(self.filename.value).exists()) )
+        if fileexists:
+            self.direct.value = 'up'  # will call self.activate()
+            self.direct.disabled = False
+        else:
+            self.direct.value = 'off'  # will call self.activate()
+            self.direct.disabled = True
     def activate(self, e):
+        "called when state changes"
         for w in (self.color, self.zmleft, self.zmright, self.label, self.scale, self.stretch,
                     self.xoffset, self.yoffset, self.splw):
             if self.direct.value == 'off':
                 w.disabled = True
             else:
                 w.disabled = False
-        if self.filename.value == 'None':
-            self.direct.disabled = True
-        else:
-            self.direct.disabled = False
+        
     def B(self, text, size='auto'):
         "bold HTML widget"
         return widgets.HTML(value="<b>%s</b>"%text, layout=widgets.Layout(width=size))
@@ -814,7 +811,7 @@ class SpforSuper():
         "Italic HTML widget"
         return widgets.HTML(value="<i>%s</i>"%text, layout=widgets.Layout(width=size))
     def draw(self, unit='ppm'):
-        if self.filename.value == 'None' or self.direct.value == 'off':
+        if self.filename.value == 'None' or self.filename.value == ''  or self.direct.value == 'off':
             return  # nothing to do
         # else
         if self.drartist is not None:   # remove previous ones
@@ -825,15 +822,14 @@ class SpforSuper():
         else:
             lb = None
         # load
-        if self.filename.value in 'Sel':    # happens while typing Self ... 
-            return
         if self.filename.value == 'Self':
             d = self.ref.copy().set_unit(unit)
         else:
             try:
                 d = NMRData(name=self.filename.value).set_unit(unit)
             except:
-                jsalert('%s : File not found'%self.filename.value)
+                self.direct.value = 'off'
+                jsalert('%s : cannot open File'%self.filename.value)
                 return
         # draw
         zml = min(self.zmleft.value, d.axis1.itoc(0))
@@ -1027,7 +1023,7 @@ class Show1Dplus(Show1D):
             VBox([  VBox(controls),
                     HBox(orig),
                     ]),
-            VBox([  Label("Choose spectra to superimpose"),
+            VBox([  Label("Choose spectra to superimpose - first Select, then Copy to the numbered slot"),
                     HBox([self.Chooser, self.bsel, self.to]),
                     self.DataList[0].header] +
                     [sp.me for sp in self.DataList]
