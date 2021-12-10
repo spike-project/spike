@@ -159,10 +159,25 @@ def Logofile():
 def Logo(width=150):
     "display the Logo"
     display(Image(filename=Logofile(),width=width))
-def jsalert(msg="Alert text"):
+def _jsalert(msg="Alert text"):
     "send a javascript alert"
     # use \\n if you want to add several lines
     display(Javascript("alert('%s')"%msg))
+def jsalert(msg="Alert text", title='Alert'):
+    display(Javascript("""
+    require(
+        ["base/js/dialog"], 
+        function(dialog) {
+            dialog.modal({
+                title: '%s',
+                body: '%s',
+                buttons: {
+                    'Ok': {}
+                }
+            });
+        }
+    );
+    """%(title, msg) ))
 def space(width="80px"):
     "defines a layout of width, width should be a string in CSS syntax"
     return widgets.Layout(width=width)
@@ -1160,7 +1175,8 @@ class Phaser1D(Show1D):
         def on_press(event):
             # if event.button == 3:                      # would be right-click
             v = event.xdata
-            self.select.value = round(v,4)
+            self.pivot.value = round(v,4)
+            self.disp()
         cids = self.fig.canvas.mpl_connect('button_press_event', on_press)
         self.lp0, self.lp1 = self.ppivot()
         if show:
