@@ -917,9 +917,12 @@ class SpforSuper():
         "a simplified widget "
         lb = widgets.Label(self.nmrname)
         return HBox([lb, self.scale])
+
 class Show1Dplus(Show1D):
-    def __init__(self, data, base='/DATA', N=9, figsize=None, title=None, show=True):
-        super().__init__( data, figsize=figsize, title=title, show=False)
+    def __init__(self, data, base='/DATA', N=9, **kw):
+        show = kw.get('show',True)
+        kw['show'] = False
+        super().__init__( data, **kw)
         # spectrum control widgets
         self.sptitle = widgets.Text(description='Title',
                             value=self.title, layout=space('40%'))
@@ -1132,8 +1135,8 @@ class Phaser1D(Show1D):
     def __init__(self, data, figsize=None, title=None, maxfirstorder = 360, show=True, create_children=True):
         data.check1D()
         if data.itype == 0:
-            jsalert('Data is Real - an Error will be generated \\n\\n Please redo Fourier Transform')
-            data.phase(0,0)
+            jsalert('Data is Real - the Imaginary part is being reconstructed')
+            data.real2cpx()
         # we'll work on a copy of the data
         super().__init__( data, figsize=figsize, title=title, show=False, create_children=create_children)
         self.ydata = data.get_buffer()   # store (complex) buffer
