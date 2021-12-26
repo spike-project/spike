@@ -46,7 +46,7 @@ def ft_seq(data):
     """performs the fourier transform of a data-set acquired on a Bruker in simultaneous mode
     Processing is performed only along the F2 (F3) axis if in 2D (3D)
 
-    (Bruker QSIM mode)"""
+    (Bruker QSEQ mode)"""
     todo = data.dim
     data.revf().rfft(axis=todo)
     return data

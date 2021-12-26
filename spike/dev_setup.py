@@ -37,6 +37,7 @@ release_notes="""
     - better handling of baseline corrections, and better graphics
     - dated figure dump
     - corrected displaying integrals
+    - improvement in object hierarchy
 - General
     - rowc() and colc() method get rows and columns in 2D using current unit instead od index (I don't know why this was not done earlier...)
     - added a method Peaks.Peaklist1D.pkadd() to add a peak list to an existing one

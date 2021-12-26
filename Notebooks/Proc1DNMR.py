@@ -123,6 +123,9 @@ I.Show1D(d1, title=FC.selected)                # and display
 # The following cell applies a basic processing, check the documentation for more advanced processing
 
 # %%
+I.popup_param_table(d1)
+
+# %%
 # Basic Processing
 LB = 0.3                        # you can adapt LB to your means, in Hz
 D1 = d1.copy()                  # copy the imported data-set to another object for processing
@@ -149,6 +152,7 @@ I.Show1D(D1, title=FC.nmrname)  #  and display
 
 # %%
 # rephasing
+reload(I)
 I.Phaser1D(D1, title=FC.nmrname)
 
 # %% [markdown]
@@ -201,7 +205,8 @@ I.NMRIntegrate(D1)
 
 # %%
 # Composite display
-Sp = I.Show1Dplus(D1, title=FC.nmrname)
+reload(I)
+Sp = I.Show1Dplus(D1, title=FC.nmrname, N=5)   # N is the number of slots in the Superimpose tool
 Sp
 
 # %% [markdown]

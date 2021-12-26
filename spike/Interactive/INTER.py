@@ -460,6 +460,7 @@ class Show1D(HBox):
         """
         super().__init__()
         self.data = data
+        self.drspectrum = None     # will store matplotlib artist
         try:
             (_, self.noise) = data.robust_stats()    # noise will be handy !
         except AttributeError:
@@ -544,6 +545,7 @@ class Show1D(HBox):
         "builds and display the picture"
         self.ax.clear()
         self.data.display(new_fig=False, figure=self.ax, title=self.title)
+        self.drspectrum = self.data.disp_artist 
         try:
             self.ax.set_xbound(self.xb)
             self.ax.set_ybound(self.yb0/self.scale.value)
@@ -1078,8 +1080,8 @@ class Show1Dplus(Show1D):
             zoom = self.xb
         else:
             zoom = None
-        self.data.display(new_fig=False, figure=self.ax, color=self.spcolor.value,
-                            title=self.sptitle.value, linewidth=self.splw.value, zoom=zoom)
+        # self.data.display(new_fig=False, figure=self.ax, color=self.spcolor.value,
+        #                     title=self.sptitle.value, linewidth=self.splw.value, zoom=zoom)
         if self.integ.value:
             try:
                 if self.labely.value == -1:
@@ -1094,7 +1096,7 @@ class Show1Dplus(Show1D):
                     labeldict = {'color':self.intlabelcolor.value, 'fontsize':self.labelfont.value, 'rotation':self.labelrot.value},
                     figure=self.ax, zoom=zoom)
             except:
-                print('no or wrong integrals (have you clicked on "Done" in the Integration tool ?)')
+#                print('no or wrong integrals (have you clicked on "Done" in the Integration tool ?)')
                 pass
         if self.peaks.value:
             try:
@@ -1106,7 +1108,7 @@ class Show1Dplus(Show1D):
                                                     'fontsize':self.pkfont.value},
                                         figure=self.ax, scale=self.scale.value, zoom=zoom)
             except:
-                print('no or wrong peaklist (have you clicked on "Done" in the Peak-Picker tool ?)')
+#                print('no or wrong peaklist (have you clicked on "Done" in the Peak-Picker tool ?)')
                 pass
         # superimposition
         for s in self.DataList:
@@ -1176,7 +1178,7 @@ class Phaser1D(Show1D):
         self.pivot.observe(self.on_movepivot)
         # add click event on spectral window
         def on_press(event):
-            # if event.button == 3:                      # would be right-click
+            # if event.button == 3:hhhh                      # would be right-click
             v = event.xdata
             self.pivot.value = round(v,4)
             self.disp()
@@ -1228,26 +1230,27 @@ class Phaser1D(Show1D):
             self.phase_n_disp()
     def draw(self):
         "copied from super() as it does not display the spectrum !"
-        self.ax.clear()
-        self.drspectrum = self.ax.plot(self.data.axis1.unit_axis()[::2] , self.ydata.real, lw=1 )[0]
-        try:
-            self.ax.set_xbound(self.xb)
-        except AttributeError:               # the very first time
-            xxb = self.ax.get_xbound()
-            self.ax.set_xlim(xxb[1],xxb[0])
-            y1,y2 = self.ax.get_ybound()
-            my = max(abs(y1), abs(y2))
-            self.yb0 = np.array([my,-my/2])
-        self.ax.set_ybound(self.yb0/self.scale.value)
-        self.fig.canvas.header_visible = False
-        for s in ["left", "top", "right"]:
-            self.ax.spines[s].set_visible(False)
-        self.ax.yaxis.set_visible(False)
-        self.set_on_redraw()
+#         self.ax.clear()
+#         self.drspectrum = self.ax.plot(self.data.axis1.unit_axis()[::2] , self.ydata.real, lw=1 )[0]
+        super().draw()
+        # try:
+        #     self.ax.set_xbound(self.xb)
+        # except AttributeError:               # the very first time
+        #     xxb = self.ax.get_xbound()
+        #     self.ax.set_xlim(xxb[1],xxb[0])
+        #     y1,y2 = self.ax.get_ybound()
+        #     my = max(abs(y1), abs(y2))
+        #     self.yb0 = np.array([my,-my/2])
+        # self.ax.set_ybound(self.yb0/self.scale.value)
+        # self.fig.canvas.header_visible = False
+        # for s in ["left", "top", "right"]:
+        #     self.ax.spines[s].set_visible(False)
+        # self.ax.yaxis.set_visible(False)
+        # self.set_on_redraw()
         self.phase()
         ppos = self.pivot.value
         self.drpivot = self.ax.axvline(ppos, **Cursor)
-#        self.drpivot = self.ax.plot([ppos,ppos], self.ax.get_ybound())[0]
+
     def phase(self):
         self.lp0, self.lp1 = self.ppivot()         # get centered values
         size = len(self.ydata)
@@ -1259,7 +1262,7 @@ class Phaser1D(Show1D):
             e = np.cos(le) + 1J*np.sin(le)
         # then apply
         y = (e*self.ydata).real
-        self.drspectrum.set_ydata( y )   # multiply and keep only real values
+        self.drspectrum[0].set_ydata( y )   # multiply and keep only real values
     def phase_n_disp(self):
         "apply phase and disp"
         self.phase()
