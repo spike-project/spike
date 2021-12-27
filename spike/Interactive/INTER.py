@@ -108,8 +108,13 @@ def hidecode(initial='show', message="<i>useful to show/print a clean screen whe
 code_show=%s; 
 function code_toggle()
     { if (code_show)
-        { $('div.input').hide(); $('#but').val("show python code");
-        } else { $('div.input').show(); $('#but').val("hide python code");
+        {   $('div.input').hide();
+            $('div.prompt').hide();
+            $('#but').val("show python code");
+        } else {
+            $('div.input').show();
+            $('div.prompt').show();
+            $('#but').val("hide python code");
     }
     code_show = !code_show } 
 $(document).ready(code_toggle);
@@ -755,13 +760,13 @@ class SpforSuper():
         self.color = widgets.Dropdown(options=["steelblue"]+list(Colors),value=Colors[j],layout=space('90px'))
         self.direct = widgets.Dropdown(options=['up','down','off'], value='off', layout=space('60px'))
         self.direct.observe(self.activate)
-        self.zmleft = widgets.FloatText(value=1000,layout=space('70px'))
-        self.zmright = widgets.FloatText(value=-1000,layout=space('70px'))
+        self.zmleft = widgets.FloatText(value=1000, step=0.1, layout=space('70px'))
+        self.zmright = widgets.FloatText(value=-1000, step=0.1, layout=space('70px'))
         self.label = widgets.Checkbox(value=False, indent=False, layout=space('40px'))
-        self.scale = widgets.FloatText(value=1.0,layout=space('70px'), tooltip="relative intensity scale")
-        self.stretch = widgets.FloatText(value=1.0,layout=space('70px'), tooltip="stretching along x")
-        self.xoffset = widgets.FloatText(value=0.0, layout=space('60px'), tooltip="x offset in spec unit")
-        self.yoffset = widgets.FloatText(value=0.0, layout=space('60px'), tooltip="y offset in %")
+        self.scale = widgets.FloatText(value=1.0, step=0.1, layout=space('70px'), tooltip="relative intensity scale")
+        self.stretch = widgets.FloatText(value=1.0, step=0.1, layout=space('70px'), tooltip="stretching along x")
+        self.xoffset = widgets.FloatText(value=0.0, step=0.1, layout=space('60px'), tooltip="x offset in spec unit")
+        self.yoffset = widgets.FloatText(value=0.0, step=1, layout=space('60px'), tooltip="y offset in %")
         self.splw = widgets.FloatText(value=1.0, step=0.1, layout=space('50px'))
         # for w in (self.color, self.direct, self.zmleft, self.zmright, self.label, self.scale, self.offset, self.splw):
         #     w.observe(self.ob)
@@ -1006,7 +1011,7 @@ class Show1Dplus(Show1D):
                     HBox([self.marker, self.pkcolor]),
                     HBox([self.pkvalues, self.pkfont, self.pkrotation])
                   ],layout=Layout(width='60%'))
-
+        # Superposition control widgets
         self.Chooser = FileChooser_code(path='/DATA/',filename='.gs1') #(base=base, filetype="*.gs1", mode='r', show=False)
         self.bsel = widgets.Button(description='Copy',layout=self.blay,
                  button_style='info', # 'success', 'info', 'warning', 'danger' or ''
