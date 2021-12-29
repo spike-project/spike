@@ -79,7 +79,7 @@ def msg(st, sep = '='):
     s = sep*(len(st) + 4)+"\n"
     s = s+ '| '+ st+ ' |'+"\n"
     s = s + sep*(len(st) + 4)+"\n"
-    print(s)
+#    print(s)
     return s
 
 def cleanspike():
@@ -150,7 +150,7 @@ def do_Test():
 
     # add spike prefix
     list_of_modules = ["spike."+mod for mod in list_of_modules]
-    msg("modules to be tested are:")
+    print(msg("modules to be tested are:"))
     for mod in list_of_modules:
         print(mod)
 
@@ -161,12 +161,12 @@ def do_Test():
     if not RUN:
         print ("\nDry run - stopping now, without executing the tests")
         sys.exit(0)
-    msg("First removing leftover files")
+    print(msg("First removing leftover files"))
     cleandir()   # (CLEAN is handeld internally )
     if CLEAN:
-        msg("removing .pyc in spike")
+        print(msg("removing .pyc in spike"))
         cleanspike()
-    msg("Running automatic Tests")
+    print(msg("Running automatic Tests"))
     t0 = time.time()
     suite = unittest.defaultTestLoader.loadTestsFromNames( list_of_modules )
     nbtests = suite.countTestCases()
@@ -174,11 +174,13 @@ def do_Test():
     elaps = time.time()-t0
     to_mail.append("Ran %d tests in %.3fs"%(nbtests, elaps))
     if results.wasSuccessful():
-        to_mail.append( msg("CONGRATULATIONS - all the {} SPIKE tested modules performed succesfully ".format(len(list_of_modules))) )
+        if len(list_of_modules)==1:
+            to_mail.append( msg("CONGRATULATIONS - The SPIKE tested module performed succesfully ") )
+        else:
+            to_mail.append( msg("CONGRATULATIONS - all the {} SPIKE tested modules performed succesfully ".format(len(list_of_modules))) )
         subject = "SUCCESS :)  " + subject
         to_mail.append( msg("modules tested were:"))
         for mod in list_of_modules:
-            print(mod)
             to_mail.append(mod)
         to_mail.append( msg("test performed in %.2f sec"%elaps) )
     else:

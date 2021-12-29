@@ -115,8 +115,9 @@ function code_toggle()
             $('div.input').show();
             $('div.prompt').show();
             $('#but').val("hide python code");
-    }
-    code_show = !code_show } 
+        }
+    code_show = !code_show
+    } 
 $(document).ready(code_toggle);
 </script>
 <form action="javascript:code_toggle()">
@@ -569,6 +570,7 @@ class Show1D(HBox):
         # self.scale.value = self.yb0/scale
         self.xb = self.ax.get_xbound()
         self.ax.set_ybound(self.yb0/self.scale.value)
+
 class baseline1D(Show1D):
     def __init__(self, data, figsize=None, show=True):
         try:
@@ -1111,7 +1113,7 @@ class Show1Dplus(Show1D):
                                         markerdict={'marker':self.marker.value},
                                         labeldict={'rotation':self.pkrotation.value,
                                                     'fontsize':self.pkfont.value},
-                                        figure=self.ax, scale=self.scale.value, zoom=zoom)
+                                        figure=self.ax, scale=1.0, zoom=zoom)
             except:
 #                print('no or wrong peaklist (have you clicked on "Done" in the Peak-Picker tool ?)')
                 pass

@@ -11,50 +11,50 @@
    8.46  spike/util/progressbar.py                  11
    8.13  spike/File/csv.py                           1
    8.11  spike/Algo/savitzky_golay.py                1
-   8.06  spike/File/GifaFile.py                1    24 
+   8.05  spike/File/GifaFile.py                1    24 
    8.01  spike/util/mpiutil.py                       3
    8.00  spike/File/Apex0.py                         0
    7.89  spike/util/near_prime.py                    0
-   7.81  spike/NPKData.py                      3    63 
-   7.71  spike/plugins/NMR/Integrate.py              4
+   7.82  spike/NPKData.py                      3    65 
    7.70  spike/plugins/__init__.py                   3
+   7.69  spike/plugins/NMR/Integrate.py              4
    7.69  spike/FTMS.py                               5
    7.68  spike/plugins/bcorr.py                      1
-   7.68  spike/File/BrukerNMR.py                    22
+   7.67  spike/File/BrukerNMR.py                    22
    7.62  spike/plugins/NMR/PALMA.py            2     7 
    7.55  spike/FTICR.py                              7
    7.51  spike/plugins/MS/FTMS_calib.py        1    21 
    7.51  spike/NMR.py                                2
+M  7.47  spike/Interactive/INTER.py            2    83 
    7.27  spike/plugins/NMR/apmin.py                  0
    7.26  spike/processing.py                   6    41 
    7.20  spike/plugins/NMR/Bucketing.py              2
+M  7.18  spike/plugins/Peaks.py                2    22 
    7.14  spike/File/Thermo.py                        5
    7.11  spike/Algo/BC.py                            4
    7.10  spike/util/widgets.py                 1    12 
    7.06  spike/util/hashcheck.py                     2
    7.06  spike/Algo/Linpredic.py                     9
-   7.03  spike/plugins/Peaks.py                2    22 
    7.02  spike/Algo/maxent.py                       14
    7.00  spike/Display/testplot.py                   0
    6.97  spike/plugins/Fitter.py                    11
    6.94  spike/util/Bruker_Report.py                 7
    6.88  spike/Algo/SL0_test.py                4     3 
-   6.83  spike/Tests.py                        2     5 
+M  6.83  spike/Tests.py                        2     5 
    6.79  spike/NPKConfigParser.py              1     4 
    6.77  spike/Interactive/FTICR_INTER.py      1    67 
    6.72  spike/Interactive/FTICR_INTER_v2.py   4    58 
    6.67  spike/plugins/test.py                       0
-   6.58  spike/Interactive/INTER_2D.py              35
+   6.67  spike/Interactive/INTER_2D.py         1    38 
    6.51  spike/plugins/specials/bokeh_display.py   3    11 
    6.50  spike/File/BrukerMS.py                      4
    6.46  spike/Algo/CS_transformations.py            1
    6.39  spike/util/ConfigForm.py              4    26 
    6.36  spike/File/Spinit.py                       20
    6.36  spike/Algo/sane_old.py                     16
-   6.32  spike/plugins/NMR/Bruker_NMR_FT.py    9     2 
+   6.35  spike/plugins/NMR/Bruker_NMR_FT.py    9     2 
    6.32  spike/File/Apex.py                    4    13 
    6.30  spike/dev_setup.py                         12
-   6.29  spike/Interactive/INTER.py           13    88 
    6.25  spike/util/counter.py                       3
    6.25  spike/plugins/sane.py                       3
    6.20  spike/Algo/Laplace.py                 1     3 
@@ -69,13 +69,13 @@
    5.83  spike/__init__.py                           0
    5.82  spike/Algo/Cadzow.py                  3     2 
    5.79  spike/installSpI.py                         3
-   5.68  spike/Interactive/INTER_MS.py         2    38 
    5.46  spike/Algo/Cadzow_mpi2.py             5     0 
    5.43  spike/util/shift_comments.py                5
    5.37  spike/util/simple_logger2.py                4
+   5.36  spike/Interactive/INTER_MS.py         3    40 
+   5.22  spike/Interactive/MSIsotopic.py       1    22 
    5.15  spike/util/ValErr.py                        3
    5.14  spike/plugins/urQRd.py                     11
-   5.13  spike/Interactive/MSIsotopic.py       1    22 
 -------------------------------------------------------
    4.92  spike/File/mzXML.py                         3
    4.84  spike/plugins/MS/PhaseMS.py                 2
@@ -114,10 +114,10 @@
   ******  spike/processingPH.py               HAS SYNTAX ERRORS
 -------------------------------------------------------
 
-Overall aggregated note value is :  6.81/10
+Overall aggregated note value is :  6.82/10
 
 score is 74 / 30 / 4  (top / med / low)
-Mean - Median note values are :  5.38/10 -  6.25/10
-Total number of errors : 10150 on a total of 108 files
+Mean - Median note values are :  5.39/10 -  6.25/10
+Total number of errors : 10141 on a total of 108 files
 (but quite a few errors are just correct code not understood by pylint)
 -------------------------------------------------------

@@ -66,7 +66,8 @@ Sept 2015 M-A Delsuc
 
 from __future__ import print_function
 import warnings
-import unittest
+import unittest 
+from collections import UserList
 import numpy as np
 from scipy.optimize import curve_fit
 ###
@@ -208,7 +209,7 @@ class Peak2D(Peak):
         """
         return self.report(f1=f1, f2=f2, format=self.full_format)
 
-class PeakList(list):
+class PeakList(UserList):
     """
     the class generic to all peak lists
     """
@@ -251,11 +252,13 @@ class PeakList(list):
     # def __getitem__(self,i):
     #     #print('getitem')
     #     return type(self)(list.__getitem__(self,i))
-def peak_aggreg(pklist, distance, maxdist=None):
+def peak_aggreg(pklist, distance, maxdist=None, method='max'):
     """
     aggregates 1D peaks in peaklist if peaks are closer than a given distance in pixel
     distance : if two consecutive peaks are less than distance (in points),  they are aggregated
     if maxdist is not None, this is the maximal distance to the largest peak 
+    method is either 'max' or 'mean'
+
     """
     pkl = sorted(pklist, key = lambda p: p.pos)   # first, sort the list in position
     newlist = Peak1DList()
@@ -281,6 +284,12 @@ def peak_aggreg(pklist, distance, maxdist=None):
                 inewpk = newgrp[0]   # isolated peak
             else:
                 inewpk =  maxgrp[1]  # larger peak of the aggregate
+                if method == 'max':
+                    pass   # keep position of max peak
+                elif method == 'mean':   # put position in middle of the group
+                    pkl[inewpk].pos = 0.5*(pkl[newgrp[0]].pos + pkl[newgrp[-1]].pos)
+                else:
+                    raise Exception('wrong method, use either "mean" or "max"')
             newlist.append( pkl[inewpk] )
             newgrp = [ipk]
             maxgrp = (current.intens, ipk)
@@ -292,6 +301,8 @@ def peak_aggreg(pklist, distance, maxdist=None):
         inewpk = newgrp[0]   # isolated peak
     else:
         inewpk =  maxgrp[1]  # larger peak of the aggregate
+        if method == 'mean':   # put position in middle of the group
+            pkl[inewpk].pos = 0.5*(pkl[newgrp[0]].pos + pkl[newgrp[-1]].pos)
     newlist.append( pkl[inewpk] )
     return newlist 
 class Peak1DList(PeakList):
@@ -340,6 +351,14 @@ class Peak1DList(PeakList):
             inc = 0
         for pk2 in pkl2:
             self.append( Peak1D(pk2.Id+inc, pk2.label, pk2.intens, pk2.pos, pk2.pos_err, pk2.width, pk2.width_err) )
+
+    def peakaggreg(self, distance, maxdist=None, method='max'):
+        """
+        aggregates 1D peaks in peaklist if peaks are closer than a given distance in pixel
+        check peak_aggreg() for detailed doc
+        """
+        self.data = peak_aggreg(self.data, distance=distance, maxdist=maxdist, method=method)
+
     def display(self, peak_label=False, peak_mode="marker", zoom=None, show=False, f=_identity, color='red',
             marker='x', markersize=6, figure=None, scale=1.0, NbMaxPeaks=NbMaxDisplayPeaks,
             markerdict=None, labeldict=None):
@@ -953,6 +972,30 @@ class PeakTests(unittest.TestCase):
         self.assertEqual(list(d.peaks.pos) , [ 5.0, 7.0, 10.0, 15.0])
         self.assertEqual(list(d.peaks.intens) , [ 20.0, 8.0, 20.0, 11.0])
         d.peaks.report(NbMaxPeaks=2)
+    def test_peaksaggreg1d(self):
+        "test 1D peak aggregator"
+        M = np.zeros((300))
+        j = 10
+        for i in range(2,20):   # makes 18 peaks with increasing distance
+            M[j] = 10
+            j += i
+        d = _NPKData(buffer = M)
+        d.pp(threshold=3)
+        self.assertEqual(len(d.peaks), 18)
+        self.assertEqual(d.peaks[1].pos, 12)
+        # aggreg 2 first peaks
+        d.peaks.peakaggreg(distance=2)   # method = max
+        self.assertEqual(len(d.peaks), 17, msg="length")
+        self.assertEqual(d.peaks[1].pos, 15)
+        self.assertEqual(d.peaks[2].pos, 19, msg="pk1")
+        # aggreg next using mean
+        d.peaks.peakaggreg(distance=4, method="mean")
+        self.assertEqual(len(d.peaks), 16, msg="length")
+        self.assertEqual(d.peaks[1].pos, 17, msg="pk1")
+        # test maxdist
+        d.peaks.peakaggreg(distance=10, method="mean", maxdist=20)
+        self.assertEqual(len(d.peaks), 11, "length")
+        self.assertEqual(d.peaks[1].pos, 45.5, "pk1")
     def test_center1d(self):
         x = np.arange(5)
         y = center(x, 2.2, 10.0, 1.2)
