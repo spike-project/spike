@@ -572,13 +572,13 @@ class Show1D(HBox):
         self.ax.set_ybound(self.yb0/self.scale.value)
 
 class baseline1D(Show1D):
-    def __init__(self, data, figsize=None, show=True):
+    def __init__(self, data, figsize=None, show=True, create_children=True):
         try:
             self.BslPoints = data.BslPoints    # recover from previous correction
         except:
             self.BslPoints = []   # initialize with empty list
 
-        super().__init__( data, figsize=figsize, show=False)
+        super().__init__( data, figsize=figsize, show=False, create_children=create_children)
         self.data.real()
         a, b = self.itoc3(0.0), self.itoc3(self.data.size1)   # spectral borders
         self.select = widgets.FloatSlider(description='Manually:',
@@ -608,17 +608,18 @@ class baseline1D(Show1D):
             tooltip='Remove the baseline point closest to the selector')
         self.nbautopoints = widgets.IntText(value=8, layout=space('4em'))
         self.unset.on_click(self.on_unset)
-        orig = self.children
-        self.children = [VBox([
-            HBox([Label('Baseline points'),
-                self.nbautopoints,
-                Label("points"),
-                self.auto,
-                self.blank,
-                self.select,
-                self.set, self.unset]),
-            HBox([self.cancel, self.toshow, self.smooth]),
-            HBox(orig)])]
+        if create_children:
+            orig = self.children
+            self.children = [VBox([
+                HBox([Label('Baseline points'),
+                    self.nbautopoints,
+                    Label("points"),
+                    self.auto,
+                    self.blank,
+                    self.select,
+                    self.set, self.unset]),
+                HBox([self.cancel, self.toshow, self.smooth]),
+                HBox(orig)])]
         def on_press(event):
             v = event.xdata
             self.select.value = round(v,3)
@@ -633,7 +634,6 @@ class baseline1D(Show1D):
         if self.bsl_points == []:
             jsalert('Please define control points before applying baseline correction')
             return
-        self.close()
         printlist = [round(i,3) for i in sorted(self.bsl_points)]
         print("Applied correction:\ndata.bcorr(xpoints={0}, nsmooth={1})".format(printlist, self.smooth.value))
         #print('Applied correction:\n', sorted(self.bsl_points))
@@ -642,9 +642,9 @@ class baseline1D(Show1D):
         self.data.display(new_fig=False, figure=self.ax, title=self.title)
         y = np.zeros(len(self.bsl_points) )
         self.ax.plot(self.bsl_points, y,  c='r', marker='o',linestyle="None")
-
-        display(self.fig)   # shows spectrum
         self.data.BslPoints = self.bsl_points
+        self.close()
+        display(self.fig)   # shows spectrum
     def on_auto(self, e):
         "automatically set baseline points"
         self.bsl_points = [self.data.axis1.itoc(x) for x in bcorr.autopoints(self.data, Npoints=self.nbautopoints.value)]
@@ -695,23 +695,30 @@ class baseline1D(Show1D):
         super().draw()
         # baseline
         self.drbaseline = self.ax.plot(self.data.axis1.unit_axis(), self.baseline, **Contrast)[0]
-        # self.drbaseline.set_visible(False)
         # corrected spectrum
         corrected = self.data.get_buffer()-self.correction()
-        yoffset = 0.2*self.ax.get_ybound()[1]
-        self.drspectrum = self.ax.plot(self.data.axis1.unit_axis(), corrected+yoffset, alpha=0.5, **Contrast )[0]
+        yoffset = 0.2*self.ax.get_ybound()[1]                       # yoffset is used to make fig clearer
+        self.drcorrected = self.ax.plot(self.data.axis1.unit_axis(), corrected+yoffset, alpha=0.5, **Contrast )
+        # horizontal line at yoffset
         self.drhoriz = self.ax.axhline(yoffset, **Cursor)
-        # self.drspectrum.set_visible(False)
-        # self.drhoriz.set_visible(False)
         # selector
         ppos = self.select.value
         self.selector = self.ax.axvline(ppos, **Cursor)
+        # pivots
+        if len(self.bsl_points)>0:
+            y = bcorr.get_ypoints(self.data.get_buffer(), 
+                self.data.axis1.ptoi( np.array(self.bsl_points)),
+                nsmooth=self.smooth.value )
+            self.drpivot = self.ax.plot(self.bsl_points, y, marker='o',linestyle="None", **Contrast)[0]#, markersize=12)
+        else:
+            self.drpivot = self.ax.plot([], [], marker='o',linestyle="None", **Contrast)[0]#, markersize=12)
         self.disp()
     def disp(self):
         "used to refresh view"
+        # graphic objects: (drspectrum) drbaseline drpivot drcorrected drhoriz selector
         if len(self.bsl_points)>0:
             if self.toshow.value == 'baseline':
-                self.drspectrum.set_visible(False)
+                self.drcorrected[0].set_visible(False)     
                 self.drhoriz.set_visible(False)
                 self.drbaseline.set_ydata( self.correction() )
                 self.drhoriz.set_ydata(0.0)
@@ -719,17 +726,17 @@ class baseline1D(Show1D):
             elif self.toshow.value == 'corrected':
                 self.drbaseline.set_visible(False)
                 yoffset = 0.2*self.ax.get_ybound()[1]
-                self.drspectrum.set_ydata( self.data.get_buffer() - self.correction() + yoffset)
+                self.drcorrected[0].set_ydata( self.data.get_buffer() - self.correction() + yoffset)
                 self.drhoriz.set_ydata(yoffset)
                 self.drhoriz.set_visible(True)
-                self.drspectrum.set_visible(True)
+                self.drcorrected[0].set_visible(True)
             elif self.toshow.value == 'points':
                 self.drbaseline.set_visible(False)
-                self.drspectrum.set_visible(False)
+                self.drcorrected[0].set_visible(False)
                 self.drhoriz.set_visible(False)
         else:
             self.drbaseline.set_visible(False)
-            self.drspectrum.set_visible(False)
+            self.drcorrected[0].set_visible(False)
             self.drhoriz.set_visible(False)
 
         # selector
@@ -741,7 +748,9 @@ class baseline1D(Show1D):
                                 self.data.axis1.ptoi( np.array(self.bsl_points)),
                                 nsmooth=self.smooth.value )
         #self.drpivot = self.ax.scatter(self.bsl_points, y,  c='r', marker='o')
-        self.drpivot = self.ax.plot(self.bsl_points, y, marker='o',linestyle="None", **Contrast)[0]#, markersize=12)
+        #self.drpivot = self.ax.plot(self.bsl_points, y, marker='o',linestyle="None", **Contrast)[0]#, markersize=12)
+        self.drpivot.set_xdata(self.bsl_points)
+        self.drpivot.set_ydata(y)
         # set zoom
         super().disp()
 
@@ -1089,6 +1098,8 @@ class Show1Dplus(Show1D):
             zoom = None
         # self.data.display(new_fig=False, figure=self.ax, color=self.spcolor.value,
         #                     title=self.sptitle.value, linewidth=self.splw.value, zoom=zoom)
+        self.drspectrum[0].set_color(self.spcolor.value)
+        self.drspectrum[0].set_linewidth(self.splw.value)
         if self.integ.value:
             try:
                 if self.labely.value == -1:
@@ -1141,10 +1152,11 @@ class Phaser1D(Show1D):
     requires %matplotlib widget
 
     """
-    def __init__(self, data, figsize=None, title=None, maxfirstorder = 360, show=True, create_children=True):
+    def __init__(self, data, figsize=None, title=None, maxfirstorder = 360, show=True, warning=True, create_children=True):
         data.check1D()
         if data.itype == 0:
-            jsalert('Data is Real - the Imaginary part is being reconstructed')
+            if warning:
+                jsalert('Data is Real - the Imaginary part is being reconstructed')
             data.real2cpx()
         # we'll work on a copy of the data
         super().__init__( data, figsize=figsize, title=title, show=False, create_children=create_children)

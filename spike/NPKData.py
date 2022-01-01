@@ -2927,6 +2927,7 @@ class _NPKData(object):
         ordered, and the indexth point is taken as the new point for the 
         data set.
         """
+        raise NPKError("Not implemented yet")
       
     #-------------------------------------------------------------------------------
     def modulus(self):
