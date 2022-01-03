@@ -648,7 +648,7 @@ class baseline1D(Show1D):
     def on_auto(self, e):
         "automatically set baseline points"
         self.bsl_points = [self.data.axis1.itoc(x) for x in bcorr.autopoints(self.data, Npoints=self.nbautopoints.value)]
-        self.draw()
+        self.disp()
     def on_cancel(self, e):
         self.close()
         print('no baseline correction')
@@ -669,7 +669,7 @@ class baseline1D(Show1D):
                 ipclose = i
                 distclose = abs(p-here)
         self.bsl_points.remove(pclose)  # remove and clean display
-        self.draw()
+        self.disp()
     def correction(self):
         "returns the correction to apply as a numpy array"
         ibsl_points = self.data.axis1.ptoi( np.array(self.bsl_points) ).astype(int)
@@ -720,9 +720,9 @@ class baseline1D(Show1D):
         if len(self.bsl_points)>0:
             if self.toshow.value == 'baseline':
                 self.drcorrected[0].set_visible(False)     
-                self.drhoriz.set_visible(False)
-                self.drbaseline.set_ydata( self.correction() )
                 self.drhoriz.set_ydata(0.0)
+                self.drhoriz.set_visible(True)
+                self.drbaseline.set_ydata( self.correction() )
                 self.drbaseline.set_visible(True)
             elif self.toshow.value == 'corrected':
                 self.drbaseline.set_visible(False)
