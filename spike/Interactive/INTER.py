@@ -716,6 +716,7 @@ class baseline1D(Show1D):
     def disp(self):
         "used to refresh view"
         # graphic objects: (drspectrum) drbaseline drpivot drcorrected drhoriz selector
+        super().disp()
         if len(self.bsl_points)>0:
             if self.toshow.value == 'baseline':
                 self.drcorrected[0].set_visible(False)     
@@ -752,7 +753,6 @@ class baseline1D(Show1D):
         self.drpivot.set_xdata(self.bsl_points)
         self.drpivot.set_ydata(y)
         # set zoom
-        super().disp()
 
 class SpforSuper():
     "a holder for one spectrum to SuperImpose"
