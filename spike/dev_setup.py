@@ -34,7 +34,7 @@ release_notes="""
 - spike Interactive NMR
     - display of some acquisition parameters
     - in 1D, corrected errors in managing peaks and calibration
-    - better handling of baseline corrections, and better graphics
+    - better handling of baseline corrections, phasing and better graphics
     - dated figure dump
     - corrected displaying integrals
     - improvement in object hierarchy
