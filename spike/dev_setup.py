@@ -32,16 +32,23 @@ release_notes="""
 # SPIKE Relase Notes
 #### 0.99.30 - not released yet
 - spike Interactive NMR
-    - display of some acquisition parameters
+    - modified SHOW1D to handle the move tool
+    - modified selection to right-click (in phaser, peakpicker, baseline)     - display of some acquisition parameters
     - in 1D, corrected errors in managing peaks and calibration
     - better handling of baseline corrections, phasing and better graphics
     - dated figure dump
     - corrected displaying integrals
     - improvement in object hierarchy
+    - added yratio to SHOW1D
 - General
-    - rowc() and colc() method get rows and columns in 2D using current unit instead od index (I don't know why this was not done earlier...)
+    - improved BrukerNMR.import1D_proc to handle different binary options
+    - added yratio to npk.display()
+    - rowc() and colc() method get rows and columns in 2D using current unit instead of index (I don't know why this was not done earlier...)
+    - added the itocx() and cxtoi() to access datapoint in complex coordinates
     - added a method Peaks.Peaklist1D.pkadd() to add a peak list to an existing one
     - added a method Peaks.Peaklist1D.pkaggreg(distance) to aggregate close peaks  
+    - moved config into $(HOME).config
+
 #### 0.99.29 - Sept 2021
 - spike Interactive FTICR - not tested yet -
 - spike Interactive NMR

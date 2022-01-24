@@ -256,6 +256,8 @@ class Axis(object):
         self.size = size            # number of ponts along axis
         self.itype = itype          # 0 == real, 1 == complex
         self.units = {"points": Unit()}         # units dico contains possible units indexs by name,
+        self.units["cpxpoints"] = Unit(name="cplx points", converter=self.itocx, bconverter=self.cxtoi)
+
                                                 # here create default units
         self.currentunit = currentunit
         self.sampling = None        # index list of sampled points if instantiated
@@ -405,7 +407,18 @@ class Axis(object):
         """
         f = self.units[self.currentunit].bconverter
         return f(val)
-
+    def itocx(self,val):
+        """
+        converts point value (i) to complex value (cps)
+        i.e. divide by 2 if axis is complex
+        """
+        return val//(self.itype+1)
+    def cxtoi(self,val):
+        """
+        converts point value (i) to complex value (cps)
+        i.e. multiply by 2 if axis is complex, and return index of real part
+        """
+        return val*(self.itype+1)
 ########################################################################
 class TimeAxis(Axis):
     """
@@ -1491,7 +1504,7 @@ class _NPKData(object):
         return test
     def display(self, scale = 1.0, autoscalethresh=3.0, absmax = None, show = False, label = None, new_fig = True, axis = None,
                 zoom = None, xlabel="_def_", ylabel = "_def_", title = None, figure = None,
-                linewidth=1, color = None, mpldic={}, NbMaxVect=None):
+                linewidth=1, color = None, mpldic={}, NbMaxVect=None, yratio=None):
         """
         not so quick and dirty display using matplotlib 
         
@@ -1560,6 +1573,7 @@ class _NPKData(object):
                 xlabel = self.axis1.currentunit
             if ylabel == "_def_":
                 ylabel = "a.u."
+                
         if self.dim == 2:
             step2 = self.axis2.itype+1
             step1 = self.axis1.itype+1

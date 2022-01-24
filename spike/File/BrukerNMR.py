@@ -472,9 +472,12 @@ def Import_1D_proc(filename="1r", verbose=VERBOSE):
     proc = read_param(find_proc(dire, down=False))
     diracq = op.dirname(op.dirname(op.dirname(filename)))
     acqu = read_param(find_acqu(diracq))
-    data = np.fromfile(filename, 'i4').astype(float)
+#    data = np.fromfile(filename, 'i4').astype(float)
+    size= int(proc['$SI'])  # get size
+    data = read_1D(size, filename, bytorda=int(proc['$BYTORDP']), dtypa=int(proc['$DTYPP']))
     if op.exists(op.join(dire,'1i')):  # reads imaginary part
-        data = data + 1j*np.fromfile(filename, 'i4')
+        datai = read_1D(size, op.join(dire,'1i'), bytorda=int(proc['$BYTORDP']), dtypa=int(proc['$DTYPP']))
+#        data = data + 1j*np.fromfile(filename, 'i4')   -- filename ? OOOO  that was wrong !!!
     d = NMRData(buffer=data)
 # then set parameters
     d.axis1.specwidth = float(acqu['$SW_h'])

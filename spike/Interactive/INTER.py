@@ -192,7 +192,7 @@ $(document).ready(doc_toggle);
 
 def UserLogofile():
     "return the address on disk of the User Logo file - located in $HOME/Spike/Logo.png"
-    ufile = Path.home()/'Spike'/'Logo.png'
+    ufile = Path.home()/'.config'/'Spike'/'Logo.png'
     if ufile.exists():
         return ufile
     else:
@@ -542,13 +542,16 @@ class Show1D(HBox):
     to be developped for peaks and integrals
     """
 
-    def __init__(self, data, title=None, figsize=None, show=True, create_children=True):
+    def __init__(self, data, title=None, figsize=None, show=True, create_children=True, yratio=21.0):
         """
         data : to be displayed
         title : text for window
         figsize : size in inches (x,y)
+        yratio : inverse minimum neg display extension, 1=centered, 21:all positive
         """
         super().__init__()
+        self.yratio0 = yratio            #  
+        self.yratio = self.yratio0
         self.data = data
         self.drspectrum = None     # will store matplotlib artist
         try:
@@ -604,6 +607,7 @@ class Show1D(HBox):
             # self.ax.add_callback(self.update_box)
             self.fig = fi
 #            self.xb = self.ax.get_xbound()
+            self.on_reset()
             self.children = [
                 VBox([self.reset, self.scale, self.savepdf, self.done]), self.fig.canvas]
             if show:
@@ -614,11 +618,17 @@ class Show1D(HBox):
         self.close()
         display(self.fig)   # shows spectrum
 
-    def on_reset(self, b):
+    def on_reset(self, b=None):
         self.scale.value = 1.0
-        self.ax.set_xbound((self.data.axis1.itoc(
-            0), self.data.axis1.itoc(self.data.size1)))
-
+        try:
+            self.xb0 = np.array([self.data.axis1.itoc(0), self.data.axis1.itoc(self.data.size1)])  # full box in x
+            self.xb = self.xb0                                                      # current x box
+            self.yratio = self.yratio0            # inverse minimum neg display extension 
+            self.ymax = self.data.absmax*1.1      # highest position
+            self.yb0 = np.array( [-self.ymax/self.yratio, self.ymax] )              # full box in y
+            self.disp()
+        except AttributeError:   # id self.data not defined
+            pass
     def ob(self, event):
         "observe events and redraw"
         if event['name'] == 'value':
@@ -631,12 +641,24 @@ class Show1D(HBox):
 
     @debounce(0.005)
     def scale_up(self, step):
-        sign = np.sign(step)
         # 1.1892 is 4th root of 2.0
         self.scale.value *= 1.1892**(self.reverse_scroll*step)
 
     def set_on_redraw(self):
-        "set-up mouse scroll control"
+        "set-up mouse scroll control and click"
+        @debounce(0.005)
+        def on_draw(event):
+            self.xb = self.ax.get_xbound()      # follow x and y box
+            yb = self.ax.get_ybound()
+            #  [-ymax/(yratio*scale), ymax/scale = [yb0, yb1]
+            #  ymax/scale = yb1   =>  scale = ymax/yb1
+            # -ymax/(yratio*scale) = yb0    =>   -ymax/(scale*yb0) = yratio
+            ratio = -yb[1]/yb[0]
+            if abs(ratio-self.yratio)/ratio > 0.1:      # more than 10% variation
+                self.scale.value = self.ymax/yb[1]
+                self.yratio = -self.ymax/(yb[0]*self.scale.value)
+                self.yb0 = np.array( [-self.ymax/self.yratio, self.ymax] ) 
+        self.cids_disp = self.fig.canvas.mpl_connect('draw_event', on_draw)
         def on_scroll(event):
             self.scale_up(event.step)
         if Activate_Wheel:
@@ -648,12 +670,8 @@ class Show1D(HBox):
         self.ax.clear()
         self.data.display(new_fig=False, figure=self.ax, title=self.title)
         self.drspectrum = self.data.disp_artist
-        try:
-            self.ax.set_xbound(self.xb)
-            self.ax.set_ybound(self.yb0/self.scale.value)
-        except AttributeError:               # the very first time
-            self.xb = self.ax.get_xbound()
-            self.yb0 = np.array(self.ax.get_ybound())
+        self.ax.set_xbound(self.xb)
+        self.ax.set_ybound(self.yb0/self.scale.value)
         self.fig.canvas.header_visible = False
         for s in ["left", "top", "right"]:
             self.ax.spines[s].set_visible(False)
@@ -665,8 +683,9 @@ class Show1D(HBox):
     def disp(self):
         # scale = self.ax.get_ybound()
         # self.scale.value = self.yb0/scale
-        self.xb = self.ax.get_xbound()
+        # self.xb = self.ax.get_xbound()
         self.ax.set_ybound(self.yb0/self.scale.value)
+        self.ax.set_xbound(self.xb)
 
 
 class baseline1D(Show1D):
@@ -677,14 +696,14 @@ class baseline1D(Show1D):
 
     """
 
-    def __init__(self, data, figsize=None, show=True, create_children=True):
+    def __init__(self, data, figsize=None, show=True, create_children=True, yratio=10):
         try:
             self.BslPoints = data.BslPoints    # recover from previous correction
         except:
             self.BslPoints = []   # initialize with empty list
 
         super().__init__(data, figsize=figsize,
-                        show=False, create_children=create_children)
+                        show=False, create_children=create_children,yratio=yratio)
         self.data.real()
         a, b = self.itoc3(0.0), self.itoc3(self.data.size1)   # spectral borders
         self.select = widgets.FloatSlider(description='Manually:',
@@ -731,9 +750,10 @@ class baseline1D(Show1D):
             w.observe(self.ob)
 
         def on_press(event):
-            v = event.xdata
-            self.select.value = round(v, 3)
-            self.disp()
+            if event.button == 3:       # right-click
+                v = event.xdata
+                self.select.value = round(v, 3)
+                self.disp()
         self.cids_press = self.fig.canvas.mpl_connect('button_press_event', on_press)
         # finalize
         if show:
@@ -1023,7 +1043,11 @@ class SpforSuper():
             del(self.drartist)
         # label
         if self.label.value:
-            lb = self.nmrname
+            m = self.mult
+            if not (abs(m) == 1 or m == 0):
+                lb = "%s (x%.1f)" % (self.nmrname,m)
+            else:
+                lb = self.nmrname
         else:
             lb = None
         # load
@@ -1081,15 +1105,14 @@ class SpforSuper():
         xd = self.move_xdata()
         self.drartist.set_ydata(yd)
         self.drartist.set_xdata(xd)
-        m = self.mult
-        if not (abs(m) == 1 or m == 0):
-            tt = "x%.1f" % (m,)
-            self.text.set_text(tt)
-            self.text.set_y(yd[-1])
-            self.text.set_x(xd[-1])
-
-        else:
-            self.text.set_text(" ")
+        self.text.set_text(" ")     # empty text
+        if not self.label.value:    # unless... there is a scale != 1, and no label
+            m = self.mult
+            if not (abs(m) == 1 or m == 0):
+                tt = "x%.1f" % (m,)
+                self.text.set_text(tt)
+                self.text.set_y(yd[-1])
+                self.text.set_x(xd[-1])
 
     @property
     def mult(self):
@@ -1271,17 +1294,17 @@ class Show1Dplus(Show1D):
 
     def on_done(self, e):
         self.close()
-        self.disp(zoom=True)
+        self.disp()
         display(self.fig)
 
     def draw(self, zoom=False):
         "refresh display - if zoom is True, display only in xbound"
         super().draw()
-        self.xb = self.ax.get_xbound()
-        if zoom:
-            zoom = self.xb
-        else:
-            zoom = None
+        # self.xb = self.ax.get_xbound()
+        # if zoom:
+        #     zoom = self.xb
+        # else:
+        #     zoom = None
         # self.data.display(new_fig=False, figure=self.ax, color=self.spcolor.value,
         #                     title=self.sptitle.value, linewidth=self.splw.value, zoom=zoom)
         self.drspectrum[0].set_color(self.spcolor.value)
@@ -1323,12 +1346,12 @@ class Show1Dplus(Show1D):
 
         self.ax.set_xbound(self.xb)
 
-    def disp(self, zoom=False):
-        self.xb = self.ax.get_xbound()
-        if zoom:
-            zoom = self.xb
-        else:
-            zoom = None
+    # def disp(self, zoom=False):
+    #     self.xb = self.ax.get_xbound()
+    #     if zoom:
+    #         zoom = self.xb
+    #     else:
+    #         zoom = None
         super().disp()
         for s in self.DataList:
             s.disp()
@@ -1342,7 +1365,7 @@ class Phaser1D(Show1D):
 
     """
 
-    def __init__(self, data, figsize=None, title=None, maxfirstorder=360, show=True, warning=True, create_children=True):
+    def __init__(self, data, figsize=None, title=None, maxfirstorder=360, show=True, warning=True, create_children=True, yratio=10):
         data.check1D()
         if data.itype == 0:
             if warning:
@@ -1350,7 +1373,7 @@ class Phaser1D(Show1D):
             data.real2cpx()
         # we'll work on a copy of the data
         super().__init__(data, figsize=figsize, title=title,
-                         show=False, create_children=create_children)
+                         show=False, create_children=create_children, yratio=yratio)
         self.ydata = data.get_buffer()   # store (complex) buffer
 
         # change done button and create an Apply one
@@ -1392,10 +1415,10 @@ class Phaser1D(Show1D):
         # add click event on spectral window
 
         def on_press(event):
-            # if event.button == 3:hhhh       # would be right-click
-            v = event.xdata
-            self.pivot.value = round(v, 4)
-            self.disp()
+            if event.button == 3:       # right-click
+                v = event.xdata
+                self.pivot.value = round(v, 4)
+                self.disp()
         self.cids_press = self.fig.canvas.mpl_connect('button_press_event', on_press)
         # finalize
         self.lp0, self.lp1 = self.ppivot()
@@ -1630,7 +1653,6 @@ class NMRPeaker1D(Show1D):
     # self.temppk : the last computed pklist
 
     def __init__(self, data, figsize=None, show=True):
-        super().__init__(data, figsize=figsize, show=False)
         self.data = data.real()
         try:
             if self.data.peaks is None:  # might happen
@@ -1657,13 +1679,13 @@ class NMRPeaker1D(Show1D):
 #        self.done = widgets.Button(description="Done", button_style='success')
 #        self.done.on_click(self.on_done)
         self.badd = widgets.Button(
-            description="Add", button_style='success', layout=self.blay)
+            description="Add", button_style='success', layout=space('80px'))
         self.badd.on_click(self.on_add)
         self.brem = widgets.Button(
-            description="Rem", button_style='warning', layout=self.blay)
+            description="Rem", button_style='warning', layout=space('80px'))
         self.brem.on_click(self.on_rem)
         self.cancel = widgets.Button(
-            description="Exit", button_style='warning', layout=self.blay, tooltip='Exit without corrections')
+            description="Exit", button_style='warning', layout=space('80px'), tooltip='Exit without corrections')
         self.cancel.on_click(self.on_cancel)
         self.selval = widgets.FloatText(
             value=0.0, description='selection', layout=Layout(width='20%'), step=0.001, disabled=True)
@@ -1672,21 +1694,23 @@ class NMRPeaker1D(Show1D):
         self.setcalib = widgets.Button(description="Set", layout=Layout(width='10%'),
                                        button_style='success', tooltip='Set spectrum calibration')
         self.setcalib.on_click(self.on_setcalib)
+        super().__init__(data, figsize=figsize, show=False)
 
         def on_press(event):
-            v = event.xdata
-            # store position in index (peaks are internally in index)
-            iv = self.data.axis1.ptoi(v)
-            distclose = np.inf     # search closest peak
+            if event.button == 3:       # right-click
+                v = event.xdata
+                # store position in index (peaks are internally in index)
+                iv = self.data.axis1.ptoi(v)
+                distclose = np.inf     # search closest peak
 
-            pclose = 0.0
-            for p in self.data.peaks:
-                if abs(p.pos-iv) < distclose:
-                    pclose = p.pos
-                    distclose = abs(p.pos-iv)
-            self.selval.value = self.data.axis1.itop(pclose)  # back to ppm
-            for w in (self.selval, self.newval):
-                w.disabled = False
+                pclose = 0.0
+                for p in self.data.peaks:
+                    if abs(p.pos-iv) < distclose:
+                        pclose = p.pos
+                        distclose = abs(p.pos-iv)
+                self.selval.value = self.data.axis1.itop(pclose)  # back to ppm
+                for w in (self.selval, self.newval):
+                    w.disabled = False
         self.cids_press = self.fig.canvas.mpl_connect('button_press_event', on_press)
         # redefine Box
         orig = self.children
@@ -1739,9 +1763,9 @@ class NMRPeaker1D(Show1D):
         del self.data.peaks
         print("no Peak-Picking done")
 
-    def on_reset(self, b):
+    def on_reset(self, b=None):
         self.thresh.value = 20.0
-        super.on_reset()
+        super().on_reset()
 
     def on_done(self, b):
         self.temppk = Peaks.Peak1DList()  # clear temp peaks

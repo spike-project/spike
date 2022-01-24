@@ -38,6 +38,15 @@ from pathlib import Path
 
 plugins = {}  # contains plugin modules loaded so far
 codes = defaultdict(list)  # loaded at plugin injection with all codes
+from pathlib import Path
+spikeconfig = Path.home()/'.config/'/'Spike'
+if not spikeconfig.exists():
+    spikeconfig.mkdir()
+    (spikeconfig/'plugins').mkdir()
+    with open(spikeconfig/'Readme.txt','w') as Readme:
+        print("""
+This directory holds configuration files for the Spike program
+""", file=Readme)
 
 def load(debug=True):
     """
@@ -46,7 +55,7 @@ def load(debug=True):
         - plugins folder in distribution
         - $HOME/Spike/plugins
     """
-    for folder in [Path(__path__[0]), Path.home()/'Spike'/'plugins']:
+    for folder in [Path(__path__[0]), Path.home()/'.config/'/'Spike'/'plugins']:
         loadfolder(folder, debug=debug)
     print( "\nspike.plugins.report() for a short description of each plugins")
     print( "spike.plugins.report('module_name') for complete documentation on one plugin") 

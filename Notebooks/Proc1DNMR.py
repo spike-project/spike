@@ -92,9 +92,12 @@ d1.filename = FC.selected                      # and be extended at will
 display(I.summary(d1, output='HTML'))          # but summary is nicer and more informative
 # I.popup_param_table(d1)                      # this command pops up a window with the complete parameter table
 
-I.Show1D(d1, title=FC.selected)                # and display
+I.Show1D(d1, title=FC.selected, yratio=1)      # and display  (yratio=1 to have it centered)
 # alternatively you can use the low-level tool below:
 # d1.display()  # with many options, plus access to matplotlib details
+
+# %%
+#I.popup_param_table(d1)
 
 # %% [markdown]
 # Spectra can be interactively explored with the jupyter tools displayed  on the side of the dataset:
@@ -123,15 +126,12 @@ I.Show1D(d1, title=FC.selected)                # and display
 # The following cell applies a basic processing, check the documentation for more advanced processing
 
 # %%
-I.popup_param_table(d1)
-
-# %%
 # Basic Processing
 LB = 0.3                        # you can adapt LB to your means, in Hz
 D1 = d1.copy()                  # copy the imported data-set to another object for processing
 D1.center().apod_em(LB).zf(4).ft_sim()  # chaining   centering - apodisation - zerofill - FT
-D1.bk_corr().apmin()            #  Bruker DSP correction - autophase
-# D1.bk_pk()                    #  alternatively from previous line:  stored Bruker correction
+#D1.bk_corr().apmin()            #  Bruker DSP correction - autophase
+D1.bk_pk()                    #  alternatively from previous line:  stored Bruker correction
 D1.set_unit('ppm')              # set to ppm unit ('Hz' and 'point' also available)
                                 # all Spike command can be pipelined at will - these lines could be piped as one.
 I.Show1D(D1, title=FC.nmrname)  #  and display
@@ -167,7 +167,9 @@ I.Phaser1D(D1, title=FC.nmrname)
 
 # %%
 # Baseline Correction
-I.baseline1D(D1)
+reload(I)
+b = I.baseline1D(D1)
+b
 
 # %% [markdown]
 # ## Peak-Picker
@@ -209,6 +211,9 @@ reload(I)
 Sp = I.Show1Dplus(D1, title=FC.nmrname, N=5)   # N is the number of slots in the Superimpose tool
 Sp
 
+# %%
+Sp.xb
+
 # %% [markdown]
 # ---
 # # optional steps
@@ -220,6 +225,9 @@ Sp
 #
 # ## Save the data-set and reload
 # either as stand alone native SPIKE files, (there are other formats)
+
+# %%
+Sp.drspectrum[0].set_linewidth
 
 # %%
 D1.save('example1.gs1')
