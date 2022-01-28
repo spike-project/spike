@@ -7,7 +7,7 @@ A set of utilities to use spike in NMR or FTMS within jupyter
 
 First version MAD june 2017
 Intermediate version MAD october 2019
-Improvements MAD spring - summer - automn  2021
+Improvements MAD spring - summer - automn  2021 - winter 2022
 """
 
 """
@@ -1206,8 +1206,7 @@ class Show1Dplus(Show1D):
                     HBox([self.labelx, self.labely, self.labelfont, self.labelrot])
                     ], layout=Layout(width='60%'))
         # peaks control widgets
-        self.peaks = widgets.Checkbox(description='Show',
-                                      value=False)
+        self.peaks = widgets.Checkbox(description='Show',value=False, tooltip="show/hide peaks on the spectrum")
         markers = ['off', 'x', 'X', 'd', 'D', 'v', '^', '<', '>', '|']
         self.marker = widgets.Dropdown(description='Marker',
                                        options=markers, value="x",
@@ -1307,10 +1306,11 @@ class Show1Dplus(Show1D):
         #     zoom = None
         # self.data.display(new_fig=False, figure=self.ax, color=self.spcolor.value,
         #                     title=self.sptitle.value, linewidth=self.splw.value, zoom=zoom)
+        zoom = None
         self.drspectrum[0].set_color(self.spcolor.value)
         self.drspectrum[0].set_linewidth(self.splw.value)
         if self.integ.value:
-            try:
+            if hasattr(self.data,'integrals'):
                 if self.labely.value == -1:
                     labely = None
                 else:
@@ -1324,11 +1324,11 @@ class Show1Dplus(Show1D):
                                            labeldict={
                                                'color': self.intlabelcolor.value, 'fontsize': self.labelfont.value, 'rotation': self.labelrot.value},
                                            figure=self.ax, zoom=zoom)
-            except:
+            else:
                 #                print('no or wrong integrals (have you clicked on "Done" in the Integration tool ?)')
                 pass
         if self.peaks.value:
-            try:
+            if hasattr(self.data,'peaks'):
                 self.data.display_peaks(peak_label=self.pkvalues.value,
                                         color=self.pkcolor.value,
                                         markersize=self.pkfont.value,
@@ -1337,7 +1337,7 @@ class Show1Dplus(Show1D):
                                         labeldict={'rotation': self.pkrotation.value,
                                                    'fontsize': self.pkfont.value},
                                         figure=self.ax, scale=1.0, zoom=zoom)
-            except:
+            else:
                 #                print('no or wrong peaklist (have you clicked on "Done" in the Peak-Picker tool ?)')
                 pass
         # superimposition

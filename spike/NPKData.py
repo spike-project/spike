@@ -256,7 +256,7 @@ class Axis(object):
         self.size = size            # number of ponts along axis
         self.itype = itype          # 0 == real, 1 == complex
         self.units = {"points": Unit()}         # units dico contains possible units indexs by name,
-        self.units["cpxpoints"] = Unit(name="cplx points", converter=self.itocx, bconverter=self.cxtoi)
+        self.units["xpoints"] = Unit(name="cplx points", converter=self.itoix, bconverter=self.ixtoi)
 
                                                 # here create default units
         self.currentunit = currentunit
@@ -407,18 +407,29 @@ class Axis(object):
         """
         f = self.units[self.currentunit].bconverter
         return f(val)
-    def itocx(self,val):
+    def itoix(self,val):
         """
-        converts point value (i) to complex value (cps)
+        converts point value (i) to complex value (ix)
         i.e. divide by 2 if axis is complex
         """
         return val//(self.itype+1)
-    def cxtoi(self,val):
+    def ixtoi(self,val):
+        """
+        converts point value (i) from complex value (ix)
+        i.e. multiply by 2 if axis is complex, and return index of real part
+        """
+        return val*(self.itype+1)
+    def ctoix(self,val):
+        """
+        converts into complex point value (ix) from currentunit
+        """
+        return self.itoix(self.ctoi(val))
+    def ixtoc(self,val):
         """
         converts point value (i) to complex value (cps)
         i.e. multiply by 2 if axis is complex, and return index of real part
         """
-        return val*(self.itype+1)
+        return self.itoc( self.ixtoi(val))
 ########################################################################
 class TimeAxis(Axis):
     """

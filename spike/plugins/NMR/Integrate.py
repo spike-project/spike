@@ -94,8 +94,8 @@ class Integrals(list):
         "export extract of current integrals list to pandas Dataframe"
         import pandas as pd
         I1 = pd.DataFrame({
-            'Start': [self.source.axis1.itoc(ii.start) for ii in self],
-            'End': [self.source.axis1.itoc(ii.end) for ii in self],
+            'Start': [self.source.axis1.ixtoc(ii.start) for ii in self],
+            'End': [self.source.axis1.ixtoc(ii.end) for ii in self],
             'Value': [ii.curve[-1] for ii in self],
             'Calibration': self.integvalues
         })
@@ -210,7 +210,7 @@ class Integrals(list):
     #        print(a,b,max(c)/sumax)
             if iint.start>z2 or iint.end<z1:
                 continue   # we're outside
-            xinteg = self.source.axis1.itoc( np.linspace(iint.start, iint.end, len(iint.curve)) )
+            xinteg = self.source.axis1.ixtoc( np.linspace(iint.start, iint.end, len(iint.curve)) )
             yinteg = integoff + integscale*iint.curve/sumax
             ax.plot(xinteg, yinteg, transform=trans, **curvedict)
             if label:
