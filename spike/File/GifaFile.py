@@ -143,7 +143,7 @@ class GifaFile(object):
         """
         axis = npkd.LaplaceAxis()
         axis.size = int(self.header["Dim1"])
-        if (self.header["Dmin"] != "NaN"):
+        if "Dmin" in self.header.keys() and (self.header["Dmin"] != "NaN"):
             axis.dmin = float(self.header["Dmin"])
             axis.dmax = float(self.header["Dmax"])            
             axis.dfactor = float(self.header["Dfactor"])

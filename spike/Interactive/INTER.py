@@ -539,7 +539,6 @@ class Show1D(HBox):
     """
     An interactive display, 1D NMR
         Show1D(spectrum)
-    to be developped for peaks and integrals
     """
 
     def __init__(self, data, title=None, figsize=None, show=True, create_children=True, yratio=21.0):

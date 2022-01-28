@@ -14,10 +14,11 @@
     - improved BrukerNMR.import1D_proc to handle different binary options
     - added yratio to npk.display()
     - rowc() and colc() method get rows and columns in 2D using current unit instead of index (I don't know why this was not done earlier...)
-    - added the itocx() and cxtoi() to access datapoint in complex coordinates
+    - added the itoix() ixtoi() ctoix() ixtoc() to access datapoint in complex coordinates
     - added a method Peaks.Peaklist1D.pkadd() to add a peak list to an existing one
     - added a method Peaks.Peaklist1D.pkaggreg(distance) to aggregate close peaks  
     - moved config into $(HOME).config
+    - corrected a bug when reading old Gifafile where diffusion is not defined in the header
 
 #### 0.99.29 - Sept 2021
 - spike Interactive FTICR - not tested yet -
