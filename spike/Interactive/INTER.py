@@ -2047,7 +2047,7 @@ class NMRIntegrate(Show1D):
         super().draw()
         self.idraw += 1
         self.Integ.display(label=True, figure=self.ax,
-                           labelyposition=None, regions=False, zoom=self.xb)
+                           labelyposition=None, regions=False, zoom=None)
         self.ax.set_xbound(self.xb)
         # self.ax.set_ybound(self.yb)
 
