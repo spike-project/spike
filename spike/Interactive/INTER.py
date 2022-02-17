@@ -626,7 +626,7 @@ class Show1D(HBox):
             self.ymax = self.data.absmax*1.1      # highest position
             self.yb0 = np.array( [-self.ymax/self.yratio, self.ymax] )              # full box in y
             self.disp()
-        except AttributeError:   # id self.data not defined
+        except AttributeError:   # if self.data not defined
             pass
     def ob(self, event):
         "observe events and redraw"
@@ -1206,7 +1206,7 @@ class Show1Dplus(Show1D):
                     ], layout=Layout(width='60%'))
         # peaks control widgets
         self.peaks = widgets.Checkbox(description='Show',value=False, tooltip="show/hide peaks on the spectrum")
-        markers = ['off', 'x', 'X', 'd', 'D', 'v', '^', '<', '>', '|']
+        markers = ['None', 'x', 'X', 'd', 'D', 'v', '^', '<', '>', '|']
         self.marker = widgets.Dropdown(description='Marker',
                                        options=markers, value="x",
                                        layout=Layout(width='20%'))
@@ -1308,6 +1308,7 @@ class Show1Dplus(Show1D):
         zoom = None
         self.drspectrum[0].set_color(self.spcolor.value)
         self.drspectrum[0].set_linewidth(self.splw.value)
+        self.ax.set_title(self.sptitle.value)
         if self.integ.value:
             if hasattr(self.data,'integrals'):
                 if self.labely.value == -1:
