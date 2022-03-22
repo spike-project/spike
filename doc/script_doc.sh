@@ -4,9 +4,11 @@ rm -R spike_make_sphinx/* dist/* build/*
 
 # get doc from source
 Version=$(grep "version = '.*'" spike/version.py |grep -o [0-9\.]*)
-sphinx-apidoc --full -V $Version -A M-A.Delsuc -o spike_make_sphinx_sep spike
+
 # copy rst files
 cp  doc/*.rst   spike_make_sphinx/
+cp  doc/sphixMakefile   spike_make_sphinx/Makefile
+
 # modiy configuration
 
 
@@ -30,4 +32,4 @@ cp -r spike_make_sphinx/_build/html/*  spikedoc/
 # remove temporary directory
 #rm -R spike_make_sphinx/*
 
-#
+#sphinx-apidoc --full -V $Version -A M-A.Delsuc -o spike_make_sphinx_sep spike
