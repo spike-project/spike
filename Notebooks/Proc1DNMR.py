@@ -7,9 +7,9 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.11.1
+#       jupytext_version: 1.13.7
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
@@ -29,8 +29,8 @@
 #
 # ***Remark*** *to use this program, you should have installed the following packages:*
 #
-# - *a complete scientific python environment ( tested with python 3.7 / [anaconda](https://www.anaconda.com/)  with no support for python 2.7 )*
-# - [`spike`](https://www.bitbucket.org/delsuc/spike) ( *version 0.99.21 minimum* )
+# - *a complete scientific python environment ( tested with python 3.9 / [anaconda](https://www.anaconda.com/)  with no support for python 2.7 )*
+# - [`spike`](https://www.bitbucket.org/delsuc/spike) ( *version 0.99.30 minimum* )
 # - [`ipywidgets`](https://ipywidgets.readthedocs.io/en/latest/)  ( *tested with version 7.6* )
 # - [`ipympl`](https://github.com/matplotlib/jupyter-matplotlib)  ( *adds interactivity in the notebook* )
 #
@@ -97,6 +97,7 @@ I.Show1D(d1, title=FC.selected, yratio=1)      # and display  (yratio=1 to have 
 # d1.display()  # with many options, plus access to matplotlib details
 
 # %%
+# If you uncomment the following line (remove the #) this command pops-up a table with the list of all acquisition parameters
 #I.popup_param_table(d1)
 
 # %% [markdown]
@@ -115,7 +116,7 @@ I.Show1D(d1, title=FC.selected, yratio=1)      # and display  (yratio=1 to have 
 #
 # The drawing zone can be resized using the little grey triangle on the lower-right corner
 #
-# In addition, the `I.Show1D()` is a higher level tool which adds a scale slider, a
+# In addition, the `I.Show1D()` is a higher level tool which adds a control of the scale with the mouse wheel, a scale slider, a
 # <button class="p-Widget jupyter-widgets jupyter-button widget-button" style="width: 80px;" >Save figure</button>
 #  button, to store a high quality pdf version,
 #  and a
@@ -139,7 +140,7 @@ I.Show1D(D1, title=FC.nmrname)  #  and display
 # %% [markdown]
 # <hr/>
 #
-# **Following steps are for special operations**
+# ## Following steps are for special operations
 #
 # ### rephasing
 # If the spectrum requires rephasing, use the interactive phaser down here.
@@ -152,12 +153,13 @@ I.Show1D(D1, title=FC.nmrname)  #  and display
 
 # %%
 # rephasing
-reload(I)
 I.Phaser1D(D1, title=FC.nmrname)
 
 # %% [markdown]
 # ### Baseline correction
-# A simple interactive baseline correction tool
+# A simple interactive baseline correction tool.
+#
+# The principle is to place pivot points on the desired baseline, and let the program interpolate.
 #
 # Choose positions on the baseline of the spectrum with the `select` entry or  by right-clicking on the baseline.
 # `Add` a control point and see its effect either on the spectrum, or the computed baseline.
@@ -167,7 +169,6 @@ I.Phaser1D(D1, title=FC.nmrname)
 
 # %%
 # Baseline Correction
-reload(I)
 b = I.baseline1D(D1)
 b
 
@@ -207,12 +208,8 @@ I.NMRIntegrate(D1)
 
 # %%
 # Composite display
-reload(I)
 Sp = I.Show1Dplus(D1, title=FC.nmrname, N=5)   # N is the number of slots in the Superimpose tool
 Sp
-
-# %%
-Sp.xb
 
 # %% [markdown]
 # ---

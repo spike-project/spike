@@ -1,23 +1,26 @@
 <!-- DO NOT MODIFY this file, it is generated automatically from dev_setup ! -->
 # SPIKE Relase Notes
-#### 0.99.30 - not released yet
+#### 0.99.30 - March 2022
 - spike Interactive NMR
     - modified SHOW1D to handle the move tool
-    - modified selection to right-click (in phaser, peakpicker, baseline)     - display of some acquisition parameters
+    - modified selection to right-click (in phaser, peakpicker, baseline)
+    - display of some acquisition parameters
     - in 1D, corrected errors in managing peaks and calibration
     - better handling of baseline corrections, phasing and better graphics
     - dated figure dump
     - corrected displaying integrals
     - improvement in object hierarchy
-    - added yratio to SHOW1D
+    - added yratio to SHOW1D, and allow a better zoom experience 
 - General
+    - adapted to matplotlib 3.5 / python 3.9 
     - improved BrukerNMR.import1D_proc to handle different binary options
     - added yratio to npk.display()
     - rowc() and colc() method get rows and columns in 2D using current unit instead of index (I don't know why this was not done earlier...)
     - added the itoix() ixtoi() ctoix() ixtoc() to access datapoint in complex coordinates
     - added a method Peaks.Peaklist1D.pkadd() to add a peak list to an existing one
     - added a method Peaks.Peaklist1D.pkaggreg(distance) to aggregate close peaks  
-    - moved config into $(HOME).config
+    - marker "None" in peak display
+    - moved config into $(HOME)/.config/Spike
     - corrected a bug when reading old Gifafile where diffusion is not defined in the header
 
 #### 0.99.29 - Sept 2021

@@ -7,9 +7,9 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.11.1
+#       jupytext_version: 1.13.7
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
@@ -40,7 +40,10 @@ import pandas as pd
 import spike
 from spike.Interactive import INTER as I
 from spike.Interactive import FTICR_INTER as FI
-from spike.Interactive import MSIsotopic as ISO
+try:
+    from spike.Interactive import MSIsotopic as ISO
+except ImportError:
+    pass
 from spike.Interactive.ipyfilechooser import FileChooser
 from spike.File import BrukerMS
 from datetime import datetime
@@ -78,13 +81,15 @@ display(FC)
 # We store the dataset into a variable, here called d1. 
 
 # %%
-# This is simply done with the `Import_1D()` tool, which returns a `SPIKE` object.
-# We store it into a variable, evaluating the variable show a summary of the dataset. 
 print('Reading file ',FC.selected)
-d1 = BrukerMS.Import_1D(FC.selected)
-d1.filename = FC.selected
-d1.set_unit('sec').display(title=FC.selected_path+" transient")
-d1
+d1 = BrukerMS.Import_1D(FC.selected)           # Import_1D creates a SPIKE FTICRData object, from which everything is available
+d1.set_unit('sec')                             # it can be acted upon
+d1.filename = FC.selected                      # and be extended at will
+print(d1)                                      # print() of the dataset shows a summary of the parameters
+
+I.Show1D(d1, title=FC.selected, yratio=1)      # and display  (yratio=1 to have it centered)
+# alternatively you can use the low-level tool below:
+# d1.display()  # with many options, plus access to matplotlib details
 
 # %% [markdown]
 # Spectra can be interactively explored with the jupyter tools displayed  on the side of the dataset:
@@ -123,10 +128,15 @@ D1.center().kaiser(4).zf(4)   # chaining  centering - apodisation - zerofill
                               # kaiser(4) is an apodisation well adapted to FTICR, slightly more resolution than hamming - try varying the argument !
 if D1.axis1.itype == 0:       # means data is real (common case)
     D1.rfft().modulus()           # chaining  real FT - modulus
-else:     # is 1              data is complex, in Narrow-band acquisition
+else:                         #       data is complex, in Narrow-band acquisition
     D1.fft().modulus()            # chaining  complex FT - modulus
-D1.bcorr(xpoints=50)
-D1.set_unit('m/z').display(title=FC.selected_path)  # set to ppm unit - and display
+D1.bcorr(xpoints=50)          # flatten the baseline
+D1.set_unit('m/z')
+
+FI.Show1D(D1, title=FC.nmrname)  #  and display
+
+# D1.display(title=FC.selected_path)  #  alternative, lower level display method with more options
+
 
 # %% [markdown]
 # ### Peak Detection
@@ -136,19 +146,21 @@ D1.set_unit('m/z').display(title=FC.selected_path)  # set to ppm unit - and disp
 # %%
 pkname = op.join(op.dirname(FC.selected),"peak_list.txt")
 import spike.plugins.Peaks
-print("number of on-screen peaks is limited to %d - zoom in with the top tool to be sure of visualizing them all"%(spike.plugins.Peaks.NbMaxDisplayPeaks))
-FI.MSPeaker(D1, pkname);
+print("number of on-screen peaks is limited to %d - zoom in with the top tool to be sure of visualizing them all"%(FI.NbMaxDisplayPeaks))
+P = FI.MSPeaker(D1, pkname)
 
 # %% [markdown]
 # ## Superpose experimental and computed spectra
+# *The MS-Isotopic module must have been installed - see first cell for information*
 #
 # If the spectrum requires recalibration - eventually run the Calibration tool below, and rerun this tool.
 
 # %% slideshow={"slide_type": "fragment"}
-from importlib import reload
-reload(ISO)
-IS = ISO.Isotope()
-IS.full(D1)
+try:
+    IS = ISO.Isotope()
+    IS.full(D1)
+except NameError:
+    print("MSIsotopic not installed - see top of the page")
 
 # %% [markdown]
 # ---

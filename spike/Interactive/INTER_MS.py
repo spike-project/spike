@@ -28,7 +28,6 @@ import numpy as np
 from spike.File.BrukerNMR import Import_1D
 from spike import NPKData
 from spike.NMR import NMRData
-from spike.Interactive.INTER import Show1D, jsalert
 try:
     import spike.plugins.bcorr as bcorr
 except:
@@ -45,6 +44,7 @@ except:
 # True is good for inline mode / False is better for notebook mode
 REACTIVE = True
 HEAVY = False
+
 
 class FloatButt(HBox):
     """
@@ -123,7 +123,7 @@ def firstguess0(data):
     ph1 = tau*f1/deltaf + te 
     ph2 = -tau/deltaf/2
     return (ph1*sw, ph2*sw*sw)
-class Phaser1D(Show1D):
+class Phaser1D(I.Show1D):
     """
     An interactive phaser in 1D MS
 
@@ -137,7 +137,7 @@ class Phaser1D(Show1D):
         self.list = {}          # list is actually a dictionnary - sorry about that
                                 # hold {pivot_in_points: (ph0, ph1)}
         if data.itype == 0:
-            jsalert('Data is Real - Please redo Fourier Transform')
+            I.jsalert('Data is Real - Please redo Fourier Transform')
             return
         super().__init__( data, figsize=figsize, title=title, reverse_scroll=reverse_scroll, show=False)
         self.p0 = widgets.FloatSlider(description='P0:',min=-200, max=200, step=1,

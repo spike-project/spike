@@ -392,7 +392,9 @@ class Peak1DList(PeakList):
             pkl = pkl[:NbMaxPeaks]
         # create arg for display
         # default
-        mark = {'markersize':markersize,
+        mark = {'linestyle':'',
+                'marker':'x',
+                'markersize':markersize,
                 'color':color}
         label = {'color':color,
                  'fontsize':7,
@@ -404,7 +406,7 @@ class Peak1DList(PeakList):
         label.update(labeldict)
         # now display
         if peak_mode == "marker":
-            fig.plot(f(self.pos[pkl]), self.intens[pkl], 'x', **mark)
+            fig.plot(f(self.pos[pkl]), self.intens[pkl], **mark)
         elif peak_mode == "bar":
             for i in pkl:
                 p = self[i]

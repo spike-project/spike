@@ -1144,6 +1144,7 @@ class Show1Dplus(Show1D):
         show = kw.get('show', True)
         kw['show'] = False
         super().__init__(data, **kw)
+        self.NbMaxPeaks = Peaks.NbMaxDisplayPeaks
         # spectrum control widgets
         self.sptitle = widgets.Text(description='Title',
                                     value=self.title, layout=space('40%'))
@@ -1298,19 +1299,18 @@ class Show1Dplus(Show1D):
     def draw(self, zoom=False):
         "refresh display - if zoom is True, display only in xbound"
         super().draw()
-        # self.xb = self.ax.get_xbound()
-        # if zoom:
-        #     zoom = self.xb
-        # else:
-        #     zoom = None
+        self.xb = self.ax.get_xbound()
+        if zoom:
+            zoom = self.xb
+        else:
+            zoom = None
         # self.data.display(new_fig=False, figure=self.ax, color=self.spcolor.value,
         #                     title=self.sptitle.value, linewidth=self.splw.value, zoom=zoom)
-        zoom = None
         self.drspectrum[0].set_color(self.spcolor.value)
         self.drspectrum[0].set_linewidth(self.splw.value)
         self.ax.set_title(self.sptitle.value)
         if self.integ.value:
-            if hasattr(self.data,'integrals'):
+            if hasattr(self.data,'integrals') and self.data.integrals != []:
                 if self.labely.value == -1:
                     labely = None
                 else:
@@ -1328,10 +1328,11 @@ class Show1Dplus(Show1D):
                 #                print('no or wrong integrals (have you clicked on "Done" in the Integration tool ?)')
                 pass
         if self.peaks.value:
-            if hasattr(self.data,'peaks'):
+            if hasattr(self.data,'peaks') and self.data.peaks != []:
                 self.data.display_peaks(peak_label=self.pkvalues.value,
                                         color=self.pkcolor.value,
                                         markersize=self.pkfont.value,
+                                        NbMaxPeaks=self.NbMaxPeaks,
                                         markerdict={
                                             'marker': self.marker.value},
                                         labeldict={'rotation': self.pkrotation.value,
@@ -1688,7 +1689,7 @@ class NMRPeaker1D(Show1D):
             description="Exit", button_style='warning', layout=space('80px'), tooltip='Exit without corrections')
         self.cancel.on_click(self.on_cancel)
         self.selval = widgets.FloatText(
-            value=0.0, description='selection', layout=Layout(width='20%'), step=0.001, disabled=True)
+            value=0.0, description='', layout=Layout(width='10%'), step=0.001, disabled=True)
         self.newval = widgets.FloatText(
             value=0.0, description='calibration', layout=Layout(width='20%'), step=0.001, disabled=True)
         self.setcalib = widgets.Button(description="Set", layout=Layout(width='10%'),
@@ -1723,8 +1724,8 @@ class NMRPeaker1D(Show1D):
                     [VBox([self.blank, self.reset, self.scale, self.done]), self.fig.canvas])
             ]),
             VBox([
-                HBox([Label('Select a peak with mouse and set calibrated values'),
-                      self.selval, self.newval, self.setcalib]),
+                HBox([Label('Select a peak with mouse (or value) and set calibrated values',layout=Layout(width="40%")),
+                      Label('selection (in ppm)'),self.selval, self.newval, self.setcalib]),
                 HBox(
                     [VBox([self.blank, self.reset, self.scale, self.done]), self.fig.canvas])
             ]),

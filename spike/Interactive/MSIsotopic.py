@@ -18,7 +18,26 @@ from IPython.display import display, Javascript, Markdown
 from traitlets.traitlets import Float
 
 from spike.Interactive import INTER as I
-from isotope import isotopes as iso
+try:
+    from isotope import isotopes as iso
+    isavailable = True
+except ImportError:
+    isavailable = False
+
+if not isavailable:
+    print("""
+*** MSIsotopic not available
+
+The MSIsotopic module provides a set of tools for computing MS spectra from atomic formula and peptide sequences.
+You can do without it, if you want to have to get it
+- at https://github.com/delsuc/isotope from the standard operations
+- an additional tool for fine isotopic structures uses *neutronstar* from P. Kreitzberg et al (Montana Univ.)
+  available at: https://bitbucket.org/orserang/neutronstar.git
+
+""")
+    raise ImportError
+
+
 iso.NS = "./isotope/neutronstar/neutronstar"
 
 

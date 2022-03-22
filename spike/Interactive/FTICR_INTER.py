@@ -20,12 +20,34 @@ from ..NPKData import flatten, parsezoom
 from .ipyfilechooser import FileChooser
 from ..FTMS import FTMSData
 from ..FTICR import FTICRData
+import spike.Interactive.INTER as I
+# from . import INTER as I
 
 
 SIZEMAX = 8*1024*1024       # largest zone to display
-NbMaxDisplayPeaks = 1000      # maximum number of peaks to display at once
+NbMaxDisplayPeaks = 100      # maximum number of peaks to display at once
 
 # TOOLS FOR 2D FTICR
+class Show1D(I.Show1D):
+    # def __init__(*arg, **kw):
+    #     # def __init__(self, data, title=None, figsize=None, show=True, create_children=True, yratio=21.0)
+    #     super().__init__(*arg, **kw)
+    def on_reset(self, b=None):
+        self.scale.value = 1.0
+        self.data.axis1.highmass
+        try:
+            if  self.data.axis1.currentunit == 'm/z':   # is special because reverse direction
+                self.xb0 = np.array([self.data.axis1.itomz(self.data.size1), self.data.axis1.highmass])
+            else:
+                self.xb0 = np.array([self.data.axis1.itoc(0), self.data.axis1.itoc(self.data.size1)])  # full box in x
+            self.xb = self.xb0                                                      # current x box
+            self.yratio = self.yratio0            # inverse minimum neg display extension 
+            self.ymax = self.data.absmax*1.1      # highest position
+            self.yb0 = np.array( [-self.ymax/self.yratio, self.ymax] )              # full box in y
+            self.disp()
+        except AttributeError:   # if self.data not defined
+            pass
+
 class MR(object):
     "this class handles multiresolution datasets"
     def __init__(self, name, report=True, Debug=False):
@@ -454,10 +476,12 @@ class MSPeaker(object):
         self.npkd = npkd
         self.pkname = pkname
         self.zoom = widgets.FloatRangeSlider(value=[npkd.axis1.lowmass, npkd.axis1.highmass],
-            min=npkd.axis1.lowmass, max=npkd.axis1.highmass, step=0.1,
-            layout=Layout(width='100%'), description='zoom',
+            min=npkd.axis1.lowmass, max=npkd.axis1.highmass, step=1,
+            description='zoom', layout=Layout(width='800px'),
             continuous_update=False, readout=True, readout_format='.1f',)
         self.zoom.observe(self.display)
+        self.bresetzoom = widgets.Button(description='Full Zoom', button_style='success')
+        self.bresetzoom.on_click(self.resetzoom)
         self.tlabel = Label('threshold (x noise level):')
         self.thresh = widgets.FloatLogSlider(value=20.0,
             min=np.log10(3), max=2.0, base=10, step=0.01, layout=Layout(width='30%'),
@@ -477,14 +501,16 @@ class MSPeaker(object):
         self.bdone.on_click(self.done)
 #        self.spec = Output(layout={'border': '1px solid black'})
         self.out = Output(layout={'border': '1px solid red'})
-        display( VBox([self.zoom,
-                      HBox([self.tlabel, self.thresh, self.peak_mode, self.bprint, self.bexport, self.bdone])
-                      ]) )
+        display( VBox([ HBox([self.bresetzoom, self.zoom]),
+                        HBox([self.tlabel, self.thresh, self.peak_mode, self.bprint, self.bexport, self.bdone])
+                      ])
+                )
         self.fig, self.ax = plt.subplots()
         self.npkd.set_unit('m/z').peakpick(autothresh=self.thresh.value, verbose=False, zoom=self.zoom.value).centroid()
         self.display()
         display(self.out)
-
+    def resetzoom(self,b):
+        self.zoom.value=(self.zoom.min, self.zoom.max)
     def pkprint(self,event):
         self.out.clear_output(wait=True)
         with self.out:
@@ -531,7 +557,7 @@ class MSPeaker(object):
         self.display()
     def done(self, event):
         "exit GUI"
-        for w in [self.zoom, self.thresh, self.peak_mode, self.bprint, self.bexport, self.bdone]:
+        for w in [self.bresetzoom, self.zoom, self.thresh, self.peak_mode, self.bprint, self.bexport, self.bdone]:
             w.close()
         self.tlabel.value = "threshold %.2f noise level"%self.thresh.value
 #        self.display()
