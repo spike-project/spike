@@ -90,16 +90,50 @@ class Integrals(list):
     def report(self):
         for ii in self:
             print(ii)
-    def to_pandas(self):
-        "export extract of current integrals list to pandas Dataframe"
-        import pandas as pd
+    def to_pandas(self, unit='current'):
+        """export extract of current integrals list to pandas Dataframe, 
+        unit is either "current", "points", "ppm" or "Hz"
+        """
+        import pandas as pd          # LAZY IMPORT
+        if unit == "current":
+            conv = self.source.axis1.ixtoc
+        if unit == "points":
+            conv = lambda x: x
+        if unit == "ppm":
+            conv = lambda x: self.source.axis1.itop(self.source.axis1.ixtoi(x))
+        if unit == "Hz":
+            conv = lambda x: self.source.axis1.itoh(self.source.axis1.ixtoi(x))
         I1 = pd.DataFrame({
-            'Start': [self.source.axis1.ixtoc(ii.start) for ii in self],
-            'End': [self.source.axis1.ixtoc(ii.end) for ii in self],
+            'Start': [conv(ii.start) for ii in self],
+            'End': [conv(ii.end) for ii in self],
             'Value': [ii.curve[-1] for ii in self],
             'Calibration': self.integvalues
         })
         return I1
+    def from_csv(self, filename):
+        """import integrals list from csv file,
+        as would be created by self.to_pandas.to_csv() coded in ppm,
+        """
+        import pandas as pd
+        df = pd.read_csv( filename)
+        for v in df.to_numpy():
+            start = self.source.axis1.itoix(self.source.axis1.ptoi(v[1]))
+            end =   self.source.axis1.itoix(self.source.axis1.ptoi(v[2]))
+            item = Integralitem(start, end, None, None)
+            item.update(self.source, bias=self.bias )
+            self.append(item)
+        self.calibrate(df.Calibration.max()/max(self.integvalues))
+        return self
+    # def _to_pandas(self):
+    #     "export extract of current integrals list to pandas Dataframe"
+    #     import pandas as pd
+    #     I1 = pd.DataFrame({
+    #         'Start': [self.source.axis1.ixtoc(ii.start) for ii in self],
+    #         'End': [self.source.axis1.ixtoc(ii.end) for ii in self],
+    #         'Value': [ii.curve[-1] for ii in self],
+    #         'Calibration': self.integvalues
+    #     })
+    #     return I1
     def peakstozones(self):
         """
         computes integrals zones from peak list, 
