@@ -430,6 +430,21 @@ class Peak1DList(PeakList):
         f = self.source.axis1.itoc
         for pk in self:
             pk.label = "%.4f"%(f(pk.pos),)
+    def from_csv(self, filename):
+        """import peak list from csv file,
+        as would be created by pk2pandas.to_csv() coded in ppm, full=False
+        """
+        import pandas as pd
+        df = pd.read_csv( filename, index_col='Id', dtype={"Label":"str"})
+        self.clear()
+        for i,v in enumerate(df.to_numpy()):
+            self.append(Peak1D( Id=df.index[i],
+                                label=v[0],
+                                intens=v[2],
+                                pos=self.source.axis1.itoix(self.source.axis1.ptoi(v[1])),
+                                width=v[3])
+                        )
+        return self
 
 class Peak2DList(PeakList):
     """
@@ -795,16 +810,16 @@ def report_peaks(npkd, file=None, format=None, NbMaxPeaks=NbMaxDisplayPeaks):
     else:
         raise Exception("to be done")
 #-------------------------------------------------------
-def pk2pandas(npkd, full=False):
+def pk2pandas(npkd, **kw):
     """export extract of current peak list to pandas Dataframe - in current unit
-    if full is False (default), the uncertainty are not listed
+    if full is False (default), the uncertainties are not listed
     uses nmr or ms version depending on data_type
     """
     import spike.FTMS
     if isinstance(npkd, spike.FTMS.FTMSData):
-        return pk2pandas_ms(npkd, full=full)
+        return pk2pandas_ms(npkd, **kw)
     else:
-        return pk2pandas_nmr(npkd, full=full)
+        return pk2pandas_nmr(npkd, **kw)
 def pk2pandas_ms(npkd, full=False):
     "export extract of current peak list to pandas Dataframe for MS datasets"
     import pandas as pd
@@ -882,20 +897,30 @@ def pk2pandas_ms(npkd, full=False):
     else:
         raise Exception('Not implemented in 3D yet')
     return P1
-def pk2pandas_nmr(npkd, full=False):
-    "export extract of current peak list to pandas Dataframe for NMR datasets"
-    import pandas as pd
+def pk2pandas_nmr(npkd, full=False, unit='current'):   
+    """export extract of current peak list to pandas Dataframe for NMR datasets, 
+    unit is either "current", "points", "ppm" or "Hz"  - only in 1D so far.
+    """
+    import pandas as pd          # LAZY IMPORT
     if npkd.dim == 1:
+        if unit == "current":
+            conv = npkd.axis1.ixtoc
+        if unit == "points":
+            conv = lambda x: x
+        if unit == "ppm":
+            conv = lambda x: npkd.axis1.ixtoi(npkd.axis1.itop(x))
+        if unit == "Hz":
+            conv = lambda x: npkd.axis1.ixtoi(npkd.axis1.itoh(x))
         w_itohz = 2*npkd.axis1.specwidth/npkd.cpxsize1   # for width: points to Hz
-        # then for position_error to current unit
+        # then for position_error to given unit
         err = np.array([pk.pos_err for pk in npkd.peaks])
-        pos_err_array = npkd.axis1.itoc(npkd.peaks.pos+err) - npkd.axis1.itoc(npkd.peaks.pos-err)
+        pos_err_array = conv(npkd.peaks.pos+err) - conv(npkd.peaks.pos-err)
         pos_err_array = 0.5*np.abs(pos_err_array)
         if full:
             P1 = pd.DataFrame({
                 'Id':[ pk.Id for pk in npkd.peaks],
                 'Label':npkd.peaks.label,
-                'Position':npkd.axis1.itoc(npkd.peaks.pos),
+                'Position':conv(npkd.peaks.pos),
                 'Intensity':npkd.peaks.intens,
                 'Width':[ pk.width*w_itohz for pk in npkd.peaks],   # width are in Hz
                 'Position_err': pos_err_array,
@@ -906,7 +931,7 @@ def pk2pandas_nmr(npkd, full=False):
             P1 = pd.DataFrame({
                 'Id':[ pk.Id for pk in npkd.peaks],
                 'Label':npkd.peaks.label,
-                'Position':npkd.axis1.itoc(npkd.peaks.pos),
+                'Position':conv(npkd.peaks.pos),
                 'Intensity':npkd.peaks.intens,
                 'Width':[ pk.width*w_itohz for pk in npkd.peaks]   # width are in Hz
             }).set_index('Id')
