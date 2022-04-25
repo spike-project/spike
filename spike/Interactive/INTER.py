@@ -578,18 +578,9 @@ class Show1D(HBox):
         self.savepdf = widgets.Button(description="Save figure", button_style='', layout=self.blay,
                                       tooltip='Save the current figure as pdf')
 
-        def onsave(e):
-            name = self.fig.get_axes()[0].get_title()
-            datedext = datetime.strftime(
-                datetime.now(), " %y-%m-%d_%H:%M:%S.pdf")
-            name = name.replace('/', '_') + datedext
-            if name.startswith('.'):
-                name = 'Figure'+name
-            self.fig.savefig(name)
-            print('figure saved as: ', name)
-        self.savepdf.on_click(onsave)
+        self.savepdf.on_click(self.onsave)
         self.reset.on_click(self.on_reset)
-        self.scale = widgets.FloatSlider(description='scale:', value=1.0, min=0.1, max=200, step=0.1,
+        self.scale = widgets.FloatSlider(description='scaleO:', value=1.0, min=0.1, max=200, step=0.1,
                                          layout=Layout(width='80px', height=str(0.8*2.54*figsize[1])+'cm'), continuous_update=REACTIVE,
                                          orientation='vertical')
         for widg in (self.scale,):
@@ -613,6 +604,15 @@ class Show1D(HBox):
                 self.draw()
 
     # call backs
+    def onsave(self, e):
+        name = self.fig.get_axes()[0].get_title()
+        datedext = datetime.strftime(
+            datetime.now(), " %y-%m-%d_%H:%M:%S.pdf")
+        name = name.replace('/', '_') + datedext
+        if name.startswith('.'):
+            name = 'Figure'+name
+        self.fig.savefig(name)
+        print('figure saved as: ', name)
     def on_done(self, b):
         self.close()
         display(self.fig)   # shows spectrum
@@ -994,6 +994,7 @@ class SpforSuper():
                              self.B('label')
                              ])
         self.nactivate(None)
+        self.xbox = np.array([None, None])   # will store the borders of the spectrum
 
     def ob(self, event):
         "observe events and display"
@@ -1059,9 +1060,12 @@ class SpforSuper():
                 self.direct.value = 'off'
                 jsalert('%s : cannot open File' % self.filename.value)
                 return
+        # xbox
+        self.xbox = np.array([d.axis1.itoc(0), d.axis1.itoc(d.size1)])  # full box in x
+
         # draw
-        zml = min(self.zmleft.value, d.axis1.itoc(0))
-        zmr = max(self.zmright.value, d.axis1.itoc(d.size1))
+        zml = min(self.zmleft.value, self.xbox[0])
+        zmr = max(self.zmright.value, self.xbox[1])
         d.display(
             scale=1,
             figure=self.axref,
@@ -1144,6 +1148,13 @@ class Show1Dplus(Show1D):
         show = kw.get('show', True)
         kw['show'] = False
         super().__init__(data, **kw)
+
+        # initialise the DataList (used by spectral superposition)
+        self.DataList = [SpforSuper(i+1, axref=self.ax, ref=self.data) for i in range(N)]
+        for s in self.DataList:
+            s.injectobserve(self.ob)
+        self.DataList[0].color.value = 'red'
+        
         self.NbMaxPeaks = Peaks.NbMaxDisplayPeaks
         # spectrum control widgets
         self.sptitle = widgets.Text(description='Title',
@@ -1235,11 +1246,6 @@ class Show1Dplus(Show1D):
         self.to = widgets.IntText(
             value=1, min=1, max=N, layout=Layout(width='10%'))
         self.bsel.on_click(self.copy)
-        self.DataList = [SpforSuper(
-            i+1, axref=self.ax, ref=self.data) for i in range(N)]
-        for s in self.DataList:
-            s.injectobserve(self.ob)
-        self.DataList[0].color.value = 'red'
 
         for widg in (self.sptitle, self.spcolor, self.splw,
                      self.peaks, self.integ, self.scaleint, self.offset, self.intlw,
@@ -1279,6 +1285,22 @@ class Show1Dplus(Show1D):
         self.children = [self.tabs]
         if show:
             self.draw()
+
+    def on_reset(self, b=None):
+        "overload reset() to compute the large xbox"
+        super().on_reset(b)
+        try:
+            self.DataList
+        except AttributeError:     # on_reset called  at initialisation  !
+            return
+        xb0 = self.xb0   # comput by super.reset
+        for s in self.DataList:
+            xb = s.xbox
+            if all(xb != None):     # if defined  - all() because xb is an array
+                xb0 = ( max(xb0[0],xb[0]), min(xb0[1],xb[1]) )  # assume ppm here !!! - going backward
+        self.xb0 = np.array(xb0)
+        self.xb = self.xb0                                                      # current x box
+        self.disp()
 
     def copy(self, event):
         if self.to.value < 1 or self.to.value > len(self.DataList):

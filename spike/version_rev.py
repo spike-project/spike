@@ -11,7 +11,7 @@ except:
 ProgramName = 'SPIKE'
 VersionName = 'Development version'
 version = '0.99.30'
-rev_date = '22-03-2022'
+rev_date = '25-04-2022'
 
 def report():
     "prints version name when SPIKE starts"

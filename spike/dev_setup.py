@@ -30,7 +30,7 @@ VersionInfo = ["0", "99", "30"]   # Major - Minor - Micro
 # Release Notes in md syntax !
 release_notes="""
 # SPIKE Relase Notes
-#### 0.99.30 - March 2022
+#### 0.99.30 - April 2022
 - spike Interactive NMR
     - modified SHOW1D to handle the move tool
     - modified selection to right-click (in phaser, peakpicker, baseline)

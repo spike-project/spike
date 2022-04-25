@@ -1,6 +1,6 @@
 <!-- DO NOT MODIFY this file, it is generated automatically from dev_setup ! -->
 # SPIKE Relase Notes
-#### 0.99.30 - March 2022
+#### 0.99.30 - April 2022
 - spike Interactive NMR
     - modified SHOW1D to handle the move tool
     - modified selection to right-click (in phaser, peakpicker, baseline)
