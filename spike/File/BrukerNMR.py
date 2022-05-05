@@ -503,6 +503,76 @@ def write_file(bytordp, data, filename):
     with open(filename, 'wb') as f:
         f.write(data.astype(fmt).tostring())
 
+def Export_fid(d, filename, template,  verbose=VERBOSE):
+    """
+    Exports a 1D NMRData to a  Bruker fid file, using templname as a template
+    
+    filename and template are expno : datadir/my_experiment/expno/
+    they should be different
+    and the files are created in the filename directory
+    a pdata/procno should already exists in template for templating
+    
+    if d contains metadata parameters from Bruker, there will be used,
+    however all files common to fname and templname expno will not be updated
+    
+    if fname and templname are exactly the same, (or templname is None)
+        only 1r / 2rr proc and procs files will be overwriten
+    """
+    #---------
+    if d.dim>1:
+        raise Exception('Dim>1 Not implemented yet')
+    template = op.normpath(template)
+    filename = op.normpath(filename)
+
+    if (not op.exists(template)):
+        raise Exception(template+" : file not found")
+    if verbose:   print('Exporting %dD fid to %s using %s as template'%(d.dim,filename,template))
+    # create target
+    shutil.copytree(template, filename, ignore=shutil.ignore_patterns('1r', '1i', 'fid', '*.gs1', 'acqu*') )
+        # tprocno = find_proc_down(template,('procs','proc','PROCS','PROC'))
+        # procno = op.dirname(tprocno)
+    # load template params - now populated
+    acqu = read_param(find_acqu(template))
+    acqu['$TD'] = str(d.size1)  # set size
+    acqu['$SW_h'] = str(d.axis1.specwidth)
+    acqu['$SFO1'] = str(d.axis1.frequency)
+    # no group delay !
+    acqu['$DECIM'] = 1
+    d.axis1.zerotime = 0.0
+    if d.axis1.itype == 0:
+        acqu['$AQ_mod'] = '0'  # QF
+    else:       # complex mode
+        d.axis1.itype = 1
+        acqu['$AQ_mod'] = '3'
+    # binary data
+    NC = 0
+    acqu['$NC'] = str(NC)
+    acqu['$BYTORDA'] = '0'
+    acqu['$DTYPA'] = '2'    # float format !
+    buf = d.buffer.astype("float64")
+    buf.tofile(op.join(filename,'fid'), sep="")
+ 
+    write_param(acqu, op.join(filename, 'acqu') )
+    write_param(acqu, op.join(filename, 'acqus') )
+
+    try:
+        proc = read_param(find_proc(filename))
+    except:
+        proc = None
+    if proc != None:
+        # ppmPointUn = float(proc['$OFFSET'])
+        # ppmWidth = float(acqu['$SW_h']) / float(acqu['$SFO1'])
+        # calibrationOffset = float(ppmPointUn - ppmWidth)*  float(acqu['$SFO1'])
+        ppmWidth = d.axis1.specwidth / d.axis1.frequency
+        ppmPointUn = d.axis1.offset / d.axis1.frequency + ppmWidth
+        proc['$OFFSET'] = str(ppmPointUn)
+        procfile = find_proc(filename)
+        write_param(proc, procfile )
+        if procfile[-1] == 's':
+            write_param(proc, procfile[:-1] )    # proc vs procs
+    # still to be done - metadata in acqus (comment, version ...)   and in pdata  (title, outd ...)
+    if verbose: print('Done')
+
 def Export_proc(d, filename, template=None,  verbose=VERBOSE):
     """
     Exports a 1D or a 2D NMRData to a  Bruker 1r / 2rr file, using templname as a template
