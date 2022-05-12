@@ -670,7 +670,7 @@ class Show1D(HBox):
         self.data.display(new_fig=False, figure=self.ax, title=self.title)
         self.drspectrum = self.data.disp_artist
         self.ax.set_xbound(self.xb)
-        self.ax.set_ybound(self.yb0/self.scale.value)
+        self.ax.set_ybound(self.yb0/self.scale.value)   # self.yb0 is [low, up] np.array
         self.fig.canvas.header_visible = False
         for s in ["left", "top", "right"]:
             self.ax.spines[s].set_visible(False)
@@ -1018,6 +1018,12 @@ class SpforSuper():
             self.direct.value = 'off'  # will call self.activate()
             self.direct.disabled = True
 
+    def load(self, name):
+        """load a file as a NMRData from name - this one implements only native Gifa format
+        if you want more, you need to overload it with your own version
+        """
+        return NMRData(name=name)
+
     def activate(self, e):
         "called when state changes"
         for w in (self.color, self.zmleft, self.zmright, self.label, self.scale, self.stretch,
@@ -1055,7 +1061,7 @@ class SpforSuper():
             d = self.ref.copy().set_unit(unit)
         else:
             try:
-                d = NMRData(name=self.filename.value).set_unit(unit)
+                d = self.load(name=self.filename.value).set_unit(unit)
             except:
                 self.direct.value = 'off'
                 jsalert('%s : cannot open File' % self.filename.value)
@@ -1150,10 +1156,13 @@ class Show1Dplus(Show1D):
         super().__init__(data, **kw)
 
         # initialise the DataList (used by spectral superposition)
-        self.DataList = [SpforSuper(i+1, axref=self.ax, ref=self.data) for i in range(N)]
-        for s in self.DataList:
-            s.injectobserve(self.ob)
-        self.DataList[0].color.value = 'red'
+        if N>0:
+            self.DataList = [SpforSuper(i+1, axref=self.ax, ref=self.data) for i in range(N)]
+            for s in self.DataList:
+                s.injectobserve(self.ob)
+            self.DataList[0].color.value = 'red'
+        else:
+            self.DataList = []
         
         self.NbMaxPeaks = Peaks.NbMaxDisplayPeaks
         # spectrum control widgets
@@ -1268,14 +1277,16 @@ class Show1Dplus(Show1D):
 
         self.tabs = Tab()
 
+        if len(self.DataList) > 0:
+            self.superheader = self.DataList[0].header
+        else:
+            self.superheader = Label('Superimposition list empty')
         self.tabs.children = [
             VBox([VBox(controls),
                   HBox(orig),
                   ]),
             VBox([Label("Choose spectra to superimpose - first Select, then Copy to the numbered slot"),
-                  HBox([self.Chooser, self.bsel, self.to]),
-                  self.DataList[0].header] +
-                 [sp.me for sp in self.DataList]
+                  HBox([self.Chooser, self.bsel, self.to]), self.superheader] + [sp.me for sp in self.DataList]
                  )
         ]
 
