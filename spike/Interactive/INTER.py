@@ -580,7 +580,7 @@ class Show1D(HBox):
 
         self.savepdf.on_click(self.onsave)
         self.reset.on_click(self.on_reset)
-        self.scale = widgets.FloatSlider(description='scaleO:', value=1.0, min=0.1, max=200, step=0.1,
+        self.scale = widgets.FloatSlider(description='Scale:', value=1.0, min=0.1, max=200, step=0.1,
                                          layout=Layout(width='80px', height=str(0.8*2.54*figsize[1])+'cm'), continuous_update=REACTIVE,
                                          orientation='vertical')
         for widg in (self.scale,):
@@ -710,7 +710,7 @@ class baseline1D(Show1D):
                                           value=self.itoc3(0.5*self.data.size1), continuous_update=REACTIVE,
                                           layout=space('40%'),
                                           tooltip='position of the selected point in %s' % (data.unit[0]))
-        self.smooth = widgets.IntSlider(description='smooth:', min=0, max=20,  layout=space('40%'),
+        self.smooth = widgets.IntSlider(description='Smoothing:', min=0, max=20,  layout=space('40%'),
                                         tooltip='apply a local smoothing for pivot points',
                                         value=1, readout=True, continuous_update=REACTIVE)
         self.toshow = widgets.Dropdown(
@@ -797,8 +797,7 @@ class baseline1D(Show1D):
 
     def on_auto(self, e):
         "automatically set baseline points"
-        self.bsl_points = [self.data.axis1.itoc(x) for x in bcorr.autopoints(
-            self.data, Npoints=self.nbautopoints.value)]
+        self.bsl_points = [self.data.axis1.itoc(x) for x in bcorr.autopoints(self.data, Npoints=self.nbautopoints.value)]
         self.disp()
 
     def on_set(self, e):

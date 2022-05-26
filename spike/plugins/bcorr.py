@@ -131,10 +131,9 @@ def autopoints(npkd, Npoints=8, modulus=True):
         N = 8
     else:
         N = Npoints
-    if npkd.itype == 1 and modulus:
-        bf = npkd.copy().modulus().get_buffer()
-    else:  
-        bf = npkd.copy().get_buffer()
+    bf = npkd.copy().get_buffer()
+    if modulus:
+        bf = abs(bf)
     bf -= np.percentile(bf,20)  # assumes at least ~20% of data-set is baseline...
     bf = abs(bf)
     L = len(bf)
