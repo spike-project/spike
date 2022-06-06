@@ -604,15 +604,19 @@ class Show1D(HBox):
                 self.draw()
 
     # call backs
-    def onsave(self, e):
+    def onsave(self, e=None, directory='.', verbose=True):
+        "saves a pdf of the current display"
         name = self.fig.get_axes()[0].get_title()
         datedext = datetime.strftime(
             datetime.now(), " %y-%m-%d_%H:%M:%S.pdf")
         name = name.replace('/', '_') + datedext
         if name.startswith('.'):
             name = 'Figure'+name
-        self.fig.savefig(name)
-        print('figure saved as: ', name)
+        filename = op.join(directory,name)
+        self.fig.savefig(filename)
+        if verbose:
+            print('figure saved as: ', filename)
+        return filename
     def on_done(self, b):
         self.close()
         display(self.fig)   # shows spectrum
