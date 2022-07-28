@@ -208,7 +208,7 @@ def flatten(*arg):
     import collections
     r = []
     for i in arg:
-        if isinstance(i, collections.Sequence):
+        if isinstance(i, collections.abc.Sequence):
             #print i
             for j in i:
                 r += flatten(j)
@@ -662,7 +662,7 @@ def parsezoom(npkd, zoom):
 ########################################################################
 def NPKData_plugin(name, method, verbose=False):
     """
-    This function allows to register a new method inside the NPKData class.
+    This function allows to register a new method inside the _NPKData class.
     
     for instance - define myfunc() anywhere in your code :
 
@@ -2708,63 +2708,85 @@ class _NPKData(object):
             raise NPKError("a faire")
         return self
     ####### Apodisations ##########
+    def _shifted_apod(self, func,  *arg, maxi=0.5, axis=0, **kw):
+        """
+        generic wrapper which allows to shift any apodisation function
+        maxi is the location of the maximum point,
+            ranges from 0            (max at the beginning )
+                    to 0.5 - default (max at the center)
+        """
+        todo = self.test_axis(axis)
+        it = self.axes(todo).itype
+        if maxi<0.0 or maxi>0.5:
+            raise ValueError("maxi should be within [0...0.5]")
+        size = self.axes(todo).size
+        if maxi != 0.5:       # if maxi 0.5 -> same size, if 0 -> double size 
+            size = int( size*2*(1-maxi) )
+            start = size - self.axes(todo).size
+        else:
+            start = 0
+    #    print(start, size)
+        if it == 1: # means complex
+            size = size//2
+            start = start//2
+        e = func(size, *arg, **kw)
+        if it == 1:
+            e = as_float((1 + 1.0j)*e)
+        if start != 0:
+            e = e[start:]
+        return self.apod_apply(axis,e)
+
     #-------------------------------------------------------------------------------
-    def kaiser(self, beta, axis=0):
+    def kaiser(self, beta, maxi=0.5, axis=0):
         """
         apply a Kaiser apodisation
         beta is a positive number
+        maxi is the location of the maximum point,
+            ranges from 0            (max at the beginning )
+                    to 0.5 - default (max at the center)
 
+        Kaiser is a versatile general apodisation method.
+        with maxi = 0.5 (default - means the function is centered) it approximates classical functions: 
+                useful for modulus spectra 
             beta    Window shape
             ----    ------------
             0       Rectangular
             5       Similar to a Hamming
             6       Similar to a Hanning
             8.6     Similar to a Blackman
+
+        with maxi<0.5 it allows to generate an apodisation very close to gaussenh()
+            shaping precisely the maximum and the curvature indepently
+        for instance for a dataset of 10kHz spectral width and 64k points
+        kaiser(maxi=0.15, beta=15) and gaussenh(0.5, enhancement=1)  are similar
+
+        can also be sued to simulate the Kilgour apodisation
         """
-        todo = self.test_axis(axis)
-        it = self.axes(todo).itype
-        size = self.axes(todo).size
-        if it == 1: # means complex
-            size = size//2
-        e = np.kaiser(size, beta)
-        if it == 1:
-            e = as_float((1 + 1.0j)*e)
-        return self.apod_apply(axis,e)
+        return self._shifted_apod(np.kaiser,  beta, maxi=maxi, axis=axis )
     #-------------------------------------------------------------------------------
-    def hamming(self, axis=0):
+    def hamming(self, maxi=0.5, axis=0):
         """
         apply a Hamming apodisation
+        maxi is the location of the maximum point,
+            ranges from 0            (max at the beginning )
+                    to 0.5 - default (max at the center)
         """
-        todo = self.test_axis(axis)
-        it = self.axes(todo).itype
-        sw = self.axes(todo).specwidth
-        size = self.axes(todo).size
-        if it == 1: # means complex
-            size = size//2
-        e = np.hamming(size)
-        if it == 1:
-            e = as_float((1 + 1.0j)*e)
-        return self.apod_apply(axis,e)
+        return self._shifted_apod(np.hamming, maxi=maxi, axis=axis )
     #-------------------------------------------------------------------------------
-    def hanning(self, axis=0):
+    def hanning(self, maxi=0.5, axis=0):
         """
         apply a Hanning apodisation
+        maxi is the location of the maximum point,
+            ranges from 0            (max at the beginning )
+                    to 0.5 - default (max at the center)
         """
-        todo = self.test_axis(axis)
-        it = self.axes(todo).itype
-        sw = self.axes(todo).specwidth
-        size = self.axes(todo).size
-        if it == 1: # means complex
-            size = size//2
-        e = np.hanning(size)
-        if it == 1:
-            e = as_float((1 + 1.0j)*e)
-        return self.apod_apply(axis,e)
+        return self._shifted_apod(np.hanning, maxi=maxi, axis=axis )
     #-------------------------------------------------------------------------------
     def apod_gm(self, gb, axis=0):
         """
         apply an gaussian apodisation, gb is in Hz
-        WARNING : different from common definition of apodisation
+        WARNING : different from common definition of gaussian enhancement
+                  if this is what you need, check the plugin gaussenh() 
         """
         todo = self.test_axis(axis)
         it = self.axes(todo).itype
@@ -2834,7 +2856,7 @@ class _NPKData(object):
         """
         import math as m
         if maxi<0.0 or maxi>0.5:
-            raise ValueError
+            raise ValueError("maxi should be within [0...0.5]")
         todo = self.test_axis(axis)
         # compute shape parameters
         it = self.axes(todo).itype
@@ -2855,11 +2877,13 @@ class _NPKData(object):
     def apod_sin(self, maxi=0.0, axis=0):
         """
         apply a sinebell apodisation
-        maxi ranges from 0 to 0.5
+        maxi is the location of the maximum point,
+             ranges from 0    (max at the beginning == a cosine func)
+                      to 0.5  (max at the center == a sine func)
         """
         import math as m
         if maxi<0.0 or maxi>0.5:
-            raise ValueError
+            raise ValueError("maxi should be within [0...0.5]")
         todo = self.test_axis(axis)
         # compute shape parameters
         it = self.axes(todo).itype

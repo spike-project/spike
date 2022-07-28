@@ -9,10 +9,44 @@ includes 2nd order correction
 """
 
 from __future__ import print_function
-from spike.NPKData import NPKData_plugin
+from spike.NPKData import NPKData_plugin, as_float
 from spike.NPKError import NPKError
 import numpy as np
 import math as m
+
+def kilgour(self, maxi=0.5, axis=0):
+    """ the apodisation function as defined in 
+    Rapid Commun. Mass Spectrom. 2015, 29, 1009–1018   DOI: 10.1002/rcm.7190
+        Absorption mode Fourier transform mass spectrometry with no baseline correction using a novel asymmetric apodization function
+        David P. A. Kilgour and Steven L. Van Orden
+    `maxi` is the `F` parameter in the publi.
+    """
+    import math as m
+    if maxi<0.0 or maxi>0.5:
+        raise ValueError("maxi should be within [0...0.5]")
+    todo = self.test_axis(axis)
+    # compute shape parameters
+    it = self.axes(todo).itype
+    size = self.axes(todo).size
+    if it == 1:
+        size = size//2
+    maxipoint = int(size*maxi)
+    if maxipoint == 0:
+        zz = m.pi/(2*(size-1))
+        e = np.cos( zz*np.arange(size))**2
+    else:
+        e = np.zeros((size,))
+        zz1 = m.pi/(2*maxipoint)
+        e[:maxipoint] = np.cos(m.pi/2 +  zz1*np.arange(maxipoint))**2
+        zz2 = m.pi/(2*(size-1-maxipoint))
+        e[maxipoint:] = np.cos(zz2*np.arange(size-maxipoint))**2
+
+    if it == 1:
+        e = as_float((1 + 1.0j)*e)
+    # then apply
+    return self.apod_apply(axis,e)
+
+NPKData_plugin("kilgour", kilgour)
 
 def phase(self, ph0, ph1, ph2=0.0, pivot=0.0, axis=0):
     """
@@ -76,5 +110,6 @@ def movepivot(p0, p1, p2, pvbef, pvaft):
         p0p += 360
     
     return p0p, p1p, p2p, pvaft
+
 # NPKData_plugin("phase", phase)  # supercede the regular phase correction code - not compatible with Test suite !
 NPKData_plugin("phaseMS", phase)

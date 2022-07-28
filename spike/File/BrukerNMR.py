@@ -139,50 +139,58 @@ def read_param(filename="acqus", get_title=True):
     oct 2006 : added support for array
     """
     debug = 0
-    with open(filename) as fin:
-        # read file
-        dico = {}
-        dico['comments']=""
-        f=fin.read()
-        fin.close()
-        ls= f.split("\n")
-    #    for v in ls:
-        while ls:
-            v = ls.pop(0)
-            v = v.strip()
-            if debug: print("-",v,"-")
-            if (re.search(r"^\$\$",v)):  # print comments
-                dico['comments'] = dico['comments']+"\n"+v
-            else:
-                m = re.match(r"##(.*)= *\(0\.\.([0-9]*)\)(.*)$",v )   # match arrays
-                if (m is not None):
-                    if debug: print("ARRAY",v,m.group(1,2,3))
-                    (key,numb,line)=m.group(1,2,3)
-                    v = ls.pop(0)
-                    v = v.lstrip()
-                    while (not re.match(r"##",v)):    # concatenate all array lines
-                        line = line+" "+v
-                        v=ls.pop(0)
-                        if debug: v = v.lstrip()
-                    ls.insert(0,v)
-                    array=line.split()
-                    if debug: print(key,numb,len(array),array)
-                    if ((int(numb)+1) != len(array)):   # (0..9) is 10 entries !
-                        raise "size mismatch in array"
-                    dico[key] = array
-                    continue
-                m=re.match(r"##(.*)= *<(.*)>",v )   #match string
-                if (m is not None): 
-                    if debug: print("STRING",v)
-                    (key,val) = m.group(1,2)
-                    dico[key] = "<"+val+">"
-                    continue
-                m=re.match(r"##(.*)= *(.*)$",v )   #match value
-                if (m is not None):
-                    if debug: print("VAL",v)
-                    (key,val) = m.group(1,2)
-                    dico[key] = val
-                    continue
+    # with open(filename) as fin:
+    #     # read file
+    #     try:
+    #         f=fin.read()
+    #     except UnicodeDecodeError:
+    #         raise "c'est mort, c'est windows"
+    # ls= f.split("\n")
+    dico = {}
+    dico['comments']=""
+    with open(filename,'rb') as fin:
+        ls = []
+        while True:
+            l = fin.readline()
+            if l == b'':
+                break
+            ls.append(l.decode(encoding="utf-8", errors="ignore"))
+    while ls:
+        v = ls.pop(0)
+        v = v.strip()
+        if debug: print("-",v,"-")
+        if (re.search(r"^\$\$",v)):  # print comments
+            dico['comments'] = dico['comments']+"\n"+v
+        else:
+            m = re.match(r"##(.*)= *\(0\.\.([0-9]*)\)(.*)$",v )   # match arrays
+            if (m is not None):
+                if debug: print("ARRAY",v,m.group(1,2,3))
+                (key,numb,line)=m.group(1,2,3)
+                v = ls.pop(0)
+                v = v.lstrip()
+                while (not re.match(r"##",v)):    # concatenate all array lines
+                    line = line+" "+v
+                    v=ls.pop(0)
+                    if debug: v = v.lstrip()
+                ls.insert(0,v)
+                array=line.split()
+                if debug: print(key,numb,len(array),array)
+                if ((int(numb)+1) != len(array)):   # (0..9) is 10 entries !
+                    print ("WARNING - size mismatch in array %s"%key)
+                dico[key] = array
+                continue
+            m=re.match(r"##(.*)= *<(.*)>",v )   #match string
+            if (m is not None): 
+                if debug: print("STRING",v)
+                (key,val) = m.group(1,2)
+                dico[key] = "<"+val+">"
+                continue
+            m=re.match(r"##(.*)= *(.*)$",v )   #match value
+            if (m is not None):
+                if debug: print("VAL",v)
+                (key,val) = m.group(1,2)
+                dico[key] = val
+                continue
 # add title
     if get_title:
         dico['title'] = read_title(filename)

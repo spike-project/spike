@@ -30,7 +30,8 @@ def gaussenh(npkd, width, enhancement=2.0, axis=0):
         size = size//2
     baseax = width*np.arange(size)/sw
     e = np.exp(enhancement*baseax)
-    e *= np.exp(-(baseax)**2)   
+    e *= np.exp(-(baseax)**2)
+    e *= 1.0/np.max(e)          # normalize
     if it == 1:
         e = as_float((1 + 1.0j)*e)
     # check NPKData.py to see how apodisations are handled.

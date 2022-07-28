@@ -14,7 +14,7 @@ from codecs import decode
 
 ProgramName = "SPIKE"
 VersionName = "Development version"
-VersionInfo = ["0", "99", "30"]   # Major - Minor - Micro
+VersionInfo = ["0", "99", "31"]   # Major - Minor - Micro
 
 # 1.0 will probably be when interactive Notebooks are really usefull !
 # And NMR.py validated
@@ -30,6 +30,19 @@ VersionInfo = ["0", "99", "30"]   # Major - Minor - Micro
 # Release Notes in md syntax !
 release_notes="""
 # SPIKE Relase Notes
+#### 0.99.31 - July 2022
+- improvements in spike Interactive NMR
+    - on spectral superposition
+    - improved import/export of peak and integral lists, as csv files
+- added BrukerNMR.Export_fid (1D)
+- improvements in automatic baseline correction
+- improved apodisation functions
+    - added the kilgour() apodisation, from Kilgour et al DOI:10.1002/rcm.7190 handy for phased FTICR-MS data
+    - added the `maxi` parameter for hamming(), hanning(), and kaiser() which becomes a versatile and generalized apodisation
+      *( was already available for apod_sin() and apod_sq_sin() )*
+    - normalized gaussenh() (which was not !)
+- adapted to python 3.10
+- **a problem with multiprocessing crashing (core dump!) on my system, still investigating**
 #### 0.99.30 - April 2022
 - spike Interactive NMR
     - modified SHOW1D to handle the move tool

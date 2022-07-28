@@ -54,7 +54,7 @@ from numpy.core.overrides import array_function_dispatch
 import numpy as np
 from IPython.display import display, HTML, Javascript, Markdown, Image
 import ipywidgets as widgets
-from ipywidgets import fixed, Layout, HBox, VBox, Label, Output, Button, Tab
+from ipywidgets import Layout, HBox, VBox, Label, Output, Button, Tab
 from matplotlib.widgets import MultiCursor
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
@@ -453,7 +453,7 @@ def summary(data, param=True, output='string'):
     if output == 'string':
         res = data.params['acqu']['title']
         if param:
-            res += r"\n" + param_line(data.params['acqu'], output='string')
+            res += "\n" + param_line(data.params['acqu'], output='string')
     elif output == 'HTML':
         res = HTML('<b>' + data.params['acqu']['title'] + '</b>')
         if param:
