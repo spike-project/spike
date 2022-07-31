@@ -17,7 +17,7 @@ from subprocess import Popen, PIPE
 import sys
 import os
 import re
-from codecs import encode, decode
+from codecs import  decode
 #import glob
 
 CMD = "pylint"
@@ -30,7 +30,7 @@ def msg(string, sep='='):
     print('|', string, '|')
     print(sep*(len(string)+4))
 
-def tracked_files(versioning='git', excluded=['none',]):
+def tracked_files(versioning='git', excluded=('none',)):
     """return list of hg tracked files in folder as a tuple : (all,modified) 
     excluded is a list of patterns (unix style) which are excluded
     """
@@ -41,7 +41,7 @@ def tracked_files(versioning='git', excluded=['none',]):
     else:
         raise Exception(versioning, ' unsupported versioning system')
 
-def tracked_files_git(excluded=['none',]):
+def tracked_files_git(excluded=('none',)):
     """return list of git tracked files in folder as a tuple : (all,modified) 
     excluded is a list of patterns (unix style) which are excluded
     """
@@ -71,7 +71,7 @@ def tracked_files_git(excluded=['none',]):
     print(gitmodif, modif)
     return (git, modif)
 
-def tracked_files_hg(excluded=['none',]):
+def tracked_files_hg(excluded=('none',)):
     """return list of hg tracked files in folder as a tuple : (all,modified) 
     excluded is a list of patterns (unix style) which are excluded
     """
@@ -137,11 +137,11 @@ def find_depedencies(reader):
 def run_pylint(fich):
     "run pylint on the given file and return synthetic results (note, error, reorder, warning)"
     from pylint import lint
-    from pylint.reporters.text import TextReporter, ParseableTextReporter
+    from pylint.reporters.text import ParseableTextReporter
 #    pyl = lint.Run(args)
     pylint_output = WritableObject()
     lint.Run([fich]+ARGS, reporter=ParseableTextReporter(pylint_output), do_exit=False)
-    ignored_error = ('Exter', 'E1103')  # 5 first char of ignored errors
+    ignored_error = ('Exter', )#'E1103')  # 5 first char of ignored errors
     ignored_warn = ('none',)            # 5 first char of ignored warnings
     errors = 0
     warn = 0
@@ -215,7 +215,8 @@ def report(stats, modif):
     for k in reversed(kstats):
         note = stats[k][0]
         err = stats[k][1]
-        errtot += err
+        if err<10000:    # 10000 means crash
+            errtot += err
         warn = stats[k][2]
         if k in modif:
             head = 'M'
@@ -276,7 +277,7 @@ def message():
         print(a, end=' ')
     print("filename.py")
     
-def main(excluded = ['.hgignore', '.gitignore'], files = 'hg'):
+def main(excluded = ('.hgignore', '.gitignore'), files = 'hg'):
     """does the work
     excluded is a list of excluded file pattern
     files is the list of files to analyse, if files == 'hg' (default) or 'git' then files are taken from a mercurial or git repository.
@@ -303,7 +304,16 @@ def main(excluded = ['.hgignore', '.gitignore'], files = 'hg'):
 
 if __name__ == '__main__':
     print('We are here',os.path.realpath(  os.curdir) )
-    sys.exit(main(files='git', excluded=['Notebooks/*', 'doc/*', 'spike/v1/*', 'spike/util/dynsubplot.py', 'spike/Miscellaneous/*', 'SPIKE_usage_eg/previous-to-clean/*']))
+    sys.exit(main(files='git',
+        excluded=[  'Notebooks/*',
+                    'doc/*', 
+                    'spike/Algo/Cadzow_mpi*',
+                    'spike/processingPH*',
+                    'spike/plugins/specials/wavelet.py',
+                    'spike/v1/*',
+                    'spike/util/dynsubplot.py',
+                    'spike/Miscellaneous/*',
+                    'SPIKE_usage_eg/previous-to-clean/*']))
     # excluding dynsubplot.py because the add_class method is just too confusing to pylint
 #    sys.exit( main( files=glob.glob('*.py')+glob.glob('*/*.py') ) )
 

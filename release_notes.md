@@ -11,7 +11,7 @@
     - added the `maxi` parameter for hamming(), hanning(), and kaiser() which becomes a versatile and generalized apodisation
       *( was already available for apod_sin() and apod_sq_sin() )*
     - normalized gaussenh() (which was not !)
-- adapted to python 3.10
+- adapted to python 3.10 - cleaned the code (better grade in QC!)
 - **a problem with multiprocessing crashing (core dump!) on my system, still investigating**
 #### 0.99.30 - April 2022
 - spike Interactive NMR

@@ -200,7 +200,7 @@ syntax is :
     elif algo == "rQRd":# 
         meth = rqr
     else:
-        raise("wrong algo")
+        raise ValueError("wrong algo")
 
     # then loop
     t0 = time.time()
@@ -219,7 +219,7 @@ syntax is :
             if progress: pbar.update(i+1)
     else:
         import itertools
-        res = itertools.imap(meth, xarg)    # apply it
+        res = map(meth, xarg)    # apply it
         for i,p in enumerate(res):       # and get results
             d1D.buffer = p
             d1.set_col(indexes[i], d1D)

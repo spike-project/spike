@@ -722,7 +722,7 @@ class GifaFileTests(unittest.TestCase):
         dd = 2*np.ones((508,2*1000)) # + np.arange(2*1000)
         print(dd.shape)
         H = GifaFile(nameout,"w")
-        A = npkd.NPKData(buffer=dd)
+        A = npkd._NPKData(buffer=dd)
         H.set_data(A)
         H.save()        # save dataset
         H.close()

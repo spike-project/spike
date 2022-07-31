@@ -80,7 +80,7 @@ def read_param(filename="acqus"):
                     array=line.split()
                     if debug: print(key,numb,len(array),array)
                     if ((int(numb)+1) != len(array)):   # (0..9) is 10 entries !
-                        raise "size mismatch in array"
+                        raise ValueError("size mismatch in array")
                     dico[key] = array
                     continue
                 m=re.match(r"##(.*)= *<(.*)>",v )   #match string

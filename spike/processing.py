@@ -171,6 +171,7 @@ def comp_sizes(d0,  zflist=None, szmlist=None, largest = LARGESTDATA, sizemin = 
     if (szmlist!=None):         # generate from parameters
         sm1,sm2 = szmlist
         first_loop = True       # 1st loop is specal as there is no downsampling to do
+        si1, si2 = 0,0    # just to stop pylint from complaining
         while True:      # reduce progressively the multiplier
             (psi1, psi2) = pred_sizes(d0, (sm1,sm2))   # initial prediction of sizes, ok for FFT
             if not first_loop:

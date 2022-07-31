@@ -6,11 +6,13 @@ Created by Lionel Chiron  18/10/2013
 Copyright (c) 2013 __NMRTEC__. All rights reserved.
 Various tools for performing signal processing (SNR calculation,
     synthetic Fids with noise, noise level etc... )
+
+This file needs a clean-up - most of it is obsolete !!!
 '''
 
 from __future__ import print_function, division
 import numpy as np
-from numpy.fft import rfft as nprfft, irfft as npirfft
+from numpy.fft import rfft as nprfft, irfft as npirfft, fft as npfft, ifft as npifft
 from numpy import pi
 import math
 import scipy.fftpack as fft
@@ -126,7 +128,7 @@ class SIGNAL_NOISE(object):
         self.fid[self.lenfid//self.trunc:] = 0 # truncate
         self.fid0[self.lenfid//self.trunc:] = 0 # truncate
     
-    def full():
+    def full(self):
         '''
         Uses full Fid.
         '''
@@ -469,7 +471,7 @@ def em_wiener(x,lb):
     t = 1.0*np.arange(len(x))
     return x*np.exp(-t*lb)
     
-def apod(lb = 1):
+def apod(x,lb = 1):
     '''
     apodisation for improving sparsity
     '''

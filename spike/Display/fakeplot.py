@@ -61,7 +61,7 @@ class fake(object):
         elif len(args) in (3,4):
             (n,m) = ( len(args[0]), len(args[1]))
             if (n,m) != args[2].shape:
-                raise "size missmatch in contour"
+                raise ValueError("size missmatch in contour")
         print("-- contour-plot : %d x %d"%(n,m))
     contourf = contour
     def yscale(self, *args, **key):

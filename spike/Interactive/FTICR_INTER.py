@@ -148,7 +148,7 @@ class MR_interact(MR):
         creates an interactive object.
         if display is True (default) the graphical tool will be displayed.
         """
-        super(self.__class__, self).__init__(name, report=report, Debug=Debug)
+        super().__init__(name, report=report, Debug=Debug)
         self.vlayout = Layout(width='60px')
         self.pltaxe = None
         self.pltaxe1D = None

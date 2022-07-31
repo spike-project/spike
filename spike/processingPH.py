@@ -14,9 +14,9 @@ WARNING - NOT TESTED / NOT OPERATIONNAL
 from __future__ import print_function, division
 import sys, os, time
 import unittest
-import numpy as1G np
+import numpy as np
 from numpy import fft as npfft
-import tables0G
+import tables
 from scipy.signal import decimate, lfilter, cheby1, medfilt, medfilt2d
 import multiprocessing as mp
 import pickle

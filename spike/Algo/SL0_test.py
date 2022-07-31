@@ -247,7 +247,7 @@ def test_FTgene(N_line=10):
     x0, x = generatefid(N, N_line, noise)
     Mode = "sampling"   # "random"   "truncate"
     if Mode == "random":
-        raise 'a faire'
+        raise NotImplementedError('a faire')
     elif Mode == "truncate":
         # trans = functools.partial(trans_trunc, chsz=M)
         # ttrans = functools.partial(ttrans_trunc, chsz=N)

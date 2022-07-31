@@ -1133,7 +1133,7 @@ class _NPKData(object):
             if zf1:
                 self._chsize1d(self.size1*zf1)
         elif self.dim == 2 :
-            if self.axis2.sampled: raise("This is to be done")
+            if self.axis2.sampled: raise NotImplementedError("This is to be done")
             if self.axis1.sampled:
                 if self.axis1.itype == 0:
                     data = np.zeros((max(self.axis1.sampling) + 1, self.size2))   # create empty data
@@ -1149,7 +1149,7 @@ class _NPKData(object):
             if zf2: self._chsize2d(self.size1, self.size2*zf2)
             if zf1: self._chsize2d(self.size1*zf1, self.size2)
         else:
-            if self.axis3.sampled: raise("This is to be done")
+            if self.axis3.sampled: raise NotImplementedError("This is to be done")
             if zf3: self._chsize3d(self.size1, self.size2, self.size3*zf3)
             if zf2: self._chsize3d(self.size1, self.size2*zf2, self.size3)
             if zf1: self._chsize3d(self.size1*zf1, self.size2, self.size3)
@@ -1222,7 +1222,7 @@ class _NPKData(object):
     def zeroing(self, threshold):
         """
         Sets to zero points below threshold (in absolute value)
-        Can be used for compression
+        Can be used for compression or spectral comparison
         see also :  eroding, plus, minus
         """
         self.buffer[abs(self.buffer)<threshold] = 0.0
@@ -1561,7 +1561,7 @@ class _NPKData(object):
         if self.dim == 1:
             if absmax is None:  # _absmax is the largest point on spectrum, either given from call, or handled internally
                 absmax = self.absmax
-            mmin = -absmax/scale
+            mmin = -(absmax/scale)
             mmax = absmax/scale
             step = self.axis1.itype+1
             if scale == "auto":
@@ -2556,8 +2556,9 @@ class _NPKData(object):
             p = getattr(data, process)
             return p()
         todo = self.test_axis(axis)
-        results = it.imap(_do_it, it.izip(axis_it, it.repeat(process)))  # generate results
-        r0 = results.next() # store first one
+#        results = it.imap(_do_it, it.izip(axis_it, it.repeat(process)))  # generate results
+        results = map(_do_it, zip(axis_it, it.repeat(process)))  # generate results - python 3
+        r0 = results.__next__() # store first one
         if r0.dim <= self.dim:      # dim should reduce !
             raise NPKError("wrong dimension", data=self)
         if self.dim == 1:

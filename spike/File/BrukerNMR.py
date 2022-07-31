@@ -391,14 +391,14 @@ def zerotime(acqu):
         try:
             j = decim_offset.index(decim)
         except:
-            raise "*** wrong value for DECIM"
+            raise ValueError("*** wrong value for DECIM")
         try:
             d = tabdelay[(dspfvs) - 10][j];
 #            print "d=",d
         except:
-             raise "*** wrong value for DSPFVS " + dspfirm
+             raise ValueError("*** wrong value for DSPFVS " + dspfirm)
         if (d == -1):
-             raise "*** wrong DECIM/DSPFVS parameter combination"
+             raise ValueError("*** wrong DECIM/DSPFVS parameter combination")
         z = (float(d)/float(decim))
         zerotimeposition = z/2
         return(zerotimeposition)

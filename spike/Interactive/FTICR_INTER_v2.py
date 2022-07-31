@@ -134,7 +134,7 @@ class MR_interact(MR):
         creates an interactive object.
         if display is True (default) the graphical tool will be displayed.
         """
-        super(self.__class__, self).__init__(name, report=report, Debug=Debug)
+        super().__init__(name, report=report, Debug=Debug)
         self.vlayout = Layout(width='60px')
         self.pltaxe = None
         self.pltaxe1D = None
@@ -590,7 +590,7 @@ class SuperImpose(object):
 class MS2Dscene(HBox):
     "a widget to set all MS tools into one screen"
     def __init__(self, show=True, root='/'):
-        super(self.__class__, self).__init__()
+        super().__init__()
         # DATA
         self.MR2D = None # The MR2D object
 

@@ -15,8 +15,8 @@ import numpy as np
 import math as m
 
 def kilgour(self, maxi=0.5, axis=0):
-    """ the apodisation function as defined in 
-    Rapid Commun. Mass Spectrom. 2015, 29, 1009–1018   DOI: 10.1002/rcm.7190
+    """ the apodisation function as defined in
+    Rapid Commun. Mass Spectrom. 2015, 29, 1009-1018   DOI: 10.1002/rcm.7190
         Absorption mode Fourier transform mass spectrometry with no baseline correction using a novel asymmetric apodization function
         David P. A. Kilgour and Steven L. Van Orden
     `maxi` is the `F` parameter in the publi.

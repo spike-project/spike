@@ -1886,13 +1886,13 @@ class NMRPeaker1D(Show1D):
         x = [self.data.axis1.itoc(z) for z in (0, self.data.size1)]
         y = [self.data.absmax*self.thresh.value/100]*2
         self.threshline = self.ax.plot(x, y, ':r')[0]
-        if True:  # try:
+        if True:  # try:    # Pb should have been fixed
             self.temppk.display(peak_label=False, peak_mode=self.peak_mode.value,
                                 f=self.data.axis1.itoc, figure=self.ax, color='red')
             self.peaks.display(peak_label=False, peak_mode=self.peak_mode.value,
                                f=self.data.axis1.itoc, color='blue', figure=self.ax)
         else:  # except:
-            rrr("problem")
+            raise NotImplementedError("should never append")
         self.temppk.display(
             peak_label=True, peak_mode=self.peak_mode.value, color='red', figure=self.ax)
         self.ax.set_xbound(self.xb)

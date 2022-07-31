@@ -111,12 +111,12 @@ def cadzow2d(d2D, n_of_line=5, n_of_iter=5, orda=100, mp=True, N_proc=None, verb
     import itertools as it
     d2D.check2D()
     d1D = d2D.col(0)            # sets all parameters
-    iterlist = it.izip(d2D.xcol(), it.repeat(n_of_line), it.repeat(n_of_iter), it.repeat(orda))    
+    iterlist = zip(d2D.xcol(), it.repeat(n_of_line), it.repeat(n_of_iter), it.repeat(orda))    
     if mp:
         pool = mproc.Pool(processes=N_proc)  #         start N_proc independent processes  
         result = pool.imap( cadfun, iterlist )     # and apply the computation on them
     else:
-        result = it.imap( cadfun, iterlist)
+        result = map( cadfun, iterlist)
     for i in xrange(d2D.size2):     # do and copy the results
         if verbose>0: print("processing column %d / %d"%(i+1, d2D.size2))
         d1D.buffer = as_float(result.next())

@@ -191,7 +191,7 @@ class Phaser2D(Show2D):
     """
     def __init__(self, data, **kw):
         if data.itype != 3:
-            raise('Dataset should be complex along both axes, Phasing is not possible')
+            raise ValueError ('Dataset should be complex along both axes, Phasing is not possible')
         super().__init__(data, **kw)
         self.data_ref = data
         # print('WARNING this tool is not functional/tested yet')
