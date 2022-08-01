@@ -2729,7 +2729,7 @@ class _NPKData(object):
     #    print(start, size)
         if it == 1: # means complex
             size = size//2
-            start = start//2
+            start = 2*(start//2)
         e = func(size, *arg, **kw)
         if it == 1:
             e = as_float((1 + 1.0j)*e)
