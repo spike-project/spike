@@ -144,7 +144,7 @@ def autopoints(npkd, Npoints=8, modulus=True):
         xpoints *= 2
     return xpoints
 
-def bcorr(npkd, method='spline', xpoints=None, nsmooth=0, modulus=True):
+def bcorr(npkd, method='spline', xpoints=None, xpunits='index', nsmooth=0, modulus=True):
     """
     recapitulate all baseline correction methods, only 1D so far
     
@@ -160,6 +160,9 @@ def bcorr(npkd, method='spline', xpoints=None, nsmooth=0, modulus=True):
     if xpoints absent,  pivots are estimated automaticaly
     if xpoints is integer, it determines the number of computed pivots (defaut is 8 if xpoints is None)
     if xpoints is a list of integers, there will used as pivots
+    xpunits tells the unit in which the pivot are given
+        - 'index' in buffer index (default)
+        - 'current' - in current, displayed unit (carefull, other lowerlevel methods do not have this option)
 
     if nsmooth >0, buffer is smoothed by moving average over 2*nsmooth+1 positions around pivots.
     if dataset is complex, the xpoints are computed on the modulus spectrum, unless modulus is False
@@ -170,11 +173,15 @@ def bcorr(npkd, method='spline', xpoints=None, nsmooth=0, modulus=True):
         return bcorr_auto(npkd)
     else:
         if xpoints is None or isinstance(xpoints,int):
-            xpoints = autopoints(npkd, xpoints, modulus=modulus)
+            xpts = autopoints(npkd, xpoints, modulus=modulus)
+        elif xpunits == 'current':
+            xpts = [npkd.axis1.ctoi(x) for x in xpoints]
+        else:
+            xpts = xpoints
     if method=='linear':
-        return linear_interpolate(npkd, xpoints, nsmooth=nsmooth)
+        return linear_interpolate(npkd, xpts, nsmooth=nsmooth)
     elif method=='spline':
-        return spline_interpolate(npkd, xpoints, nsmooth=nsmooth)
+        return spline_interpolate(npkd, xpts, nsmooth=nsmooth)
     else:
         raise Exception("Wrong method in bcorr plugin")
 
