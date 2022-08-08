@@ -779,9 +779,15 @@ class baseline1D(Show1D):
             jsalert(
                 'Please define control points before applying baseline correction')
             return
-        printlist = [round(i, 3) for i in sorted(self.bsl_points)]
-        print("Applied correction:\ndata.bcorr(xpoints={0}, nsmooth={1})".format(
-            printlist, self.smooth.value))
+        printlist = [round(i, 4) for i in sorted(self.bsl_points)]
+        if len(self.bsl_points) < 4:
+            meth = 'linear'
+        else:
+            meth = 'spline'
+        print(f"""Applied correction:
+data.bcorr(method='{meth}', nsmooth={self.smooth.value}, xpunit='current',\\
+           xpoints={printlist})
+""")
         sp = self.data     # short name for convenience
         sp.set_buffer(sp.get_buffer() - self.correction())
         self.drspectrum[0].set_xdata( sp.axis1.itoc( sp.axis1.points_axis() ) )    # I got once a shorten x display axis !!!  so restore here
@@ -930,8 +936,28 @@ class baseline1D(Show1D):
         # set zoom
 
 
+def B(text, size='auto'):
+    "bold HTML widget"
+    return widgets.HTML(value="<b>%s</b>" % text, layout=widgets.Layout(width=size))
+
+def I(text, size='auto'):
+    "Italic HTML widget"
+    return widgets.HTML(value="<i>%s</i>" % text, layout=widgets.Layout(width=size))
 class SpforSuper():
     "a holder for one spectrum to SuperImpose"
+    header = HBox([B('Id', '40px'),
+                    B('file name', '5em'),
+                    I('or "Self" for spectrum excerpts', '26em'),
+                    B('scale', '60px'),
+                    B('stretching', '60px'),
+                    B('direction', '60px'),
+                    B('xoffset', '50px'),
+                    B('yoffset(%)', '50px'),
+                    B(' ', '50px'), B('Zoom', '90px'),
+                    B('Linewidth', '80px'),
+                    B('color', '70px'),
+                    B('label')
+                    ])
 
     def __init__(self, i, filename='None', axref=False, ref=None):
         """
@@ -939,6 +965,7 @@ class SpforSuper():
         axref is the axes of the caller, where to display
         ref is a dataset in case filename is Self 
         """
+        self.Id = i
         self.axref = axref
         self.ref = ref
         self.drartist = None
@@ -970,35 +997,24 @@ class SpforSuper():
         # for w in (self.color, self.direct, self.zmleft, self.zmright, self.label, self.scale, self.offset, self.splw):
         #     w.observe(self.ob)
         # control bar
-        self.me = HBox([self.B(str(i)),
-                        self.filename,
-                        self.scale,
-                        self.stretch,
-                        self.direct,
-                        self.xoffset,
-                        self.yoffset,
-                        self.zmleft,
-                        self.zmright,
-                        self.splw,
-                        self.color,
-                        self.label,
-                        ])
-        self. header = HBox([self.B('Id', '40px'),
-                             self.B('file name', '5em'),
-                             self.I('or "Self" for spectrum excerpts', '26em'),
-                             self.B('scale', '60px'),
-                             self.B('stretching', '60px'),
-                             self.B('direction', '60px'),
-                             self.B('xoffset', '50px'),
-                             self.B('yoffset(%)', '50px'),
-                             self.B(' ', '50px'), self.B('Zoom', '90px'),
-                             self.B('Linewidth', '80px'),
-                             self.B('color', '70px'),
-                             self.B('label')
-                             ])
         self.nactivate(None)
         self.xbox = np.array([None, None])   # will store the borders of the spectrum
 
+    @property
+    def me(self):
+        return HBox([B(str(self.Id)),
+                    self.filename,
+                    self.scale,
+                    self.stretch,
+                    self.direct,
+                    self.xoffset,
+                    self.yoffset,
+                    self.zmleft,
+                    self.zmright,
+                    self.splw,
+                    self.color,
+                    self.label,
+                    ])
     def ob(self, event):
         "observe events and display"
         if event['name'] == 'value':
@@ -1036,15 +1052,7 @@ class SpforSuper():
             else:
                 w.disabled = False
 
-    def B(self, text, size='auto'):
-        "bold HTML widget"
-        return widgets.HTML(value="<b>%s</b>" % text, layout=widgets.Layout(width=size))
-
-    def I(self, text, size='auto'):
-        "Italic HTML widget"
-        return widgets.HTML(value="<i>%s</i>" % text, layout=widgets.Layout(width=size))
-
-    def draw(self, unit='ppm'):
+    def draw(self):
         if self.filename.value == 'None' or self.filename.value == '' or self.direct.value == 'off':
             return  # nothing to do
         # else
@@ -1060,6 +1068,7 @@ class SpforSuper():
         else:
             lb = None
         # load
+        unit = self.ref.axis1.currentunit
         if self.filename.value == 'Self':
             d = self.ref.copy().set_unit(unit)
         else:
@@ -1380,6 +1389,8 @@ class Show1Dplus(Show1D):
         # superimposition
         for s in self.DataList:
             s.draw()
+        if any([ s.label.value for s in self.DataList]):
+            self.ax.legend(loc='upper left')
 
         self.ax.set_xbound(self.xb)
 
@@ -1391,6 +1402,7 @@ class Show1Dplus(Show1D):
     #         zoom = None
         super().disp()
         for s in self.DataList:
+#            print(type(s), s.filename)
             s.disp()
 
 
