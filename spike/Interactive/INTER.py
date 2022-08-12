@@ -1095,8 +1095,8 @@ class SpforSuper():
         self.ydata = self.drartist.get_ydata()   # store spectral data
         self.xdata = self.drartist.get_xdata()
         # adapt to scale and direction
-        self.drartist.set_ydata(self.move_ydata())
-        self.drartist.set_xdata(self.move_xdata())
+        # self.drartist.set_ydata(self.move_ydata())
+        # self.drartist.set_xdata(self.move_xdata())
         # text
         # will be changed by disp()
         self.text = self.axref.text(
@@ -1394,7 +1394,7 @@ class Show1Dplus(Show1D):
 
         self.ax.set_xbound(self.xb)
 
-    # def disp(self, zoom=False):
+    def disp(self, zoom=False):
     #     self.xb = self.ax.get_xbound()
     #     if zoom:
     #         zoom = self.xb
