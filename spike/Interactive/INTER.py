@@ -586,12 +586,14 @@ class Show1D(HBox):
         for widg in (self.scale,):
             widg.observe(self.obdisp)
         try:
-            self.xb0 = np.array([self.data.axis1.itoc(self.data.size1), self.data.axis1.itoc(0)])  # full box in x
+            a,b = (self.data.axis1.itoc(self.data.size1), self.data.axis1.itoc(0))  # full box in x
+            self.xb0 = (min(a,b), max(a,b))
+            # /!\    xb and xb0 are always   (low, high)  so (Right - left)  in ppm
             self.ymax = self.data.absmax*1.1      # highest position
             self.yb0 = np.array( [-self.ymax/self.yratio, self.ymax] )              # full box in y
         except AttributeError:   # if self.data not defined
             pass
-        self.xb0 = np.array([0.0, 10.0])
+        self.xb0 = (0.0, 10.0)
         self.xb = self.xb0                                                      # current x box
         self.yratio = self.yratio0            # inverse minimum neg display extension 
         if create_children:
@@ -633,7 +635,8 @@ class Show1D(HBox):
     def on_reset(self, b=None):
         self.scale.value = 1.0
         try:
-            self.xb0 = np.array([self.data.axis1.itoc(0), self.data.axis1.itoc(self.data.size1)])  # full box in x
+            a,b = (self.data.axis1.itoc(self.data.size1), self.data.axis1.itoc(0))  # full box in x
+            self.xb0 = (min(a,b), max(a,b))
             self.xb = self.xb0                                                      # current x box
             self.yratio = self.yratio0            # inverse minimum neg display extension 
             self.ymax = self.data.absmax*1.1      # highest position
@@ -682,7 +685,7 @@ class Show1D(HBox):
         self.ax.clear()
         self.data.display(new_fig=False, figure=self.ax, title=self.title)
         self.drspectrum = self.data.disp_artist
-        self.ax.set_xbound(self.xb)
+        self.ax.set_xbound(*self.xb)
         self.ax.set_ybound(self.yb0/self.scale.value)   # self.yb0 is [low, up] np.array
         self.fig.canvas.header_visible = False
         for s in ["left", "top", "right"]:
@@ -697,7 +700,7 @@ class Show1D(HBox):
         # self.scale.value = self.yb0/scale
         # self.xb = self.ax.get_xbound()
         self.ax.set_ybound(self.yb0/self.scale.value)
-        self.ax.set_xbound(self.xb)
+        self.ax.set_xbound(*self.xb)
 
 
 class baseline1D(Show1D):
@@ -1329,8 +1332,8 @@ class Show1Dplus(Show1D):
         for s in self.DataList:
             xb = s.xbox
             if all(xb != None):     # if defined  - all() because xb is an array
-                xb0 = ( max(xb0[0],xb[0]), min(xb0[1],xb[1]) )  # assume ppm here !!! - going backward
-        self.xb0 = np.array(xb0)
+                xb0 = ( min(xb), max(xb) )  # always lower / upper
+        self.xb0 = xb0
         self.xb = self.xb0                                                      # current x box
         self.disp()
 
@@ -1401,7 +1404,7 @@ class Show1Dplus(Show1D):
         if any([ s.label.value for s in self.DataList]):
             self.ax.legend(loc='upper left')
 
-        self.ax.set_xbound(self.xb)
+        self.ax.set_xbound(*self.xb)
 
     def disp(self, zoom=False):
     #     self.xb = self.ax.get_xbound()
@@ -1916,7 +1919,7 @@ class NMRPeaker1D(Show1D):
             raise NotImplementedError("should never append")
         self.temppk.display(
             peak_label=True, peak_mode=self.peak_mode.value, color='red', figure=self.ax)
-        self.ax.set_xbound(self.xb)
+        self.ax.set_xbound(*self.xb)
         # self.ax.set_ylim(ymax=self.data.absmax/self.scale.value)
         # send pseudo event to display peak table
         self.pkprint({'name': 'value'})
@@ -2107,7 +2110,7 @@ class NMRIntegrate(Show1D):
         self.idraw += 1
         self.Integ.display(label=True, figure=self.ax,
                            labelyposition=None, regions=False, zoom=None)
-        self.ax.set_xbound(self.xb)
+        self.ax.set_xbound(*self.xb)
         # self.ax.set_ybound(self.yb)
 
 

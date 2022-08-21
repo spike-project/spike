@@ -1573,8 +1573,8 @@ class _NPKData(object):
                 ax = axis
             fig.set_xscale(self.axis1.units[self.axis1.currentunit].scale)  # set unit scale (log / linear)
             if self.axis1.units[self.axis1.currentunit].reverse:           # set reverse mode
-#                if not fig.xaxis_inverted(): # not yet
-#                    fig.invert_xaxis()
+#               if not fig.xaxis_inverted(): # not yet
+#                   fig.invert_xaxis()
                 fig.set_xlim(ax[z1], ax[z2])
             if NbMaxVect is not None:
                 while abs(z2-z1+1)/step > NbMaxVect:     # if too many vectors to display !
