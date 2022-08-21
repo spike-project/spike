@@ -585,6 +585,15 @@ class Show1D(HBox):
                                          orientation='vertical')
         for widg in (self.scale,):
             widg.observe(self.obdisp)
+        try:
+            self.xb0 = np.array([self.data.axis1.itoc(self.data.size1), self.data.axis1.itoc(0)])  # full box in x
+            self.ymax = self.data.absmax*1.1      # highest position
+            self.yb0 = np.array( [-self.ymax/self.yratio, self.ymax] )              # full box in y
+        except AttributeError:   # if self.data not defined
+            pass
+        self.xb0 = np.array([0.0, 10.0])
+        self.xb = self.xb0                                                      # current x box
+        self.yratio = self.yratio0            # inverse minimum neg display extension 
         if create_children:
             plt.ioff()
             fi, ax = plt.subplots(figsize=figsize)
