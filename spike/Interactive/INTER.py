@@ -730,7 +730,7 @@ class baseline1D(Show1D):
                                         tooltip='apply a local smoothing for pivot points',
                                         value=1, readout=True, continuous_update=REACTIVE)
         self.toshow = widgets.Dropdown(
-            options=['baseline', 'corrected', 'points'],  description='Display:')
+            options=['full', 'corrected', 'baseline', 'points'],  description='Display:')
 
         self.bsl_points = self.BslPoints
         self.baseline = np.zeros_like(self.data.buffer)
@@ -910,21 +910,22 @@ data.bcorr(method='{meth}', nsmooth={self.smooth.value}, xpunit='current',\\
         # graphic objects: (drspectrum) drbaseline drpivot drcorrected drhoriz selector
         super().disp()
         if len(self.bsl_points) > 0:
-            if self.toshow.value == 'baseline':
-                self.drcorrected[0].set_visible(False)
-                self.drhoriz.set_ydata(0.0)
+            if self.toshow.value in ('baseline', 'full'):
+                if self.toshow.value == 'baseline':
+                    self.drcorrected[0].set_visible(False)
+                    self.drhoriz.set_ydata(0.0)
                 self.drhoriz.set_visible(True)
                 self.drbaseline.set_ydata(self.correction())
                 self.drbaseline.set_visible(True)
-            elif self.toshow.value == 'corrected':
-                self.drbaseline.set_visible(False)
+            if self.toshow.value in ('corrected', 'full'):
                 yoffset = 0.2*self.ax.get_ybound()[1]
-                self.drcorrected[0].set_ydata(
-                    self.data.get_buffer() - self.correction() + yoffset)
+                self.drcorrected[0].set_ydata( self.data.get_buffer() - self.correction() + yoffset)
                 self.drhoriz.set_ydata(yoffset)
                 self.drhoriz.set_visible(True)
                 self.drcorrected[0].set_visible(True)
-            elif self.toshow.value == 'points':
+                if self.toshow.value == 'corrected':
+                    self.drbaseline.set_visible(False)
+            if self.toshow.value == 'points':
                 self.drbaseline.set_visible(False)
                 self.drcorrected[0].set_visible(False)
                 self.drhoriz.set_visible(False)
@@ -1366,6 +1367,7 @@ class Show1Dplus(Show1D):
         self.drspectrum[0].set_color(self.spcolor.value)
         self.drspectrum[0].set_linewidth(self.splw.value)
         self.ax.set_title(self.sptitle.value)
+        self.title = self.sptitle.value
         if self.integ.value:
             if hasattr(self.data,'integrals') and self.data.integrals != []:
                 if self.labely.value == -1:
@@ -1382,7 +1384,7 @@ class Show1Dplus(Show1D):
                                                'color': self.intlabelcolor.value, 'fontsize': self.labelfont.value, 'rotation': self.labelrot.value},
                                            figure=self.ax, zoom=zoom)
             else:
-                #                print('no or wrong integrals (have you clicked on "Done" in the Integration tool ?)')
+                # print('no or wrong integrals (have you clicked on "Done" in the Integration tool ?)')
                 pass
         if self.peaks.value:
             if hasattr(self.data,'peaks') and self.data.peaks != []:

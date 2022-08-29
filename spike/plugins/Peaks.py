@@ -899,10 +899,11 @@ def pk2pandas_ms(npkd, full=False):
     return P1
 def pk2pandas_nmr(npkd, full=False, unit='current'):   
     """export extract of current peak list to pandas Dataframe for NMR datasets, 
-    unit is either "current", "points", "ppm" or "Hz"  - only in 1D so far.
+    unit is either "current", "points", "ppm" or "Hz" .
     """
     import pandas as pd          # LAZY IMPORT
     if npkd.dim == 1:
+        # ŧhis part could be buggy in certain strange cases
         if unit == "current":
             conv = npkd.axis1.ixtoc
         if unit == "points":

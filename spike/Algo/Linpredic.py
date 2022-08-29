@@ -55,6 +55,40 @@ def denoise(data, ar):
         filtered[i] = predict(data[:i], ar, i+1)[i]
     return filtered
 
+def baselinerollrem(data, n=8):
+    """remove baseline roll  n ~= 2* number of oscillations"""
+    def dprint(*arg):
+        "for debuging"
+        pass
+        #print(*arg)
+    dprint(data)
+    itype = data.axis1.itype
+    zerot = int(round(data.axis1.zerotime-1))
+    if itype == 1:
+        n *= 2
+        zerot *= 2
+    buf = data.reverse().buffer           # reverse time, easier !
+    if zerot >0:
+        header = buf[-zerot:]                 # zerotime header - untouched
+    else:
+        zerot = 0
+        header = []
+    bufshort = buf[:-(zerot+n)]           # remove n points after header
+    dprint(itype, zerot, len(header), len(bufshort))
+    # compute ar coeff - 2k points is probably enough for what we need
+    if len(bufshort) > 2048:
+        coeffs = burgr(n,  bufshort[-2048:])
+    else:
+        coeffs = burgr(n,  bufshort)
+    # then predict n removed points
+    predicted = predict(bufshort, coeffs, len(bufshort)+n)
+    result = np.concatenate([predicted,header])
+    dprint(len(predicted), len(result))
+    data.buffer = result
+    dprint(data)
+    data.reverse()
+    return data
+
 def norme(v):
     "simple norme definition"
     return np.dot(v , v.conjugate()).real
