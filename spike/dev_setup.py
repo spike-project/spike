@@ -30,7 +30,7 @@ VersionInfo = ["0", "99", "31"]   # Major - Minor - Micro
 # Release Notes in md syntax !
 release_notes="""
 # SPIKE Relase Notes
-#### 0.99.31 - August 2022
+#### 0.99.31 - Nov 2022
 - improvements in spike Interactive NMR
     - on spectral superposition
     - improved import/export of peak and integral lists, as csv files
@@ -44,6 +44,7 @@ release_notes="""
 - adapted to python 3.10 - cleaned the code (better grade in QC!)
 - **a problem with multiprocessing crashing (core dump!) on my system, still investigating**
 - corrected a bug in baseline correction, and improved interface
+- Corrected a bug when importing DOSY from TopSpin
 #### 0.99.30 - April 2022
 - spike Interactive NMR
     - modified SHOW1D to handle the move tool

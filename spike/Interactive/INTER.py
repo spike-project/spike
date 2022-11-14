@@ -641,7 +641,7 @@ class Show1D(HBox):
             self.yratio = self.yratio0            # inverse minimum neg display extension 
             self.ymax = self.data.absmax*1.1      # highest position
             self.yb0 = np.array( [-self.ymax/self.yratio, self.ymax] )              # full box in y
-            self.disp()
+            self.draw()
         except AttributeError:   # if self.data not defined
             pass
     def ob(self, event):
@@ -1065,9 +1065,16 @@ class SpforSuper():
             else:
                 w.disabled = False
 
-    def draw(self):
+    @property
+    def todraw(self):
+        "True if there is something to draw"
         if self.filename.value == 'None' or self.filename.value == '' or self.direct.value == 'off':
-            return  # nothing to do
+            return False
+        else:
+            return True
+
+    def draw(self):
+        if not self.todraw:    return  # nothing to do
         # else
         if self.drartist is not None:   # remove previous ones
             del(self.drartist)
