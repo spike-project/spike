@@ -10,8 +10,8 @@ except:
     revision = "--not determined--"
 ProgramName = 'SPIKE'
 VersionName = 'Development version'
-version = '0.99.31'
-rev_date = '14-11-2022'
+version = '0.99.32'
+rev_date = '08-02-2023'
 
 def report():
     "prints version name when SPIKE starts"

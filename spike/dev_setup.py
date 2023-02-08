@@ -14,7 +14,7 @@ from codecs import decode
 
 ProgramName = "SPIKE"
 VersionName = "Development version"
-VersionInfo = ["0", "99", "31"]   # Major - Minor - Micro
+VersionInfo = ["0", "99", "32"]   # Major - Minor - Micro
 
 # 1.0 will probably be when interactive Notebooks are really usefull !
 # And NMR.py validated

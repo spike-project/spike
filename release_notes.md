@@ -1,20 +1,29 @@
 <!-- DO NOT MODIFY this file, it is generated automatically from dev_setup ! -->
 # SPIKE Relase Notes
+#### 0.99.32 - Feb 2023
+- updated the plugin mechanism - the previous system was incompatible with the coming python 3.12
+    - requires python >= 3.5
+    - should not change anything to your set-up
+- added  Algo.Linepredic.baselinerollrem() to remove baseline roll using Linear Prediction
+- extended real2cpx() to 2D operations (was only 1D)
+- NMR: improved importing processed DOSY (PALMA plugin)
+
 #### 0.99.31 - Nov 2022
-- improvements in spike Interactive NMR
+- NMR:improvements in spike Interactive
     - on spectral superposition
     - improved import/export of peak and integral lists, as csv files
 - added BrukerNMR.Export_fid (1D)
 - improvements in automatic baseline correction
 - improved apodisation functions
-    - added the kilgour() apodisation, from Kilgour et al DOI:10.1002/rcm.7190 handy for phased FTICR-MS data
-    - added the `maxi` parameter for hamming(), hanning(), and kaiser() which becomes a versatile and generalized apodisation
+    - MS: added the kilgour() apodisation, from Kilgour et al DOI:10.1002/rcm.7190 handy for phased FTICR-MS data
+    - all: added the `maxi` parameter for hamming(), hanning(), and kaiser() which becomes a versatile and generalized apodisation
       *( was already available for apod_sin() and apod_sq_sin() )*
-    - normalized gaussenh() (which was not !)
+    - NMR: normalized gaussenh() (which was not !)
 - adapted to python 3.10 - cleaned the code (better grade in QC!)
 - **a problem with multiprocessing crashing (core dump!) on my system, still investigating**
 - corrected a bug in baseline correction, and improved interface
-- Corrected a bug when importing DOSY from TopSpin
+- NMR: Corrected a bug when importing DOSY from TopSpin
+
 #### 0.99.30 - April 2022
 - spike Interactive NMR
     - modified SHOW1D to handle the move tool
