@@ -29,6 +29,7 @@ import scipy
 from spike import NPKError
 from spike.NPKData import NPKData_plugin
 from spike.NPKData import LaplaceAxis
+import spike.NMR
 from spike.File.BrukerNMR import Import_2D, Import_2D_proc
 import spike.Algo.savitzky_golay as sgm
 import spike.util.signal_tools
@@ -433,35 +434,42 @@ def Import_DOSY(fname, nucleus=None, verbose=False):
         print("imported 2D DOSY, size = %d x %d\n%s"%(d.axis1.size, d.axis2.size, d.params['acqu']['title']))
     return d
 
-def Import_DOSY_proc(fname, nucleus='1H', postprocessed=True, verbose=False):
+def Import_DOSY_proc(fname, nucleus='1H', postprocessed=False, verbose=False):
     """
     Import and calibrate DOSY data-set from a Bruker 2rr file
-    postprocessed = True (default) means Topspin was used to process the Dosy axis
+    postprocessed = True (default) means Topspin or PALMA was used to process the Dosy axis
         in which case, Topspin scale will used
         if False, calibdosy() is used  and dmin/dmax unchanged
     """
-    d = Import_2D_proc(fname)
+    d = bk.Import_2D_proc(fname)
     d.axis1 = LaplaceAxis(size=d.size1)
     dire=op.dirname(op.dirname(op.dirname(fname)))   # up to expno
     d.axis1.load_qvalues(op.join(dire,"difflist"))
-    if d.axis1.size != len(d.axis1.qvalues):
-        l = min(d.axis1.size, len(d.axis1.qvalues))
-        print ("WARNING in Import_DOSY_proc(), size missmatch data is %d while difflist is %d"%(d.axis1.size, len(d.axis1.qvalues)))
-        print("truncating to %d"%(l,))
-        d.chsize(sz1=l)
-        d.axis1.qvalues = d.axis1.qvalues[:l]
+    d.calibdosy()
     if not postprocessed:
-        d.calibdosy()
+        if d.axis1.size != len(d.axis1.qvalues):
+            l = min(d.axis1.size, len(d.axis1.qvalues))
+            print ("WARNING in Import_DOSY_proc(), size missmatch data is %d while difflist is %d"%(d.axis1.size, len(d.axis1.qvalues)))
+            print("truncating to %d"%(l,))
+            d.chsize(sz1=l)
+            d.axis1.qvalues = d.axis1.qvalues[:l]
     else:
         # In Topspin, the diffusion axis parameters are faked as ppm - lets decode them from proc2
         Dmax = 10**(float(d.params['proc2']['$OFFSET'])+12)  # 12 to change from m2/s to µm2/s
-        width = float(d.params['proc2']['$SW_p'])/float(d.params['proc2']['$SF'])
-        Dmin = Dmax*(10**(-width))
+#        width = float(d.params['proc2']['$SW_p'])/float(d.params['proc2']['$SF'])
+#        Dmin = Dmax*(10**(-width))
+        Dmin = 10**(float(d.params['proc2']['$AXRIGHT'])+12)  # 12 to change from m2/s to µm2/s
         d.reverse(axis=1)
         d.axis1.dmin = Dmin
         d.axis1.dmax = Dmax
+        pp = d.params['proc2']
+        if verbose:
+            print(f"\nOFFSET {pp['$OFFSET']} - AXLEFT {pp['$AXRIGHT']}  - width {pp['$SW_p']}" )
     if verbose:
-        print("imported 2D DOSY spectrum, size = %d x %d\n%s"%(d.axis1.size, d.axis2.size, d.params['acqu']['title']))
+        if postprocessed:
+            print("imported processed 2D DOSY spectrum, size = %d x %d\n%s"%(d.axis1.size, d.axis2.size, d.params['acqu']['title']))
+        else:
+            print("imported 2D DOSY spectrum to be processed, size = %d x %d\n%s"%(d.axis1.size, d.axis2.size, d.params['acqu']['title']))
     return d
 
 #################### PALMA setup ###########################

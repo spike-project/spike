@@ -260,6 +260,8 @@ def peak_aggreg(pklist, distance, maxdist=None, method='max'):
     method is either 'max' or 'mean'
 
     """
+    if len(pklist) == 0:
+        return pklist
     pkl = sorted(pklist, key = lambda p: p.pos)   # first, sort the list in position
     newlist = Peak1DList()
     prev = pkl[0]

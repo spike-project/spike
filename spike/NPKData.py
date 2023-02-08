@@ -2481,15 +2481,41 @@ class _NPKData(object):
         self.ifftr(axis=axis).phase(-90,0,axis=axis).fftr(axis=axis)
         return self
     #-------------------------------------------------------------------------------
-    def real2cpx(self):
+    def real2cpx(self, axis=0):
         """
         use the Hilbert transform to build a complex dataset,
         takes real data and use Hilbert trf to build its virtual imaginary
         return complex dataset
         1D only so far !
         """
-        self.check1D()
-        self.ifftr().zf(2).fft()
+        if self.dim == 1:
+            self.check1D()
+            self.ifftr().zf(2).fft()
+        elif self.dim == 2:
+            todo = self.test_axis(axis)
+            # compute shape parameters
+            it = self.axes(todo).itype
+            if it != 0:
+                raise NPKError(msg=f"data is already complex on axis {axis}", data=self)
+            if self.axes(todo) == 1:
+                d4 = self.copy()
+                d4.zf(zf1=2)
+                d4.axis1.itype = 1
+                for i in range(self.size2):
+                    r = self.col(i)
+                    r.real2cpx()
+                    d4.set_col(i,r)
+            elif self.axes(todo) == 2:
+                d4 = self.copy()
+                d4.zf(zf2=2)
+                d4.axis2.itype = 1
+                for i in range(self.size1):
+                    r = self.row(i)
+                    r.real2cpx()
+                    d4.set_row(i,r)
+            self = d4
+        else:
+            raise NPKError(msg='Not implmented yet', data=self)
         return self
     #-------------------------------------------------------------------------------
     def _fft_nD(self, fft_base, axis, it_before, it_after):
@@ -2761,7 +2787,7 @@ class _NPKData(object):
         for instance for a dataset of 10kHz spectral width and 64k points
         kaiser(maxi=0.15, beta=15) and gaussenh(0.5, enhancement=1)  are similar
 
-        can also be sued to simulate the Kilgour apodisation
+        can also be used to simulate the Kilgour apodisation
         """
         return self._shifted_apod(np.kaiser,  beta, maxi=maxi, axis=axis )
     #-------------------------------------------------------------------------------

@@ -25,23 +25,26 @@ then, any NPKData will inherit the myname() method
 
 For the moment, only NPKData plugins are handled.
 
+Feb 2023 - NEW version - Spike 0.99.31 
+required because imp is obsolete starting with python 3.12
+Requires python 3.5 
 """
 from __future__ import print_function #
-import imp
+import importlib
 import traceback
 import unittest
 from collections import defaultdict
-import glob, os
+import sys
 from pathlib import Path
 
 #from ..NPKData import NPKData_plugin
 
 plugins = {}  # contains plugin modules loaded so far
 codes = defaultdict(list)  # loaded at plugin injection with all codes
-from pathlib import Path
+
 spikeconfig = Path.home()/'.config/'/'Spike'
 if not spikeconfig.exists():
-    spikeconfig.mkdir()
+    spikeconfig.mkdir(parents=True)
     (spikeconfig/'plugins').mkdir()
     with open(spikeconfig/'Readme.txt','w') as Readme:
         print("""
@@ -55,13 +58,11 @@ def load(debug=True):
         - plugins folder in distribution
         - $HOME/Spike/plugins
     """
+    print( "\nloading plugins... ( use spike.plugins.report() for a short description of each plugins )")
     for folder in [Path(__path__[0]), Path.home()/'.config/'/'Spike'/'plugins']:
         loadfolder(folder, debug=debug)
-    print( "\nspike.plugins.report() for a short description of each plugins")
-    print( "spike.plugins.report('module_name') for complete documentation on one plugin") 
 
-
-def loadfolder(folder, debug=True):
+def loadfolder(folder : Path, debug=True):
     """the loads plugins from a given folder
     import all python code found here  except the ones with names starting with a _
     """
@@ -77,9 +78,16 @@ def loadfolder(folder, debug=True):
             loadone(pgmod, str(pgfile), debug=debug)
             done.append(pgmod)
     if done:
-        print( "plugins loaded:\n" + 
+        if 'NMR' in folder.parts:
+            pre = 'NMR'
+        elif 'MS' in folder.parts:
+            pre = 'MS'
+        elif '.config' in folder.parts:
+            pre = 'user'
+        else:
+            pre = 'generic'
+        print(pre, "plugins loaded:\n" + 
            " ".join(["{}, ".format(k) for k in done if k in plugins.keys()]) )
-
 
 def report(module=None, mode=None):
     """ print a nice report
@@ -104,7 +112,7 @@ def report(module=None, mode=None):
         if  mode != "short" or mode is None:
             print("    implements: "+" ".join(["{}(), ".format(c) for c in codes[k]]))
     if module is None and mode is None:    # add doc if default values
-        print("spike.plugins.report('module_name') for complete documentation on one plugin") 
+        print("\n use spike.plugins.report('module_name') for complete documentation on one plugin") 
 
 def loadone(pluginname, pgfile=None, debug=True):
     """
@@ -114,23 +122,32 @@ def loadone(pluginname, pgfile=None, debug=True):
     global plugins
     direc = __path__[0] # plugins folder
     if pgfile is None:
-        pgfile = os.path.join(direc, pluginname + ".py")
-    if debug: print("---- Importing  << %s >>"%pluginname)
+        pgfile = Path(direc)/ f"{pluginname}.py"
+    else:
+        pgfile = Path(pgfile)
+    if debug: print("---- Importing  << %s >> from '%s'"%(pluginname,pgfile))
     try:
         plugins[pluginname]
         if debug: print("WARNING existing plugin %s is overwritten"%pluginname)
     except    KeyError:
         pass
+
+# import: see https://docs.python.org/3/library/importlib.html#importing-a-source-file-directly
+    module_name = f'spike.plugins.{pluginname}'
+    spectoload = importlib.util.spec_from_file_location(module_name, pgfile)
     try:
-        m = imp.load_source(pluginname, pgfile)
+        m = importlib.util.module_from_spec(spectoload) 
+        spectoload.loader.exec_module(m)
+        globals()[pluginname] = m    # create    spike.plugins.{pluginname}
         doc = m.__doc__.split('\n')[0]    # print first line of documentation
         if debug: print("     "+doc)
         plugins[pluginname] = m.__doc__
     except:
-        print("*** %s not loaded ***"%pluginname)
         if debug:
             traceback.print_exc()
             print("*** Continuing ***")
+        else:
+            print("*** %s not loaded ***"%pluginname)
 
 class PluginTests(unittest.TestCase):
     def test_plugin(self):

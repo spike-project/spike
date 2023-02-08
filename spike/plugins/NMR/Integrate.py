@@ -143,7 +143,7 @@ class Integrals(list):
         data = self.source
         try:
             pk = data.peaks
-        except AttributeError:
+        except AttributeError:    # nopeak list -> create one
             data.pp(autothresh=self.autothresh).centroid()            # create one if missing
             pk = data.peaks
         # then build integral list

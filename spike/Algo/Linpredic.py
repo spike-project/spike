@@ -19,8 +19,6 @@ Copyright (c) 2010 IGBMC. All rights reserved.
 from __future__ import print_function
 from __future__ import division
 import numpy as np
-import random
-import time
 import unittest
 import sys #
 if sys.version_info[0] < 3:
@@ -59,8 +57,7 @@ def baselinerollrem(data, n=8):
     """remove baseline roll  n ~= 2* number of oscillations"""
     def dprint(*arg):
         "for debuging"
-        pass
-        #print(*arg)
+        print(*arg)
     dprint(data)
     itype = data.axis1.itype
     zerot = int(round(data.axis1.zerotime-1))
@@ -75,9 +72,10 @@ def baselinerollrem(data, n=8):
         header = []
     bufshort = buf[:-(zerot+n)]           # remove n points after header
     dprint(itype, zerot, len(header), len(bufshort))
-    # compute ar coeff - 2k points is probably enough for what we need
-    if len(bufshort) > 2048:
-        coeffs = burgr(n,  bufshort[-2048:])
+    # compute ar coeff - 2k points is probably enough for what we need, unless n is >= 1024
+    burgsize = max(2048, 2*(n+1))
+    if len(bufshort) > burgsize:
+        coeffs = burgr(n,  bufshort[-burgsize:])
     else:
         coeffs = burgr(n,  bufshort)
     # then predict n removed points
@@ -168,12 +166,11 @@ def burgc (lprank, data):
 
         khalf = (k+1)//2
         for j in range(1,khalf+1):
-                kj = k+1-j
-                save2 = ar_[j-1]
-                ar_[j-1] = save2 + save1*ar_[kj-1].conjugate()
-                if (j==kj): break
-                ar_[kj-1] = ar_[kj-1] + save1*save2.conjugate()
-
+            kj = k+1-j
+            save2 = ar_[j-1]
+            ar_[j-1] = save2 + save1*ar_[kj-1].conjugate()
+            if (j==kj): break
+            ar_[kj-1] = ar_[kj-1] + save1*save2.conjugate()
         ww1[:] = wk1_[:]
         ww2[:] = wk2_[:]
         wk1_[k:n] = ww1[k:n] + save1*np.roll(ww2[k:n],1)

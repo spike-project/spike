@@ -28,6 +28,7 @@ import numpy as np
 from spike.File.BrukerNMR import Import_1D
 from spike import NPKData
 from spike.NMR import NMRData
+from spike.Interactive import INTER as I
 try:
     import spike.plugins.bcorr as bcorr
 except:
@@ -132,14 +133,14 @@ class Phaser1D(I.Show1D):
     requires %matplotlib widget
 
     """
-    def __init__(self, data, figsize=None, title=None, reverse_scroll=False, show=True):
+    def __init__(self, data, initphases=True, figsize=None, title=None, reverse_scroll=False, show=True):
         data.check1D()
         self.list = {}          # list is actually a dictionnary - sorry about that
                                 # hold {pivot_in_points: (ph0, ph1)}
         if data.itype == 0:
             I.jsalert('Data is Real - Please redo Fourier Transform')
             return
-        super().__init__( data, figsize=figsize, title=title, reverse_scroll=reverse_scroll, show=False)
+        super().__init__( data, figsize=figsize, title=title, show=False)
         self.p0 = widgets.FloatSlider(description='P0:',min=-200, max=200, step=1,
                             layout=Layout(width='50%'), continuous_update=HEAVY)
         
@@ -147,8 +148,11 @@ class Phaser1D(I.Show1D):
                             layout=Layout(width='100%'), continuous_update=HEAVY)
         self.p1 = FloatButt(4, description='P1  ', layout=Layout(width='100%'))
         self.p2 = FloatButt(4, description='P2  ', layout=Layout(width='100%'))
-        P1, P2 = firstguess(data)
-        self.p1.value, self.p2.value = round(P1), round(P2)
+        if initphases:
+            P1, P2 = firstguess(data)
+            self.p1.value, self.p2.value = round(P1), round(P2)
+        else:
+            self.p1.value, self.p2.value = 0.0, 0.0
         if self.data.axis1.currentunit == 'm/z':
             pvmin = self.data.axis1.lowmass
             pvmax = self.data.axis1.highmass
