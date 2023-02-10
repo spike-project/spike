@@ -49,6 +49,7 @@ from .ipyfilechooser import FileChooser as FileChooser_code
 from ..File.BrukerNMR import Import_1D
 from ..NMR import NMRData
 from .. import NMR
+from .. import FTMS
 from .. import version
 from numpy.core.overrides import array_function_dispatch
 import numpy as np
@@ -585,17 +586,7 @@ class Show1D(HBox):
                                          orientation='vertical')
         for widg in (self.scale,):
             widg.observe(self.obdisp)
-        try:
-            a,b = (self.data.axis1.itoc(self.data.size1), self.data.axis1.itoc(0))  # full box in x
-            self.xb0 = (min(a,b), max(a,b))
-            # /!\    xb and xb0 are always   (low, high)  so (Right - left)  in ppm
-            self.ymax = self.data.absmax*1.1      # highest position
-            self.yb0 = np.array( [-self.ymax/self.yratio, self.ymax] )              # full box in y
-        except AttributeError:   # if self.data not defined
-            pass
-        self.xb0 = (0.0, 10.0)
-        self.xb = self.xb0                                                      # current x box
-        self.yratio = self.yratio0            # inverse minimum neg display extension 
+        self.on_reset() # set to default
         if create_children:
             plt.ioff()
             fi, ax = plt.subplots(figsize=figsize)
@@ -634,16 +625,19 @@ class Show1D(HBox):
 
     def on_reset(self, b=None):
         self.scale.value = 1.0
+        self.yratio = self.yratio0            # inverse minimum neg display extension 
         try:
-            a,b = (self.data.axis1.itoc(self.data.size1), self.data.axis1.itoc(0))  # full box in x
-            self.xb0 = (min(a,b), max(a,b))
-            self.xb = self.xb0                                                      # current x box
-            self.yratio = self.yratio0            # inverse minimum neg display extension 
-            self.ymax = self.data.absmax*1.1      # highest position
-            self.yb0 = np.array( [-self.ymax/self.yratio, self.ymax] )              # full box in y
-            self.draw()
+            right,left = self.data.axis1.borders
         except AttributeError:   # if self.data not defined
             pass
+            self.xb0 = (0.0, 10.0)
+        else:
+            a,b = (self.data.axis1.itoc(right), self.data.axis1.itoc(left))  # full box in x
+            self.xb0 = (a,b) #(min(a,b), max(a,b))
+            # /!\    xb and xb0 are always   (low, high)  so (Right - left)  in ppm
+            self.ymax = self.data.absmax*1.1      # highest position
+            self.yb0 = np.array( [-self.ymax/self.yratio, self.ymax] )       # full box in y
+        self.xb = self.xb0                                                   # current x box
     def ob(self, event):
         "observe events and redraw"
         if event['name'] == 'value':
@@ -1183,6 +1177,8 @@ class SpforSuper():
 
 class Show1Dplus(Show1D):
     def __init__(self, data, base='/DATA', N=9, **kw):
+        if isinstance(data, FTMS.FTMSData):  # pb is in xbox for Datalist, as MS goes reverse to NMR
+            raise NotImplementedError('FTMS not implemented yet')
         show = kw.get('show', True)
         kw['show'] = False
         super().__init__(data, **kw)

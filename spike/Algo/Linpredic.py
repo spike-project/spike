@@ -57,7 +57,8 @@ def baselinerollrem(data, n=8):
     """remove baseline roll  n ~= 2* number of oscillations"""
     def dprint(*arg):
         "for debuging"
-        print(*arg)
+        pass
+        # print(*arg)
     dprint(data)
     itype = data.axis1.itype
     zerot = int(round(data.axis1.zerotime-1))
