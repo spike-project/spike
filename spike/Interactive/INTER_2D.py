@@ -58,18 +58,19 @@ class Show2D(Show1D):
     A display for 2D NMR with a scale cursor
     Show2D(spectrum) where spectrum is a NPKData object
     - special display for DOSY.
+    - projtype='s' => skyline projection  / projtype='m' => mean projection
     """
-    def __init__(self, data, title=None, figsize=None, **kw):
+    def __init__(self, data, title=None, figsize=None, projtype='s', **kw):
         super().__init__(data, title=title, create_children=False, **kw)
         self.isDOSY =  isinstance(data.axis1, NPKData.LaplaceAxis)
         try:
             self.proj2 = data.projF2
         except:
-            self.proj2 = data.proj(axis=2).real()
+            self.proj2 = data.proj(axis=2, projtype=projtype).real()
         try:
             self.proj1 = data.projF1
         except:
-            self.proj1 = data.proj(axis=1).real()
+            self.proj1 = data.proj(axis=1, projtype=projtype).real()
         # Controls
         self.scale.min = 0.2
         if data.noise == 0.0:
@@ -133,8 +134,11 @@ class Show2D(Show1D):
         self.on_reset()
     def on_reset(self, e=None):
         self.scale.value = 1.0
-        self.ax.set_ybound( (self.data.axis1.itoc(0),self.data.axis1.itoc(self.data.size1)) )
-        self.ax.set_xbound( (self.data.axis2.itoc(0),self.data.axis2.itoc(self.data.size2)) )
+        try:
+            self.ax.set_ybound( (self.data.axis1.itoc(0),self.data.axis1.itoc(self.data.size1)) )
+            self.ax.set_xbound( (self.data.axis2.itoc(0),self.data.axis2.itoc(self.data.size2)) )
+        except AttributeError:
+            print('2D display not ready')
     @debounce(0.2)
     def draw(self,new=True):
         if new:

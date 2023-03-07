@@ -145,7 +145,7 @@ def loadone(pluginname, pgfile=None, debug=True):
     except:
         if debug:
             traceback.print_exc()
-            print("*** Continuing ***")
+            print("*** Error when loading - Continuing ***")
         else:
             print("*** %s not loaded ***"%pluginname)
 

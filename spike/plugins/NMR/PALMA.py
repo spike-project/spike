@@ -29,8 +29,6 @@ import scipy
 from spike import NPKError
 from spike.NPKData import NPKData_plugin
 from spike.NPKData import LaplaceAxis
-import spike.NMR
-from spike.File.BrukerNMR import Import_2D, Import_2D_proc
 import spike.Algo.savitzky_golay as sgm
 import spike.util.signal_tools
 
@@ -419,6 +417,7 @@ def Import_DOSY(fname, nucleus=None, verbose=False):
     """
     Import and calibrate DOSY data-set from a Bruker ser file
     """
+    from spike.File.BrukerNMR import Import_2D   # here to avoid circular import
     d = Import_2D(fname)
     d.axis1 = LaplaceAxis(size=d.size1)
     dire=op.dirname(fname)
@@ -441,7 +440,8 @@ def Import_DOSY_proc(fname, nucleus='1H', postprocessed=False, verbose=False):
         in which case, Topspin scale will used
         if False, calibdosy() is used  and dmin/dmax unchanged
     """
-    d = bk.Import_2D_proc(fname)
+    from spike.File.BrukerNMR import Import_2D_proc
+    d = Import_2D_proc(fname)
     d.axis1 = LaplaceAxis(size=d.size1)
     dire=op.dirname(op.dirname(op.dirname(fname)))   # up to expno
     d.axis1.load_qvalues(op.join(dire,"difflist"))
