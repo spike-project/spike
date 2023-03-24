@@ -6,7 +6,7 @@ The files contained in this directory are intended to provide a simple access to
 They provide a simple User Interface, in the popular Jupyter Notebook format.
 Each Notebook provides a single set of functions, for instance 
 
-### 1D NMR
+### 1D NMR
 - `Proc1DNMR.ipynb`: The basic NoteBook to process your 1D NMR files, (Bruker only so far)
     - with interactive phasing, baseline correction, peak-picking, Integration
     - Composite display with spectral superimposition, zoom and extracts
@@ -18,15 +18,14 @@ Each Notebook provides a single set of functions, for instance
     - block acquisition for large NS
     - can be used to pre-process a DOSY experiment, or to isolate heavy components of a DOSY
 
-### 2D NMR
+### 2D NMR
 - `Proc2DNMR.ipynb`: to process 2D experiments and display
     - modulus and phased 2D
     - extract rows and columns
 - `ProcDOSY.ipynb`: to process and display DOSY experiment using the PALMA algorithm
 
+### FTICR-MS
 
-
-### FTICR-MS
 Processing and display of a 1D FTICR-MS dataset
 - `ProcessFTICR-MS.ipynb`: to process FTICR-MS experiment
     - choose the apodisation, the zerofiling level
@@ -55,7 +54,7 @@ they present the same tools, organized differently.
 - `EasyDisplayFTICR2D.ipynb`: a graphic interface, hiding the python details.
 - `DisplayFTICR2D.ipynb`: the same tools have their python interface presented
 
-# utilities - A FINIR
+### utilities
 - `ReadSMX.ipynb` Allow to read 1D and 2D processed NMR datasets from Bruker/Topspin
 - `Logo.ipynb` the code which generates the Spike logo ![](Logo.png)
 
