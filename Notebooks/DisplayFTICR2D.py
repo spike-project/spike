@@ -7,9 +7,9 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.3.4
+#       jupytext_version: 1.14.1
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
@@ -130,8 +130,5 @@ DI.I1D()
 # - superimposition
 # - exctaction of arbitrary 1D 
 # - locate artifacts due to harmonics
-
-# %%
-print (iPython.__version)
 
 # %%

@@ -140,13 +140,13 @@ class BrukerSMXHandler(object):
         interm = data.reshape(self.long_mat)
         for sub_num, sub_idx in enumerate(np.ndindex(tuple(self.sub_per_dim))):
             zipshape = zip(sub_idx, self.dim_sub_mat)
-            sub_slices = [slice(i * j, (i + 1) * j) for i, j in zipshape ]
+            sub_slices = (slice(i * j, (i + 1) * j) for i, j in zipshape )
             slt2 = slice(sub_num*self.dim_sub_mat[0],(sub_num+1)*self.dim_sub_mat[0]) # dimension t1
             slt1 = slice(0,self.dim_sub_mat[1])# dimension t2
             # print "self.rdata[sub_slices].shape ",self.rdata[sub_slices].shape
             # print "interm[slt1, slt2].shape ",interm[slt1, slt2].shape
             # print "self.rdata[sub_slices].shape",self.rdata[sub_slices].shape
-            rdata[sub_slices] = interm[slt2, slt1]
+            rdata[tuple(sub_slices)] = interm[slt2, slt1]
         return rdata
 
     def read_file(self, filename):

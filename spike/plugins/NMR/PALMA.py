@@ -32,7 +32,7 @@ from spike.NPKData import LaplaceAxis
 import spike.Algo.savitzky_golay as sgm
 import spike.util.signal_tools
 
-#from numba import jit
+from numba import jit, njit
 
 debug = True
 
@@ -97,7 +97,6 @@ def approx_lambert(x):
 #     s = x - np.log(x)
 #     s[nz] = lambert_w(np.exp(x[nz]))
 #     return s 
-
 def prox_l1(x, w) :
     """
     Compute proximity operator of L1 norm"

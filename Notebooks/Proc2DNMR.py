@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.13.7
+#       jupytext_version: 1.14.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -15,23 +15,26 @@
 # ---
 
 # %% [markdown]
+# # Spike Notebook
+#
+# a simplified environment for processing Bruker NMR datasets with `SPIKE`.
 #
 # # 2D NMR Processing and Display
 #
-# a simplified environment for processing 2D Bruker NMR datasets with `SPIKE`.
+# ***Usage***
 #
-# Run each python cell in sequence by using the ⇥Run button above (or typing *shift* Enter).
+# - Run each python cell in sequence by using the ⇥Run button above (or typing *shift* Enter).
+# - Cells are meant to be used in order, taking you to the complete analysis, but you can go back at any time.
+# - The SPIKE code used for processing is visible in the cells, and can be used as a minimal tutorial.
+# - You can hide it when done to present a clean NoteBook.
 #
-# Cells are meant to be used in order, taking you to the complete analysis, but you can go back at any time.
-#
-# The SPIKE code used for processing is visible in the cells, and can be used as a minimal tutorial.
 #
 # ***Remark*** *to use this program, you should have installed the following packages:*
 #
 # - *a complete scientific python environment ( tested with python 3.7 - [anaconda](https://www.anaconda.com/))*
-# - [`spike`](https://www.bitbucket.org/delsuc/spike) ( *version 0.99.21 minimum* )
+# - [`spike`](https://www.bitbucket.org/delsuc/spike) ( *version 0.99.32 minimum* )
 # - [`ipywidgets`](https://ipywidgets.readthedocs.io/en/latest/)  ( *tested with version 7.6* )
-# - [`ipyml`](https://github.com/matplotlib/jupyter-matplotlib)  ( *adds interactivity in the notebook* )
+# - [`ipympl`](https://github.com/matplotlib/jupyter-matplotlib)  ( *adds interactivity in the notebook* )
 #
 # ## Initialization
 # the following cell should be run only once, at the beginning of the processing
@@ -51,9 +54,9 @@ from spike.Interactive import INTER as I
 from spike.Interactive import INTER_2D as I2D
 from spike.Interactive.ipyfilechooser import FileChooser
 print("\nInteractive module version,",I.__version__)
+I.initialize()
 from datetime import datetime
 print('Run date:', datetime.now().isoformat() )
-I.initialize()
 display(Markdown('## ...program is Ready'))
 from importlib import reload  # the two following lines are debugging help
 
@@ -143,14 +146,20 @@ P = I2D.Phaser2D(D2ph)
 P
 
 # %% [markdown]
-# # An interactive Display
-# - show2D +
-# - projections
-# - color maps
-# - title
+# # Some clean-up, and Display
 #
-# # todo
-# - peak picking
+#
+
+# %%
+D2ph.real(axis=1).real(axis=2).rem_ridge()   # rem_ridge() is a minimum baseline correction
+
+# %%
+S2 = I2D.Show2D(D2ph,  title="%s %s"%(FC.nmrname,d2.pulprog))
+S2.proj1 = S2.proj2
+S2
+
+# %% [markdown]
+# # look at columns and rows
 
 # %%
 F1slice = 3.3    # select a F1 (vertical) slice in current unit (here ppm) 
@@ -158,10 +167,6 @@ F2slice = 2.05   # select a F2 (horizontal) slice in current unit (here ppm)
 
 D2ph.col( D2ph.axis2.ctoi(F1slice)).display(title='F1 slice at F2=%.3f ppm'%(F1slice,))
 D2ph.row( D2ph.axis1.ctoi(F2slice)).display(title='F2 slice at F1=%.3f ppm'%(F2slice,))
-
-# %%
-D2.set_unit('ppm')
-b = I2D.Show2D(D2.copy().real(axis='F1').real(axis='F2'), title="%s %s"%(FC.nmrname,d2.pulprog))
 
 # %% [markdown]
 # ## Save on disk
@@ -171,6 +176,12 @@ D2.save('example1.gs2')
 
 # %% [markdown]
 # # The following entries or not finished yet
+#
+# ### todo:
+# - Show2Dplus() !
+# - colormap
+# - peakckpicker
+# - bcket
 
 # %% [markdown]
 # ## Peak-Picker

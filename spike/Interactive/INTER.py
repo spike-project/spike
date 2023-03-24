@@ -791,8 +791,8 @@ class baseline1D(Show1D):
         else:
             meth = 'spline'
         print(f"""Applied correction:
-data.bcorr(method='{meth}', nsmooth={self.smooth.value}, xpunit='current',\\
-           xpoints={printlist})
+data.bcorr(method='{meth}', nsmooth={self.smooth.value}, xpunits='current',\\
+           xpoints={printlist}))
 """)
         sp = self.data     # short name for convenience
         sp.set_buffer(sp.get_buffer() - self.correction())
@@ -1385,7 +1385,7 @@ class Show1Dplus(Show1D):
                                                'color': self.intcolor.value, 'linewidth': self.intlw.value},
                                            labeldict={
                                                'color': self.intlabelcolor.value, 'fontsize': self.labelfont.value, 'rotation': self.labelrot.value},
-                                           figure=self.ax, zoom=zoom)
+                                           figure=self.ax, zoom=self.ax.get_xbound())
             else:
                 # print('no or wrong integrals (have you clicked on "Done" in the Integration tool ?)')
                 pass
@@ -1399,7 +1399,7 @@ class Show1Dplus(Show1D):
                                             'marker': self.marker.value},
                                         labeldict={'rotation': self.pkrotation.value,
                                                    'fontsize': self.pkfont.value},
-                                        figure=self.ax, scale=1.0, zoom=zoom)
+                                        figure=self.ax, scale=1.0, zoom=self.ax.get_xbound())
             else:
                 #                print('no or wrong peaklist (have you clicked on "Done" in the Peak-Picker tool ?)')
                 pass
@@ -2023,7 +2023,6 @@ class NMRIntegrate(Show1D):
         print("No integration")
 
     def on_done(self, b):
-        self.close()
         self.draw()
         display(self.fig)
         display(self.out)
@@ -2035,6 +2034,7 @@ class NMRIntegrate(Show1D):
                 del(self.data.peaks)
             except AttributeError:    # if no peaks
                 pass
+        self.close()
 
     def on_add(self, b):
         start, end = self.ax.get_xbound()
@@ -2114,8 +2114,8 @@ class NMRIntegrate(Show1D):
         super().draw()
         self.idraw += 1
         self.Integ.display(label=True, figure=self.ax,
-                           labelyposition=None, regions=False, zoom=None)
-        self.ax.set_xbound(*self.xb)
+                           labelyposition=None, regions=False, zoom=self.ax.get_xbound())
+#        self.ax.set_xbound(*self.xb)
         # self.ax.set_ybound(self.yb)
 
 

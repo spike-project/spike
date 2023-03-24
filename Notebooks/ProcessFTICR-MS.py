@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.13.7
+#       jupytext_version: 1.14.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -15,13 +15,29 @@
 # ---
 
 # %% [markdown]
-# # FTICR-MS Processing and Display
+# # Spike Notebook
 #
 # a simplified environment for processing 1D Bruker FTICR datasets with `SPIKE`
 #
-# Run each python cell in sequence by using the ⇥Run button above (or typing *shift* Enter).
+# # FTICR-MS Processing and Display
 #
-# Cells are meant to be used in order, taking you to the complete analysis, but you can go back at any time.
+# ***Usage***
+#
+# - Run each python cell in sequence by using the ⇥Run button above (or typing *shift* Enter).
+# - Cells are meant to be used in order, taking you to the complete analysis, but you can go back at any time.
+# - The SPIKE code used for processing is visible in the cells, and can be used as a minimal tutorial.
+# - You can hide it when done to present a clean NoteBook.
+#
+# ***Remark*** *to use this program, you should have installed the following packages:*
+#
+# - *a complete scientific python environment ( tested with python 3.9 / [anaconda](https://www.anaconda.com/)  with no support for python 2.7 )*
+# - [`spike`](https://www.bitbucket.org/delsuc/spike) ( *version 0.99.32 minimum* )
+# - [`ipywidgets`](https://ipywidgets.readthedocs.io/en/latest/)  ( *tested with version 7.6* )
+# - [`ipympl`](https://github.com/matplotlib/jupyter-matplotlib)  ( *adds interactivity in the notebook* )
+# - mass analysis requires [`isotope`](https://github.com/delsuc/isotope) and fine isotopic requires [Neutronstar](https://bitbucket.org/orserang/neutronstar.git)
+#
+# ## Initialization
+# the following cell is to be run once, at the beginning of the processing
 #
 
 # %% [markdown]
@@ -43,7 +59,7 @@ from spike.Interactive import FTICR_INTER as FI
 try:
     from spike.Interactive import MSIsotopic as ISO
 except ImportError:
-    pass
+    print ("Isotopic patternd not installed")
 from spike.Interactive.ipyfilechooser import FileChooser
 from spike.File import BrukerMS
 from datetime import datetime
@@ -158,9 +174,10 @@ P = FI.MSPeaker(D1, pkname)
 # %% slideshow={"slide_type": "fragment"}
 try:
     IS = ISO.Isotope()
-    IS.full(D1)
+    Full = IS.full(D1)
 except NameError:
-    print("MSIsotopic not installed - see top of the page")
+    print("MSIsotopic not installed - see top of the page")   # error message if additional software not installed
+Full
 
 # %% [markdown]
 # ---

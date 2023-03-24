@@ -7,9 +7,9 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.11.1
+#       jupytext_version: 1.14.1
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
@@ -43,31 +43,46 @@
 #
 # The SPIKE code used for processing is visible in the cells, and can be used as a minimal tutorial.
 #
-# ***Remark*** *to use this program, you should have installed the following packages:*
-#
-# - *a complete scientific python environment* ( *tested with python 3.6 - [anaconda](https://www.anaconda.com/) 
-#  but it should also work in python 2.7*)
-# - [`spike`](https://www.bitbucket.org/delsuc/spike) ( *version 0.99.9 minimum* )
-# - [`ipywidgets`](https://ipywidgets.readthedocs.io/en/latest/)  ( *tested with version 7.1* )
 #
 # ## Initialization
 # the following cell should be run only once, at the beginning of the processing
 
 # %%
-# load all python and interactive tools
-from __future__ import print_function, division
-from importlib import reload
-from IPython.display import display, HTML, Markdown, Image, Javascript
+# load all python and interactive tools - has to be run only once (but it does not hurt to rerun...)
+from IPython.display import display, HTML, Markdown, Image
 display(Markdown('## STARTING Environment...'))
-# %matplotlib notebook
+import platform
+import ctypes
 import os.path as op
+from datetime import datetime
+import matplotlib as mpl
+# %matplotlib widget
 import spike
-from spike.File.BrukerNMR import Import_2D
-from spike.plugins.NMR.PALMA import Import_DOSY
+from spike.File.BrukerNMR import Import_1D
 from spike.Interactive import INTER as I
+from spike.Interactive import INTER_2D as I2D
 from spike.Interactive.ipyfilechooser import FileChooser
+from spike.plugins.NMR.PALMA import Import_DOSY
+I.initialize()
+print('Run date:', datetime.now().isoformat() )
 display(Markdown('## ...program is Ready'))
-I.hidecode()
+from importlib import reload  # this line is debugging help
+
+# this forces MKL -if there- to use only one thread (usually faster ! and probably required if you intend using multiprocessing)
+dllnames = dict(Linux='libmkl_rt.so', Darwin='libmkl_rt.dylib', Windows='libmkl_rt.dll')
+dllname = dllnames[platform.system()]
+try:
+    mkl_rt = ctypes.CDLL(dllname)
+    mkl_rt.MKL_Set_Num_Threads(1)
+except:
+    print ("No MKL")
+
+# configurable items - you may change them to fit you preferences
+verbose = 1                              # chose from 0 (terse) to 3 more verbose - not fully implemented !
+mpl.rcParams['figure.figsize'] = (8,4)   # (X,Y) default figure size
+I.Activate_Wheel = True                  # True/False    scale with wheel control in the graphic cells 
+I.reverse_scroll = False                 # inverse the direction of the mouse wheel, whether it is `True` (TrackPad) or `False` (Mouse)
+I.ParamList = ['SOLVENT', 'PULPROG', 'SFO1', 'NS', 'TE', 'TD', 'D1','P1','P30','D20']    # the list of important parameters to display
 
 # %% [markdown]
 # ### Choose the file
@@ -80,13 +95,13 @@ I.hidecode()
 # - After the selection, the selected filename is found in `FC.selected`
 
 # %%
-FC = FileChooser(path='/home/mad',filename='ser')
+FC = FileChooser(path='/DATA',filename='ser')
 display(FC)
 
 # %% [markdown]
 # ### Import dataset
 #
-# This is simply done with the `Import_2D()` tool, which returns a `SPIKE` object.
+# This is simply done with the `Import_DOSY()` tool, which returns a `SPIKE` object.
 #
 # We store the dataset into a variable, typing the variable name shows a summary of the dataset. 
 
@@ -95,12 +110,17 @@ if not op.exists(op.join(FC.selected_path,'difflist')):
     I.jsalert('No difflist file present - is this a DOSY experiment ?')
 print('Reading file ',FC.selected)
 d2 = Import_DOSY(FC.selected)
+d2.axis1.dmin = 10        # diffusion axis limits, values are in µm²/cm
+d2.axis1.dmax = 10000     # only indicative à this level
 d2.filename = FC.selected
 d2.pulprog = d2.params['acqu']['$PULPROG']
+display(I.summary(d2, output='HTML'))          # but summary is nicer and more informative
+display(HTML(f"$q$ values from {d2.axis1.qvalues[0]} to {d2.axis1.qvalues[-1]} in {d2.size1} steps"))
+# I.popup_param_table(d1)                      # this command pops up a window with the complete parameter table
 print (d2.params['acqu']['title'])
 d2.axis2.currentunit = 'sec'
 d2.axis1.currentunit = 'points'
-d2.display(title="%s/ser %s"%(FC.nmrname,d2.pulprog), scale='auto')
+d2.display(title="%s/ser %s"%(FC.nmrname,d2.pulprog), scale='auto');
 
 # %% [markdown]
 # In the current set-up, the figure can be explored *(zoom, shift, resize, etc)* with the jupyter tools displayed  below the dataset.
@@ -135,11 +155,11 @@ def loc(b):    # patch the on_done action o the phaser to propagate to DOSY
     if lp0 != 0 or lp1 != 0:
         D2.phase(lp0, lp1, axis=2)
         D2.display(scale="auto", autoscalethresh=6.0, title="%s %s"%(FC.nmrname,d2.pulprog))
-Ph.button.on_click(loc)
+Ph.done.on_click(loc)
 display(Ph)
 
 # %% [markdown]
-# ### baseline correction
+# ### baseline correction  -  if needed
 # A flat baseline centered on 0 is a requisite for a correct analysis.
 # The following tool allows to point baseline positions on a extracted 1D, see the effect of the correction, and apply it to the whole 2D experiment.
 #
@@ -147,17 +167,31 @@ display(Ph)
 # - the `auto` button populates with a first set of 8 positions
 
 # %%
+Dcopy  = D2.copy()   # keep an uncorrected copy, to rerun if problems
+
+# %%
+D2 = Dcopy.copy().real()
 R1 = D2.row(0) # copy the imported data-set to another object for processing
 for i in range(4):
     R1 += D2.row(i+1)
 D2.projF2 = R1
-b = I.baseline2D_F2(D2)
+b = I.baseline1D(R1)
+def bslloc(e):
+    for i in range(D2.size1):
+        r=D2.row(i)
+        r.bcorr(method='spline', xpoints=b.bsl_points, nsmooth=b.smooth.value, xpunits='current',)
+        D2.set_row(i,r)
+b.done.on_click(bslloc)
+b
 
 # %% [markdown]
 # ### Verify your data
 
 # %%
-I.Show2D(D2)
+reload(I2D)
+S = I2D.Show2D(D2)
+S.negview.value = True
+S
 
 # %% [markdown]
 # ## PALMA processing
@@ -170,28 +204,35 @@ I.Show2D(D2)
 # %%
 # Diffusion axis
 finalsize = 256  # The final of the DOSY on the diffusion axis
-Dmin = 10       # the minimum diffusion coefficient (in µm2/sec) typical is 1-100
+Dmin = 30       # the minimum diffusion coefficient (in µm2/sec) typical is 1-100
 Dmax = 10000     # the maximum diffusion coefficient (in µm2/sec) typical is 5000-50000
 
 # Processing
-nbiter=1000      # number of iterations - the more the better (usually)
-lamda=0.1        # weight between "pure" MaxEnt (1.0) and "pure" l1 (0.0)
+nbiter=10000      # number of iterations - the more the better (usually)
+lamda=0.01        # weight between "pure" MaxEnt (1.0) and "pure" l1 (0.0), 0.01 to 0.1 are "good values"
 
 # Optionnal parameters
-miniSNR=16       # minimum SNR in column to do processing - 32 is optimal -
+miniSNR = 8          # minimum SNR in column to do processing - 32 is optimal - do not go below 8
 # uncertainty=1.2  # if >1 allows more room for algo when data quality is poor
 # precision=1e-08  # stopping criterium
 
 # MultiProcessing
-mppool=None         # a multiprocessing pool to do a parallel processing (faster)
-# if you want to use the mp capability, uncomment the following 3 lines
-#import multiprocessing as mp
-#NProc = 2           # here for 2 cores - adapt to your own set-up
-#mppool = mp.Pool(processes=NProc)
+# the processing can be lengthy,  so use can use parralelize the program
+# if you do not want to use the mp capability, set NProc to 1
+import multiprocessing as mp
+NProc = 6          # here for 2 cores - adapt to your own requirements
+if NProc > 1:
+    mppool = mp.Pool(processes=NProc)
+else:
+    mppool = None
 
 # %%
 D2.prepare_palma(finalsize, Dmin, Dmax)      # set-up diffusion axis
-DD2 = D2.do_palma(nbiter=nbiter, lamda=lamda, mppool=mppool)  # launch computation
+
+# %%
+DD2 = D2.do_palma(nbiter=nbiter, miniSNR=miniSNR, lamda=lamda, mppool=mppool)  # launch computation
+
+# %%
 if mppool: mppool.close()  # clean-up
 
 # %% [markdown]
@@ -202,16 +243,22 @@ if mppool: mppool.close()  # clean-up
 
 # %%
 DD2.axis1.currentunit = 'Diff'
-DD2.projF2 = D2.row(0)
+DD2.projF2 = D2.row(1)
 DD2.projF1 = DD2.proj(axis=1,)
-I.Show2D(DD2, title="%s %s"%(FC.nmrname,d2.pulprog))
+SDosy = I2D.Show2D(DD2, title="%s %s"%(FC.nmrname,d2.pulprog))
+SDosy.scale.max = 100
+SDosy
 
 # %% [markdown]
 # ## Save the data-set
 # either as stand alone native SPIKE files, (there are other formats)
 
 # %%
-DD2.save('dosy.gs2')
+# a complete autonomous data format for DOSY is in development,
+# storing the processed dataset is a solution, but requies to keep the original acquired data    
+DD2.save('processed_Dosy.gs2')
+
+# %%
 
 # %% [markdown]
 # *Tools in this page is under intensive development - things are going to change rapidly.*

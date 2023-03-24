@@ -7,9 +7,9 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.3.4
+#       jupytext_version: 1.14.1
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
@@ -32,7 +32,7 @@
 
 # %% [markdown]
 # ## To use it, 
-# - Select the executable cell below (marked with the `In[x]`) and run it by cliking on the `▶Run` icon on the top of the window (the python code should be hidden after this).
+# - in the "Cell" pulldown above, select "Run all", the program will start.
 # - select the file you want look at, and Load, it will show-up as a full width 2D image.
 # *ignore eventual warnings about missing attributes*
 #     - the F2/horizontal axis is the high resolution, direct axis. You find fragments along this line
@@ -51,13 +51,17 @@ from IPython.display import display, HTML, Markdown, Image
 display(Markdown('## STARTING Environment...'))
 # %matplotlib widget
 import spike
-from spike.Interactive.INTER import hidecode
+import spike.Interactive.INTER as I
 import spike.Interactive.FTICR_INTER_v2 as IF2
 display(Markdown('## ... program is ready'))
 from importlib import reload  # the two following lines are debugging help
 reload(IF2)                   # and can be removed safely when in production
-hidecode(initial='hide', message=False)
-ms = IF2.MS2Dscene(root='/DATA')
+I.hidecode(initial='hide',message="")
+I.hidedoc(message="")
+I.initCSS()
+I.Logo()
+#I.hidecode(initial='hide', message="")
+ms = IF2.MS2Dscene(root='/DATA/DATA/FT-ICR/')
 
 # %% [markdown]
 # ### to come
@@ -67,16 +71,14 @@ ms = IF2.MS2Dscene(root='/DATA')
 # - extraction of arbitrary 1D 
 # - locate/remove artifacts due to harmonics
 
-# %%
-import matplotlib.pyplot as plt
-with ms.out2D:
-    plt.plot([1,2,3],[2,4,0])
+# %% [markdown]
+# You can also call use the multi-resolution tool alone:
 
 # %%
-with ms.out2D:
-    IF2.MR_interact(ms.FC.selected,  show=True, figsize=(8,8), Debug=False)
-
-# %%
-IF2.MR_interact(ms.FC.selected,  show=True, figsize=(8,8), Debug=False)
+filename = "/DATA/My/Dataset/filename.msh5"
+try:
+    M = IF2.MR_interact(filename,  show=True, figsize=(12,12), Debug=False)
+except:
+    print("ERROR - check filename")
 
 # %%

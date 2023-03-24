@@ -7,9 +7,9 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.11.1
+#       jupytext_version: 1.14.1
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
@@ -40,10 +40,9 @@ from spike.Interactive import INTER as I
 from spike.Interactive import FTICR_INTER as FI
 from spike.Interactive import INTER_MS as IMS
 from spike.Interactive.ipyfilechooser import FileChooser
-print("\nInteractive module version,",I.__version__)
+I.initialize()
 from datetime import datetime
 print('Run date:', datetime.now().isoformat() )
-I.initialize()
 display(Markdown('## ...program is Ready'))
 from importlib import reload  # this line is debugging help
 

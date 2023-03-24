@@ -307,11 +307,12 @@ class MR_interact(MR):
 
     def check_fig1D(self):
         if self.pltaxe1D is None:
+            plt.ioff()
             fg,ax = plt.subplots(figsize=(1.5*self.figsize[0], 0.75*self.figsize[0]))
             ax.text(0.1, 0.8, 'Empty - use "horiz" and "vert" buttons above')
             self.pltaxe1D = ax
             self.fig1D = fg
-
+            plt.ion()
     def ext_box(self):
         "defines the interactive tools for 1D"
         wf = widgets.BoundedFloatText
@@ -332,10 +333,14 @@ class MR_interact(MR):
             if self.t1D == 'col':
                 self.pltaxe1D.clear()
                 self.r1D = None
-            if self.b_accu.value == 'sum' and self.r1D is not None:
-                self.r1D += ref.row(rint)
-            else:
-                self.r1D = ref.row(rint)
+            try:
+                if self.b_accu.value == 'sum' and self.r1D is not None:
+                    self.r1D += ref.row(rint)
+                else:
+                    self.r1D = ref.row(rint)
+            except IndexError:
+                print('Out of range')
+                return
             self.t1D = 'row'
             self.i1D = rint
             self.display1D()
@@ -351,10 +356,14 @@ class MR_interact(MR):
             if self.t1D == 'row':
                 self.pltaxe1D.clear()
                 self.r1D = None
-            if self.b_accu.value == 'sum' and self.r1D is not None:
-                self.r1D += ref.col(rint)
-            else:
-                self.r1D = ref.col(rint)
+            try:
+                if self.b_accu.value == 'sum' and self.r1D is not None:
+                    self.r1D += ref.col(rint)
+                else:
+                    self.r1D = ref.col(rint)
+            except IndexError:
+                print('Out of range')
+                return            
             self.t1D = 'col'
             self.i1D = rint
             self.display1D()
@@ -382,7 +391,8 @@ class MR_interact(MR):
                     HBox([widgets.HTML("<B>coord:</B>"),self.z1,
                           self.b_row, self.b_rowp1, self.b_rowm1, self.b_accu]),
                     HBox([widgets.HTML("<B>coord:</B>"),self.z2,
-                          self.b_col, self.b_colp1, self.b_colm1])])
+                          self.b_col, self.b_colp1, self.b_colm1]),
+                          self.fig1D.canvas])
     def display1D(self):
         "display the selected 1D"
         if self.t1D == 'row':

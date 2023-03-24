@@ -32,16 +32,16 @@ for f in lfiles:
     print('Done')
 
 print("""
-These programs are jupyter notebooks programs
-so the jupyter tool, with the ipympl add-on should be installed
+These programs are jupyter notebooks programs.
+To use these NoteBook,  the jupyter tool, with the ipympl add-on should be installed
 To lanch them, either type
- 
- > jupyter notebook
-
+      > jupyter notebook
 in a terminal, or use the anaconda launcher
-
 This will start a browser with this list,  just click on a file to used it.
 
-The files can be modified, duplicated and copied anywhere 
+Each file realizes a specific actions - look at the README.md for the details.
+ 
+The files can be modified, duplicated and copied anywhere.
+A good habit is to have one such notebook for each dataset or list of datasets on which you are working
 """)
 

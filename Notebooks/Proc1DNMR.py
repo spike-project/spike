@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.13.7
+#       jupytext_version: 1.14.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -15,22 +15,25 @@
 # ---
 
 # %% [markdown] class="test_MAD"
+# # Spike Notebook
+#
+# a simplified environment for processing Bruker NMR datasets with `SPIKE`.
+#
 # # 1D NMR Processing and Display
 #
-# a simplified environment for processing 1D Bruker NMR datasets with `SPIKE`.
+# ***Usage***
 #
-# Run each python cell in sequence by using the ⇥Run button above (or typing *shift* Enter).
+# - Run each python cell in sequence by using the ⇥Run button above (or typing *shift* Enter).
+# - Cells are meant to be used in order, taking you to the complete analysis, but you can go back at any time.
+# - The SPIKE code used for processing is visible in the cells, and can be used as a minimal tutorial.
+# - You can hide it when done to present a clean NoteBook.
 #
-# Cells are meant to be used in order, taking you to the complete analysis, but you can go back at any time.
-#
-# The SPIKE code used for processing is visible in the cells, and can be used as a minimal tutorial.
-# You can hide it when done to present a clean NoteBook.
 #
 #
 # ***Remark*** *to use this program, you should have installed the following packages:*
 #
 # - *a complete scientific python environment ( tested with python 3.9 / [anaconda](https://www.anaconda.com/)  with no support for python 2.7 )*
-# - [`spike`](https://www.bitbucket.org/delsuc/spike) ( *version 0.99.30 minimum* )
+# - [`spike`](https://www.bitbucket.org/delsuc/spike) ( *version 0.99.32 minimum* )
 # - [`ipywidgets`](https://ipywidgets.readthedocs.io/en/latest/)  ( *tested with version 7.6* )
 # - [`ipympl`](https://github.com/matplotlib/jupyter-matplotlib)  ( *adds interactivity in the notebook* )
 #
@@ -47,8 +50,8 @@ import spike
 from spike.File.BrukerNMR import Import_1D
 from spike.Interactive import INTER as I
 from spike.Interactive.ipyfilechooser import FileChooser
-from datetime import datetime
 I.initialize()
+from datetime import datetime
 print('Run date:', datetime.now().isoformat() )
 display(Markdown('## ...program is Ready'))
 from importlib import reload  # this line is debugging help
@@ -132,7 +135,7 @@ LB = 0.3                        # you can adapt LB to your means, in Hz
 D1 = d1.copy()                  # copy the imported data-set to another object for processing
 D1.center().apod_em(LB).zf(4).ft_sim()  # chaining   centering - apodisation - zerofill - FT
 #D1.bk_corr().apmin()            #  Bruker DSP correction - autophase
-D1.bk_pk()                    #  alternatively from previous line:  stored Bruker correction
+D1.bk_pk()                    #  alternatively from previous line:  use stored Bruker correction
 D1.set_unit('ppm')              # set to ppm unit ('Hz' and 'point' also available)
                                 # all Spike command can be pipelined at will - these lines could be piped as one.
 I.Show1D(D1, title=FC.nmrname)  #  and display
@@ -208,6 +211,7 @@ I.NMRIntegrate(D1)
 
 # %%
 # Composite display
+reload(I)
 Sp = I.Show1Dplus(D1, title=FC.nmrname, N=5)   # N is the number of slots in the Superimpose tool
 Sp
 
@@ -216,6 +220,35 @@ Sp
 # # optional steps
 #
 #
+
+# %% [markdown]
+# ---
+#
+# ## Compute Signal / Noise (SNR)
+#
+# *Remark - if you want to compare with SINO results from Topspin - divide these values by 2*
+#
+# Several possibilities:
+
+# %%
+# Calculate Signal to Noise Ratio using the Largest peak and Standard Deviation on a defined GIVEN spectral region
+zmleft = 10
+zmright = 12
+noise = D1.copy().extract(zmleft,zmright).display().get_buffer().std()
+print(f'Noise: {noise:g},  SNR: {D1.absmax/noise:<6.0f}')
+
+# %%
+#Calculate Signal to Noise Ratio using using the Largest peak and Standard Deviation on the WHOLE noise floor excluding signals 
+_,noise = D1.robust_stats()
+print(f'Noise: {noise:g},  SNR: {D1.absmax/noise:<6.0f}')
+
+# %%
+#Calculate Signal to Noise Ratio using using the Largest peak in the defined spectral reagion and Standard Deviation on the WHOLE noise floor excluding signals 
+zmleft = 0.5
+zmright = -0.5
+signal = max(abs(D1.copy().extract(zmleft,zmright).display().get_buffer()))
+_,noise = D1.robust_stats()
+print(f'Noise: {noise:g},  signal: {signal:g}   SNR: {signal/noise:<6.0f}')
 
 # %% [markdown]
 # ---

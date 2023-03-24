@@ -452,7 +452,7 @@ def _do_proc_F1_demodu_modu(data):
     return buff   # return raw data
 
 def iterarg(dinp, rot, size, parameter ):
-    "an iterator used by the processing to allow  multiprocessing or MPI set-up"
+    "an iterator used by the processing to allow multiprocessing or MPI set-up"
     for i in range(0, dinp.size2, 2):
         c0 = dinp.col(i)
         c1 = dinp.col(i+1)

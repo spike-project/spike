@@ -30,13 +30,16 @@ VersionInfo = ["0", "99", "32"]   # Major - Minor - Micro
 # Release Notes in md syntax !
 release_notes="""
 # SPIKE Relase Notes
-#### 0.99.32 - Feb 2023
+#### 0.99.32 - March 2023
+- cleaned-up code in example notebooks
+- added choice of projection in Show2D
 - updated the plugin mechanism - the previous system was incompatible with the coming python 3.12
     - requires python >= 3.5
     - should not change anything to your set-up
 - added  Algo.Linepredic.baselinerollrem() to remove baseline roll using Linear Prediction
 - extended real2cpx() to 2D operations (was only 1D)
 - NMR: improved importing processed DOSY (PALMA plugin)
+    - corrected cyclic import in PALMA
 
 #### 0.99.31 - Nov 2022
 - NMR:improvements in spike Interactive
