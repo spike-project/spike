@@ -238,8 +238,11 @@ def Import_2D(folder, outfile = "", F1specwidth = None, compress=False):
     parfilename = locate_acquisition(folder)
     params = read_param(parfilename)
     
-    # Import parameters : size in F1 and F2    
-    sizeF1 = read_scan(os.path.join(folder,"scan.xml"))
+    # Import parameters : size in F1 and F2
+    try:
+        sizeF1 = read_scan(os.path.join(folder,"scan.xml"))
+    except FileNotFoundError:
+        sizeF1 = read_scan(os.path.join(folder,"ImagingInfo.xml"))
 #    sizeF1 = int(params["L_20"]) #CR Not working if L_20 higher than 16383 
     sizeF2 = int(params["TD"])
 

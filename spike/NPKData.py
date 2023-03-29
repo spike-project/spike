@@ -84,7 +84,7 @@ def conj_ip(a):
     >>> conj_ip(np.arange(4)*(1+1j))
     [ 0.-0.j  1.-1.j  2.-2.j  3.-3.j]
     """
-    if a.dtype == np.complex:
+    if a.dtype == complex:
         b = as_float(a)[1::2]       # create a view of the imaginary part of a
         np.multiply(b,-1.0,b)       # and inverse it on-place
 #        b *= -1.0                  # is equivalent
@@ -819,8 +819,8 @@ class _NPKData(object):
         try:                # pbs may appear with pytables buffer
             dt = buff.dtype
         except:
-            dt = np.float
-        if dt == np.complex:
+            dt = float
+        if dt == complex:
             buff = as_float(buff)
             self.axes(self.dim).itype = 1
         elif dt == 'float':
@@ -969,8 +969,8 @@ class _NPKData(object):
         try:
             dt = self.buffer.dtype
         except:
-            dt = np.float
-        if dt != np.float:
+            dt = float
+        if dt != float:
             check_msg("wrong buffer type : %s"%str(dt))
         if len(self.buffer.shape) != self.dim:
             check_msg("wrong dim value : %d while buffer is %d"%(self.dim,len(self.buffer.shape)))
