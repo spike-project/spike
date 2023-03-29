@@ -13,7 +13,9 @@ This program will copy the corresponding files from {0} to the current location:
 
 {1}
 
-files with the same name in the current location will be overriden.
+You probably don't need all of them, pick the one(s) needed here, and remove the other ones safely.
+
+( Warning: files with the same name in the current location will be overriden )
 
 """.format( nbdir, '\n'.join(lfiles)) )
 

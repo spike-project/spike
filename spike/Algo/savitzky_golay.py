@@ -114,7 +114,7 @@ def savitzky_golay2D ( z, window_size, order, derivative=None):
     exps = [ (k-n, n) for k in range(order+1) for n in range(k+1) ]
 
     # coordinates of points
-    ind = np.arange(-half_size, half_size+1, dtype=np.float64)
+    ind = np.arange(-half_size, half_size+1, dtype=float)
     dx = np.repeat( ind, window_size )
     dy = np.tile( ind, [window_size, 1]).reshape(window_size**2, )
 

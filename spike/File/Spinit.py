@@ -426,7 +426,7 @@ def Export_1D(d, filename="data.dat", template="header.xml", kind=None):
     dirname = op.dirname(filename)
     if not op.isdir(dirname):
         os.makedirs(dirname)
-    array.view(np.float_).astype('>f').tofile(filename)
+    array.view(float).astype('>f').tofile(filename)
 # then set parameters
     headertree = load_header(template)
     modify_val(headertree, 'MODALITY', "NMR" )
@@ -452,8 +452,8 @@ def Export_2D(d,  filename="data.dat", template="header.xml", kind=None, debug=0
     dirname = op.dirname(filename)
     if not op.isdir(dirname):
         os.makedirs(dirname)
-    array.view(np.float_).astype('>f').tofile(filename)
-    if debug>0: array.view(np.float_).astype('>f').tofile('z:/bordel/data.dat')
+    array.view(float).astype('>f').tofile(filename)
+    if debug>0: array.view(float).astype('>f').tofile('z:/bordel/data.dat')
     # then set parameters
     headertree = load_header(template)
     modify_val(headertree, 'MATRIX_DIMENSION_1D', str(d.axis2.cpxsize) ) 

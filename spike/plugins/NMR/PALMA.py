@@ -32,7 +32,7 @@ from spike.NPKData import LaplaceAxis
 import spike.Algo.savitzky_golay as sgm
 import spike.util.signal_tools
 
-from numba import jit, njit
+#from numba import jit, njit
 
 debug = True
 

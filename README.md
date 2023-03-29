@@ -3,7 +3,7 @@
 
 **SPIKE** a collaborative development for a FT-spectroscopy processing library.
 
-*This is the version 0.99.30 - March 2022*
+*This is the version 0.99.32 - March 2023*
 
 **WARNING - version 0.99.14 to 0.99.19 should be avoided for FTICR handling because of a hidden bug that corrupted m/z calibration.**
 
@@ -108,7 +108,7 @@ SPIKE is written in pure Python, and relies on several external libraries:
 - tables
 - pandas
 
-It is compatible and fully tested with python 3.7 (many parts are still compatible with python 2.7 but this is not tested)
+It is compatible and fully tested with python 3.7 and 3.9
 
 ### developping for SPIKE
 check [Here](DevelopmentGuide.md)

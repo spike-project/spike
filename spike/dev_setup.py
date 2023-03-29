@@ -31,15 +31,24 @@ VersionInfo = ["0", "99", "32"]   # Major - Minor - Micro
 release_notes="""
 # SPIKE Relase Notes
 #### 0.99.32 - March 2023
-- cleaned-up code in example notebooks
-- added choice of projection in Show2D
+- Interactive:
+    - NMR and MS: example interactive notebooks have been extended, cleaned up and fully checked 
+        - better 2D display
+        - added documentation 
+    - NMR:
+        - ProcDOSY.ipynb rewritten
+        - ReadSMX.ipynb to import TopSpin processed file into Spike
+        - SNR evaluation in Proc1D.ipynb
+        - added choice of projection in 2D graphics
+        - baseline correction is now fully functional
 - updated the plugin mechanism - the previous system was incompatible with the coming python 3.12
     - requires python >= 3.5
     - should not change anything to your set-up
 - added  Algo.Linepredic.baselinerollrem() to remove baseline roll using Linear Prediction
 - extended real2cpx() to 2D operations (was only 1D)
-- NMR: improved importing processed DOSY (PALMA plugin)
+- improved importing processed DOSY (PALMA plugin)
     - corrected cyclic import in PALMA
+- in BrukerSMX.py corrected for a warning signaling an upcoming obsolence
 
 #### 0.99.31 - Nov 2022
 - NMR:improvements in spike Interactive

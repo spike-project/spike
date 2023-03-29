@@ -10,7 +10,7 @@
    8.39  spike/util/progressbar.py                  11
    8.21  QC.py                                       2
    8.11  spike/Algo/savitzky_golay.py                1
-M  8.04  spike/Algo/Linpredic.py                     2
+   7.92  spike/Algo/Linpredic.py                     4
    7.89  spike/util/near_prime.py                    0
    7.76  spike/plugins/bcorr.py                      1
    7.72  spike/NPKData.py                           66
@@ -19,8 +19,7 @@ M  8.04  spike/Algo/Linpredic.py                     2
    7.54  spike/FTMS.py                               5
    7.42  spike/File/GifaFile.py                     27
    7.38  spike/util/mpiutil.py                       3
-   7.37  spike/Interactive/INTER.py            2    78 
-   7.29  spike/plugins/NMR/PALMA.py            2     8 
+   7.34  spike/Interactive/INTER.py            2    81 
    7.25  spike/File/csv.py                           2
    7.23  spike/plugins/MS/FTMS_calib.py        1    22 
    7.22  spike/processing.py                   3    32 
@@ -30,6 +29,7 @@ M  8.04  spike/Algo/Linpredic.py                     2
    7.14  spike/plugins/__init__.py                   4
    7.14  spike/NPKConfigParser.py                    4
    7.14  spike/File/Thermo.py                        5
+   7.05  spike/plugins/NMR/PALMA.py            3     9 
    7.04  spike/Algo/BC.py                            4
    7.00  spike/Display/testplot.py                   0
    6.97  spike/plugins/Fitter.py                    11
@@ -38,9 +38,9 @@ M  8.04  spike/Algo/Linpredic.py                     2
    6.76  spike/plugins/Peaks.py                3    31 
    6.67  spike/plugins/test.py                       0
    6.59  spike/Tests.py                        1     5 
-   6.59  spike/Interactive/INTER_2D.py         1    38 
+   6.57  spike/Interactive/FTICR_INTER_v2.py   2    64 
    6.55  spike/plugins/NMR/Bucketing.py              2
-   6.52  spike/Interactive/FTICR_INTER_v2.py   2    64 
+   6.52  spike/Interactive/INTER_2D.py         1    43 
    6.50  spike/util/Bruker_Report.py                10
    6.50  spike/File/BrukerMS.py                      4
    6.45  spike/util/widgets.py                 1    12 
@@ -67,9 +67,9 @@ M  8.04  spike/Algo/Linpredic.py                     2
    5.47  spike/util/ConfigForm.py              5    24 
    5.42  spike/Orbitrap.py                           4
    5.34  spike/plugins/specials/bokeh_display.py   6    11 
-M  5.22  spike/Interactive/INTER_MS.py         2    39 
    5.18  spike/util/signal_tools.py            4    20 
    5.14  spike/plugins/urQRd.py                     11
+   5.13  spike/Interactive/INTER_MS.py         2    41 
    5.00  spike/NPKError.py                           1
 -------------------------------------------------------
    4.92  spike/Interactive/MSIsotopic.py       1    23 
@@ -81,7 +81,7 @@ M  5.22  spike/Interactive/INTER_MS.py         2    39
    4.10  spike/File/mzXML.py                         4
    4.10  spike/Algo/SL0.py                           3
    4.00  spike/File/__init__.py                      0
-M  3.84  spike/dev_setup.py                         15
+   3.84  spike/dev_setup.py                         15
    3.81  spike/util/readwrite_tools.py         1     3 
    3.75  spike/plugins/zoom3D.py               1     4 
    3.68  spike/plugins/fastclean.py            2     0 
@@ -114,6 +114,6 @@ Overall aggregated note value is :  6.84/10
 
 score is 69 / 35 / 0  (top / med / low)
 Mean - Median note values are :  5.37/10 -  6.11/10
-Total number of errors : 84 on a total of 104 files
+Total number of errors : 85 on a total of 104 files
 (but quite a few errors are just correct code not understood by pylint)
 -------------------------------------------------------

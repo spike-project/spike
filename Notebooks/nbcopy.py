@@ -16,6 +16,7 @@ lfiles = [
 "ProcDOSY.ipynb",
 "ProcessFTICR-MS.ipynb",
 "ProcessFTICR-MS-PH.ipynb",
+"ReadSMX.ipynb",
 "README.md"
 ]
 

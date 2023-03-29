@@ -6,16 +6,16 @@ rm -R spike_make_sphinx/* dist/* build/*
 Version=$(grep "version = '.*'" spike/version.py |grep -o [0-9\.]*)
 
 # copy rst files
+cp  doc/conf.py spike_make_sphinx/
 cp  doc/*.rst   spike_make_sphinx/
-cp  doc/sphixMakefile   spike_make_sphinx/Makefile
-
+cp  doc/sphinxMakefile   spike_make_sphinx/Makefile
 # modiy configuration
-
 
 pandoc README.md -t rst -o spike_make_sphinx/Readme.rst
 pandoc release_notes.md -t rst -o spike_make_sphinx/release_notes.rst
-Presentation
-DevelopmentGuide
+
+# still to do Presentation
+# and         DevelopmentGuide
 
 #pandoc release_notes.md -s -t latex -o release_notes.pdf
 

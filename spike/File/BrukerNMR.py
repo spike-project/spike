@@ -290,7 +290,7 @@ def read_1D(size, filename="fid", bytorda=1, dtypa=0, uses='struct'):
         with open(filename,"rb") as F:
             buf = F.read(mlt*size)
             ibuf = struct.unpack(fmt%(size), buf)  # upack the string as integers
-        npkbuf = np.empty(size, dtype=np.float)
+        npkbuf = np.empty(size, dtype=float)
         npkbuf[:] = ibuf[:]
     elif uses == 'numpy':
         npkbuf = np.fromfile(filename, nfmt).astype(float)
@@ -306,7 +306,7 @@ def read_2D(sizeF1, sizeF2, filename="ser", bytorda=1, dtypa=0, uses='struct'):
     """
     if uses != "struct":
         raise Exception('Only mode "struct" is implemented')
-    npkbuf = np.empty((sizeF1, sizeF2), dtype=np.float)
+    npkbuf = np.empty((sizeF1, sizeF2), dtype=float)
 # read binary
     if dtypa == 0:
         fmt = "256i"
