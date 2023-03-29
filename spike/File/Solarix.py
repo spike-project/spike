@@ -307,7 +307,10 @@ def Import_2D(folder, outfile = "", F1specwidth = None, compress=False):
         HF.store_internal_object(params, h5name='params')    # store params in the file
         # then store files xx.methods and scan.xml
         HF.store_internal_file(parfilename)
-        HF.store_internal_file( os.path.join(folder,"scan.xml") )
+        try:
+            HF.store_internal_file( os.path.join(folder,"scan.xml") )
+        except FileNotFoundError:
+            HF.store_internal_file( os.path.join(folder,"ImagingInfo.xml") )
         HF.store_internal_file( locate_ExciteSweep(folder) )
         data.hdf5file = HF
         # I need a link back to the file in order to close it, however this creates a loop - experimental ! 
