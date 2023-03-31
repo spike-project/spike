@@ -5,7 +5,11 @@
 
 *This is the version 0.99.32 - March 2023*
 
-**WARNING - version 0.99.14 to 0.99.19 should be avoided for FTICR handling because of a hidden bug that corrupted m/z calibration.**
+**WARNING (31th March 2023) - It seems that the various Jupyter Notebooks which use the ipympl library have a problem if you download a fresh anaconda environment (based on python 3.11)**<br>
+*upgrading ipympl to the 0.9.3 version seems to solve the difficulty:*
+
+    conda config --env --add channels conda-forge
+    conda install ipympl=0.9.3
 
 **SPIKE**  allows the processing, the display and the analysis of data-sets obtained from various Fourier-Transform spectroscopies. The name stands for **S**pectrometry **P**rocessing **I**nnovative **KE**rnel.
 
