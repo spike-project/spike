@@ -623,7 +623,7 @@ class Show1D(HBox):
         self.close()
         display(self.fig)   # shows spectrum
 
-    def on_reset(self, b=None):
+    def on_reset(self, e=None):
         self.scale.value = 1.0
         self.yratio = self.yratio0            # inverse minimum neg display extension 
         try:

@@ -76,12 +76,6 @@ class Show2D(Show1D):
         except:
             self.proj1 = data.proj(axis=1, projtype=projtype).real()
         # Controls
-        self.scale.min = 0.2
-        if data.noise == 0.0:
-#            data.noise = findnoiselevel_2D(data.get_buffer().real)
-            _, data.noise = data.robust_stats()
-        self.scale.max = min(data.absmax*0.05/data.noise,1000)   # we do not want levels to plunge into noise
-        self.scale.max = max(self.scale.max, 20)   # sometimes its too low 
         self.posview = widgets.Checkbox(value=True,description='Positive', tooltip='Display Positive levels', layout=Layout(width='20%'))
         self.negview = widgets.Checkbox(value=False,description='Negative', tooltip='Display Negative levels', layout=Layout(width='20%'))
         self.cursors = widgets.Checkbox(value=False,description='Cursors', tooltip='show cursors (cpu intensive !)', layout=Layout(width='20%'))
@@ -155,6 +149,13 @@ class Show2D(Show1D):
         self.middlebar = HBox( [  self.controlbar, self.fig.canvas ] )
 
         self.children = [  VBox([self.topbar, self.middlebar ]) ]
+        # manage scale min/max
+        self.scale.min = 0.2
+        if data.noise == 0.0:
+#            data.noise = findnoiselevel_2D(data.get_buffer().real)
+            _, data.noise = data.robust_stats()
+        self.scale.max = min(data.absmax*0.05/data.noise,1000)   # we do not want levels to plunge into noise
+        self.scale.max = max(self.scale.max, 20)   # sometimes its too low 
         self.set_on_redraw()
         self.draw(new=True)
         self.on_reset()
