@@ -1,19 +1,31 @@
 ![SPIKE](spike/Interactive/Logo.png)
+
+# WARNING (31th March 2023)
+It seems that the various Jupyter Notebooks which use the ipympl library have a problem with the latest versions of the anaconda distribution (starting with `python 3.9`), and probavly with other distribution as well.
+
+Try the following possibilities if you have problem with the graphic and/or the interaction with the Spike Notebooks
+
+1. the team developping jupyter is migrating the notebook to a new technology and Spike is not yet adapted to this new environment.
+   In the meantime, use `nbclassic` instead of `notebook` to launch the various notebooks
+    ```
+    jupyter-nbclassic TheNooteBook.ipynb
+    ```
+2. The interaction is based on the optionnal `ipympl` extension, and some people have instabilities in the interaction
+*upgrading ipympl to the 0.9.3 version seems to solve the difficulty:*
+    ```
+    conda config --env --add channels conda-forge
+    conda install ipympl=0.9.3
+    ```
+
 # 1/ What is SPIKE ? #
 
 **SPIKE** a collaborative development for a FT-spectroscopy processing library.
 
 *This is the version 0.99.32 - March 2023*
 
-**WARNING (31th March 2023) - It seems that the various Jupyter Notebooks which use the ipympl library have a problem if you download a fresh anaconda environment (based on python 3.11)**<br>
-*upgrading ipympl to the 0.9.3 version seems to solve the difficulty:*
-
-    conda config --env --add channels conda-forge
-    conda install ipympl=0.9.3
-
 **SPIKE**  allows the processing, the display and the analysis of data-sets obtained from various Fourier-Transform spectroscopies. The name stands for **S**pectrometry **P**rocessing **I**nnovative **KE**rnel.
 
-It allows the processing of **1D** and **2D** FT spectroscopies, mostly **NMR** and **FTICR-MS**, but also **Orbitrap**, and other to come.
+It allows the <b>processing</b> of **1D** and **2D** FT spectroscopies, mostly **NMR** and **FTICR-MS**, but also **Orbitrap**, and other to come.
 
 It implements all needed tools for Data analysis (Fourier Transform, Baseline correction, noise reduction, peak-picking, etc...)
 
