@@ -274,14 +274,16 @@ def read_1D(size, filename="fid", bytorda=1, dtypa=0, uses='struct'):
     does not check endianess
     """
 # read binary
-    if dtypa == 2:
+    if dtypa == 2:    # double
         fmt = "d"
         nfmt = "f8"
         mlt = 8
-    else:
+    elif dtypa == 0:  # integer
         fmt = "i"
         nfmt="i4"
         mlt = 4
+    else:
+        raise Exception('unknown data type')
     if bytorda == 0:
         fmt = "<%d" + fmt
     else:
@@ -303,23 +305,31 @@ def read_2D(sizeF1, sizeF2, filename="ser", bytorda=1, dtypa=0, uses='struct'):
 
     sizeF1 is the number of fid
     sizeF2 is the number of data-points in the fid
+    uses mode is not active.
     """
     if uses != "struct":
         raise Exception('Only mode "struct" is implemented')
     npkbuf = np.empty((sizeF1, sizeF2), dtype=float)
 # read binary
-    if dtypa == 0:
+    if dtypa == 2:    # double
+        fmt = "256d"
+        nfmt = "f8"
+        mlt = 8
+    elif dtypa == 0:  # integer
         fmt = "256i"
+        nfmt="i4"
+        mlt = 4
     else:
-        fmt = "256i"
+        raise Exception('unknown data type')
+
     if bytorda == 0:
-        fmt = "<256i"
+        fmt = "<" + fmt
     else:
-        fmt = ">256i"   # > is used to keep the normal endianess
+        fmt = ">" + fmt   # > is used to keep the normal endianess
     with open(filename,"rb") as F:
         for i1 in range(sizeF1):
             for i2 in range(0, sizeF2, 256):   # read by 64 steps - MAndatory !
-                buf = F.read(1024)
+                buf = F.read(mlt*256)
                 data = struct.unpack(fmt, buf)
                 bufsz = min(256, sizeF2-i2)
                 npkbuf[i1,i2:i2+bufsz] = data[:bufsz]
@@ -513,7 +523,7 @@ def write_file(bytordp, data, filename):
 
 def Export_fid(d, filename, template,  verbose=VERBOSE):
     """
-    Exports a 1D NMRData to a  Bruker fid file, using templname as a template
+    Exports a 1D or 2D NMRData to a  Bruker fid file, using template as a template
     
     filename and template are expno : datadir/my_experiment/expno/
     they should be different
@@ -527,8 +537,12 @@ def Export_fid(d, filename, template,  verbose=VERBOSE):
         only 1r / 2rr proc and procs files will be overwriten
     """
     #---------
-    if d.dim>1:
-        raise Exception('Dim>1 Not implemented yet')
+    if d.dim == 1:
+        acq_axis = d.axis1
+    elif d.dim == 2:
+        acq_axis = d.axis2
+    else:
+        raise Exception('Dim>2 Not implemented yet')
     template = op.normpath(template)
     filename = op.normpath(filename)
 
@@ -536,32 +550,61 @@ def Export_fid(d, filename, template,  verbose=VERBOSE):
         raise Exception(template+" : file not found")
     if verbose:   print('Exporting %dD fid to %s using %s as template'%(d.dim,filename,template))
     # create target
-    shutil.copytree(template, filename, ignore=shutil.ignore_patterns('1r', '1i', 'fid', '*.gs1', 'acqu*') )
+    shutil.copytree(template, filename, ignore=shutil.ignore_patterns('1?', '2??', 'fid', 'ser', '*.gs?',  'acqu', 'acqus') )
         # tprocno = find_proc_down(template,('procs','proc','PROCS','PROC'))
         # procno = op.dirname(tprocno)
     # load template params - now populated
     acqu = read_param(find_acqu(template))
-    acqu['$TD'] = str(d.size1)  # set size
-    acqu['$SW_h'] = str(d.axis1.specwidth)
-    acqu['$SFO1'] = str(d.axis1.frequency)
-    # no group delay !
-    acqu['$DECIM'] = 1
-    d.axis1.zerotime = 0.0
-    if d.axis1.itype == 0:
+    acqu['$TD'] = str(acq_axis.size)              # set size
+    acqu['$SW_h'] = str(acq_axis.specwidth)
+    acqu['$SFO1'] = str(acq_axis.frequency)
+    if acq_axis.zerotime == 0.0 :
+        # no group delay !
+        acqu['$DECIM'] = "1"
+        acqu['$GRPDLY'] = "0"
+    # else => you should handle it yourself if neede (don't want to break a good 'acqu')
+    if acq_axis.itype == 0:
         acqu['$AQ_mod'] = '0'  # QF
     else:       # complex mode
-        d.axis1.itype = 1
         acqu['$AQ_mod'] = '3'
+    if d.dim == 2:
+        acqu2 = read_param(find_acqu2(template))
+        acqu2['$TD'] = str(d.axis1.size)              # set size
+        acqu2['$SW_h'] = str(d.axis1.specwidth)
+        acqu2['$SFO1'] = str(d.axis1.frequency)
     # binary data
     NC = 0
     acqu['$NC'] = str(NC)
     acqu['$BYTORDA'] = '0'
-    acqu['$DTYPA'] = '2'    # float format !
+    acqu['$DTYPA'] = '2'    # float64 format !
+    # write binary
     buf = d.buffer.astype("float64")
-    buf.tofile(op.join(filename,'fid'), sep="")
+    if d.dim == 1:
+        buf.tofile(op.join(filename,'fid'), sep="")
+#        np.save(op.join(filename,'fid'), buf)
+    elif d.dim == 2:
+        sz1, sz2 = buf.shape
+        chunksize = 8*256  # chunk size
+        towrite = chunksize*(((sz2-1)//chunksize)+1)  # the multiple of chunksize which encompass the buffer
+        buftowrite = np.zeros(towrite)
+        fmt = f"@{towrite}d"
+        if verbose: print('writing to', op.join(filename,'ser'))
+        with open(op.join(filename,'ser'), 'wb') as fout:
+            for i in range(sz1):
+                buftowrite[:sz2] = buf[i,:]
+                fout.write(struct.pack(fmt, *buftowrite))
+    #             A = np.zeros(towrite)
+    #             A[:sz2] = buf[i,:]
+    # #            A.tofile(op.join(filename,'ser'), sep="")
+    #             np.save(fout, A)
+    else:
+        raise Exception("internal error")
  
     write_param(acqu, op.join(filename, 'acqu') )
     write_param(acqu, op.join(filename, 'acqus') )
+    if d.dim == 2:
+        write_param(acqu2, op.join(filename, 'acqu2') )
+        write_param(acqu2, op.join(filename, 'acqu2s') )    
 
     try:
         proc = read_param(find_proc(filename))
@@ -571,8 +614,8 @@ def Export_fid(d, filename, template,  verbose=VERBOSE):
         # ppmPointUn = float(proc['$OFFSET'])
         # ppmWidth = float(acqu['$SW_h']) / float(acqu['$SFO1'])
         # calibrationOffset = float(ppmPointUn - ppmWidth)*  float(acqu['$SFO1'])
-        ppmWidth = d.axis1.specwidth / d.axis1.frequency
-        ppmPointUn = d.axis1.offset / d.axis1.frequency + ppmWidth
+        ppmWidth = acq_axis.specwidth / acq_axis.frequency
+        ppmPointUn = acq_axis.offset / acq_axis.frequency + ppmWidth
         proc['$OFFSET'] = str(ppmPointUn)
         procfile = find_proc(filename)
         write_param(proc, procfile )
@@ -795,7 +838,7 @@ def Import_2D(filename="ser", outfile=None, verbose=VERBOSE):
     #     data *= 2**(NC)
     # d = NMRData(buffer=data)
     
-    data = read_2D(sizeF1, sizeF2, filename,  bytorda=int(acqu['$BYTORDA']))
+    data = read_2D(sizeF1, sizeF2, filename,  bytorda=int(acqu['$BYTORDA']), dtypa=int(acqu['$DTYPA']))
     d = NMRData(buffer=data)
 # then set parameters
     d.axis1.frequency = float(acqu2['$SFO1'])

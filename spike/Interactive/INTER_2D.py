@@ -276,12 +276,13 @@ class Phaser2D(Show2D):
         self.cancel = widgets.Button(description="Cancel",button_style='warning', layout=self.blay)
         self.cancel.on_click(self.on_cancel)
 
-        stcenter = "<b>F%d</b>"
+        stcenter1 = "<b>F1</b> <i>(vertical axis)</i>"
+        stcenter2 = "<b>F2</b> <i>(horizontal axis)</i>"
         grid_layout = widgets.Layout(grid_template_columns="50% 50%",
                     column_grid_gap="20px",
                     justify_items='center')
         self.phasebar = \
-            widgets.GridBox( [widgets.HTML(stcenter%1),     widgets.HTML(stcenter%2), 
+            widgets.GridBox( [widgets.HTML(stcenter1),     widgets.HTML(stcenter2), 
                              self.F1p0,                             self.F2p0, 
                              self.F1p1,                             self.F2p1,
                              self.pivotF1,                          self.pivotF2],
