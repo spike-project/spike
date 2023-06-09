@@ -22,6 +22,7 @@ import shutil
 
 import numpy as np
 
+from ..NPKError import NPKError
 from ..NPKData import LaplaceAxis
 from ..NMR import NMRData
 
@@ -46,7 +47,7 @@ def find_acqu_proc_gene(dir, acqulist):
         if op.exists(filename):
             break
     else:
-        raise Exception("no parameter file found in "+dir)
+        raise NPKError("no parameter file found in "+dir)
     return(filename)
 ################################################################
 def find_acqu(dir="."):
@@ -89,7 +90,7 @@ def find_proc_down(dire, proclist):
                     break
             break
     else:
-        raise Exception("No proc file found in %s/pdata/*"%dire)
+        raise NPKError("No proc file found in %s/pdata/*"%dire)
     return(fname)
 
 ################################################################
@@ -283,7 +284,7 @@ def read_1D(size, filename="fid", bytorda=1, dtypa=0, uses='struct'):
         nfmt="i4"
         mlt = 4
     else:
-        raise Exception('unknown data type')
+        raise NPKError('unknown data type')
     if bytorda == 0:
         fmt = "<%d" + fmt
     else:
@@ -308,7 +309,7 @@ def read_2D(sizeF1, sizeF2, filename="ser", bytorda=1, dtypa=0, uses='struct'):
     uses mode is not active.
     """
     if uses != "struct":
-        raise Exception('Only mode "struct" is implemented')
+        raise NPKError('Only mode "struct" is implemented')
     npkbuf = np.empty((sizeF1, sizeF2), dtype=float)
 # read binary
     if dtypa == 2:    # double
@@ -320,7 +321,7 @@ def read_2D(sizeF1, sizeF2, filename="ser", bytorda=1, dtypa=0, uses='struct'):
         nfmt="i4"
         mlt = 4
     else:
-        raise Exception('unknown data type')
+        raise NPKError('unknown data type')
 
     if bytorda == 0:
         fmt = "<" + fmt
@@ -400,13 +401,13 @@ def zerotime(acqu):
 
         try:
             j = decim_offset.index(decim)
-        except:
-            raise ValueError("*** wrong value for DECIM")
+        except Exception as exc:
+            raise ValueError("*** wrong value for DECIM") from exc
         try:
             d = tabdelay[(dspfvs) - 10][j];
 #            print "d=",d
-        except:
-             raise ValueError("*** wrong value for DSPFVS " + dspfirm)
+        except Exception as exc:
+             raise ValueError("*** wrong value for DSPFVS " + dspfirm) from exc
         if (d == -1):
              raise ValueError("*** wrong DECIM/DSPFVS parameter combination")
         z = (float(d)/float(decim))
@@ -449,7 +450,7 @@ def Import_1D(filename="fid", outfile=None, verbose=VERBOSE):
     
     """
     if (not op.exists(filename)):
-        raise Exception(filename+" : file not found")
+        raise NPKError(filename+" : file not found")
     dire=op.dirname(filename)
     acqu = read_param(find_acqu(dire))
     size= int(acqu['$TD'])  # get size
@@ -472,7 +473,7 @@ def Import_1D(filename="fid", outfile=None, verbose=VERBOSE):
 
     d.axis1.zerotime = zerotime(acqu)
     if outfile is not None:
-        raise Exception("Not implemented yet")
+        raise NPKError("Not implemented yet")
     pardic = {"acqu": acqu, "proc": proc} # create ad-hoc parameters
     d.params = pardic   # add the parameters to the data-set
     if verbose: print("imported 1D FID, size =%d\n%s"%(size, acqu['title']))
@@ -485,7 +486,7 @@ def Import_1D_proc(filename="1r", verbose=VERBOSE):
 
     """
     if (not op.exists(filename)):
-        raise Exception(filename+" : file not found")
+        raise NPKError(filename+" : file not found")
     dire = op.dirname(filename)
     proc = read_param(find_proc(dire, down=False))
     diracq = op.dirname(op.dirname(op.dirname(filename)))
@@ -542,12 +543,12 @@ def Export_fid(d, filename, template,  verbose=VERBOSE):
     elif d.dim == 2:
         acq_axis = d.axis2
     else:
-        raise Exception('Dim>2 Not implemented yet')
+        raise NPKError('Dim>2 Not implemented yet')
     template = op.normpath(template)
     filename = op.normpath(filename)
 
     if (not op.exists(template)):
-        raise Exception(template+" : file not found")
+        raise NPKError(template+" : file not found")
     if verbose:   print('Exporting %dD fid to %s using %s as template'%(d.dim,filename,template))
     # create target
     shutil.copytree(template, filename, ignore=shutil.ignore_patterns('1?', '2??', 'fid', 'ser', '*.gs?',  'acqu', 'acqus') )
@@ -598,7 +599,7 @@ def Export_fid(d, filename, template,  verbose=VERBOSE):
     # #            A.tofile(op.join(filename,'ser'), sep="")
     #             np.save(fout, A)
     else:
-        raise Exception("internal error")
+        raise NPKError("internal error")
  
     write_param(acqu, op.join(filename, 'acqu') )
     write_param(acqu, op.join(filename, 'acqus') )
@@ -641,14 +642,14 @@ def Export_proc(d, filename, template=None,  verbose=VERBOSE):
     from .BrukerSMX import BrukerSMXHandler
     #---------
     if d.dim>2:
-        raise Exception('Not implemented yet')
+        raise NPKError('Not implemented yet')
     if template is None:
         template = filename
     template = op.normpath(template)
     filename = op.normpath(filename)
 
     if (not op.exists(template)):
-        raise Exception(template+" : file not found")
+        raise NPKError(template+" : file not found")
     if verbose:   print('Export %dD spectrum to %s using %s'%(d.dim,filename,template))
 
     
@@ -821,7 +822,7 @@ def Import_2D(filename="ser", outfile=None, verbose=VERBOSE):
     
     """
     if (not op.exists(filename)):
-        raise Exception(filename+" : file not found")
+        raise NPKError(filename+" : file not found")
     dire=op.dirname(filename)
     acqu = read_param(find_acqu(dire))
     acqu2 = read_param(find_acqu2(dire))
@@ -867,7 +868,7 @@ def Import_2D(filename="ser", outfile=None, verbose=VERBOSE):
 
     d.axis2.zerotime = zerotime(acqu)
     if outfile is not None:
-        raise Exception("Not implemented yet")
+        raise NPKError("Not implemented yet")
 
     pardic = {"acqu": acqu, \
         "acqu2": acqu2, \
@@ -886,7 +887,7 @@ def Import_2D_proc(filename="2rr", outfile=None,  verbose=VERBOSE):
     """
     from .BrukerSMX import BrukerSMXHandler
     if (not op.exists(filename)):
-        raise Exception(filename+" : file not found")
+        raise NPKError(filename+" : file not found")
     if verbose:     print("importing 2D spectrum")
     SMX = BrukerSMXHandler(op.dirname(filename))
     SMX.read_smx()
@@ -920,7 +921,7 @@ def Import_2D_proc(filename="2rr", outfile=None,  verbose=VERBOSE):
 
     d.axis2.zerotime = zerotime(SMX.acqu)
     if outfile is not None:
-        raise Exception("Not implemented yet")
+        raise NPKError("Not implemented yet")
 
     pardic = {"acqu": SMX.acqu, \
         "acqu2": SMX.acqu2, \
