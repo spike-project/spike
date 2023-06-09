@@ -382,7 +382,7 @@ def readplist(paramtoadd, paramdict):
     return val
 
 
-ParamList = ['PULPROG', 'SFO1', 'NS', 'TE', 'TD', 'RG', 'SW', 'O1', 'D1', 'P1']
+ParamList = ['PULPROG', 'SFO1', 'NS', 'TE', 'TD', 'RG', 'SW', 'O1', 'D1', 'AQ', 'P1']
 
 
 def param_line(acqus, paramlist=None, output='string'):
@@ -390,6 +390,8 @@ def param_line(acqus, paramlist=None, output='string'):
     given a acqus dictionary, and a list of parameters to extract, 
     this functions return either a plain text or a HTML table depending on output value
     either "string" or "HTML" )
+
+    "AQ" is a "meta" parameter, and computed as 0.5 * int(acqus['$TD']) / float(acqus['$SW_h'])
     """
     head = []
     lines = []
@@ -397,14 +399,19 @@ def param_line(acqus, paramlist=None, output='string'):
         paramlist = ParamList
 
     for k in paramlist:
-        val = str(readplist(k, acqus))
-        if val.startswith('<'):
-            val = val[1:-1]
-        lines.append(val)
-        if k.startswith("$"):
-            head.append(k[1:])
-        else:
+        if k == 'AQ':
+            val = 0.5 * int(acqus['$TD']) / float(acqus['$SW_h'])
+            lines.append(str(round(val,3)))
             head.append(k)
+        else:
+            val = str(readplist(k, acqus))
+            if val.startswith('<'):
+                val = val[1:-1]
+            lines.append(val)
+            if k.startswith("$"):
+                head.append(k[1:])
+            else:
+                head.append(k)
     if output == "string":
         res = "\t".join(head) + "\n" + "\t".join(lines)
     elif output == "HTML":
@@ -520,20 +527,20 @@ def debounce(wait):
 ##############################
 
 
-"""
-There is a hierarchic structure of the tools
-All these tools are Jupyter widgets which can be mixed with other regulat ipywidgets
-- Show1D creates the basic environement
-    it sets 2 functions called back by all actions
-    - draw() which build the whole picture
-    - disp() which refresh only the bounding box (in x and y), and eventually modify simple objects
-    - Reset which redraw and reset to default display parameter
-    - on-done() which freezes the current display as a static 
-- Phaser1D, NMRPeaker1D, NMRIntegrate, baseline1D  are surcharging Show1d, 
-    with new methods, and eventually surcharging draw() and disp()
-- Show1Dplus() which presents all the options
+# """
+# There is a hierarchic structure of the tools
+# All these tools are Jupyter widgets which can be mixed with other regulat ipywidgets
+# - Show1D creates the basic environement
+#     it sets 2 functions called back by all actions
+#     - draw() which build the whole picture
+#     - disp() which refresh only the bounding box (in x and y), and eventually modify simple objects
+#     - Reset which redraw and reset to default display parameter
+#     - on-done() which freezes the current display as a static 
+# - Phaser1D, NMRPeaker1D, NMRIntegrate, baseline1D  are surcharging Show1d, 
+#     with new methods, and eventually surcharging draw() and disp()
+# - Show1Dplus() which presents all the options
 
-"""
+# """
 
 
 class Show1D(HBox):
@@ -1686,6 +1693,7 @@ class AvProc1D:
         self.display()
 
     def process(self, e):
+        "bk_corr() and apmin() assumes the Bruker_NMR_FT plugin is loaded   => creates an error in VSCode"
         self.load()
         self.apod().zf(self.wzf.value).ft_sim().bk_corr().set_unit('ppm')
         if self.wapmin.value:
