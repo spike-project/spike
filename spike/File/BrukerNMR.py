@@ -585,7 +585,7 @@ def Export_fid(d, filename, template,  verbose=VERBOSE):
 #        np.save(op.join(filename,'fid'), buf)
     elif d.dim == 2:
         sz1, sz2 = buf.shape
-        chunksize = 8*256  # chunk size
+        chunksize = 8*16  # This works in TopSpin 4.1 - TO CHECK if Chunksize is 128 in all TopSpin version
         towrite = chunksize*(((sz2-1)//chunksize)+1)  # the multiple of chunksize which encompass the buffer
         buftowrite = np.zeros(towrite)
         fmt = f"@{towrite}d"

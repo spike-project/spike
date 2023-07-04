@@ -792,6 +792,7 @@ def report_peaks(npkd, file=None, format=None, NbMaxPeaks=NbMaxDisplayPeaks):
     if None, output will go to stdout
     
     for documentation, check Peak1D.report() and Peak2D.report()
+       (or d.peaks[0].report() documentation)
     """
     if npkd.dim == 1:
         if npkd.axis1.itype == 0:  # if real
@@ -837,7 +838,7 @@ def pk2pandas_ms(npkd, full=False):
                 'Label':npkd.peaks.label,
                 'm/z':npkd.axis1.itoc(npkd.peaks.pos),
                 u'Δm/z':width_array,
-                'R':  np.around(npkd.axis1.itoc(npkd.peaks.pos)/width_array,-3),
+                'R':  np.around(npkd.axis1.itoc(npkd.peaks.pos)/width_array, 3),
                 'Intensity':npkd.peaks.intens,
                 u'ε_m/z': pos_err_array,
                 u'ε_Intensity': [pk.intens_err for pk in npkd.peaks]
@@ -848,20 +849,22 @@ def pk2pandas_ms(npkd, full=False):
                 'Label':npkd.peaks.label,
                 'm/z':npkd.axis1.itoc(npkd.peaks.pos),
                 u'Δm/z':width_array,
-                'R':  np.around(npkd.axis1.itoc(npkd.peaks.pos)/width_array,-3),
+                'R':  np.around(npkd.axis1.itoc(npkd.peaks.pos)/width_array, 3),
                 'Intensity':npkd.peaks.intens
             }).set_index('Id')
 
     elif npkd.dim == 2:
         # width in m/z
         width1 = np.array([pk.widthF1 for pk in npkd.peaks])   # width have to be computed in m/z
-        width1_array = 0.5*abs(npkd.axis1.itoc(npkd.peaks.pos+npkd.peaks.width1) - npkd.axis1.itoc(npkd.peaks.pos-npkd.peaks.width1))
+        width1_array = 0.5*abs(npkd.axis1.itoc(npkd.peaks.posF1+width1)
+                             - npkd.axis1.itoc(npkd.peaks.posF1-width1))
         width2 = np.array([pk.widthF2 for pk in npkd.peaks])   # width have to be computed in m/z
-        width2_array = 0.5*abs(npkd.axis2.itoc(npkd.peaks.pos+npkd.peaks.width2) - npkd.axis2.itoc(npkd.peaks.pos-npkd.peaks.width2))
+        width2_array = 0.5*abs(npkd.axis2.itoc(npkd.peaks.posF2+width2)
+                             - npkd.axis2.itoc(npkd.peaks.posF2-width2))
 
         # then R
-        R1 =  npkd.axis1.itoc(npkd.peaks.pos)/width1_array
-        R2 =  npkd.axis2.itoc(npkd.peaks.pos)/width2_array
+        R1 =  npkd.axis1.itoc(npkd.peaks.posF1)/width1_array
+        R2 =  npkd.axis2.itoc(npkd.peaks.posF2)/width2_array
         if full:
             # then for position_error to current unit
             err1 = np.array([pk.posF1_err for pk in npkd.peaks])
@@ -876,9 +879,9 @@ def pk2pandas_ms(npkd, full=False):
                 'Intensity':npkd.peaks.intens,
                 u'Δm/z F1':width1_array,
                 u'Δm/z F2':width2_array,
-                'R1':  np.around(R1,-3),
-                'R2':  np.around(R1,-3),
-                'R *1E6':  np.around(R1*R2/1E6,-3),
+                'R1':  np.around(R1, 3),
+                'R2':  np.around(R2, 3),
+                'R *1E6':  np.around(R1*R2/1E6, 3),
                 u'ε_m/z F1': pos1_err_array,
                 u'ε_m/z F2': pos2_err_array,
                 u'ε_Intensity': [pk.intens_err for pk in npkd.peaks]
@@ -892,9 +895,9 @@ def pk2pandas_ms(npkd, full=False):
                 'Intensity':npkd.peaks.intens,
                 u'Δm/z F1':width1_array,
                 u'Δm/z F2':width2_array,
-                'R1':  np.around(R1,-3),
-                'R2':  np.around(R1,-3),
-                'R *1E6':  np.around(R1*R2/1E6,-3)
+                'R1':  np.around(R1, 3),
+                'R2':  np.around(R2, 3),
+                'R *1E6':  np.around(R1*R2/1E6, 3)
             }).set_index('Id')
     else:
         raise Exception('Not implemented in 3D yet')

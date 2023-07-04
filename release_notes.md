@@ -1,5 +1,12 @@
 <!-- DO NOT MODIFY this file, it is generated automatically from dev_setup ! -->
 # SPIKE Relase Notes
+#### 0.99.33 - July 2023
+- Interactive:
+    - NMR
+    	- in Interactive, added AQ in the parameter list
+        - modified the File.BrukerNMR.Export_dif to correctly export fid
+    - MS
+    	- corrected a bug in pk2pandas() in 2D FTICR which was crashing the action.
 #### 0.99.32 - March 2023
 - Interactive:
     - NMR and MS: example interactive notebooks have been extended, cleaned up and fully checked 

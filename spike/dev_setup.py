@@ -14,7 +14,7 @@ from codecs import decode
 
 ProgramName = "SPIKE"
 VersionName = "Development version"
-VersionInfo = ["0", "99", "32"]   # Major - Minor - Micro
+VersionInfo = ["0", "99", "33"]   # Major - Minor - Micro
 
 # 1.0 will probably be when interactive Notebooks are really usefull !
 # And NMR.py validated
@@ -30,6 +30,13 @@ VersionInfo = ["0", "99", "32"]   # Major - Minor - Micro
 # Release Notes in md syntax !
 release_notes="""
 # SPIKE Relase Notes
+#### 0.99.33 - July 2023
+- Interactive:
+    - NMR
+    	- in Interactive, added AQ in the parameter list
+        - modified the File.BrukerNMR.Export_dif to correctly export fid
+    - MS
+    	- corrected a bug in pk2pandas() in 2D FTICR which was crashing the action.
 #### 0.99.32 - March 2023
 - Interactive:
     - NMR and MS: example interactive notebooks have been extended, cleaned up and fully checked 
