@@ -80,6 +80,7 @@ def find_proc_down(dire, proclist):
     
     search in pdada/PROCNO and returns the first one
     """
+    found = False
     for pdata in glob.glob( op.join(dire,"pdata","*") ):
         if op.isdir(pdata):
             for f in proclist:
@@ -87,11 +88,13 @@ def find_proc_down(dire, proclist):
                 if debug: print('SEARCH',fname)
                 if op.exists(fname):
                     if debug: print('FOUND',f)
+                    found = fname
                     break
-            break
+    if found:
+        return(found)
     else:
         raise NPKError("No proc file found in %s/pdata/*"%dire)
-    return(fname)
+    
 
 ################################################################
 def find_proc(dir=".", down=True):
