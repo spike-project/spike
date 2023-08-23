@@ -1,12 +1,15 @@
 <!-- DO NOT MODIFY this file, it is generated automatically from dev_setup ! -->
 # SPIKE Relase Notes
-#### 0.99.33 - July 2023
+*(if you need the latest version, get Spike from github)*
+#### 0.99.33 - August 2023
 - Interactive:
     - NMR
+        - improved the Show2D() tool, and added local projections
     	- in Interactive, added AQ in the parameter list
         - modified the File.BrukerNMR.Export_dif to correctly export fid
-    - MS
-    	- corrected a bug in pk2pandas() in 2D FTICR which was crashing the action.
+- MS : corrected a bug in pk2pandas() in 2D FTICR which was crashing the action.
+- corrected a subtil bug which always removed the right most point in display() and extract()
+
 #### 0.99.32 - March 2023
 - Interactive:
     - NMR and MS: example interactive notebooks have been extended, cleaned up and fully checked 
@@ -23,9 +26,9 @@
     - should not change anything to your set-up
 - added  Algo.Linepredic.baselinerollrem() to remove baseline roll using Linear Prediction
 - extended real2cpx() to 2D operations (was only 1D)
-- improved importing processed DOSY (PALMA plugin)
+- NMR: improved importing processed DOSY (PALMA plugin)
     - corrected cyclic import in PALMA
-- in BrukerSMX.py corrected for a warning signaling an upcoming obsolence
+- NMR: in BrukerSMX.py corrected for a warning signaling an upcoming obsolence
 
 #### 0.99.31 - Nov 2022
 - NMR:improvements in spike Interactive

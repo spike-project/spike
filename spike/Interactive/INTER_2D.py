@@ -50,7 +50,7 @@ class baseline2D_F2(baseline1D):
         super().__init__( self.data2D.projF2, figsize=figsize)
     def on_done(self, e):
         super().on_done(e)
-#        ibsl_points = [int(self.data2D.axis2.ptoi(x)) for x in self.bsl_points]
+        ibsl_points = [int(self.data2D.axis2.ptoi(x)) for x in self.bsl_points]
         self.data.bcorr(method='spline', xpoints=ibsl_points,  nsmooth=self.smooth.value, xpunits='current')
 
 class Show2D(Show1D):
@@ -58,8 +58,8 @@ class Show2D(Show1D):
     A display for 2D NMR with a scale cursor
     Show2D(spectrum) where spectrum is a NPKData object
     - special display for DOSY.
-    - if data.projF2 and/or data.projF1 exist they will be used, 
-      if not projtype determined how to compute them
+    - if data.projF2 and/or data.projF1 already exist they will be used for display projections
+      if not they will be computed,  projtype determined how to compute them
         - projtype='s' => skyline projection  / projtype='m' => mean projection
     """
     def __init__(self, data, title=None, figsize=None, projtype='s', **kw):
@@ -68,13 +68,14 @@ class Show2D(Show1D):
         if 'points' in data.unit and data.itype >0:
             print('WARNING, projections may be wrong in points unit for complex datasets')
         try:
-            self.proj2 = data.projF2
-        except:
-            self.proj2 = data.proj(axis=2, projtype=projtype).real()
+            self.data.projF2
+        except AttributeError:
+            self.data.projF2 = data.proj(axis=2, projtype=projtype).real()
         try:
-            self.proj1 = data.projF1
-        except:
-            self.proj1 = data.proj(axis=1, projtype=projtype).real()
+            self.data.projF1
+        except AttributeError:
+            self.data.projF1 = data.proj(axis=1, projtype=projtype).real()
+        self.projtype = projtype
         # Controls
         self.posview = widgets.Checkbox(value=True,description='Positive', tooltip='Display Positive levels', layout=Layout(width='20%'))
         self.negview = widgets.Checkbox(value=False,description='Negative', tooltip='Display Negative levels', layout=Layout(width='20%'))
@@ -128,6 +129,14 @@ class Show2D(Show1D):
         self.bxsides2 = mplButton(sidex2, '✖')
         self.bssides2.on_clicked(self.slash2sideproj)
         self.bxsides2.on_clicked(self.mult2sideproj)
+        # and proj button
+        # sidepax = self.fig.add_axes([0.07, 0.82, 4*boxw, boxw])
+        # self.sideproj = mplButton(sidepax, 'to projF1')
+        # self.sideproj.on_clicked(self.doprojside)
+
+        projax = self.fig.add_axes([0.85, 0.85, 3.5*boxw, 2*boxw])
+        self.projb = mplButton(projax, 'new proj\nfrom zoom')
+        self.projb.on_clicked(self.doprojections)
 
         # then top scale controls
         tops2 = self.fig.add_axes([0.81, 0.85, boxw, boxw])
@@ -136,7 +145,12 @@ class Show2D(Show1D):
         self.bxtop2 = mplButton(topx2, '✖')
         self.bstop2.on_clicked(self.slash2topproj)
         self.bxtop2.on_clicked(self.mult2topproj)
-        self.keepbuttonaxes = [sides2, sidex2, tops2, topx2]  # kept here to be removed when done
+        # # and proj button
+        # toppax = self.fig.add_axes([0.85, 0.07, 4*boxw, boxw])
+        # self.topproj = mplButton(toppax, 'to projF2')
+        # self.topproj.on_clicked(self.doprojtop)
+
+        self.keepbuttonaxes = [sides2, sidex2, tops2, topx2, projax]  # kept here to be removed when done
         # Logo
         self.axlogo = axarr[0,1]
         self.axlogo.set_visible(False)
@@ -144,7 +158,7 @@ class Show2D(Show1D):
         self.multiside = None
         self.ax = self.spec_ax
         # Children
-        self.topbar = HBox( [self.posview, self.negview, self.cursors])
+        self.topbar = HBox( [self.posview, self.negview,]) # self.cursors])
         self.controlbar = VBox([self.reset, self.scale, self.savepdf, self.done])
         self.middlebar = HBox( [  self.controlbar, self.fig.canvas ] )
 
@@ -159,6 +173,7 @@ class Show2D(Show1D):
         self.set_on_redraw()
         self.draw(new=True)
         self.on_reset()
+    # define actions - first top and side mpl button
     def slash2sideproj(self, e):
         "slash by 2 the side proj"
         l,h = self.side_ax.get_xbound()
@@ -175,6 +190,34 @@ class Show2D(Show1D):
         "mult by 2 the top proj"
         l,h = self.top_ax.get_ybound()
         self.top_ax.set_ybound(l/2,h/2)
+    def doprojtop(self, e=None):
+        "recompute top projection from data truncated as zoom"
+        self.data.projF2 = \
+            self.data. \
+            copy(). \
+            extract((self.side_ax.get_ybound(), (-10000,10000) ) ). \
+            proj(axis=2, projtype=self.projtype) \
+            # 10000 ? lazy me !
+#        self.draw(new=True)
+        self.top_ax.lines[0].set_ydata( self.data.projF2.get_buffer() )
+        topmax = self.data.projF2.absmax
+        self.top_ax.set_ybound(-topmax/20,topmax)
+    def doprojside(self, e=None):
+        " recompute side projection from data truncated as zoom"
+        self.data.projF1 = \
+            self.data. \
+            copy(). \
+            extract((-10000,10000), (self.top_ax.get_xbound() ) ). \
+            proj(axis=1, projtype=self.projtype)
+#        self.draw(new=True)
+        self.side_ax.lines[0].set_xdata( self.data.projF1.get_buffer() )
+        sidemax = self.data.projF2.absmax
+        self.side_ax.set_xbound(-sidemax/20,sidemax)
+    def doprojections(self, e=None):
+        " recompute top (F2) and side (F1) projections from data truncated as zoom"
+        self.doprojside(e)
+        self.doprojtop(e)
+    # then ipywidget ones
     def on_done(self, b):
         for ax in self.keepbuttonaxes:  # remove buttons
             ax.set_visible(False)
@@ -191,8 +234,8 @@ class Show2D(Show1D):
         if new:
             for ax in (self.side_ax, self.top_ax, self.spec_ax):
                 ax.clear()
-            self.proj2.display(figure=self.top_ax, title=self.title)
-            sidedisplay(self.proj1, self.side_ax)
+            self.data.projF2.display(figure=self.top_ax, title=self.title)
+            sidedisplay(self.data.projF1, self.side_ax)
         else:
             yb = self.side_ax.get_ybound()
             xb = self.top_ax.get_xbound()

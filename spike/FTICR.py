@@ -323,7 +323,7 @@ class FTICR_Tests(unittest.TestCase):
         print("l1 values:",l1)
         A.trimz()
         self.assertEqual(l1, A.axis1.left_point)
-        self.assertEqual(A.size1, 10000-l1-1)
+        self.assertEqual(A.size1, 10000-l1)
         print("1D trimz gain is : %d %%" % (100*(1-(A.size1/10000))))
     def test_trim2D(self):
         """
@@ -341,8 +341,8 @@ class FTICR_Tests(unittest.TestCase):
         A.trimz()
         self.assertEqual(l1, A.axis1.left_point)
         self.assertEqual(l2, A.axis2.left_point)
-        self.assertEqual(A.size1, 500-l1-1)
-        self.assertEqual(A.size2, 10000-l2-1)
+        self.assertEqual(A.size1, 500-l1)
+        self.assertEqual(A.size2, 10000-l2)
         print("2D trimz gain is : %d %%" % (100*(1-(A.size1*A.size2/(500.*10000)))))
     def test_saving_1D(self):
         """

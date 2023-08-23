@@ -314,13 +314,11 @@ class Axis(object):
         if self.itype == 1:     # complex axis
             a = 2*(a//2)  # int( 2*round( (self.ctoi(zoom[0])-0.5)/2 ) )     # insure real (a%2==0)
             b = 2*(b//2)  # int( 2*round( (self.ctoi(zoom[1])-0.5)/2 ) )
-        left, right = min(a,b), max(a,b)+1
-        if self.itype == 1:     # complex axis
-            right += 1  # insure imaginary
+        left, right = min(a,b), max(a,b) #+1
+        # if self.itype == 1:     # complex axis             This code goes with the +1 above
+        #     right += 1  # insure imaginary
         l = max(0,left)
-        l = min(self.size-5,l)
-        r = max(4,left)
-        r = min(self.size-1, right)
+        r = min(self.size-1, right)  # because size is +1 the last index
 #        if (l,r) != (left,right):
 #            print("%d-%d (points) slice probably outside current axis, recast to %d-%d"%(left,right,l,r))
         return (l,r)
@@ -1196,7 +1194,7 @@ class _NPKData(object):
         """
         self.check1D()
         x1, y1 = self.axis1.extract(zoom)
-        self.buffer = self.buffer[x1:y1]
+        self.buffer = self.buffer[x1:y1+1]
         self.adapt_size()
         return self
     #---------------------------------------------------------------------------
@@ -1205,7 +1203,7 @@ class _NPKData(object):
         zoom = flatten(zoom)
         x1, y1 = self.axis1.extract(zoom[0:2])  # 0,1
         x2, y2 = self.axis2.extract(zoom[2:4])  # 2,3
-        self.buffer = self.buffer[x1:y1, x2:y2]
+        self.buffer = self.buffer[x1:y1+1, x2:y2+1]
         self.adapt_size()
         return self
     #---------------------------------------------------------------------------
@@ -1215,7 +1213,7 @@ class _NPKData(object):
         x1, y1 = self.axis1.extract( (zoom[0], zoom[1]) )
         x2, y2 = self.axis2.extract( (zoom[2], zoom[3]) )
         x3, y3 = self.axis3.extract( (zoom[4], zoom[5]) )
-        self.buffer = self.buffer[x1:y1,x2:y2,x3:y3]
+        self.buffer = self.buffer[x1:y1+1, x2:y2+1, x3:y3+1]
         self.adapt_size()
         return self
     #---------------------------------------------------------------------------
@@ -1579,7 +1577,7 @@ class _NPKData(object):
             if NbMaxVect is not None:
                 while abs(z2-z1+1)/step > NbMaxVect:     # if too many vectors to display !
                     step += self.axis1.itype+1
-            self.disp_artist = fig.plot(ax[z1:z2:step], self.buffer[z1:z2:step].clip(mmin,mmax), label=label, linewidth=linewidth, color=color, **mpldic)
+            self.disp_artist = fig.plot(ax[z1:z2+1:step], self.buffer[z1:z2+1:step].clip(mmin,mmax), label=label, linewidth=linewidth, color=color, **mpldic)
             if xlabel == "_def_":
                 xlabel = self.axis1.currentunit
             if ylabel == "_def_":
@@ -1620,9 +1618,9 @@ class _NPKData(object):
             fig.set_xscale(self.axis2.units[self.axis2.currentunit].scale)  # set unit scale (log / linear)
             if self.axis2.units[self.axis2.currentunit].reverse:# and new_fig:
                     fig.set_xlim(axis[1][z2lo], axis[1][z2up])# fig.invert_xaxis()
-            self.disp_artist = fig.contour(axis[1][z2lo:z2up:step2],
-                axis[0][z1lo:z1up:step1],
-                self.buffer[z1lo:z1up:step1,z2lo:z2up:step2],
+            self.disp_artist = fig.contour(axis[1][z2lo:z2up+1:step2],
+                axis[0][z1lo:z1up+1:step1],
+                self.buffer[z1lo:z1up+1:step1,z2lo:z2up+1:step2],
                 level, colors=color, **mpldic)
             if xlabel == "_def_":
                 xlabel = self.axis2.currentunit
@@ -1990,7 +1988,15 @@ class _NPKData(object):
         b = self.copy().get_buffer().real.ravel()
         for i in range(iterations):
             b = b[ (b-b.mean()) < tresh*b.std() ]
-        return (b.mean(), b.std())
+        return (b.mean(), b.std())        # mn, sd = b.mean(), b.std()
+        # for _ in range(iterations):
+        #     try:
+        #         b = b[ (b-b.mean()) < tresh*b.std() ]
+        #     except RuntimeWarning: # usually "Mean of empty slice" happens on small windows
+        #         break   # we'll return the previous values
+        #     else:
+        #         mn, sd = b.mean(), b.std()
+        # return (mn, sd)
 
     #-----------------
     def test_axis(self, axis=0):
