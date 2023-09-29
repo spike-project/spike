@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# load all python and interactive tools - has to be run only once (but it does not hurt to rerun...)
 import platform
 import ctypes
 import os.path as op

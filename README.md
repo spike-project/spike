@@ -81,6 +81,28 @@ If you already have SPIKE installed and want to upgrade to the last version do:
 
     pip install -U spike-py
 
+### Installing from `github`
+The`pip` instalation is always less recent than the github version, if you need the latest version, you simply instal it in the following way:
+
+- Get the last version on `github`, using `git` (prefered)
+
+        git clone https://github.com/spike-project/spike.git
+
+- then go to the spike directory and type the following command
+
+        python3 setup.py devel
+
+This method allows you to update your `Spike` distibution from `github` and always use the latest version by doing
+
+        git pull; git update
+
+in your spike directory.
+
+Alternatively, you can simply download the archive
+
+        wget https://github.com/spike-project/spike/archive/refs/heads/master.zip
+        unzip master.zip
+        
 ### Installing additional tools
 Several additional tools may be of interest.
 
@@ -93,7 +115,11 @@ To install it, simply do:
 
     pip install ipympl
 
-Then copy the related NotBooks to a directory by typing `python -m spike.installSpI` in a terminal in this directory.
+Then copy the related NotBooks to a directory by typing in a terminal in this directory.
+
+    python -m spike.installSpI
+
+this will copy all the tools, you can safely remove the unneeded one, as the same command will always bring you all the notebooks.
 
 
 **b/ additional plugins** are available in the [plugins/special](spike/plugins/special) directory in the source tree. [check on github](https://github.com/spike-project/spike/tree/master/spike/plugins/specials).
@@ -110,7 +136,7 @@ Which is the GPL license adapted to the French law.
 It includes the following additional programs/algorithms:
 
 - [urQRd](http://urqrd.igbmc.fr/) L.Chiron and M-A Delsuc (denoising of large harmonic signals) under CeCiLL licence
-- [PALMA](https://github.com/delsuc/PALMA) A.Cherni & M-A.Delsuc (Processing of DOSY based on ILT) under CeCiLL licence
+- [PALMA](https://github.com/delsuc/PALMA) A.Cherni and M-A.Delsuc (Processing of DOSY based on ILT) under CeCiLL licence
 - [progressbar](https://github.com/niltonvolpato/python-progressbar) N.Volpato - under LGPL licence
 
 ### source and dependencies
@@ -124,7 +150,7 @@ SPIKE is written in pure Python, and relies on several external libraries:
 - tables
 - pandas
 
-It is compatible and fully tested with python 3.7 and 3.9
+It is compatible and fully tested with python 3.7 and 3.10
 
 ### developping for SPIKE
 check [Here](DevelopmentGuide.md)
@@ -172,7 +198,7 @@ NPK is purely a computing kernel, with no graphical possibilities, and has been 
 
 However, NPK was showing many weaknesses, mostly due to the 32bits organization, and a poor file format. So, when a strong scientific environment became available in Python, a rewrite in pure Python was undertaken. To this initial project, called NPK-V2, many new functionalities were added, and mostly the capability to work in other spectroscopies than NMR.
 
-At some point in 2014, we chose to fork NPK-V2 to SPIKE, and make it public.
+At some point in 2014, we chose to fork NPK-V2 to SPIKE, and made it public.
 
 
 # 6/ Authors and Licence
