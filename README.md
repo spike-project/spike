@@ -90,7 +90,7 @@ The`pip` instalation is always less recent than the github version, if you need 
 
 - then go to the spike directory and type the following command
 
-        python3 setup.py devel
+        python3 setup.py develop
 
 This method allows you to update your `Spike` distibution from `github` and always use the latest version by doing
 
