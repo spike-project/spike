@@ -30,15 +30,23 @@ VersionInfo = ["0", "99", "33"]   # Major - Minor - Micro
 # Release Notes in md syntax !
 release_notes="""
 # SPIKE Relase Notes
-*(if you need the latest version, get Spike from github)*
-#### 0.99.33 - August 2023
+*if you need the latest version, get Spike from github*
+*then to make available to you system,* do
+    > cd spike
+    > python setup.py devel
+
+#### 0.99.33 - September 2023 - not released yet
 - Interactive:
     - NMR
+        - improved 1D integration
         - improved the Show2D() tool, and added local projections
     	- in Interactive, added AQ in the parameter list
-        - modified the File.BrukerNMR.Export_dif to correctly export fid
-- MS : corrected a bug in pk2pandas() in 2D FTICR which was crashing the action.
+- MS: corrected a bug in pk2pandas() in 2D FTICR which was crashing the action.
+- NMR: corrected a logic bug in BrukerNMR importer which triggered when importing data with several expno
+- NMR: modified the File.BrukerNMR.Export_dif to correctly export fid
 - corrected a subtil bug which always removed the right most point in display() and extract()
+- corrected a bug in noise computation which was crashing baseline correction sometimes (and elsewhere)
+- corrected a bug related to numpy.int deprecation
 
 #### 0.99.32 - March 2023
 - Interactive:

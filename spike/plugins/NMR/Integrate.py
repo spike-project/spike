@@ -85,7 +85,7 @@ class Integrals(list):
     def _report(self):
         ll = ['calibration: %f\n'%self.calibration]
         for i,ii in enumerate(self):
-            ll.append( "%d: %s"%(i,ii._report ))
+            ll.append( "%d: %s"%(i,ii._report() ))
         return "\n".join(ll)
     def report(self):
         for ii in self:

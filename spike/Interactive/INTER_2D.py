@@ -19,7 +19,7 @@ import glob
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-from matplotlib.widgets import MultiCursor
+from matplotlib.widgets import Cursor, MultiCursor
 from matplotlib.widgets import Button as mplButton
 
 from ipywidgets import fixed, Layout, HBox, VBox, Label, Output, Button, Tab
@@ -106,7 +106,7 @@ class Show2D(Show1D):
 #        fig, self.axarr = plt.subplots(2, 1, sharex=True, figsize=fsize, gridspec_kw=grid)
         # Figure
         plt.ioff()
-        self.fig = plt.figure(figsize=fsize, constrained_layout=False, tight_layout=True)
+        self.fig = plt.figure(figsize=fsize, layout="tight")
         plt.ion()
         self.fig.canvas.toolbar_position = 'left'
         # setup grid
@@ -168,7 +168,10 @@ class Show2D(Show1D):
         if data.noise == 0.0:
 #            data.noise = findnoiselevel_2D(data.get_buffer().real)
             _, data.noise = data.robust_stats()
-        self.scale.max = min(data.absmax*0.05/data.noise,1000)   # we do not want levels to plunge into noise
+        try:
+            self.scale.max = min(data.absmax*0.05/data.noise, 1000, self.scale.min+1)   # we do not want levels to plunge into noise
+        except:                      # pathological cases fail
+            self.scale.max = 20
         self.scale.max = max(self.scale.max, 20)   # sometimes its too low 
         self.set_on_redraw()
         self.draw(new=True)
@@ -288,7 +291,6 @@ class Phaser2D(Show2D):
             raise ValueError ('Dataset should be complex along both axes, Phasing is not possible')
         self.data_ref = data
         super().__init__(data, **kw)
-        print('WARNING this tool is not fully tested yet')
         # create additional widgets
         slidersize = Layout(width='99%')
         self.F1p0 = widgets.FloatSlider(min=-180, max=180, step=1.0, description='P0',continuous_update=HEAVY, layout=slidersize)
@@ -403,6 +405,8 @@ class Phaser2D(Show2D):
         self.ax.set_xlim(xmin=self.data_ref.axis2.itop(0), xmax=self.data_ref.axis2.itop(self.data.size2))
         self.ax.set_ylim(ymin=self.data_ref.axis1.itop(0), ymax=self.data_ref.axis1.itop(self.data.size1))
         self.close()
+        del self.data_ref.projF1
+        del self.data_ref.projF2
         print("Applied: phase(%.1f,%.1f,axis='F1').phase(%.1f,%.1f,axis='F2')"%(self.lF1p0, self.lF1p1, self.lF2p0, self.lF2p1))
 
     def _draw(self, new=True, todisplay=None, debug=True):

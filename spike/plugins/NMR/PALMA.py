@@ -22,6 +22,7 @@ import os.path as op
 import unittest
 import re
 import six
+import warnings
 
 import numpy as np
 import scipy
@@ -84,7 +85,9 @@ def approx_lambert(x):
     limit = 50
     nz = np.nonzero( (x < limit) )[0]
     A = 0.00303583748046
-    s = x*(1 - np.log(x)/(1+x)) + A/(1+x-limit)**0.75
+    with warnings.catch_warnings():  # power and log make warnings on neg value => warning filtering slows down by 5%
+        warnings.simplefilter(action="ignore", category=RuntimeWarning)
+        s = x*(1 - np.log(x)/(1+x)) + A/(1+x-limit)**0.75
     s[nz] = lambert_w(np.exp(x[nz]))
     return np.nan_to_num(s)
 

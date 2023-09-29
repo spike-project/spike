@@ -2049,6 +2049,7 @@ class NMRIntegrate(Show1D):
         self.Integ.append(Integralitem(self.data.axis1.ptoi(
             start), self.data.axis1.ptoi(end), [], 0.0))
         self.Integ.zonestocurves()
+        self.on_reset()
         self.draw()
         self.print(None)
 

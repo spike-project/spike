@@ -22,13 +22,15 @@ import os
 import os.path as op
 import shutil
 import sys
+import warnings
+
+
 from .Display import testplot
 # Beware  !! Awful Hack !!
 # testplot is used to switch display off 
 # BUT ALSO to monkey patch at Tests run time to store in testplot.config values used by the tests (DATA_dir)
 
-
-__version__ = "2.0"
+__version__ = "2.1"
 
 #############################################################################
 # configuration - overwriten by arguments at run time
@@ -42,14 +44,14 @@ MAIL = False
 list_of_mails = []
 
 #DATA_dir defines where the DATA for tests are located
-DATA_dir = "/Volume/DATA_test"
+DATA_dir = "/DATA/DATA_test"
 
 RUN = True
 
 # Add your module here
 mod_util = ("plugins", 'util.dynsubplot', 'util.debug_tools')  #'util.read_msh5', 
 mod_algo = ('Algo.Cadzow', 'Algo.Linpredic', 'Algo.urQRd', 'Algo.sane', 'Algo.SL0', 'Algo.maxent', 'Algo.BC') 
-mod_plugins = ("plugins.Peaks", "plugins.Fitter", "plugins.NMR.Bruker_NMR_FT", "plugins.Linear_prediction")
+mod_plugins = ("plugins.Peaks", "plugins.Fitter", "plugins.NMR.Bruker_NMR_FT", "plugins.Linear_prediction", "plugins.NMR._PALMA-Test")
 mod_file = ("File.BrukerNMR", "File.GifaFile", 'File.HDF5File', 'File.Apex', 'File.csv', 'File.Solarix', 'File.mzXML')
 mod_basicproc = ("NPKData", "NMR", "FTICR", "Orbitrap", 'NPKConfigParser')
 mod_user = ('processing', )
@@ -90,7 +92,7 @@ def cleanspike():
         #print root, dirs, files
         for f in files:
             r,ext = os.path.splitext(f)
-            if ext == 'pyc':
+            if ext in ('pyc','pyo'):
                 addr = os.path.join(root,f)
                 print(addr)
                 os.remove(addr)
@@ -107,7 +109,7 @@ def cleandir(verbose=True):
                 'ubiquitine_2D_000002_Sampling_2k.list','test.mscf','test_.mscf',
                 'ubiquitine_2D_000002.msh5','ubiquitine_2D_000002_mr.msh5',   # these two for testing 2D FT-ICR
                 'Sampling_file_aposteriori_cytoCpnas.list','angio_ms_000005.d',
-                'SubsP_220615_2DFT_2k_128k_000001.d',
+                'SubsP_220615_2DFT_2k_128k_000001.d', 'HEKmedia',
                 'testsmzXML')
     for i in glob.glob(filename("*")):
         if verbose: print(i, end=' ')
@@ -213,6 +215,7 @@ def main():
     parser.add_argument('-d', '--dirty', action='store_true', help="do not remove temporary files")
     parser.add_argument('-c', '--clean', action='store_true', help="just remove left-over temporary files")
     parser.add_argument('-g', '--graphic',  action='store_true', help="restore graphic output (off by default for background testing)")
+    parser.add_argument('-W', '--Warnings',  action='store_true', help="Activate all warnings")
     
     args = parser.parse_args()
 
@@ -223,6 +226,13 @@ def main():
     print('dirty', args.dirty)
     print('clean', args.clean)
     print('graphic', args.graphic)
+    print('Warnings', args.Warnings)
+
+    if args.Warnings:
+# disable eventual warning blocking
+        if not sys.warnoptions:
+            warnings.simplefilter("default") # Change the filter in this process
+            os.environ["PYTHONWARNINGS"] = "default" # Also affect subprocesses
 
     if args.dry:
         RUN = False

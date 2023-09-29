@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.14.1
+#       jupytext_version: 1.15.0
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -64,7 +64,8 @@ from importlib import reload  # the two following lines are debugging help
 verbose = 1                              # chose from 0 (terse) to 3 more verbose
 mpl.rcParams['figure.figsize'] = (8,4)   # (X,Y) default figure size
 I.Activate_Wheel = True                  # True/False    scale with wheel control in the graphic cells 
-I.reverse_scroll = False                 # inverse the direction of the mouse wheel, whether it is `True` (TrackPad) or `False` (Mouse)
+I.reverse_scroll = True                 # inverse the direction of the mouse wheel, whether it is `True` (TrackPad) or `False` (Mouse)
+I.ParamList = ['SOLVENT', 'PULPROG', 'SFO1', 'SFO2', 'NS', 'TE', 'TD', 'RG', 'SW', 'O1', 'D1','P1', 'D9']    # the list of important parameters to display
 
 # %% [markdown]
 # ---
@@ -85,36 +86,59 @@ display(FC)
 #
 # This is simply done with the `Import_2D()` tool, which returns a `SPIKE` object.
 #
-# We store the dataset into a variable called d2. 
+# We store the dataset into a variable called d2, and display some information.
 
 # %%
 print('Reading file ',FC.selected)
 d2 = Import_2D(FC.selected)
+d2.set_unit('sec')
 d2.filename = FC.selected
 d2.pulprog = d2.params['acqu']['$PULPROG']
-print(d2)                                      # print() of the dataset shows a summary of the parameters
-print(d2.pulprog)
-display(HTML('<b>title: </b>'+ d2.params['acqu']['title']))    # d1.params is a dictionary which contains the whole 'acqu' and 'proc' Bruker parameters
-#d2.set_unit('sec').display(title="%s %s"%(FC.nmrname,d2.pulprog), scale='auto')
+#print(d2)                                      # print() of the dataset shows a summary of the parameters
+display(I.summary(d2, output='HTML'))          # but summary is nicer and more informative
+#display(HTML('<b>title: </b>'+ d2.params['acqu']['title']))    # d1.params is a dictionary which contains the whole 'acqu' and 'proc' Bruker parameters#d2.set_unit('sec').display(title="%s %s"%(FC.nmrname,d2.pulprog), scale='auto')
 plt.figure()
 plt.imshow(d2.get_buffer().real, cmap="seismic");
 
 # %% [markdown]
-# *Check Proc1DNMR NoteBook for documentation on spectral display*
-#
 # ## Basic Processing
 # We are going to use a basic processing set-up, check the documentation for advanced processing
 #
 # ### Fourier Transform - modulus mode!
+# and basic display
 
 # %%
 D2 = d2.copy() # copy the imported data-set to another object for processing
 # bk_ftF2 and bk_ftF1 (define in the Bruker plugin) find which FT to apply depending on FnMODE
 D2.apod_sin(maxi=0.5,axis='F2').zf(1,2).bk_ftF2()  # chaining  apodisation - zerofill - FT
 D2.apod_sin(maxi=0.5,axis='F1').zf(2,1).bk_ftF1()  # chaining  apodisation - zerofill - FT
-D2.modulus().set_unit('ppm').rem_ridge()
-#D2.display(scale="auto", autoscalethresh=100.0, title="%s %s"%(FC.nmrname,d2.pulprog))  # chain  set to ppm unit - and display
-I2D.Show2D(D2)
+D2.modulus().rem_ridge()           # compute modulus, and apply a ridge removal algo
+# we can use display to compute an image, parameters are as in 1D
+# scale determines the level to draw the contours, when "auto", autoscalethresh is the SNR where the lowest level is drawn
+D2.set_unit('ppm').display(zoom=(0,100,0,8),scale="auto", autoscalethresh=100.0, title="%s %s"%(FC.nmrname,d2.pulprog))
+
+
+# %% [markdown]
+# ## Advanced 2D display
+# `INTER_2D.Show2D(data)` is an advanced interactive display for 2D NMR 
+#
+# it features
+#
+# - standard matplotlib controls
+# - an interactive level selection, with scale cursor or mouse
+# - aware of homonuclear, heteronuclear, and DOSY experiments
+# - zoomable projections spaning both axes
+#    - if `data.projF2` and/or `data.projF1` already exist they will be used for display projections
+#    - if not they will be computed, and readily available afterwards under the same name
+#    - computation takes care of the current zoom, 
+
+# %%
+reload(I2D)
+S = I2D.Show2D(D2,title="%s %s"%(FC.nmrname,d2.pulprog))
+S
+
+# %%
+D2.projF1.display()
 
 # %% [markdown]
 # ### Advanced Phase sensitive processing
@@ -128,14 +152,15 @@ D2ph.apod_sin(maxi=0,axis='F2').zf(1,2).bk_ftF2().bk_pk()  # chaining  apodisati
 D2ph.apod_sin(maxi=0,axis='F1').zf(2,1).bk_ftF1()  # chaining  apodisation - zerofill - FT
 D2ph.set_unit('ppm').rem_ridge()
 #D2.display(scale="auto",  autoscalethresh=6.0, title="%s %s"%(FC.nmrname,d2.pulprog))  # chain  set to ppm unit - and display
-S = I2D.Show2D(D2ph)           # note that you can create the view and store it in a var without displaying it
-S.negview.value = True         # and set some parameters (here negative view) before display
-S
+S2 = I2D.Show2D(D2ph)           # note that you can create the view and store it in a var without displaying it
+S2.negview.value = True         # and set some parameters (here negative view) before display
+S2
 
 # %% [markdown]
 # ### Rephasing
 #
-# Use the sliders to adjust the phase parameters,   the pivot can be set with a right click on the spectrum
+# Use the sliders to adjust the phase parameters,
+# the pivot (big red dot) can be set with a right click on the spectrum
 # Top and Side spectra are taken at the pivot level.
 #
 #
@@ -155,7 +180,6 @@ D2ph.real(axis=1).real(axis=2).rem_ridge()   # rem_ridge() is a minimum baseline
 
 # %%
 S2 = I2D.Show2D(D2ph,  title="%s %s"%(FC.nmrname,d2.pulprog))
-S2.proj1 = S2.proj2
 S2
 
 # %% [markdown]
@@ -163,10 +187,10 @@ S2
 
 # %%
 F1slice = 3.3    # select a F1 (vertical) slice in current unit (here ppm) 
-F2slice = 2.05   # select a F2 (horizontal) slice in current unit (here ppm) 
+F2slice = 1.0   # select a F2 (horizontal) slice in current unit (here ppm) 
 
-D2ph.col( D2ph.axis2.ctoi(F1slice)).display(title='F1 slice at F2=%.3f ppm'%(F1slice,))
-D2ph.row( D2ph.axis1.ctoi(F2slice)).display(title='F2 slice at F1=%.3f ppm'%(F2slice,))
+D2ph.colc( F1slice).display(title='F1 slice at F2=%.3f ppm'%(F1slice,))
+D2ph.rowc(F2slice).display(title='F2 slice at F1=%.3f ppm'%(F2slice,))
 
 # %% [markdown]
 # ## Save on disk

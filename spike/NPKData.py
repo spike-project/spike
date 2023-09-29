@@ -1986,17 +1986,18 @@ class _NPKData(object):
         defined as larger than (tresh*std+mean)
         """
         b = self.copy().get_buffer().real.ravel()
-        for i in range(iterations):
-            b = b[ (b-b.mean()) < tresh*b.std() ]
-        return (b.mean(), b.std())        # mn, sd = b.mean(), b.std()
-        # for _ in range(iterations):
-        #     try:
-        #         b = b[ (b-b.mean()) < tresh*b.std() ]
-        #     except RuntimeWarning: # usually "Mean of empty slice" happens on small windows
-        #         break   # we'll return the previous values
-        #     else:
-        #         mn, sd = b.mean(), b.std()
-        # return (mn, sd)
+
+        # for i in range(iterations):
+        #     b = b[ (b-b.mean()) < tresh*b.std() ]
+        # return (b.mean(), b.std())        # mn, sd = b.mean(), b.std()
+        for _ in range(iterations):
+            try:
+                b = b[ (b-b.mean()) < tresh*b.std() ]
+            except RuntimeWarning: # usually "Mean of empty slice" happens on small windows
+                break   # we'll return the previous values
+            else:
+                mn, sd = b.mean(), b.std()
+        return (mn, sd)
 
     #-----------------
     def test_axis(self, axis=0):

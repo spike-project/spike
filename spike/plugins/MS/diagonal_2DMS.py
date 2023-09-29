@@ -17,8 +17,8 @@ def diagonal(self):
     low = int(self.axis2.mztoi(self.axis1.highmass))
     i = np.arange(low,high)     # convert indices to mz
     z = self.axis2.itomz(i)
-    iz = np.int_(np.round(self.axis1.mztoi(z)))
-    jz = np.int_(np.round(self.axis2.mztoi(z)))
+    iz = int(np.round(self.axis1.mztoi(z)))
+    jz = int(np.round(self.axis2.mztoi(z)))
     diag[jz] = self[iz,jz]      # and copy
     ddiag.set_buffer(diag)
     return ddiag
