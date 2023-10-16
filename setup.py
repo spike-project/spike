@@ -59,9 +59,9 @@ setuptools.setup(
 # python3 setup.py sdist
 # rsync -av spikedoc/* /media/web/CASC4DE/softwares/spike/spikedoc    
 # twine upload --repository-url https://test.pypi.org/legacy/ dist/*.tar.gz
-# conda create -n test999 numpy scipy matplotlib pytables pandas
+# conda create -n test999 numpy scipy matplotlib pytables pandas ipympl
 # conda activate test999
-# conda install ipympl
+## conda install ipympl
 # pip install --extra-index-url https://testpypi.python.org/pypi spike-py
 # python -m spike.Tests -D /DATA/DATA_test
 # twine upload  dist/*.tar.gz

@@ -35,7 +35,7 @@ release_notes="""
     > cd spike
     > python setup.py devel
 
-#### 0.99.33 - September 2023 - not released yet
+#### 0.99.33 - October 2023 - not released yet
 - Interactive:
     - NMR
         - improved 1D integration
@@ -46,7 +46,7 @@ release_notes="""
 - NMR: modified the File.BrukerNMR.Export_dif to correctly export fid
 - corrected a subtil bug which always removed the right most point in display() and extract()
 - corrected a bug in noise computation which was crashing baseline correction sometimes (and elsewhere)
-- corrected a bug related to numpy.int deprecation
+- many small corrections due to warnings and deprecations in particular in numpy
 
 #### 0.99.32 - March 2023
 - Interactive:

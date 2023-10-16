@@ -21,7 +21,7 @@ Try the following possibilities if you have problem with the graphic and/or the 
 
 **SPIKE** a collaborative development for a FT-spectroscopy processing library.
 
-*This is the version 0.99.32 - March 2023*
+*This is the version 0.99.33 - Octobre 2023*
 
 **SPIKE**  allows the processing, the display and the analysis of data-sets obtained from various Fourier-Transform spectroscopies. The name stands for **S**pectrometry **P**rocessing **I**nnovative **KE**rnel.
 
@@ -31,7 +31,8 @@ It implements all needed tools for Data analysis (Fourier Transform, Baseline co
 
 To our knowledge, it is the first program freely available allowing the processing, display and analysis of 2D-FT-ICR (Fourier Transform Ion Cyclotron Resonance), as well as Orbitrap time domain data processing.
 
-It is written in python (currently 3.7 and in python 2.7 up to version 0.99.10).
+It is written in python3 currently developed in python 3.11  (python 2.7 has been tested up to version 0.99.10).
+It is tested in all version from python 3.7 to 3.11.
 
 It is mostly a library for processing, analysis and display of spectral data-sets.
 The natural interface is either a python program or a `jupyter notebook` as an interactive front-end.
@@ -88,9 +89,9 @@ The`pip` instalation is always less recent than the github version, if you need 
 
         git clone https://github.com/spike-project/spike.git
 
-- then go to the spike directory and type the following command
+- then go to the spike directory and type the following command (new syntax due to changes in development team)
 
-        python3 setup.py devel
+        pip install -e
 
 This method allows you to update your `Spike` distibution from `github` and always use the latest version by doing
 
@@ -102,6 +103,8 @@ Alternatively, you can simply download the archive
 
         wget https://github.com/spike-project/spike/archive/refs/heads/master.zip
         unzip master.zip
+	cd spike
+        pip install -e
         
 ### Installing additional tools
 Several additional tools may be of interest.
@@ -111,7 +114,7 @@ can be found in the [Notebooks](Notebooks) directory or on [github](https://gith
 You will find there fully developed interactive notebooks allowing data analysis without any knowledge in python programming, as well as examples to starting writing small pyhton programs for specific needs.
 
 First the tool `ipympl` needs to be installed (it may not be installed along the scientific environment)
-To install it, simply do:
+To install it, simply do (check warning above):
 
     pip install ipympl
 

@@ -292,17 +292,17 @@ def do_proc_F2mp(dinp, doutp, parameter):
     if parameter.mp:  # means multiprocessing //
         res = Pool.imap(_do_proc_F2, xarg)
         for i,r in enumerate(res):
-            doutp.set_row(i,r)
+            doutp.set_row(i,r, warn=False)
             pbar.update(i+1)
     elif mpiutil.MPI_size > 1:      # code for MPI processing //
         res = mpiutil.enum_imap(_do_proc_F2, xarg)    # apply it
         for i,r in res:       # and get results
-            doutp.set_row(i,r)
+            doutp.set_row(i,r, warn=False)
             pbar.update(i+1)
     else:       # plain non //
         res = imap(_do_proc_F2, xarg)
         for i,r in enumerate(res):
-            doutp.set_row(i,r)
+            doutp.set_row(i,r, warn=False)
             pbar.update(i+1)
     pbar.finish()
     

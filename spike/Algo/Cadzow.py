@@ -183,11 +183,11 @@ def svd2dt(U, S, V):
     # recompute matrix
     if truncated:       # take min, because matrices are truncated - due to the full_matrices=False in svd step
         MN = min(M,N)
-        Sig = np.mat(lin.diagsvd(S, MN, MN))
+        Sig = np.array(lin.diagsvd(S, MN, MN))
     else:
-        Sig = np.mat(lin.diagsvd(S, M, N))
+        Sig = np.array(lin.diagsvd(S, M, N))
     if debug: print("U S V : (%d x %d)  (%d x %d) (%d x %d)"%(U.shape+Sig.shape+V.shape))
-    X = U*Sig*V
+    X = U@Sig@V
     Xt = X[::-1,:]
     for k in xrange(size):  # 0..19     # rebuild data from Hankel matrix,  a bit painful...
         data[k] = np.diag(Xt,k-M+1).mean()

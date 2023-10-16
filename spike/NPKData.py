@@ -1400,12 +1400,13 @@ class _NPKData(object):
         ii = self.axis1.ctoi(rowval)
         return self.row(ii)
     #----------------------------------------------
-    def set_row(self, i, d1D):
+    def set_row(self, i, d1D, warn=True):
         """set into the current 2D the given 1D, as the row at position 0<=i<=size1-1 """
         self.check2D()
         d1D.check1D()
         if d1D.axis1.itype != self.axis2.itype:
-            warnings.warn("row and 2D types do not match", UserWarning)
+            if warn:
+                warnings.warn("row and 2D types do not match", UserWarning)
         ii = int(round(i))
         self.buffer[ii,:] = d1D.buffer[:]
         return self

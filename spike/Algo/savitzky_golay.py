@@ -76,8 +76,8 @@ def sgolay_coef(window_size, order, deriv=0):
     order_range = range(order+1)
     half_window = (window_size -1) // 2
     # precompute coefficients
-    b = np.mat([[k**i for i in order_range] for k in range(-half_window, half_window+1)])
-    m = np.linalg.pinv(b).A[deriv]
+    b = np.array([[k**i for i in order_range] for k in range(-half_window, half_window+1)])
+    m = np.linalg.pinv(b)[deriv]
     return m
 def sgolay_comp(y, m, window_size):
     """apply savistki-golay filter on y from previously computed savistki-golay coefficients : m"""

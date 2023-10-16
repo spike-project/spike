@@ -46,7 +46,7 @@ class NPKConfigParser(ConfigParser):
             """read a value from the configuration, with a default value"""
             if self.has_option(section, option):
                 vv = ConfigParser.get(self, section, option, raw=raw, fallback=None) # returns the string after "option = "
-                vl = re.split('\s*#',vv)        # this removes trailing comments
+                vl = re.split(r'\s*#',vv)        # this removes trailing comments
                 return vl[0]
             else:
                 if verbose:
@@ -57,7 +57,7 @@ class NPKConfigParser(ConfigParser):
             """read a value from the configuration, with a default value"""
             if self.has_option(section, option):
                 vv = ConfigParser.get(self, section, option, raw = raw, vars = vars) # returns the string after "option = "
-                vl = re.split('\s*#',vv)        # this removes trailing comments
+                vl = re.split(r'\s*#',vv)        # this removes trailing comments
                 return vl[0]
             else:
                 if verbose:

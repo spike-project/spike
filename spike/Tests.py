@@ -169,9 +169,11 @@ def do_Test():
         print(msg("removing .pyc in spike"))
         cleanspike()
     print(msg("Running automatic Tests"))
+    Alltests = 0
     t0 = time.time()
     suite = unittest.defaultTestLoader.loadTestsFromNames( list_of_modules )
     nbtests = suite.countTestCases()
+    Alltests += nbtests
     results = unittest.TextTestRunner(verbosity = 2).run(suite)
     elaps = time.time()-t0
     to_mail.append("Ran %d tests in %.3fs"%(nbtests, elaps))
@@ -199,6 +201,16 @@ def do_Test():
             mail(address, subject, "\n".join(to_mail) )
     # finally clean dir
     cleandir(verbose=False)
+    # and report
+    print("\n" + "="*80 + "\n")
+    print(len(list_of_modules), 'SPIKE modules tested for a total of', Alltests, 'tests')
+    if results.wasSuccessful():
+        print("All tests successfull")
+        print("performed on {2} {4} running python {0} / numpy {1} on host {3}".format(python, npv, *platform.uname()))
+        print("test performed in %.2f sec"%elaps) 
+    else:
+        print(msg("Some tests Failed\nPlease revise results above"))
+    print("\n" + "="*80 + "\n")
 
 def main():
 #    import Display.testplot as testplot
@@ -231,8 +243,8 @@ def main():
     if args.Warnings:
 # disable eventual warning blocking
         if not sys.warnoptions:
-            warnings.simplefilter("default") # Change the filter in this process
-            os.environ["PYTHONWARNINGS"] = "default" # Also affect subprocesses
+            warnings.simplefilter("error") # Change the filter in this process
+            os.environ["PYTHONWARNINGS"] = "error" # Also affect subprocesses
 
     if args.dry:
         RUN = False

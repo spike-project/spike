@@ -87,7 +87,7 @@ class GifaFile(object):
             self.fileB = fname
         if access == "r":     # check if it is a real one
             l = self.fileB.readline(32)
-            hsz = re.match('HeaderSize\s*=\s*(\d+)', l.decode())
+            hsz = re.match(r'HeaderSize\s*=\s*(\d+)', l.decode())
             if not hsz:
                 self.file.close()
                 raise Exception("file %s not valid"%fname)
@@ -235,28 +235,28 @@ class GifaFile(object):
         for ax in range(self.data.dim):
             try:
                 axis = self.data.axes(ax+1)
-                """
-                Here we struggled a bit on how to compute the general it. 
-                We have :
-                        1
-                1D    |___|
-                        \  \    axis 1 become 2 in 2D
-                        1    2   
-                2D    |___||___|  
-                        \  \\   \   axis 2 becomes 3 in 3D, axis 1 becomes 2 
-                        1    2    3
-                3D    |___||___||___|
+                # """
+                # Here we struggled a bit on how to compute the general it. 
+                # We have :
+                #         1
+                # 1D    |___|
+                #         \  \    axis 1 become 2 in 2D
+                #         1    2   
+                # 2D    |___||___|  
+                #         \  \\   \   axis 2 becomes 3 in 3D, axis 1 becomes 2 
+                #         1    2    3
+                # 3D    |___||___||___|
                 
-                We need itype between 0-1 in 1D
-                                      0-2 in 2D (axis1)
-                                      0-1 in 2D (axis2)
-                                      0-4 in 3D (axis1)
-                                      0-2 in 3D (axis2)
-                                      0-1 in 3D (axis3)
+                # We need itype between 0-1 in 1D
+                #                       0-2 in 2D (axis1)
+                #                       0-1 in 2D (axis2)
+                #                       0-4 in 3D (axis1)
+                #                       0-2 in 3D (axis2)
+                #                       0-1 in 3D (axis3)
                                       
-                we came out with this line:
-                it = it + axis.itype*(2**(self.data.dim-ax-1))
-                """
+                # we came out with this line:
+                # it = it + axis.itype*(2**(self.data.dim-ax-1))
+                # """
                 it = it + axis.itype*(2**(self.data.dim-ax-1))
                 if self.debug>0: print("ICI",ax,axis.itype*(2**(self.data.dim-ax-1)),it)
             except:
@@ -539,7 +539,7 @@ class GifaFile(object):
         self.write_header()
         self.fileB.seek(self.headersize) #CR binary handler for data
         if self.dim == 1:
-            self.fileB.write( self.data.buffer.astype("float32").tostring() ) #CR binary handler for data
+            self.fileB.write( self.data.buffer.astype("float32").tobytes() ) #CR binary handler for data
         elif self.dim == 2:
             print("writing 2D")
             sz1 = self.size1
@@ -559,7 +559,7 @@ class GifaFile(object):
                         fbuf[i*self.szblock2:i*self.szblock2+jmax] = self.data.buffer[i1+i,i2:i2+jmax]
 #                        for j in xrange(self.szblock2):
 #                            fbuf[i*self.szblock2+j] = self.data.buffer[i1+i,i2+j]
-                    self.fileB.write( fbuf.tostring() ) #CR binary handler for data
+                    self.fileB.write( fbuf.tobytes() ) #CR binary handler for data
                     i2 = i2+self.szblock2
                 i2 = 0
                 i1 = i1+self.szblock1

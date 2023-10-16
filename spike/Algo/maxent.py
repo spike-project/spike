@@ -504,8 +504,8 @@ class MaxEnt(object):
                 print('SNR ',estimate_SNR(self.image, self.true_s))
         if self.debug >0:
             plot(self.lentropy,"Entropy")
-            plot(self.lchi2, "$\chi^2$",logy=True)
-            plot(self.llamb, "$\lambda$ evolution")
+            plot(self.lchi2, r"$\chi^2$",logy=True)
+            plot(self.llamb, r"$\lambda$ evolution")
         return
     def report_convergence(self):
         """
@@ -583,6 +583,6 @@ class maxent_Tests(unittest.TestCase):
         plt.subplot(414)
         plot(residu, 'residu',fig = f)
         print("Noise in residu :", np.sum(residu**2), M.chi2)
-        return  M.report_convergence()
+        return # M.report_convergence()
 if __name__ == '__main__':
     unittest.main()

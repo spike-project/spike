@@ -16,15 +16,6 @@ from spike.Tests import filename, directory
 
 print('Run date:', datetime.now().isoformat() )
 
-# this forces MKL -if there- to use only one thread (usually faster ! and probably required if you intend using multiprocessing)
-dllnames = dict(Linux='libmkl_rt.so', Darwin='libmkl_rt.dylib', Windows='libmkl_rt.dll')
-dllname = dllnames[platform.system()]
-try:
-    mkl_rt = ctypes.CDLL(dllname)
-    mkl_rt.MKL_Set_Num_Threads(1)
-except:
-    print ("No MKL")
-
 # start chronometer
 t0 = time.time()
 # ### Import dataset
@@ -79,11 +70,20 @@ miniSNR = 32          # minimum SNR in column to do processing - 32 is optimal -
 # MultiProcessing
 # the processing can be lengthy,  so use can use parralelize the program
 # if you do not want to use the mp capability, set NProc to 1
-NProc = 4          # here for 4 cores - adapt to your own requirements
+NProc = 4         # here for 4 cores - adapt to your own requirements
 #############################################################################
 
 if NProc > 1:
+    # this forces MKL -if there- to use only one thread (usually faster ! and probably required if you intend using multiprocessing)
+    dllnames = dict(Linux='libmkl_rt.so', Darwin='libmkl_rt.dylib', Windows='libmkl_rt.dll')
+    dllname = dllnames[platform.system()]
+
+    mkl_rt = ctypes.CDLL(dllname)
+    mkl_rt.MKL_Set_Num_Threads(1)
+    print ("MKL stopped")
+
     mppool = mp.Pool(processes=NProc)
+
 else:
     mppool = None
 

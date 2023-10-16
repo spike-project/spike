@@ -316,7 +316,7 @@ class SL0_Tests(unittest.TestCase):
         plt.plot(x,'o')
         plt.title(' original')
 
-        x2 = np.linalg.lstsq(A, y1)[0]
+        x2 = np.linalg.lstsq(A, y1, rcond=None)[0]
         plt.subplot(2,2,2)
         plt.plot(x2,'*')
         plt.title(' using lstsq')
