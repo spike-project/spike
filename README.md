@@ -37,7 +37,7 @@ It implements all needed tools for Data analysis (Fourier Transform, Baseline co
 To our knowledge, it is the first program freely available allowing the processing, display and analysis of 2D-FT-ICR (Fourier Transform Ion Cyclotron Resonance), as well as Orbitrap time domain data processing.
 
 It is written in python3 currently developed in python 3.11  (python 2.7 has been tested up to version 0.99.10).
-It is tested in all version from python 3.7 to 3.11.
+It is tested in python versions from 3.7 to 3.11.
 
 It is mostly a library for processing, analysis and display of spectral data-sets.
 The natural interface is either a python program or a `jupyter notebook` as an interactive front-end.

@@ -66,3 +66,5 @@ setuptools.setup(
 # python -m spike.Tests -D /DATA/DATA_test
 # twine upload  dist/*.tar.gz
 
+# conda create -n test999 python numpy scipy matplotlib pytables pandas
+
