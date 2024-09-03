@@ -46,7 +46,39 @@ def kilgour(self, maxi=0.5, axis=0):
     # then apply
     return self.apod_apply(axis,e)
 
+def kilgour_sin(self, maxi=0.5, axis=0):
+    """
+    Apodisation similar to the kilgour() one but in sine-bell rather than with cosine
+    leaves more data on the edge but retains the asymmetric form
+    """
+    import math as m
+    if maxi<0.0 or maxi>0.5:
+        raise ValueError("maxi should be within [0...0.5]")
+    todo = self.test_axis(axis)
+    # compute shape parameters
+    it = self.axes(todo).itype
+    size = self.axes(todo).size
+    if it == 1:
+        size = size//2
+    maxipoint = int(size*maxi)
+    if maxipoint == 0:
+        zz = m.pi/(2*(size-1))
+        e = np.cos( zz*np.arange(size))
+    else:
+        e = np.zeros((size,))
+        zz1 = m.pi/(2*maxipoint)
+        e[:maxipoint] = -np.cos(m.pi/2 +  zz1*np.arange(maxipoint))
+        zz2 = m.pi/(2*(size-1-maxipoint))
+        e[maxipoint:] = np.cos(zz2*np.arange(size-maxipoint))
+
+    if it == 1:
+        e = as_float((1 + 1.0j)*e)
+    # then apply
+    return self.apod_apply(axis,e)
+
 NPKData_plugin("kilgour", kilgour)
+
+NPKData_plugin("kilgour_sin", kilgour_sin)
 
 def phase(self, ph0, ph1, ph2=0.0, pivot=0.0, axis=0):
     """
