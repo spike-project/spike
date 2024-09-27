@@ -890,7 +890,7 @@ def main(argv = None):
         if v != 0.0:
             opt_param[p] = v
     if param.mp:
-        Pool = mp.Pool(param.nproc)     # if multiprocessing, creates slaves early, while memory is empty !
+        Pool = mp.Pool(param.nproc)     # if multiprocessing, creates subordinates early, while memory is empty !
     param.report()
     logflux.log.flush()     # flush logfile
     ######## determine files and load inputfile
@@ -1077,7 +1077,7 @@ def main(argv = None):
 
     
     if param.mp:
-        Pool.close()    # finally closes multiprocessing slaves
+        Pool.close()    # finally closes multiprocessing subordinates
     logflux.log.flush()     # flush logfile
 
 # default values
@@ -1090,8 +1090,8 @@ if __name__ == '__main__':
     if mpiutil.MPI_size < 2:            # this is single processor
         main()
     else:                       # this is a MPI run
-        if mpiutil.MPI_rank == 0:   # master proc
+        if mpiutil.MPI_rank == 0:   # main proc
             main()
             mpiutil.shutdown()
-        else:               # slave proc
-            mpiutil.slave()
+        else:               # subordinate proc
+            mpiutil.subordinate()
