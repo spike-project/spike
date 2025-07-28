@@ -1006,7 +1006,7 @@ class _NPKData(object):
     # begin of processing functions
     def copy(self):
         """return a copy of itself"""
-        Data = type(self)   # NPKData get subclassed, so subclass creator is to be used
+        Data = type(self)   # _NPKData get subclassed, so subclass creator is to be used
         c = Data(buffer = self.buffer.copy())
         copyaxes(self,c)
         c.debug = self.debug
@@ -1622,7 +1622,7 @@ class _NPKData(object):
             self.disp_artist = fig.contour(axis[1][z2lo:z2up+1:step2],
                 axis[0][z1lo:z1up+1:step1],
                 self.buffer[z1lo:z1up+1:step1,z2lo:z2up+1:step2],
-                level, colors=color, **mpldic)
+                level, colors=color, linewidths=linewidth, **mpldic)
             if xlabel == "_def_":
                 xlabel = self.axis2.currentunit
             if ylabel == "_def_":
@@ -1828,10 +1828,10 @@ class _NPKData(object):
                     raise NPKError("cannot add a complex value to this data-set", data=self)
                 else:
                     self.buffer += otherdata
-                    self._absmax += otherdata
+                    self._absmax = self.absmax + otherdata
             else:   # complex data
                 self.buffer =  as_float(as_cpx(self.buffer) + otherdata*(1+0j))  # multiply by 1 cpx to insure
-                self._absmax += otherdata.real
+                self._absmax = self.absmax + otherdata.real
         else:       # then its a number or it fails
             raise ValueError
         return self
@@ -2745,30 +2745,38 @@ class _NPKData(object):
     ####### Apodisations ##########
     def _shifted_apod(self, func,  *arg, maxi=0.5, axis=0, **kw):
         """
-        generic wrapper which allows to shift any apodisation function
-        maxi is the location of the maximum point,
+        generic wrapper which allows to shift any apodisation function with a centered bell shape
+        maxi is the location of the maximum point after shift,
             ranges from 0            (max at the beginning )
-                    to 0.5 - default (max at the center)
+                    to 0.5 - default (max at the center - whole bell shape)
         """
         todo = self.test_axis(axis)
         it = self.axes(todo).itype
         if maxi<0.0 or maxi>0.5:
             raise ValueError("maxi should be within [0...0.5]")
         size = self.axes(todo).size
-        if maxi != 0.5:       # if maxi 0.5 -> same size, if 0 -> double size 
+        #
+        # will compute the comple func() but on a larger size, then it will be truncated at "start" position
+        # so if maxi 0.5 -> same size, no change,   if 0 -> double size and start at middle point
+        # other cases are interpolated 
+        if maxi != 0.5:
             size = int( size*2*(1-maxi) )
             start = size - self.axes(todo).size
         else:
             start = 0
     #    print(start, size)
+        # correct for complex case
         if it == 1: # means complex
             size = size//2
             start = 2*(start//2)
+        # apply the whole func()
         e = func(size, *arg, **kw)
         if it == 1:
             e = as_float((1 + 1.0j)*e)
+        # truncate the beginning
         if start != 0:
             e = e[start:]
+        # apply on data
         return self.apod_apply(axis,e)
 
     #-------------------------------------------------------------------------------
