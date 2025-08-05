@@ -1183,6 +1183,11 @@ class SpforSuper():
 
 
 class Show1Dplus(Show1D):
+    """
+    An interactive advanced display, 1D NMR
+        Show1Dplus(spectrum)
+    allows to build complex display with peaks, intagrals, local zoom boxes, superpositions, etc...
+    """
     def __init__(self, data, base='/DATA', N=9, **kw):
         if isinstance(data, FTMS.FTMSData):  # pb is in xbox for Datalist, as MS goes reverse to NMR
             raise NotImplementedError('FTMS not implemented yet')
@@ -1283,7 +1288,7 @@ class Show1Dplus(Show1D):
                    ], layout=Layout(width='60%'))
         # Superposition control widgets
         # (base=base, filetype="*.gs1", mode='r', show=False)
-        self.Chooser = FileChooser_code(path='/DATA/', filename='.gs1')
+        self.Chooser = FileChooser_code(path=base, filename='.gs1')
         self.bsel = widgets.Button(description='Copy', layout=self.blay,
                                    button_style='info',  # 'success', 'info', 'warning', 'danger' or ''
                                    tooltip='copy selected data-set to entry below')
@@ -1414,7 +1419,7 @@ class Show1Dplus(Show1D):
         for s in self.DataList:
             s.draw()
         if any([ s.label.value for s in self.DataList]):
-            self.ax.legend(loc='upper left')
+            self.ax.legend() #loc='upper left')
 
         self.ax.set_xbound(*self.xb)
 

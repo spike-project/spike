@@ -148,7 +148,7 @@ def bucket2d(data, zoom=((0.5, 9.5),(0.5, 9.5)), bsize=(0.1, 0.1), pp=False, sk=
     if pp:
         noise = findnoiselevel( dcopy.get_buffer() )
         dcopy.pp(thresh*noise)
-        peaklist = dcopy.peaks
+        peaklist = list(dcopy.peaks)
 
     s = "# %i rectangular buckets with a mean size of %.2f x %.2f data points" % \
         ( int(round((end1-start1+bsize1)/bsize1)*round((end2-start2+bsize2)/bsize2)), \

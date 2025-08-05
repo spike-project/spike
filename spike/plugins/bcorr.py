@@ -176,14 +176,16 @@ def bcorr(npkd, method='spline', xpoints=None, xpunits='index', nsmooth=0, modul
             xpts = autopoints(npkd, xpoints, modulus=modulus)
         elif xpunits == 'current':
             xpts = [npkd.axis1.ctoi(x) for x in xpoints]
-        else:
+        elif xpunits == 'points':
             xpts = xpoints
+        else:
+            raise ValueError("wrong xpunits in bcorr plugins, choose either 'points' or 'current'")
     if method=='linear':
         return linear_interpolate(npkd, xpts, nsmooth=nsmooth)
     elif method=='spline':
         return spline_interpolate(npkd, xpts, nsmooth=nsmooth)
     else:
-        raise Exception("Wrong method in bcorr plugin")
+        raise ValueError("Wrong method in bcorr plugin, choose either 'linear' or 'spline'")
 
 NPKData_plugin("bcorr_lin", linear_interpolate)
 NPKData_plugin("bcorr_spline", spline_interpolate)

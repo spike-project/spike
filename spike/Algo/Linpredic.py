@@ -53,12 +53,15 @@ def denoise(data, ar):
         filtered[i] = predict(data[:i], ar, i+1)[i]
     return filtered
 
-def baselinerollrem(data, n=8):
-    """remove baseline roll  n ~= 2* number of oscillations"""
+def baselinerollrem(data, n=8, debug=False):
+    """remove baseline roll in the spectrum,
+    applied on the fid
+    n ~= number of oscillations in the whole spectrum
+    """
     def dprint(*arg):
         "for debuging"
-        pass
-        # print(*arg)
+        if debug:
+            print(*arg)
     dprint(data)
     itype = data.axis1.itype
     zerot = int(round(data.axis1.zerotime-1))

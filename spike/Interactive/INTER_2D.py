@@ -106,7 +106,8 @@ class Show2D(Show1D):
 #        fig, self.axarr = plt.subplots(2, 1, sharex=True, figsize=fsize, gridspec_kw=grid)
         # Figure
         plt.ioff()
-        self.fig = plt.figure(figsize=fsize, layout="tight")
+        self.fig = plt.figure(figsize=fsize)
+        self.fig.set_tight_layout(True)
         plt.ion()
         self.fig.canvas.toolbar_position = 'left'
         # setup grid
@@ -221,10 +222,17 @@ class Show2D(Show1D):
         self.doprojside(e)
         self.doprojtop(e)
     # then ipywidget ones
-    def on_done(self, b):
+    def proj_controls(self, visible=True):
+        "hide or show projection control box"
         for ax in self.keepbuttonaxes:  # remove buttons
-            ax.set_visible(False)
+            ax.set_visible(visible)
+    def on_done(self, b):
+        self.proj_controls(visible=False)
         super().on_done(b)
+    def onsave(self, b):
+        self.proj_controls(visible=False)
+        super().onsave(b)
+        self.proj_controls(visible=True)
     def on_reset(self, e=None):
         self.scale.value = 1.0
         try:
@@ -264,7 +272,8 @@ class Show2D(Show1D):
         self.top_ax.yaxis.set_visible(False)
         for s in [ "top", "right", "bottom"]:
             self.side_ax.spines[s].set_visible(False)
-        self.side_ax.xaxis.set_visible(False)
+        self.side_ax.xaxis.set_visible(False)   # hide side axes
+        self.side_ax.yaxis.set_visible(False)
 #    @debounce(0.1)
     def disp(self, e=None):
         yb = self.side_ax.get_ybound()
