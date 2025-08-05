@@ -246,8 +246,21 @@ class NMRData(_NPKData):
     #-------------------------------------------------------------------------------
     def copy(self):
         """return a copy of itself"""
-        c = NPKData._NPKData.copy(self)
+        from copy import deepcopy
+        c = super(NMRData,self).copy()
         c.frequency = self.frequency
+        if hasattr(self, "peaks"):   # peaks are present - copy them
+            source = self.peaks.source    # remember source
+            self.peaks.source = None
+            c.peaks = deepcopy(self.peaks)
+            c.peaks.source = c
+            self.peaks.source = source
+        if hasattr(self, "integrals"):   # integrals are present - copy them
+            source = self.integrals.source    # remember source
+            self.integrals.source = None
+            c.integrals = deepcopy(self.integrals)
+            c.integrals.source = c
+            self.integrals.source = source
         return c
     def itop(self,axis,value):
         todo = self.test_axis(axis)
