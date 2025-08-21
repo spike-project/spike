@@ -724,12 +724,13 @@ def Export_proc(d, filename, template=None,  verbose=VERBOSE):
     bufabs = abs(d.buffer)
     bmax = bufabs.max()
     NC_proc = 0
-    while bmax <2**28:
-        bmax *= 2
-        NC_proc -= 1
-    while bmax >2**29:
-        bmax /= 2
-        NC_proc += 1
+    if bmax != 0:   # empty data !
+        while bmax <2**28:
+            bmax *= 2
+            NC_proc -= 1
+        while bmax >2**29:
+            bmax /= 2
+            NC_proc += 1
     if debug:   print("NC_proc :", NC_proc)
     buffinal = d.buffer * (2**(-NC_proc))
     # update a few parameters and write proc files
