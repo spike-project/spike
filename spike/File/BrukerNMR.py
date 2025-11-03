@@ -806,6 +806,7 @@ def FnMODE(acqu, proc):
     Echo-AntiEcho   6
     
     returns either 0 (real) or 1 (complex)
+    Remark, FnMode==6 is echo-antiecho mode, is handled real, but could be considered complex as there are two fid per increment ! 
     """
     try:    # find acquisition mode
         mode = acqu['$FnMODE']  # new school
