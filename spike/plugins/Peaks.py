@@ -73,7 +73,6 @@ from scipy.optimize import curve_fit
 ###
 from spike import NPKError
 from spike.NPKData import NPKData_plugin, _NPKData, flatten, parsezoom
-from spike.util.counter import timeit
 #from spike.util.signal_tools import findnoiselevel, findnoiselevel_2D
 
 debug = 0
@@ -670,7 +669,6 @@ def centroid1d(npkd, npoints=3, reset_label=True, cure_outliers=True):
     cure_outliers : restore peaks with pathological parameters
     TODO : update uncertainties
     """
-    from scipy import polyfit
     npkd.check1D()
     noff = (int(npoints)-1)/2
     if (2*noff+1 != npoints) or (npoints<3):
@@ -683,6 +681,7 @@ def centroid1d(npkd, npoints=3, reset_label=True, cure_outliers=True):
             popt, pcov = curve_fit(center, xdata, ydata, p0=[pk.pos, pk.intens, 1.0] ) # fit
         except RuntimeError:
             print ( "peak %d (id %s) centroid could not be fitted"%(pk.Id, pk.label) )
+            continue
         if cure_outliers and (popt[0]>npkd.size1 or popt[0]<0):  # peak is outside
             continue
         else:
@@ -706,7 +705,6 @@ def centroid2d(npkd, npoints_F1=3, npoints_F2=3):
     
     TODO : update uncertainties
     """
-    from scipy import polyfit
     npkd.check2D()
     nF1 = npoints_F1
     nF2 = npoints_F2
@@ -817,6 +815,7 @@ def pk2pandas(npkd, **kw):
     """export extract of current peak list to pandas Dataframe - in current unit
     if full is False (default), the uncertainties are not listed
     uses nmr or ms version depending on data_type
+    check pk2pandas_nmr or pk2pandas_ms for detailed documentation
     """
     import spike.FTMS
     if isinstance(npkd, spike.FTMS.FTMSData):
@@ -1062,6 +1061,8 @@ class PeakTests(unittest.TestCase):
         self.assertAlmostEqual(d.peaks[0].intens,20.0)
         self.assertAlmostEqual(d.peaks[0].widthF1,5.0*np.sqrt(2))
         self.assertAlmostEqual(d.peaks[0].widthF2,1.3*np.sqrt(2))
+
+# deal with plugins
 
 NPKData_plugin("pp", peakpick)
 NPKData_plugin("peakpick", peakpick)
