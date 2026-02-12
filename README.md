@@ -1,7 +1,7 @@
 ![SPIKE](spike/Interactive/Logo.png)
 
 ## Update February 2026
-We are working on a new installation method based on the recent tool `uv` which will solve the problems below...    
+We are working on a new installation method based on the recent tool [uv](https://docs.astral.sh/uv/) which will solve the problems below...    
 ***... stay tunes ...***
 
 
