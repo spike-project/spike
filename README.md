@@ -1,6 +1,12 @@
 ![SPIKE](spike/Interactive/Logo.png)
 
-# WARNING (31th March 2023)
+## Update February 2026
+We are working on a new installation method based on the recent tool [uv](https://docs.astral.sh/uv/) which will solve the problems below...    
+***... stay tunes ...***
+
+
+
+## *WARNING (31th March 2023)*
 It seems that the various Jupyter Notebooks which use the ipympl library have a problem with the latest versions of the anaconda distribution (starting with `python 3.9`), and probably with other distribution as well.
 
 Try the following possibilities if you have problem with the graphic and/or the interaction in the Spike Notebooks
