@@ -8,11 +8,10 @@ Solarix.py
 
 Created by mac on 2013-05-24.
 updated may 2017 to python 3, added compress option
+updated nov 2025 to improve/clean XML reader
 
 Copyright (c) 2013 __NMRTEC__. All rights reserved.
 """
-
-from __future__ import print_function, division
 
 
 import sys
@@ -31,19 +30,10 @@ from .. import NPKData as npkd
 from ..FTICR import FTICRData
 from ..File import HDF5File as hf
 
-if sys.version_info[0] < 3:
-    pass
-else:
-    xrange = range
 
-def read_param(parfilename):
+def _read_param(parfilename):
     """
-        Open the given file and retrieve all parameters from apexAcquisition.method
-        NC is written when no value for value is found
-        
-        structure : <param name = "AMS_ActiveExclusion"><value>0</value></param>
-       
-        read_param returns  values in a dictionnary
+       old sloppy version
     """
     xmldoc = minidom.parse(parfilename)
     
@@ -51,6 +41,16 @@ def read_param(parfilename):
     pp = {}
     children = x.childNodes
     for child in children:
+        # collect primary - basic info on exp
+        # format : ...  <date>Jul_10_2025 10:41:02.527</date> ...
+        if (child.nodeName == 'primarykey'):
+            params = child.childNodes
+            for param in params:
+                k = param.nodeName
+                v = str(param.firstChild.toxml())
+                pp[k] = v
+        # then collect experimental parameters - different set-up !
+        # format : ...<param name="AMP_High_MZ"><value>600.0</value></param>...
         if (child.nodeName == 'paramlist'):
             params = child.childNodes
             for param in params:
@@ -65,6 +65,42 @@ def read_param(parfilename):
                                v = "NC"
                     pp[k] = v
     return pp
+
+def read_param(parfilename):
+    """
+        Open the given file and retrieve all parameters from apexAcquisition.method
+        NC is written when no value for value is found
+        
+        structure : <param name = "AMS_ActiveExclusion"><value>0</value></param>
+       
+        read_param returns  values in a dictionnary
+
+        new version as of nov 2025 - better output and extended to primarykey entries
+    """
+    xmldoc = minidom.parse(parfilename)
+    x = xmldoc.documentElement
+    pp = {}
+    # collect primary - basic info on exp
+    # format : ...  <date>Jul_10_2025 10:41:02.527</date> ...
+    primarykey = xmldoc.getElementsByTagName('primarykey')[0]
+    for child in primarykey.childNodes:
+        if child.nodeType == child.ELEMENT_NODE:
+            tag_name = child.tagName
+            value = child.firstChild.data if child.firstChild else ""
+            pp[tag_name] = value
+    # then collect experimental parameters - different set-up !
+    # format : ...<param name="AMP_High_MZ"><value>600.0</value></param>...
+    paramlist = xmldoc.getElementsByTagName('paramlist')[0]
+    params = paramlist.getElementsByTagName('param')
+    for param in params:
+        name = param.getAttribute('name')
+        try:
+            value = param.getElementsByTagName('value')[0].firstChild.data
+        except:
+            value = "NC"
+        pp[name] = value
+    return pp
+
 #-----------------------------------------
 def read_scan(filename):
     """
@@ -97,7 +133,7 @@ def get_param(param,names, values):
     """
     From params, this function returns the  value of the given param
     """
-    for i in xrange(len(names)):
+    for i in range(len(names)):
         if names[i] == param:
             return values[i]
 #-----------------------------------------
@@ -318,7 +354,7 @@ def Import_2D(folder, outfile = "", F1specwidth = None, compress=False):
         data.buffer = np.zeros((sizeF1, sizeF2))
 #    data.adapt_size()
     with open(fname,"rb") as f:
-        for i1 in xrange(sizeF1-1):
+        for i1 in range(sizeF1-1):
             tbuf = f.read(4*sizeF2)
             abuf = np.array(array.array(flag,tbuf))
             data.buffer[i1,:] = abuf[:]
@@ -345,7 +381,7 @@ def read_2D(sizeF1, sizeF2, filename = "ser"):
     # read binary
     fbuf = np.empty( (sz1, sz2) )
     with open(filename, "rb") as f:
-        for i1 in xrange(sz1):
+        for i1 in range(sz1):
             tbuf = f.read(4*sz2)
             abuf = array.array(flag, tbuf)
             fbuf[i1, 0:sz2] = abuf[0:sz2]
@@ -369,7 +405,7 @@ def read_3D(sizeF1, sizeF2, sizeF3, filename="ser"):
     # read binary
     fbuf = np.empty( (sz1,sz2,sz3) )
     with open(filename,"rb") as f:
-        for i1 in xrange(sz1):
+        for i1 in range(sz1):
             tbuf = f.read(4*sz2)
             abuf = array.array(flag, tbuf)
             fbuf[i1,0:sz2] = abuf[0:sz2]
