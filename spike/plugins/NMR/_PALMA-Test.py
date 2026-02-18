@@ -58,11 +58,11 @@ Dmin = 30        # the minimum diffusion coefficient (in µm2/sec) typical is 1-
 Dmax = 10000     # the maximum diffusion coefficient (in µm2/sec) typical is 5000-50000
 
 # Processing
-nbiter=1000       # number of iterations - 5000-20000 - the more the better (usually)
+nbiter=500       # number of iterations - 5000-20000 - the more the better (usually)
 lamda=0.01        # weight between "pure" MaxEnt (1.0) and "pure" l1 (0.0), 0.01 to 0.1 are "good values"
 
 # Optionnal parameters
-miniSNR = 32          # minimum SNR in column to do processing - 32 is optimal - do not go below 8
+miniSNR = 64          # minimum SNR in column to do processing - 32 is optimal - do not go below 8
 
 # uncertainty=1.2  # if >1 allows more room for algo when data quality is poor
 # precision=1e-08  # stopping criterium
@@ -70,17 +70,23 @@ miniSNR = 32          # minimum SNR in column to do processing - 32 is optimal -
 # MultiProcessing
 # the processing can be lengthy,  so use can use parralelize the program
 # if you do not want to use the mp capability, set NProc to 1
-NProc = 4         # here for 4 cores - adapt to your own requirements
+NProc = 2         # here for 2 cores - adapt to your own requirements
 #############################################################################
 
 if NProc > 1:
     # this forces MKL -if there- to use only one thread (usually faster ! and probably required if you intend using multiprocessing)
-    dllnames = dict(Linux='libmkl_rt.so', Darwin='libmkl_rt.dylib', Windows='libmkl_rt.dll')
-    dllname = dllnames[platform.system()]
+    # used to be :
+    # dllnames = dict(Linux='libmkl_rt.so', Darwin='libmkl_rt.dylib', Windows='libmkl_rt.dll')
+    # dllname = dllnames[platform.system()]
+    # mkl_rt = ctypes.CDLL(dllname)
+    # mkl_rt.MKL_Set_Num_Threads(1)
+    #
+    # is now:
+    from threadpoolctl import threadpool_limits
+    # stop multithreading in subprocesses
+    threadpool_limits(1)
 
-    mkl_rt = ctypes.CDLL(dllname)
-    mkl_rt.MKL_Set_Num_Threads(1)
-    print ("MKL stopped")
+    print ("MKL multithreading stopped")
 
     mppool = mp.Pool(processes=NProc)
 
