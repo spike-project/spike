@@ -8,7 +8,7 @@ This is now solved, and the current version of Spike hosted in here solves most 
 The PyPI version, installed with `pip` is not updated yet, but it is in rapid progress. 
 
 The favorized method to install **Spike** is now with the tool `uv`, check 
-[Installation guide](install_with_uv.md)
+[Installation guide](Install_with_uv.md)
 
 # 1/ What is SPIKE ? #
 
@@ -167,28 +167,41 @@ check [Here](DevelopmentGuide.md)
 # 4/ Citing SPIKE
 If you happen to use SPIKE successfully for your research, please cite it, and refer to this site, as well as the following possible references :
 
-- **Main Reference**: first publication of the program itself - *rejected from Anal. Chem. with no real critics except that Reviewer 1 said "too much NMR", Reviewer 2 said "too much MS", !! so I decided to let it on ArXiV*)
-    1.    Chiron L., Coutouly M-A., Starck J-P., Rolando C., Delsuc M-A. SPIKE a Processing Software dedicated to Fourier Spectroscopies   https://arxiv.org/abs/1608.06777 (2016)
+- **Main Reference**: first publication of the program itself - *rejected from Anal. Chem. with no real critics except that Reviewer 1 said "too much NMR", Reviewer 2 said "too much MS", !! so I decided to let it on ArXiV*)    
+
+**1.** Chiron L., Coutouly M-A., Starck J-P., Rolando C., Delsuc M-A. SPIKE a Processing Software dedicated to Fourier Spectroscopies   https://arxiv.org/abs/1608.06777 (2016)
 
 Some tools have their own references :
 
-- **urQRd** denoising
+**urQRd** denoising
 
-- its improvement **SANE** 
+- Efficient denoising algorithms for large experimental datasets and their applications in Fourier transform ion cyclotron resonance mass spectrometry.    
+Chiron L., van Agthoven M. A., Kieffer B., Rolando C., Delsuc M-A.     
+(2014)*Proc Natl Acad Sci USA* 111 p 1385-1390. [10.1073/pnas.1306700111](https://doi.org/10.1073/pnas.1306700111)
 
-- **PALMA** for DOSY processing by ILT
+**SANE** an improvement denoiser
+
+- Nonuniform Sampling Acquisition of Two-Dimensional Fourier Transform Ion Cyclotron Resonance Mass Spectrometry for Increased Mass Resolution of Tandem Mass Spectrometry Precursor Ions.    
+Bray F., Bouclon J., Chiron L., Witt M., Delsuc M-A., Rolando C.    
+(2017) *Anal Chem* [10.1021/acs.analchem.7b01850](https://doi.org/10.1021/acs.analchem.7b01850)
+
+**PALMA** for DOSY processing by ILT
+
+- PALMA, an improved algorithm for DOSY signal processing.    
+Cherni A., Chouzenoux É., Delsuc M-A.    
+(2017) *Analyst* 142 p 772-779. [10.1039/C6AN01902A](https://doi.org/10.1039/C6AN01902A)
 
 Other references are also related :
 
-- The renewal of Gifa:
-    2. Delsuc M-A. "Gifa V.4: A complete package for NMR data set processing" (2020) https://doi.org/10.5281/zenodo.3904595
-- presentation of the automation possibilities in NMR
-    3. Margueritte, L., Markov, P., Chiron, L., Starck, J.-P., Vonthron S&eacute;n&eacute;cheau, C., Bourjot, M., & Delsuc, M.-A. (2018). "Automatic differential analysis of NMR experiments in complex samples." Magn. Reson. Chem., 80(5), 1387. http://doi.org/10.1002/mrc.4683
-- first version of the 2D FT-ICR-MS processing
-    4.    van Agthoven, M. A., Chiron, L., Coutouly, M.-A., Delsuc, M.-A. & Rolando, C. "Two-Dimensional ECD FT-ICR" 
+- The renewal of Gifa:   
+    **2.** Delsuc M-A. "Gifa V.4: A complete package for NMR data set processing" (2020) https://doi.org/10.5281/zenodo.3904595
+- presentation of the automation possibilities in NMR    
+    **3.** Margueritte, L., Markov, P., Chiron, L., Starck, J.-P., Vonthron S&eacute;n&eacute;cheau, C., Bourjot, M., & Delsuc, M.-A. (2018). "Automatic differential analysis of NMR experiments in complex samples." Magn. Reson. Chem., 80(5), 1387. http://doi.org/10.1002/mrc.4683
+- first version of the 2D FT-ICR-MS processing    
+    **4.**    van Agthoven, M. A., Chiron, L., Coutouly, M.-A., Delsuc, M.-A. & Rolando, C. "Two-Dimensional ECD FT-ICR" 
 Mass Spectrometry of Peptides and Glycopeptides." _Anal Chem_ **84**, 5589-95 (2012).
-- first version of the python set-up on which the current SPIKE is loosely based
-    5.    Tramesel, D., Catherinot, V. & Delsuc, M.-A. "Modeling of NMR processing, toward efficient unattended processing of NMR experiments. _J Magn Reson_ **188**, 56-67 (2007).
+- first version of the python set-up on which the current SPIKE is loosely based    
+    **5.**    Tramesel, D., Catherinot, V. & Delsuc, M.-A. "Modeling of NMR processing, toward efficient unattended processing of NMR experiments. _J Magn Reson_ **188**, 56-67 (2007).
 
 ref 1) is a general purpose reference, the other ones are more specific.
 
@@ -196,10 +209,14 @@ ref 1) is a general purpose reference, the other ones are more specific.
 # 5/ Contents of this repository
 
 - [`spike/`](spike) - the python code of the program itself
-- [`doc/`](doc) - a directory containing various files used to generate the documentation
+- [`doc/`](doc) - a directory containing various files used to generate the documentation - in reorganisation !
 - [`Notebooks/`](Notebooks) - the repository of the **SpI** notebooks
 - miscelaneous:
-    - `QC.py` `QC.txt` a small utility to check the quality of the code using pylint. 
+    - `QC.py` a small utility to check the quality of the code using pylint, with the result in `QC.txt`. 
+    - `Tests.py` is a `unittest` of the whole program *(probably around 60-80% coverage)*      
+       try `python -m spike.Tests -h`  for some doc    
+       Ask `madelsuc@unistra.fr` for the DATA tests
+  
 
 
 
