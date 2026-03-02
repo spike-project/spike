@@ -6,15 +6,15 @@
 
     all functions compress transparently if the filenames end with .gz
     Marc-André adapted from some Lionel code
+    corrected feb-2026
 """
 
-from __future__ import print_function
 
 __author__ = "Marc André Delsuc"
-__date__ = "april 2014"
+__date__ = "feb 2026"
 
 import numpy as np
-from numpy.compat import asbytes, asstr
+#from numpy.compat import asbytes, asstr
 import unittest
 import os
 import gzip
@@ -28,10 +28,10 @@ def do_open(filename,flag):
 
 def save(data,filename, delimiter=',', fmt='%.18E'):
     "save 1D data in txt, single column, no unit - with attributes as pseudo comments "
-    with do_open(filename, 'wb') as F:
-        F.write(asbytes("# %s \n"%data.axis1.report()))  # first description
+    with do_open(filename, 'wt') as F:
+        F.write("# %s \n"%data.axis1.report())  # first description
         for att in data.axis1.attributes:       # then attributes
-            F.write(asbytes("#$%s%s%s\n"%(att, delimiter, getattr(data.axis1,att))))
+            F.write("#$%s%s%s\n"%(att, delimiter, getattr(data.axis1,att) ))
         np.savetxt(F, data.get_buffer(), delimiter=delimiter, fmt=fmt)
 
 def load(filename, column=0, delimiter=','):
@@ -45,14 +45,13 @@ def load(filename, column=0, delimiter=','):
     """
     buf = []
     att = {}
-    with do_open(filename, 'r') as F:
-        for ll in F:
-            l = asbytes(ll)
-            fields = l.split(asbytes(delimiter))
-            if l.startswith(asbytes('#')):    # first comments
-                if l.startswith(asbytes('#$')):  #  #$key value  for parameters
-                    k = asstr(fields[0][2:])
-                    v = asstr(fields[1]).rstrip()
+    with do_open(filename, 'rt') as F:
+        for l in F:
+            fields = l.split(delimiter)
+            if l.startswith('#'):    # first comments
+                if l.startswith('#$'):  #  #$key value  for parameters
+                    k = fields[0][2:]
+                    v = fields[1].rstrip()
                     try:
                         v = float(v)        # eventually turn it into number
                     except ValueError:
@@ -70,10 +69,10 @@ def save_unit(data, filename, delimiter=',', fmt='%.18E'):
     step = data.axis1.itype+1
     ax = data.axis1.unit_axis()[::step]
     y = data.get_buffer()
-    with do_open(filename, 'wb') as F:
-        F.write(asbytes("# %s \n"%data.axis1.report()))
+    with do_open(filename, 'wt') as F:
+        F.write("# %s \n"%data.axis1.report())
         for att in data.axis1.attributes:       # then attributes
-            F.write(asbytes("#$%s%s%s\n"%(att, delimiter, getattr(data.axis1,att))))
+            F.write("#$%s%s%s\n"%(att, delimiter, getattr(data.axis1,att)))
         np.savetxt(F, np.c_[ax,y], fmt=fmt, delimiter=delimiter)
     
 def Import_1D(filename, column=0, delimiter=','):
@@ -95,8 +94,7 @@ def Import_1D(filename, column=0, delimiter=','):
         d = FTICRData(buffer=buf)
     elif "Orbitrap" in att.keys():
         d = OrbiData(buffer=buf)
-    for kk,v in att.items():
-        k = asstr(kk)
+    for k,v in att.items():
         if k in d.axis1.attributes:
             setattr(d.axis1, k, v)
         else:
@@ -121,6 +119,10 @@ class csvTests(unittest.TestCase):
         A.save_txt(filename("1D_test.txt"))
         B = FTICRData(dim=2)
         B.load_txt(filename("1D_test.txt"))
+        print(B)
+        self.assertAlmostEqual(A.axis1.kind, B.axis1.kind)
+        self.assertAlmostEqual(A.axis1.calibA, B.axis1.calibA)
+        self.assertAlmostEqual(A.axis1.specwidth, B.axis1.specwidth)
         self.assertAlmostEqual((A-B).get_buffer().max(), 0.0)
         os.unlink(filename("1D_test.txt"))
         
@@ -130,6 +132,7 @@ class csvTests(unittest.TestCase):
         r.save_csv(filename("test2.csv.gz"), fmt="%.14g")
         rr = Import_1D(filename("test2.csv.gz"),column=1)
         self.assertAlmostEqual((r-rr).get_buffer().max(), 0.0)
+        self.assertAlmostEqual(r.axis1.frequency, rr.axis1.frequency)
         self.assertEqual(r.axis1.currentunit, rr.axis1.currentunit)
         os.unlink(filename("test2.csv.gz"))
 if __name__ == '__main__':
