@@ -70,7 +70,7 @@ miniSNR = 64          # minimum SNR in column to do processing - 32 is optimal -
 # MultiProcessing
 # the processing can be lengthy,  so use can use parralelize the program
 # if you do not want to use the mp capability, set NProc to 1
-NProc = 2         # here for 2 cores - adapt to your own requirements
+NProc = 4         # here for 4 cores - adapt to your own requirements
 #############################################################################
 
 if NProc > 1:
@@ -90,8 +90,10 @@ if NProc > 1:
 
     mppool = mp.Pool(processes=NProc)
 
+    print(f"running on {NProc} processors")
 else:
     mppool = None
+
 
 D2.prepare_palma(finalsize, Dmin, Dmax)      # set-up diffusion axis
 
@@ -123,7 +125,7 @@ class FitTests(unittest.TestCase):
         self.assertAlmostEqual(D2.axis1.dfactor, 1162859.287848, 3)
         #Test results
         c1 = DD2.colc(0.8420)  # extract a single component column at 0.8429 ppm
-        print(c1[int(c1.axis1.dtoi(2685))], c1[int(c1.axis1.dtoi(4500))], c1[int(c1.axis1.dtoi(1500))])
+        print("\n",c1[int(c1.axis1.dtoi(2685))], c1[int(c1.axis1.dtoi(4500))], c1[int(c1.axis1.dtoi(1500))])
         # c1[int(c1.axis1.dtoi(2685))], c1[int(c1.axis1.dtoi(4500))], c1[int(c1.axis1.dtoi(1500))]
         # (424860.47585149534, -213.78871091846162, -280.7466564428571)   
         self.assertTrue(c1[int(c1.axis1.dtoi(2685))] > 400000)   # coordinates in mu^2/sec
@@ -131,10 +133,10 @@ class FitTests(unittest.TestCase):
         self.assertTrue(c1[int(c1.axis1.dtoi(1500))] < 4000)
 
         c2 = DD2.colc(3.5958)  # then a polydisperse component
-        print(c2[int(c2.axis1.dtoi(3017))],c2[int(c2.axis1.dtoi(1400))], c2[int(c2.axis1.dtoi(384))])
-        self.assertTrue(c2[int(c2.axis1.dtoi(3017))] > 100000)
-        self.assertTrue(c2[int(c2.axis1.dtoi(1386))] < 40000)
-        self.assertTrue(c2[int(c2.axis1.dtoi(384))] > 120000)
+        print(c2[int(c2.axis1.dtoi(3017))],c2[int(c2.axis1.dtoi(1386))], c2[int(c2.axis1.dtoi(384))])
+        self.assertTrue(c2[int(c2.axis1.dtoi(3017))] > 120000)
+        self.assertTrue(c2[int(c2.axis1.dtoi(1386))] < 45000)
+        self.assertTrue(c2[int(c2.axis1.dtoi(384))] > 140000)
         # self.assertTrue(c2[int(c2.axis1.dtoi(384))] < 200000)
         # c2[int(c2.axis1.dtoi(3017))],c2[int(c2.axis1.dtoi(1386))], c2[int(c2.axis1.dtoi(384))]
         # (147903.9573949227, 22981.56238030312, 156769.0940550826)
