@@ -717,10 +717,14 @@ def centroid2d(npkd, npoints_F1=3, npoints_F2=3):
         end1 = int(round(pk.posF1+noff1+1))
         st2 = int(round(pk.posF2-noff2))
         end2 = int(round(pk.posF2+noff2+1))
+        # print("ICI",st1,end1,st2,end2)
         yxdata = np.array( [(y,x) for y in range(st1, end1) for x in range(st2, end2)] ).ravel()
         # yx = np.array([[y,x] for y in range(1,4) for x in range(10,12)]).ravel()
         # => array([ 1, 10,  1, 11,  2, 10,  2, 11,  3, 10,  3, 11])  will be decoded by center2d
+        # print(npkd)
         zdata = npkd.get_buffer()[st1:end1, st2:end2].ravel()
+        # print(yxdata)
+        # print(zdata)
         try:
                                             # yx,           yo, xo, intens, widthy, widthx
             popt, pcov = curve_fit(center2d, yxdata, zdata, p0=[pk.posF1, pk.posF2, pk.intens, 1.0, 1.0] ) # fit
@@ -1043,18 +1047,20 @@ class PeakTests(unittest.TestCase):
         self.assertAlmostEqual(d.peaks[0].width,1.2*np.sqrt(2))
         d.peaks.report(NbMaxPeaks=10)
     def test_center2d(self):
-        M=np.zeros((20, 20))
-        # add one peak at (F1,F2) 5.3, 7.9 with widthes (5.0,1.3) 
-        for y in range(1,10):
-            for x in range(6,11):
-                #                 yo, x0 intens, widthy, widthx
-                M[y,x] = center2d(np.array([y,x]), 5.3, 7.9, 20.0, 5.0, 1.3)
-        #print (M[1:10,6:11])
+        # create matrix M 20x20 with one peak at (F1,F2) 5.3, 7.9 with widthes (5.0,1.3) 
+        M = np.zeros((20,20))
+        yxdata = np.array( [(y,x) for y in range(1,10) for x in range(6,11)] ).ravel()
+        # print(yxdata)
+        M[1:10,6:11] = center2d(yxdata, 5.3, 7.9, 20.0, 5.0, 1.3).reshape(9,5)
+        # print (M)
         self.assertAlmostEqual(M[2,7],5.87777515)
+        self.assertTrue(M.max()>19.5)
         d = _NPKData(buffer = np.maximum(M,0.0))
         d.peaks = Peak2DList(source=d)
+        print(d)
         # self, Id, label, intens, posF1, posF2 
         d.peaks.append(Peak2D(0, "0", 18.0, 5, 8 ))
+        # d.report_peaks()
         d.centroid(npoints_F1=5)
         self.assertAlmostEqual(d.peaks[0].posF1,5.3)
         self.assertAlmostEqual(d.peaks[0].posF2,7.9)
