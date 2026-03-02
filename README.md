@@ -1,38 +1,19 @@
 ![SPIKE](spike/Interactive/Logo.png)
 
-## Update February 2026
-We are working on a new installation method based on the recent tool [uv](https://docs.astral.sh/uv/) which will solve the problems below...    
-***... stay tunes ...***
+## *Update February 2026*
+In march 2023, we detected problems relative to migrations in `jupyter notebook` which created instabilities in the interactive code in particular in `anaconda` distributions (see [see this warning](warning_2023.md). At the same time, the development team shrank, and we chose to freeze the usage of Spike to a given version of python and anaconda.
 
+This is now solved, and the current version of Spike hosted in here solves most of the problems, with some little bugs in the some interactive tools, but it should be fully usable.
 
+The PyPI version, installed with `pip` is not updated yet, but it is in rapid progress. 
 
-## *WARNING (31th March 2023)*
-It seems that the various Jupyter Notebooks which use the ipympl library have a problem with the latest versions of the anaconda distribution (starting with `python 3.9`), and probably with other distribution as well.
-
-Try the following possibilities if you have problem with the graphic and/or the interaction in the Spike Notebooks
-
-1. the team developping jupyter is migrating the notebook to a new technology and Spike is not yet adapted to this new environment.
-   In the meantime, use `nbclassic` instead of `notebook` to launch the various notebooks
-    ```
-    jupyter-nbclassic TheNooteBook.ipynb
-    ```
-2. The interaction is based on the optionnal `ipympl` extension, and some people have instabilities in the interaction
-*upgrading ipympl to the 0.9.3 version seems to solve the difficulty:*
-    ```
-    pip install ipympl==0.9.3
-    ```
-or alternatively
-    ```
-    conda config --env --add channels conda-forge
-    conda install ipympl=0.9.3
-    ```
-Depending on your set-up (jupyter version) it might work either in `jupyter lab`,  `jupyter notebook` or `jupyter nbclassic`, or even all of them.
+The favorized method to install **Spike** is now with the tool `uv`, check 
+[Installation guide](install_with_uv.md)
 
 # 1/ What is SPIKE ? #
 
 **SPIKE** a collaborative development for a FT-spectroscopy processing library.
 
-*This is the version 0.99.33 - Octobre 2023*
 
 **SPIKE**  allows the processing, the display and the analysis of data-sets obtained from various Fourier-Transform spectroscopies. The name stands for **S**pectrometry **P**rocessing **I**nnovative **KE**rnel.
 
@@ -64,12 +45,14 @@ We believe that even in this current development stage, this program might prove
 # 2/ Documentation
 Basic presentation of functionalities can be found [Here](Presentation.md)
 
-A complete documentation, with the full API, can be found [Here](http://softwares.casc4de.eu/spike/spikedoc/).
+<!-- A complete documentation, with the full API, can be found [Here](http://softwares.casc4de.eu/spike/spikedoc/). 
+
 We try to keep it up to date, but it may lag a little behind the current program state.
+-->
 
 Most of the documentation is in the code itself, available directly while programming (*try* `function_name?` *in* `jupyter notebook`).
 
-Another source of documentation are [Notebooks](Notebooks) directory.
+Another source of documentation are `jupyter notebooks` examples in the  [Notebooks](Notebooks) directory.
 There are two type of Notebooks, fully developed ones, with interactive tools, which can be used as is,
 and example Notebooks, meant for pedagogic purposes.
 This is an ongoing effort, and always short of what we'd like to do.
@@ -80,21 +63,29 @@ Can be found [Here](release_notes.md)
 
 # 3/ How to get SPIKE ? ##
 
+The current version is the github version, check [`dev_setup.py`](spike/dev_setup.py)* for the most recent modifications.
+
+*The PyPI version (installed with pip) lags behind and is the version 0.99.33 - Octobre 2023 - we're working on it - check [the current release notes](release_notes.md) for comparison.*
+
+### best practice : install with `uv`
+We used to recommend the `anaconda` distribution, but this lead to several problems *( [see this warning](warning_2023.md) )*,
+
+Now we recommand an independent installation in a virtual environmnet, using the `uv` tool. Documentation is [here](install_with_uv.md), 
+
 ### simple installation
-You might have python installed on your system, however, SPIKE relies on a whole set of scientific libraries which may dont be installed (see **Dependencies** below).
-We advise to install a scientific python environment such as [Anaconda](https://www.anaconda.com/) or [Enthough](https://www.enthought.com/).
-Then install SPIKE with the following command in the terminal:
+If your are confident, and have a scientific python running, you can install it with *(python 3.12 or higher is required)*
 
-    pip install spike-py
+        pip install spike-py
 
-This will install the latest version on your machine. *(be sure to use the pip command which came with the scientific python environment)*.
+This will install the PyPI version on your machine. *(be sure to use the pip command which came with the scientific python environment)*.
 
 If you already have SPIKE installed and want to upgrade to the last version do:
 
-    pip install -U spike-py
+        pip install -U spike-py
 
 ### Installing from `github`
-The`pip` instalation is always less recent than the github version, if you need the latest version, you simply instal it in the following way:
+
+The `pip` instalation is always less recent than the github version, if you need the latest version, you simply instal it in the following way:
 
 - Get the last version on `github`, using `git` (prefered)
 
@@ -114,7 +105,7 @@ Alternatively, you can simply download the archive
 
         wget https://github.com/spike-project/spike/archive/refs/heads/master.zip
         unzip master.zip
-	cd spike
+        cd spike
         pip install -e
         
 ### Installing additional tools
@@ -125,7 +116,6 @@ can be found in the [Notebooks](Notebooks) directory or on [github](https://gith
 You will find there fully developed interactive notebooks allowing data analysis without any knowledge in python programming, as well as examples to starting writing small pyhton programs for specific needs.
 
 First the tool `ipympl` needs to be installed (it may not be installed along the scientific environment)
-To install it, simply do (check warning above):
 
     pip install ipympl
 
@@ -156,27 +146,40 @@ It includes the following additional programs/algorithms:
 ### source and dependencies
 The SPIKE source is available at https://github.com/spike-project/spike
 
-SPIKE is written in pure Python, and relies on several external libraries:
+SPIKE is written in pure Python, currently requires version 3.12 or higher and relies on several external libraries:
 
 - matplotlib
 - numpy
 - scipy
 - tables
 - pandas
+- threadpoolctl
 
-It is compatible and fully tested with python 3.7 and 3.10
+The interactive tools depend on 
+- jupyter
+- ipympl
+
+It is compatible and fully tested with python 3.12
 
 ### developping for SPIKE
 check [Here](DevelopmentGuide.md)
 
-
-
 # 4/ Citing SPIKE
 If you happen to use SPIKE successfully for your research, please cite it, and refer to this site, as well as the following possible references :
+
 - **Main Reference**: first publication of the program itself - *rejected from Anal. Chem. with no real critics except that Reviewer 1 said "too much NMR", Reviewer 2 said "too much MS", !! so I decided to let it on ArXiV*)
     1.    Chiron L., Coutouly M-A., Starck J-P., Rolando C., Delsuc M-A. SPIKE a Processing Software dedicated to Fourier Spectroscopies   https://arxiv.org/abs/1608.06777 (2016)
 
-Other references are also related
+Some tools have their own references :
+
+- **urQRd** denoising
+
+- its improvement **SANE** 
+
+- **PALMA** for DOSY processing by ILT
+
+Other references are also related :
+
 - The renewal of Gifa:
     2. Delsuc M-A. "Gifa V.4: A complete package for NMR data set processing" (2020) https://doi.org/10.5281/zenodo.3904595
 - presentation of the automation possibilities in NMR
