@@ -465,7 +465,7 @@ class GifaFile(object):
             abuf = array.array('f', fbuf)    # simple precision 4 bytes
             if self.byte_order : abuf.byteswap()
     #        self.fbuf = np.ndarray( (sz,), dtype='f', data = abuf)   # copy without casting
-            fbuf = np.empty( (sz,), dtype='float_')  # double precision
+            fbuf = np.empty( (sz,), dtype='float')  # double precision
             fbuf[:] = abuf[:]
             # for i in xrange(sz):      # this is 3-10 times slower
             #     fbuf[i] = abuf[i]
