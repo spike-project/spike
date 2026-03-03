@@ -1599,9 +1599,10 @@ class _NPKData(object):
             else:
                 # d.absmax*0.05/scale = 3*noise   // scale = d.absmax*0.05/(3*noise)
                 if scale == "auto":
-                    noise = findnoiselevel_2D(self.buffer)
-                    if noise > 0:
-                        m = autoscalethresh*noise/0.05
+                    if self.noise == 0:
+                        self.noise = findnoiselevel_2D(self.buffer)
+                    if self.noise > 0:
+                        m = autoscalethresh*self.noise/0.05
                     else:
                         m = absmax/10
                     print("computed scale: %.2f"%(absmax/m,))

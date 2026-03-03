@@ -305,7 +305,7 @@ def fid_signoise_type(nbpeaks,lendata, noise, noisetype):
         raise Exception("unknown noise type")
     return data
 
-def fid_signoise(nbpeaks, ampl, lengthfid, noise, shift = 0, shape = "triangular", seed = True):
+def fid_signoise(nbpeaks, ampl, lengthfid, noise, shift = 0, shape = "triangular", seed = True, omeg = 430.1*1j):
     '''
     Obsolete
 
@@ -314,13 +314,13 @@ def fid_signoise(nbpeaks, ampl, lengthfid, noise, shift = 0, shape = "triangular
     if shape is "triangular", uses ampl as minimum amplitude.
     if shape is "list", uses the given list to make the amplitudes.
     The seed of random generator can be activated or deactivated with boolean 'seed'
+    omeg is the base frequency
     '''
     if seed:
         np.random.seed(11232)
     LB = 1  # linewidth
     x = np.arange(lengthfid*1.0)/lengthfid        
     fid0 = 1j*np.zeros_like(x)      # complex fid
-    omeg = 430.1*1j
     for i in range(1, nbpeaks + 1):
         if shape == "triangular":
             fid0 +=  i*ampl*np.exp(omeg*(i)*x)*np.exp(-LB*x)*np.exp(1j*shift*x)   #
