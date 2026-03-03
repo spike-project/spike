@@ -17,6 +17,7 @@ import numpy.fft as fft # numpy scipy seem equivalent for ifft and fft..
 class transformations():
     """
     this class contains methods which are tools to generate transform and ttransform for 1D signal
+    it can be used by algorithm to find image given data
     ttrans form data to image
     trans from image to data.
     handles real or complex data
@@ -175,7 +176,8 @@ def ftf1(buffer):
 def iftf2(buffer):
     "out of place iFFT-F2 HyperCpx - buffer and value are real"
     # following works because axis=1 is contiguous
-    return _conj_ip_to_float( np.fft.ifft( _conj_ip_from_float(buffer), axis=1 ) )
+#    return _conj_ip_to_float( np.fft.ifft( _conj_ip_from_float(buffer), axis=1 ) )
+    return  np.fft.ifft( buffer, axis=1 )
 def iftf1(buffer):
     "out of place iFFT-F1 HyperCpx - buffer and value are real"
     # here axis=0 is not contiguous, we have to build the cpx, and then get each parts
@@ -214,12 +216,13 @@ def hypabs(buffer):
 def samplecomp(data, sampling, datatype='complex'):
     """
     apply a sampling function - using sampling
-    here we do compress the sampled 2D to a 1D compacted vector
+    here we compress the sampled 2D to a 1D compacted vector
     all buffers real or complex, and datatype tells how they should be considered
 
     datatype: 'real'/'complex'/'hypercomplex'  
-         "complex" corresponds to F1 real and F2 complex - the other setup is not provided , and is handled as phase modulated dataset
-    data : numpy real 2D buffer to sample
+         "complex" corresponds to F1 real and F2 complex - and is handled as phase modulated dataset
+         "hypercomplex" correspond to "four quadrans" amp modulated dataset 
+    data : numpy 2D buffer to sample
         if complex/hypercomplex,
             data should be complex
             if hypercomplex 
@@ -247,37 +250,39 @@ def tsamplecomp(data, outshape, sampling, datatype='complex'):
     """
     transpose of the samplecomp function
 
-    apply a sampling function 
+    use a sampling NUS list to build a zero padded full 2D.  
 
     here we decompress the 1D compacted vector to a sampled 2D
-    all buffers real, and datatype tells how they should be considered
-        if complex/hypercomplex, imaginary parts are interleaved with real parts 
-        in which case, one nuslist entry handle both real and imaginary parts
-    data : numpy 1D real buffer to unsample
+
+    datatype: 'real'/'complex'/'hypercomplex'  
+         "complex" corresponds to F1 real and F2 complex - and is handled as phase modulated dataset
+         "hypercomplex" correspond to "four quadrans" amp modulated dataset 
+        if hypercomplex 
+            nuslist entry handle all F1 real and imaginary parts, Bruker style
+            F1 imaginary part follows the F1 real part 
+    data : numpy 1D buffer to unsample
+    if complex/hypercomplex,
+        data should be complex
+        if hypercomplex, F1 imaginary parts are interleaved with real parts 
     outshape : numpy shape of the returned buffer
-    datatype: 'real'/'complex'/'hypercomplex'  in which case imaginary parts is interleaved on the second axis or on both axis
     sampling is a nuslist [...(i1,i2)..] of the index of the experimental 2D points
             each entry corresponds to 1, 2 or 4 depending on datatype
     returns a 2D np buffer 
     """
     si1,si2 = outshape
 
-    if datatype == 'real':
-        dataout = np.zeros((si1,si2))
+    if datatype == 'hypercomplex':
+        dataout = 1j*np.zeros((2*si1,si2))   # has to be complex !  - double to accept hyperimag
+    else:
+        dataout = np.zeros((si1,si2), dtype=data.dtype)   # depends on data
+
+    if datatype == 'hypercomplex':
+        for j,(i1,i2) in enumerate(sampling):
+            dataout[2*i1,    i2] = data[2*j]
+            dataout[2*i1+1,  i2] = data[2*j+1]
+    else:
         for j,(i1,i2) in enumerate(sampling):
             dataout[i1,  i2  ] = data[j]
-    if datatype == 'complex':
-        dataout = np.zeros((si1, 2*si2))
-        for j,(i1,i2) in enumerate(sampling):
-            dataout[i1,  2*i2  ] = data[2*j]
-            dataout[i1,  2*i2+1] = data[2*j+1]
-    if datatype == 'hypercomplex':
-        dataout = np.zeros((2*si1, 2*si2))
-        for j,(i1,i2) in enumerate(sampling):
-            dataout[2*i1,  2*i2  ] = data[4*j]
-            dataout[2*i1,  2*i2+1] = data[4*j+1]
-            dataout[2*i1+1,2*i2  ] = data[4*j+2]
-            dataout[2*i1+1,2*i2+1] = data[4*j+3]
     return dataout
 
 class transformations2D(transformations):
@@ -286,23 +291,33 @@ class transformations2D(transformations):
     ttrans form data to image
     trans from image to data.
 
-    all computationq in 2D, but everything is linearized outside (using ravel / reshape)
+    see transformations class
+
+    all computations in 2D, but everything is linearized outside (using ravel / reshape)
         agnostic Linear algo can use it
 
     handles real, complex or hypercomplex data
     for hypercomplex, the F2 rows are python complex and 0,2,...2n rows contain the F1 real and 1,2,..2n+1 contains the F1 imag
 
     """
-    def __init__(self, size_image, size_mesure, datatype='complex', sampling=None, compressed=False, debug=0):
+    def __init__(self, size_image, size_mesure, datatype='complex', sampling=None, mask=None, compressed=False, debug=0):
         """
         size_image and size_mesure are numpy shapes of x and s 2D space
-        datatype is either 'real', 'complex', 'hypercomplex' 
-        sampling is a nuslist [...(i1,i2)..] of the index of the experimental 2D points
+        for real and complex datatype, sizes are the sizes of the complex numpy buffers
+        for hypercomplex datatype, buffers are complex and sizes are doubled along the F1 axis (axis=0) to adapt the F1 imaginary part
 
-        compressed defines how the 1D representation of the raw data is handled if there is sampling
+        datatype is either 'real', 'complex', 'hypercomplex' 
+        if NUS, there are 2 possibilities:
+            - mask is a numpy buffer with 0 where no data is measured
+              then the data buffer should be full sized and masked points will be ignored
+            - sampling is a nuslist [...(i1,i2)..] of the index of the experimental 2D points
+              then the data buffer is compressed to a vector of the measured values
+
+        compressed defines how the representation of the raw data is handled if there is sampling
             False: with 0 on the unmeasured points positions
             True: compressed to a vector of the measured values
-        
+            computed from sampling and mask
+
         all other fields are meant to be overloaded after creation
         
         direct transform refers to S => X  // image => Data transform
@@ -314,16 +329,22 @@ class transformations2D(transformations):
 
         super(transformations2D, self).__init__(size_image=size_image, size_mesure=size_mesure, sampling=sampling, debug=debug)
         if datatype == 'real':
+            warning("2D real is not tested in transformations2D")
             self.ft = fft.irfft2          # trans: from image to data
             self.tft = fft.rfft2          # ttrans: from data to image.
         elif datatype == 'complex':
-            self.ft = fft.ifft2          # trans: from image to data
-            self.tft = fft.fft2          # ttrans: from data to image.
+            self.ft = fft.fft2          # trans: from image to data
+            self.tft = fft.ifft2          # ttrans: from data to image.
         elif datatype == 'hypercomplex':
             self.ft = ifthyp2          # trans: from image to data
             self.tft = fthyp2          # ttrans: from data to image.
         else:
             raise ValueError("datatype is either 'real', 'complex', or 'hypercomplex'")
+
+        if sampling is not None and mask is not None:
+            raise ValueError("sampling and mask cannot be used together, choose one mode")
+        if compressed  and sampling is None:
+            raise ValueError("compressed mode is reserved to sampling mode")
 
         if sampling is not None:    # build mask
             if datatype == 'hypercomplex':
@@ -340,6 +361,8 @@ class transformations2D(transformations):
             self.min2 = min(self.sampling[:,1])
             self.max1 = max(self.sampling[:,0])
             self.max2 = max(self.sampling[:,1])
+        if mask is not None:
+            self.mask = mask
 
         else:
             self.mask = None
@@ -352,8 +375,8 @@ class transformations2D(transformations):
             
             NUS_ratio = len(self.sampling)/(m1+1)/(m2+1)
             print(f"""
-Sampling : {n1} ... {m1} x {n2} ... {m2}  in {len(self.sampling)} pairs
-NUS ratio, {100*NUS_ratio}""")
+        Sampling : {n1} ... {m1} x {n2} ... {m2}  in {len(self.sampling)} pairs
+        NUS ratio, {100*NUS_ratio}""")
 
     def check(self):
         self.report()
@@ -387,14 +410,21 @@ NUS ratio, {100*NUS_ratio}""")
         apply a sampling function - using self.sampling
         in 2D we do not compress
         """
-        #print self.sampling
-        return x*self.mask
+        if self.compressed:
+            xx = samplecomp(x, self.sampling, datatype=self.datatype)
+        else:
+            xx = x*self.mask
+        return xx
     def tsample(self, x):
         """
         transpose of the sample function
         equiv to sample in this set-up
         """
-        return x*self.mask
+        if self.compressed:
+            xx = tsamplecomp(x, self.size_mesure, self.sampling, datatype=self.datatype)
+        else:
+            xx = x.reshape(self.size_mesure)*self.mask
+        return xx
     def transform(self, sflat):
         """
         transform to data.
@@ -427,11 +457,13 @@ NUS ratio, {100*NUS_ratio}""")
         the transpose of transform
         Passing from x to s (data to image)
         """
-        x = xflat.reshape(self.size_mesure)
-        if self.debug: print('entering ttrans', x.shape, x.dtype)
+        if self.debug: print('entering ttrans', xflat.shape, xflat.dtype)
         if self.sampling is not None:
-            x = self.tsample(x)
+            x = self.tsample(xflat)
             if self.debug: print('  ttrans sample', x.shape, x.dtype)
+        else:
+            x = xflat.reshape(self.size_mesure)
+            if self.debug: print('  reshape', x.shape, x.dtype)
         if self.size_image != self.size_mesure:      # eventually zerofill
             x = self.zerofilling(x)
             if self.debug: print('  ttrans zerofill',x.shape, x.dtype)
