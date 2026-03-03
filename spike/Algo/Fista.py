@@ -49,6 +49,8 @@ def hypcpxabs(buffer):
     """
     compute abs() for hypercomplex 2D data-set, provided as a 2*si1, 2*si2 float matrix 
     return value as si1, si2 floats,
+    $val = \sqrt { \sum {rr^2 + ir^2 + ri^2 + ii^2} }$
+    This is actually  sqrt(modulus), following numpy usage for complex 
     """
     return np.sqrt( hypcpxsqsum(buffer) )
 
@@ -59,22 +61,22 @@ def hypcpxnorm(buffer):
     """
     return np.sqrt( hypcpxsqsum(buffer).sum() )
 
-def hypcpxabsmask(buffer):
-    """
-    compute abs() for hypercomplex 2D data-set, provided as a 2*si1, 2*si2 float matrix 
-    return abs() as 2*si1, 2*si2 float, where the abs value are in the 4 fields of the hypercpx values
-    usefull to compute masking on hypercomplex thresholding.
-    """
-    aPP = hypcpxabs(buffer)
-    a = np.zeros_like(buffer)
-    a[::2,::2] = aPP
-    a[1::2,::2] = aPP
-    a[::2,1::2] = aPP
-    a[1::2,1::2] = aPP
-    return a
+# def hypcpxabsmask(buffer):
+#     """
+#     compute abs() for hypercomplex 2D data-set, provided as a 2*si1, 2*si2 float matrix 
+#     return abs() as 2*si1, 2*si2 float, where the abs value are in the 4 fields of the hypercpx values
+#     usefull to compute masking on hypercomplex thresholding.
+#     """
+#     aPP = hypcpxabs(buffer)
+#     a = np.zeros_like(buffer)
+#     a[::2,::2] = aPP
+#     a[1::2,::2] = aPP
+#     a[::2,1::2] = aPP
+#     a[1::2,1::2] = aPP
+#     return a
 
-@dec_class_pr
-@decclassdebugging
+# @dec_class_pr
+# @decclassdebugging
 class Fista(object):
     '''
     b = Ax
@@ -98,7 +100,8 @@ class Fista(object):
     '''
     def __init__(self, transf, ttransf, b, scale_noise = 1.0,\
             hypcpxdatashape = None, 
-            iterat = 4, miniterat = 300, prec = 0.1, noise_level = None, pow = 1, mfista = False):
+            iterat = 4, miniterat = 300, prec = 0.1, noise_level = None, pow = 1, mfista = False, debug=False):
+        self.debug = debug
         self.transf = transf                                # transformation from the searched vector x to the observed data b
         self.ttransf = ttransf                              # transformation from the data b to searched vector x
         self.b = b                                          # observed data
@@ -147,6 +150,8 @@ class Fista(object):
         self.recomputlamb = False                           # Recomputes lambda if the chi2 test is negative
         self.nrandip = 5                                    # parameter for calculating the lipschitz constant randomly.
         self.lipsch = self.lipschitz_coeff()                # lipschitz factor from transformation matrix, from Gram matrix.
+        if self.debug:
+            print("lipschitz_coeff =" , self.lipsch)
         self.noiselevelb = self.noise_level/self.lipsch     # noiselevel for the observed data b is equal to noise level of the image x divided by the lipschitz coefficient.
         self.lambdaparam = self.noiselevelb                 # self.lambdaparam initialization to noiselevel of observed data.
         self.t = 0.1/self.lipsch                            # inverse of lipschitz coefficient
@@ -157,7 +162,7 @@ class Fista(object):
         self.residual = None
         self.monitor_chi2 = []                              # list monitoring chi2 on one lambda value, takes the chi2 values for the last lambda value.
         self.monitor_all_final_chi2 = []                    # list for monitoring the final chi2 for each lambda value.
-        self.monitor_lambda = []                            # list for monitoring lambda values
+        self.monitor_lambda = []                            # list for moTself.tnitoring lambda values
         self.all_monitor_chi2 = []                          # list for monitoring the evolution of chi2 for each lambda value.
         self.monitor_result = []                            # list for monitoring the result for each lambda value.
         self.plot_controls = False                          # plot chi2 test and Fista result.
@@ -220,8 +225,13 @@ class Fista(object):
         return abs() as 2*si1, 2*si2 float, where the abs value is copied into the 4 fields of the hypercpx values
         '''
         buffer = x.reshape(self.hypcpxdatashape)
-        a = hypcpxabsmask(buffer).ravel()
-        return np.where(a >= self.lambdaparam, x*(1 - self.lambdaparam/a), 0.0)
+        a = hypcpxabs(buffer)
+        if self.debug:print("Thresh_shrink_hypcpx, a.shape, buffer.shape:",a.shape, buffer.shape)
+        buffer[::2, ::2] = np.where(a >= self.lambdaparam, buffer[::2, ::2]*(1 - self.lambdaparam/a), 0.0)
+        buffer[1::2, ::2] = np.where(a >= self.lambdaparam, buffer[1::2, ::2]*(1 - self.lambdaparam/a), 0.0)
+        buffer[::2, 1::2] = np.where(a >= self.lambdaparam, buffer[::2, 1::2]*(1 - self.lambdaparam/a), 0.0)
+        buffer[1::2, 1::2] = np.where(a >= self.lambdaparam, buffer[1::2, 1::2]*(1 - self.lambdaparam/a), 0.0)
+        return buffer.ravel()
         
     def Thresh_shrink_pow(self, x):
         '''
@@ -230,6 +240,7 @@ class Fista(object):
         power for the slight generalization introduced by Rick Chantrand (paper with Voronin 2013)
         '''
         a = abs(x)
+
         return np.where(a >= self.lambdaparam*pow(a, self.pow-1), x*(1 - self.lambdaparam*pow(a, self.pow-1)/a), 0.0)
     
     def chi2_test(self):
@@ -240,7 +251,7 @@ class Fista(object):
         '''
         current_precision = abs(self.chi2-float(self.b.size))/float(self.b.size)                 # Current precision for the resisual
         test = (current_precision <= self.prec)                                                  # chi2 test True is current precision is under self.prec.
-        if debug(self):
+        if self.debug:
              print ("#### self.chi2, test", self.chi2, test)
         if self.best_precision is None or current_precision < self.best_precision : # test of precision 
              self.best_precision = current_precision
@@ -262,7 +273,7 @@ class Fista(object):
         '''
         self.tkp1 = (1 + sqrt(1 + 4*self.tk**2))/2
         if self.mfista:                                 # Applying MFISTA
-            if debug(self):
+            if self.debug:
                 print ("self.ztarg.size ",self.ztarg.size )
             if self.F(self.ztarg) < self.F(self.xtargm1):
                 self.xtarg  = self.xtargm1
@@ -270,6 +281,7 @@ class Fista(object):
                 self.xtarg  = self.ztarg
             self.ykp1 = self.xtarg + (self.tk)/(self.tkp1)*(self.ztarg - self.xtarg) + (self.tk - 1)/(self.tkp1)*(self.xtarg - self.xtargm1) 
         else:
+            if self.debug: print("self.tk, self.tkp1 :", self.tk, self.tkp1)
             self.ykp1 = self.xtarg + (self.tk - 1)/(self.tkp1)*(self.xtarg - self.xtargm1) 
         self.tk = self.tkp1
         self.yk = self.ykp1
@@ -278,28 +290,28 @@ class Fista(object):
         '''
         Changes lambda if the chi2 test is wrong ( parameter self.recomputlamb )
         '''
-        if debug(self): 
+        if self.debug: 
             print ("beginning of adaptlamb ############# : self.chi2/self.b.size ", self.chi2/self.b.size)
             print ("in self.adaptlamb self.recomputlamb ", self.recomputlamb)
         randfact = 1                                      
         if abs(self.chi2/self.b.size-1) > self.prec :     # we are far from 1 
-            if debug(self):
+            if self.debug:
                 print ("case abs(self.chi2/self.b.size-1) > 0.1")
             if self.recomputlamb : 
                 lambfact = self.chi2/self.b.size/2                              # Overshoot we increase strongly lambda again.
-                if debug(self):
+                if self.debug:
                     print ("## recompute lambda")
                     print ("## lambfact ", lambfact)
             else :
-                if debug(self):
+                if self.debug:
                     print ("##square root for lambfact")
                 lambfact = np.sqrt(self.chi2/self.b.size)*randfact              # No overshoot we diminish lambda slowly using square root
-        if debug(self):
+        if self.debug:
             print ("ratio self.chi2/self.b.size ", self.chi2/self.b.size)
             print ("decrement lamb ", lambfact)
             print ("self.lambdaparam before ", self.lambdaparam)
         self.lambdaparam /= lambfact                                            # dividing or multiplying factor.
-        if debug(self): 
+        if self.debug: 
             print ("self.lambdaparam after ", self.lambdaparam)
             
     @timeit
@@ -309,34 +321,34 @@ class Fista(object):
         Other stopping criterium is divergence break
         Adapt the lambda parameter for reaching the noise level.
         '''
-        if debug(self):        print ("#################in Fista solve ##########")
+        if self.debug:        print ("#################in Fista solve ##########")
         while 1:
             self.iternb += 1
-            if debug(self): print ('Iteration ', self.iternb)
+            if self.debug: print ('Iteration ', self.iternb)
             self.fistaloop()                                    # Fista algorithm for a given lambda, if lambda not good go out and make adaptlamb
             self.all_monitor_chi2.append(self.monitor_chi2)    # saves all the monitoring of chi2 with iterations for given lambda.
             if not self.miniterat :                             # if miniterat is None, breaks the main loop, only one lambda used.
                 break   
             self.monitor_parameters()                                   #  monitors parameters, list of chi2 for lambda, lambda and list of yk            
             if self.chi2_test() :                               
-                if debug(self):
+                if self.debug:
                     print ("self.test_noise break ")
                 break                                                   # if chi2 test is ok, stops the algoritm.
             else:
                 self.adaptlamb()                                                        # lambda was not good chi2 too high or chi2 too low find another one better.. 
                 if self.lambdaparam > 10*self.noiselevelb*self.lipsch:                  # diverging solution case
                     self.yk = np.zeros(self.xtarg.size, dtype=self.x_dtype)             # return a null solution, yk is set equal to 0
-                    if debug(self):
+                    if self.debug:
                         print ("lambda diverging, not sparse, yk = 0")
-                        if debug(self):
+                        if self.debug:
                              print ("divergence break ")
                         break                                                                   # divergence, breaks the loop.
             if self.iternb >= self.iterat:
-                if debug(self):
+                if self.debug:
                     print ("Exit on maximum iteration number")
                 break
         self.residual = self.b-self.transf(self.yk)
-        if debug(self):
+        if self.debug:
             print ("self.b.dtype  ",self.b.dtype)
             print ("Done in %d iterations"%self.iternb)
             print ("Final normalized Chi2 :", self.chi2/self.b.size)
@@ -351,28 +363,29 @@ class Fista(object):
         '''
         self.miniternb = 0                                                                      # iteration index inside Fista for a given lambda.
         self.monitor_chi2 = []                                                                  # list for keep track of the chi2                   
-        if debug(self):
+        if self.debug:
             print ("now in fistaloop ")
-            print ("self.noiselevelb ", self.noiselevelb)
-            print ("self.lambdaparam  at beginning of fistaloop", self.lambdaparam)
-            print ("chi2 test just before fistaloop  test and result ", self.chi2_test())
+            print ("self.noiselevelb :", self.noiselevelb)
+            print ("self.lambdaparam  at beginning of fistaloop :", self.lambdaparam)
+            print ("chi2 test just before fistaloop  test and result :", self.chi2_test())
         while 1 : 
             if self.miniterat:                                                                  # if the number of iterations is given
                 if self.miniternb > self.miniterat:                                             # if miniternb > number of iterations then breaks. 
                     break                                       
             self.recomputlamb = self.corealgo()                                                 # if convergence gives overshoot recomputes lambda. 
             if not self.recomputlamb :
-                if debug(self):
+                if self.debug:
                     print ("does not recompute lambda ")
                 self.miniternb += 1                                                             #  Counting new iteration of Fista
                 # calculates the chi2.
                 ir = (self.b-self.transf(self.yk))
-                if self.hypcpxdatashape:
-                    ir.reshape(self.hypcpxdatashape)
-                    self.chi2 = (hypcpxnorm(ir)**2)/self.noiselevelb**2
-                else:
-                    self.chi2 = (norm(ir)**2)/self.noiselevelb**2          # calculates the chi2.
-                if debug(self):
+                # if self.hypcpxdatashape:
+                #     ir.reshape(self.hypcpxdatashape)
+                #     self.chi2 = (hypcpxnorm(ir)**2)/self.noiselevelb**2
+                # else:
+                self.chi2 = (norm(ir)**2)/self.noiselevelb**2          # calculates the chi2.
+
+                if self.debug:
                     print ("self.miniternb, chi2 normalized ", self.miniternb, self.chi2/self.b.size)
                 self.monitor_chi2.append(self.chi2/self.b.size)                                 # adds the chi2 ratio of last solution.. 
                 ######## Conditions for getting out of Fista loop.
@@ -384,11 +397,11 @@ class Fista(object):
                     cnd2 = False
                     cnd3 = False
                 if cnd1 or cnd2 or cnd3: 
-                    if debug(self):
+                    if self.debug:
                         print ("#### above max, low variation, derivative positive, ", cnd1, cnd2, cnd3)
                     break                                                                       # if nb of iterations > nbconverg or chi2 variation to weak breaks. 
             else :                                                                              # chi2 test is wrong, changing the value of lambda
-                if debug(self): print ("go out of fistaloop ")
+                if self.debug: print ("go out of fistaloop ")
                 break                                                                           # computes solution for other lambda
             
     def corealgo(self):
@@ -396,19 +409,18 @@ class Fista(object):
         Main part of FISTA algorithm.
         Returns True if lambda is bad and False to contiue if lambda is good.
         '''
-        if debug(self):
+        if self.debug:
             print ("now in self.corealgo")
             print ("self.yk.size ", self.yk.size)
             print ("self.b.size ", self.b.size)
         self.xtargm1 = self.xtarg
         interm_residual = self.transf(self.yk) - self.b                    # intermediate residual
-        print("interm_residual", interm_residual.dtype )
-        if debug(self):
-            print ("self.b.size ", self.b.size)
-        #     print "interm_residual.size ", interm_residual.size
+        if self.debug:
+            print ("interm_residual.size ", interm_residual.size)
+            print("<|interm_residual|> :", abs(interm_residual).mean() )
         # MAD on doit pouvoir localiser self.grad
         grad = self.ttransf(interm_residual)                               # Gradient part, returning to image domain
-        if debug(self):
+        if self.debug:
             print ("grad.size ", grad.size)
             print ("self.t ", self.t)
             print ("self.yk.size ", self.yk.size)
@@ -416,25 +428,26 @@ class Fista(object):
         Intermediate chi2 test
         '''
         new = self.yk - 2.0*self.t*grad                                    # new step before Thresholding
-        if self.hypcpxdatashape:
-            irhyp = interm_residual.reshape(self.hypcpxdatashape)
-            chi2interm = (hypcpxnorm(irhyp)**2)/self.noiselevelb**2        # calculate an intermediate chi2.
-        else:
-            chi2interm = (norm(interm_residual)**2)/self.noiselevelb**2    # calculate an intermediate chi2.
-        if debug(self):
+        # if self.hypcpxdatashape:
+        #     irhyp = interm_residual.reshape(self.hypcpxdatashape)
+        #     chi2interm = (hypcpxnorm(irhyp)**2)/self.noiselevelb**2        # calculate an intermediate chi2.
+        # else:
+        chi2interm = (norm(interm_residual)**2)/self.noiselevelb**2    # calculate an intermediate chi2. - data space
+        if self.debug:
             print ("intermediate chi2 in corealgo", chi2interm/self.b.size)
         if chi2interm/self.b.size > 1 :                                    # if not overshooting continue the calculus 
             if self.mfista:
                 # calculation of self.ztarg for MFISTA
                 if self.hypcpxdatashape:    # hypercomplex
-                    self.ztarg = self.Thresh_shrink_hypcpxmask(new)        # Thresholding since the precedent step gives a good residual with Chi2 test. 
+                    self.ztarg = self.Thresh_shrink_hypcpx(new)        # Thresholding since the precedent step gives a good residual with Chi2 test. 
                 else:        # real or complex
                     self.ztarg = self.Thresh_shrink(new)                   # Thresholding since the precedent step gives a good residual with Chi2 test. 
             else:
                 if self.hypcpxdatashape:    # hypercomplex
-                    self.xtarg = self.Thresh_shrink_hypcpxmask(new)         # Thresholding since the precedent step gives a good residual with Chi2 test. 
+                    self.xtarg = self.Thresh_shrink_hypcpx(new)         # Thresholding since the precedent step gives a good residual with Chi2 test. 
                 else:        # real or complex
-                    self.xtarg = self.Thresh_shrink(new)                    # Thresholding since the precedent step gives a good residual with Chi2 test. 
+                    self.xtarg = self.Thresh_shrink(new)                    # Thresholding since the precedent step gives a good residual with Chi2 test.
+            if self.debug: print("self.xtarg.shape:", self.xtarg.shape) 
             self.fista_next_step()
             return False                                                    # do not recompute lambda
         else:
