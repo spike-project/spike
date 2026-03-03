@@ -176,22 +176,21 @@ class sane_pgTests(unittest.TestCase):
         NUS example
         removing the sampling noise 
         '''
-        from ..Tests import filename, directory
         import spike.Display.testplot as testplot
         plt = testplot.plot()
         import spike.util.signal_tools as u
         from numpy.fft import fft
         from spike.Tests import filename
-        from spike.NPKData import NPKData
+        from spike.NPKData import _NPKData
         samplingfile = filename("Sampling_file.list")
-        e = NPKData(dim = 1)
+        e = _NPKData(dim = 1)
         e.axis1.load_sampling(samplingfile)
         size = 20000
         signal = u.SIGNAL_NOISE(lenfid=size, nbpeaks=10, amplitude=100, noise=50, shift = 7000)
         signal.fid
         echant = signal.fid[e.axis1.sampling]
 #        print "echant.size ",echant.size
-        f = NPKData(buffer = echant)
+        f = _NPKData(buffer = echant)
         f.axis1.load_sampling(samplingfile)
         h = f.copy()
         h.pg_sane()
@@ -205,7 +204,7 @@ class sane_pgTests(unittest.TestCase):
         NUS larger example
         removing the sampling noise 
         '''
-        from spike.NPKData import NPKData
+        from spike.NPKData import _NPKData
         import spike.Display.testplot as testplot
         plt = testplot.plot()
         import time
@@ -262,7 +261,7 @@ class sane_pgTests(unittest.TestCase):
         RATIO = 1./8
         sampling = gene_sampling(RATIO)
         # prepare
-        f = NPKData(buffer = nfid[sampling])
+        f = _NPKData(buffer = nfid[sampling])
         f.axis1.sampling = sampling
         # do it
         t0 = time.time()

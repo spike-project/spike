@@ -209,7 +209,7 @@ def do_Test():
         print("performed on {2} {4} running python {0} / numpy {1} on host {3}".format(python, npv, *platform.uname()))
         print("test performed in %.2f sec"%elaps) 
     else:
-        print(msg("Some tests Failed\nPlease revise results above"))
+        print(msg("Some tests Failed - Please revise results above"))
     print("\n" + "="*80 + "\n")
 
 def main():

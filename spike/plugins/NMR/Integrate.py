@@ -58,6 +58,7 @@ class Integrals(list):
         autothresh : in fully automated mode, noise is multiplied by this number to find peaks from which integrals are defined
         separation : if two peaks are less than separation x width n they are aggregated, default = 3
         wings : integrals sides are extended by wings x width, default = 5
+            separation and wings value are in multiple of estimated peak width
         bias: this value is substracted to data before integration
         calibration: a coefficient to multiply all integrals / if None (default) largest is set at 100
         """
@@ -137,8 +138,11 @@ class Integrals(list):
     def peakstozones(self):
         """
         computes integrals zones from peak list, 
-        separation : if two peaks are less than separation x width n they are aggregated, default = 3
-        wings : integrals sides are extended by wings x width, default = 5
+            if no peaks are defined, an automatic peak picking is executed
+        uses object attributes:
+        - separation : if two peaks are less than separation x width n they are aggregated, default = 3
+        - wings : integrals sides are extended by wings x width, default = 5
+            separation and wings value are in multiple of estimated peak width
         """
         data = self.source
         try:
@@ -261,10 +265,13 @@ class Integrals(list):
 
 def integrate(npkd, **kw):
     """
-    computes integral zones and values from peak list, 
-
+    computes integrals zones from peak list, 
+        if no peaks are defined, an automatic peak picking is executed
+    
+    autothresh : in fully automated mode, noise is multiplied by this number to find peaks from which integrals are defined
     separation : if two peaks are less than separation x width n they are aggregated, default = 3
     wings : integrals sides are extended by wings x width, default = 5
+        separation and wings value are in multiple of estimated peak width
     bias: this value is substracted to data before integration
     calibration: a coefficient to multiply all integrals / if None (default) largest is set at 100
     """
