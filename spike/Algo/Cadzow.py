@@ -151,7 +151,7 @@ def dt2svd(data, orda=5):
     if n1 < orda:
         raise Exception("orda is too large for this data, orda max : %d"%n/2)
     # build matrix
-    X = np.empty((n1, orda),'complex_')   # matrix is complex
+    X = np.empty((n1, orda),'complex')   # matrix is complex
     if debug: print("Hankel matrix (%d,%d)"%X.shape)
     for i in xrange(n1):
         X[i,:] = data[i:(i+orda)].copy() # build hankel matrix
@@ -178,7 +178,7 @@ def svd2dt(U, S, V):
     M = U.shape[0]  # 14
     N = V.shape[0]  # 6
     size = M+N-1
-    data = np.empty((size,), dtype="complex_")
+    data = np.empty((size,), dtype="complex")
     if debug: print("M, N, size",M, N, size)
     # recompute matrix
     if truncated:       # take min, because matrices are truncated - due to the full_matrices=False in svd step
