@@ -373,10 +373,12 @@ def dcalibdosy(npk, nucleus='1H'):
 
     nuc1 = npk.params['acqu']["$NUC1"]
     if nucleus is None:
-        if (nuc1 == '1H' or nuc1 == '15N' or nuc1 == '13C' or nuc1 == '31P' or nuc1 == '19F' or nuc1 == '17O'):
+#        if (nuc1 == '1H' or nuc1 == '15N' or nuc1 == '13C' or nuc1 == '31P' or nuc1 == '19F' or nuc1 == '17O'):
+        if nuc1 in [ '1H' , '2H', '15N' , '13C' , '31P' , '19F' , '17O']:
             nucleus = nuc1
         else:
             nucleus = '1H'
+            print('unknown nuclei, assuming 1H')
     print ("DOSY performed on %s"%(nucleus,))
     pulprog = npk.params['acqu']['$PULPROG']
     seq_type = determine_seqtype(pulprog[1:-1])
@@ -415,7 +417,7 @@ def dcalibdosy(npk, nucleus='1H'):
     npk.axis1.dfactor = calibdosy(litdelta, bigdelta, recovery, seq_type=seq_type, nucleus=nucleus)
     return npk
 
-def Import_DOSY(fname, nucleus=None, verbose=False):
+def Import_DOSY(fname, nucleus='1H', verbose=False):
     """
     Import and calibrate DOSY data-set from a Bruker ser file
     """
@@ -430,7 +432,7 @@ def Import_DOSY(fname, nucleus=None, verbose=False):
         print("truncating to %d"%(l,))
         d.chsize(sz1=l)
         d.axis1.qvalues = d.axis1.qvalues[:l]
-    d.calibdosy()
+    d.calibdosy(nucleus=nucleus)
     if verbose:
         print("imported 2D DOSY, size = %d x %d\n%s"%(d.axis1.size, d.axis2.size, d.params['acqu']['title']))
     return d
