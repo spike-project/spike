@@ -14,9 +14,9 @@ from codecs import decode
 
 ProgramName = "SPIKE"
 VersionName = "Development version"
-VersionInfo = ["0", "99", "33"]   # Major - Minor - Micro
+VersionInfo = ["0", "99", "34", "beta1"]   # Major - Minor - Micro
 
-# 1.0 will probably be when interactive Notebooks are really usefull !
+# 1.0 will probably be when interactive Notebooks are really useful !
 # And NMR.py validated
 
 # Major.minor.micro (int) + name eg SPIKE_2_19_5
@@ -33,9 +33,23 @@ release_notes="""
 *if you need the latest version, get Spike from github*
 *then to make available to you system,* do
     > cd spike
-    > python setup.py devel
+    > python setup.py 
 
-#### 0.99.33 - October 2023 - not released yet
+#### 0.99.34 - February 2026 - sorry for the long delay...
+- improved the XML reader in Solarix reading
+- using threadpoolctl utility to control MKL rather than direct DLL calls !
+- display() accepts linewidth in 2D now (thank you Celia)
+- possibility to compute DOSY for non ¹H nuclei (only '1H' , '2H', '15N' , '13C', '31P' , '19F' , '17O' so far)
+- data.copy() now copies also peak and integral lists
+- data.bcorr() now accept point list in current unit (ppm, m/z ...)
+- modifications in the Notebooks for 2D display
+- minor correction in interactive superposition of 1D spectra 
+- minor correction in spectra arithmetics
+- a bug corrected in interactive peak picker (removed useless (and buggy !) imports)
+- removed old and obsolete numpy syntaxe
+- corrected a bug when exporting empty data to Bruker format
+
+#### 0.99.33 - October 2023
 - Interactive:
     - NMR
         - improved 1D integration
