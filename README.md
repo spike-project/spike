@@ -70,7 +70,7 @@ The current version is the github version, check [`dev_setup.py`](spike/dev_setu
 ### best practice : install with `uv`
 We used to recommend the `anaconda` distribution, but this lead to several problems *( [see this warning](warning_2023.md) )*,
 
-Now we recommand an independent installation in a virtual environmnet, using the `uv` tool. Documentation is [here](install_with_uv.md), 
+Now we recommand an independent installation in a virtual environmnet, using the `uv` tool. Documentation is [here](Install_with_uv.md), 
 
 ### simple installation
 If your are confident, and have a scientific python running, you can install it with *(python 3.12 or higher is required)*
