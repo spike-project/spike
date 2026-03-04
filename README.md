@@ -65,7 +65,7 @@ Can be found [Here](release_notes.md)
 
 The current version is the github version, check [`dev_setup.py`](spike/dev_setup.py)* for the most recent modifications.
 
-*The PyPI version (installed with pip) lags behind and is the version 0.99.33 - Octobre 2023 - we're working on it - check [the current release notes](release_notes.md) for comparison.*
+*The  [PyPI](https://pypi.org/project/spike-py/) version (installed with pip) lags behind and is the version 0.99.33 - Octobre 2023 - we're working on it - check [the current release notes](release_notes.md) for comparison.*
 
 ### best practice : install with `uv`
 We used to recommend the `anaconda` distribution, but this lead to several problems *( [see this warning](warning_2023.md) )*,
