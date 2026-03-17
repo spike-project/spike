@@ -5,7 +5,7 @@
 """
 Utility to import Bruker MS files
 
-A wrapper around Solarix and Apex modules
+A wrapper around Match, Solarix and Apex modules
 
 
 Created by MAD on 03-2019.
@@ -13,7 +13,7 @@ Created by MAD on 03-2019.
 Copyright (c) 2019 IGBMC. All rights reserved.
 """
 
-from . import Apex0, Apex, Solarix
+from . import Apex0, Apex, Solarix, Match
 
 
 #-----------------------------------------
@@ -23,6 +23,10 @@ def Import_1D(*arg, **kword):
     It returns a FTICRData
     It writes a HDF5 file if an outfile is mentionned
     """
+    try:
+        return Match.Import_1D(*arg, **kword)
+    except:
+        pass
     try:
         return Solarix.Import_1D(*arg, **kword)
     except:
