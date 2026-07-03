@@ -30,12 +30,10 @@ VersionInfo = ["0", "99", "34", "beta1"]   # Major - Minor - Micro
 # Release Notes in md syntax !
 release_notes="""
 # SPIKE Relase Notes
-*if you need the latest version, get Spike from github*
-*then to make available to you system,* do
-    > cd spike
-    > python setup.py 
 
-#### 0.99.34 - February 2026 - sorry for the long delay...
+#### 0.99.34 - July 2026 - sorry for the long delay...
+- adapted to newer python -- doc for installing using uv / but notebooks not fully clean yet !
+- added support for Match MS file format ( m-van-agthoven authored )
 - improved the XML reader in Solarix reading
 - using threadpoolctl utility to control MKL rather than direct DLL calls !
 - display() accepts linewidth in 2D now (thank you Celia)
@@ -48,6 +46,7 @@ release_notes="""
 - a bug corrected in interactive peak picker (removed useless (and buggy !) imports)
 - removed old and obsolete numpy syntaxe
 - corrected a bug when exporting empty data to Bruker format
+- removed obsolete numpy .tostring() for .tobytes() 
 
 #### 0.99.33 - October 2023
 - Interactive:

@@ -168,5 +168,5 @@ class BrukerSMXHandler(object):
         else:
             fmt = '>i4'      # big endian
         with open(filename, 'wb') as f:
-            f.write(data.astype(fmt).tostring())
+            f.write(data.astype(fmt).tobytes())
 

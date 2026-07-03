@@ -587,7 +587,7 @@ class GifaFile(object):
                                 fbuf[i*self.szblock2+j*self.szblock3:i*self.szblock2+j*self.szblock3+kmax] = self.data.buffer[i1+i, i2+1, i3:i3+kmax]
         #                        for j in xrange(self.szblock2):
         #                            fbuf[i*self.szblock2+j] = self.data.buffer[i1+i,i2+j]
-                        self.fileB.write( fbuf.tostring() ) #CR binary handler for data
+                        self.fileB.write( fbuf.tobytes() ) #CR binary handler for data
                         i3 = i3+self.szblock3
                     i3 = 0
                     i1 = i1+self.szblock1

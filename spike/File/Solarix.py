@@ -419,7 +419,7 @@ def write_ser(bufferdata,filename = "ser"):
         for i in range (len(bufferdata)):
             for j in range (len(bufferdata[0])):
                 
-                f.write(bufferdata[i][j].astype("int32").tostring() )
+                f.write(bufferdata[i][j].astype("int32").tobytes() )
 #----------------------------------------------
 class Solarix_Tests(unittest.TestCase):
     def setUp(self):
