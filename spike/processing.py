@@ -367,40 +367,106 @@ def do_proc_F1(dinp, doutp, parameter):
         pbar.update(i)
     pbar.finish()
 
+def _do_proc_F1_modu(data):
+    "given a pair of columns, return the processed demodued FTed modulused column"
+    c0, c1, shift, size, parameter = data
+    if c0.buffer.max() == 0 and c1.buffer.max() == 0:     # empty data - short-cut !
+        return np.zeros(size//2)
+    d = FTICRData(buffer = np.zeros((c0.size1, 2)))     # 2 columns - used for hypercomplex modulus 
+    d.set_col(0,  c0 )
+    d.set_col(1,  c1 )
+    d.axis1.itype = 0
+    d.axis2.itype = 1
+    #  if NUS - load sampling and fill with zeros
+    if parameter.samplingfile is not None:      # NUS ?
+        d.axis1.load_sampling(parameter.samplingfile)   # load it
+        samp = d.axis1.get_sampling() # and store it aside
+        if parameter.samplingfile_fake:    # samplingfile_fake allows to fake NUS on complete data-sets
+            d.set_buffer(d.get_buffer()[samp])     # throw points
+        d.zf()                          # add missing points by padding with zeros
+
+    # clean thru urqrd or sane
+    if parameter.do_urqrd:
+        d.urqrd(k=parameter.urqrd_rank, iterations=parameter.urqrd_iterations, axis=1)
+    if parameter.do_sane:
+        d.sane(rank=parameter.sane_rank, iterations=parameter.sane_iterations, axis=1)
+    if parameter.samplingfile is not None:      # NUS ?
+        if parameter.do_pgsane:
+            d.chsize(size, d.size2)
+            d.pg_sane(iterations=parameter.pgsane_iterations, rank=parameter.pgsane_rank, sampling=samp, Lthresh=parameter.pgsane_threshold, axis=1, size=size)
+
+    # finally do FT
+    apod(d, size, axis = 1)
+    d.rfft(axis = 1)        # this rfft() is different from npfft.rfft() one !
+    d.modulus()
+    # recover buffer
+    buff = d.col(0).get_buffer()
+    # get staistics
+    b = buff.copy()
+    for i in range(10):
+        b = b[ b-b.mean()<3*b.std() ]
+    # computed ridge and remove
+    if parameter.do_F1 and parameter.do_rem_ridge:
+        buff -= b.mean()
+    # clean for compression
+    if parameter.compress_outfile :
+        threshold = parameter.compress_level * b.std()
+        buff[abs(buff)<threshold] = 0.0
+    return buff   # return raw data
+
 def do_proc_F1_modu(dinp, doutp, parameter):
     "as do_proc_F1, but applies hypercomplex modulus() at the end"
     size = 2*doutp.axis1.size
     scan =  min(dinp.size2, doutp.size2)
-    F1widgets = ['Processing F1 modu: ', widgets.Percentage(), ' ', widgets.Bar(marker = '-',left = '[',right=']'), widgets.ETA()]
-    pbar = pg.ProgressBar(widgets=F1widgets, maxval=scan).start() #, fd=sys.stdout)
-    d = FTICRData( buffer = np.zeros((2*doutp.size1,2)) )     # 2 columns - used for hypercomplex modulus 
-    for i in xrange( scan):
-        d.chsize(2*doutp.size1, 2)     # 2 columns - used for hypercomplex modulus 
-        for off in (0,1):
-            p = dinp.col(2*i+off)
-            apod(p, size)
-            p.rfft()    
-            d.set_col(off,  p )
-        d.axis1.itype = 1
-        d.axis2.itype = 1
-        d.modulus()
-        # recover buffer
-        c = d.col(0)
-        # get statistics
-        buff = c.get_buffer()
-        b = buff.copy()
-        for i in range(10):
-            b = b[ b-b.mean()<3*b.std() ]
-        # computed ridge and remove
-        if parameter.do_F1 and parameter.do_rem_ridge:
-            c -= b.mean()
-        # clean for compression
-        if parameter.compress_outfile :
-            threshold = parameter.compress_level * b.std()
-            c.zeroing(threshold)
-            c = hmclear(c)
-        doutp.set_col(i,c)
-        pbar.update(i+1)
+    F1widgets = ['Processing F1 modulus: ', widgets.Percentage(), ' ', widgets.Bar(marker='-',left = '[',right = ']'), widgets.ETA()]
+    pbar= pg.ProgressBar(widgets = F1widgets, maxval = scan).start() #, fd=sys.stdout)
+
+    if parameter.freq_f1demodu == 0:   # means not given in .mscf file -> compute from highmass
+        hshift = dinp.axis2.lowfreq   # frequency shift in points, computed from lowfreq of excitation pulse - assumiing the pulse was from high to low !
+    else:
+        hshift = parameter.freq_f1demodu
+    shift = doutp.axis1.htoi(hshift)
+    rot = dinp.axis1.htoi( hshift )       # rot correction is applied in the starting space
+    # sampling
+    if parameter.samplingfile is not None:                      #    NUS 
+        dinp.axis1.load_sampling(parameter.samplingfile)       # load sampling file, and compute rot in non-NUS space
+        cdinp = dinp.col(0)
+        cdinp.zf()
+        rot = cdinp.axis1.htoi( hshift )
+#        print( "11111111", shift, rot)
+        del(cdinp)
+    if debug>0: print("LEFT_POINT", shift)
+    doutp.axis1.offsetfreq = hshift
+
+    xarg = iterarg(dinp, rot, size, parameter)      # construct iterator for main loop
+    if parameter.mp:  # means multiprocessing //
+        res = Pool.imap(_do_proc_F1_modu, xarg)
+        for i,buf in enumerate(res):
+            doutp.buffer[:,i] = buf
+#            doutp.set_col(i,p)
+            pbar.update(i+1)
+    elif mpiutil.MPI_size > 1:      # code for MPI processing //
+        res = mpiutil.enum_imap(_do_proc_F1_modu, xarg)    # apply it
+        for i,buf in res:       # and get results
+            doutp.buffer[:,i] = buf
+#            doutp.set_col(i, p)
+            pbar.update(i+1)
+            if interfproc:
+                output = open('InterfProc/progbar.pkl', 'wb')
+                pb = ['F1', int((i+1)/float(scan)*100)]
+                pickle.dump(pb, output) # for Qt progressbar
+                output.close()
+        if interfproc:
+            output = open('InterfProc/progbar.pkl', 'wb')
+            pb = ['end']
+            pickle.dump(pb, output) # for Qt progressbar
+            output.close()
+    else:       # plain non //
+        res = imap(_do_proc_F1_modu, xarg)
+        for i,buf in enumerate(res):
+            doutp.buffer[:,i] = buf
+#            doutp.set_col(i,p)
+            pbar.update(i+1)
     pbar.finish()
 
 def _do_proc_F1_demodu_modu(data):
