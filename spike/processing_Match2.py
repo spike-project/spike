@@ -25,7 +25,8 @@ from .NPKConfigParser import NPKConfigParser
 from .FTICR import *
 from .File.Apex import Import_2D as Import_2D_Apex
 from .File.Solarix import Import_2D as Import_2D_Solarix
-Import_2D = {'Apex': Import_2D_Apex,'Solarix': Import_2D_Solarix }
+from .File.Match import Import_2D as Import_2D_Match
+Import_2D = {'Apex': Import_2D_Apex,'Solarix': Import_2D_Solarix, 'Match': Import_2D_Match }
 from .NPKData import copyaxes
 from .File.HDF5File import HDF5File, determine_chunkshape
 from .util import progressbar as pg
@@ -51,7 +52,7 @@ under Windows : mpiexec -n nbproc python -m spike.processing (configfile.mscf)
 '''
 # some static parameters
 # the largest dataset allowed
-LARGESTDATA = 8*1024*1024*1024  # 8 Giga points  (that's 64Gb !)
+LARGESTDATA = 32*1024*1024*1024  # 8 Giga points  (that's 64Gb !)
 # the smallest axis size allowed
 SIZEMIN = 1024
 #HIGHMASS = 100000   # kludge to use mztoi !
@@ -233,7 +234,8 @@ def apod(d, size, axis = 0):
     # utility which choose apod function - independent of d.dim
     def do_apod(ax):
         if ax==1:
-            d.kaiser(beta=5, axis = todo)    # kaiser(5) is as narrow as sin() but has much less wiggles
+            d.apod_sin(maxi=0.15, axis = todo)    # kaiser(5) is as narrow as sin() but has much less wiggles
+#            d.kaiser(beta=5, axis = todo)    # kaiser(5) is as narrow as sin() but has much less wiggles
         else:
             d.kaiser(beta=3.5, axis = todo)
     # set parameters
@@ -269,17 +271,22 @@ def hmclear(d):
     d.buffer[:ihm] = 0.0
     return d
 
-def iterargF2(dinp, size, scan):
+def iterargF2(dinp, size, scan, parameter):
     "an iterator used by the F2 processing to allow multiprocessing or MPI set-up"
     for i in range(scan):
         r = dinp.row(i)
-        yield (r, size)
+        yield (r, size, parameter)
 
 def _do_proc_F2(data):
     "do the elementary F2 processing - called by the mp loop"
-    r, size = data
-    apod(r, size)
-    r.rfft()    
+    r, size, param = data
+    
+    if param.format == 'Apex' or param.format == 'Solarix':
+        apod(r, size)
+        r.rfft()
+    if param.format == 'Match':
+        apod(r, size)
+        r.revf().fft().reverse()    
     return r
 
 def do_proc_F2mp(dinp, doutp, parameter):
@@ -288,7 +295,18 @@ def do_proc_F2mp(dinp, doutp, parameter):
     scan = min(dinp.size1, doutp.size1)      # min() because no need to do extra work !
     F2widgets = ['Processing F2: ', widgets.Percentage(), ' ', widgets.Bar(marker='-',left='[',right=']'), widgets.ETA()]
     pbar= pg.ProgressBar(widgets=F2widgets, maxval=scan).start() #, fd=sys.stdout)
-    xarg = iterargF2(dinp, size, scan )      # construct iterator for main loop
+    print("############  in do_proc_F2 #########")
+    print("dinp.axis1.itype ", dinp.axis1.itype) 
+    print("dinp.axis2.itype ", dinp.axis2.itype)
+    print("doutp.axis1.itype ", doutp.axis1.itype) 
+    print("doutp.axis2.itype ", doutp.axis2.itype)
+    print("dinp.axis1.size ", dinp.axis1.size) 
+    print("dinp.axis2.size ", dinp.axis2.size) 
+    print("doutp.axis1.size ", doutp.axis1.size) 
+    print("doutp.axis2.size ", doutp.axis2.size) 
+    print("########################### doutp.report() ")
+    print(doutp.report())
+    xarg = iterargF2(dinp, size, scan, parameter )      # construct iterator for main loop
     if parameter.mp:  # means multiprocessing //
         res = Pool.imap(_do_proc_F2, xarg)
         for i,r in enumerate(res):
@@ -328,7 +346,10 @@ def do_proc_F2(dinp, doutp, parameter):
     for i in xrange(scan):
         r = dinp.row(i)
         apod(r, size)
-        r.rfft()    
+        if parameter.format == 'Apex' or parameter.format == 'Solarix':
+            r.rfft()
+        if parameter.format == 'Match':
+            r.revf().fft().reverse()   
         if parameter.compress_outfile:
             r = hmclear(r)
         doutp.set_row(i,r)
@@ -955,6 +976,8 @@ def main(argv = None):
         v = cp.getfloat( "import", p, 0.0)
         if v != 0.0:
             opt_param[p] = v
+    if param.format == "Match":
+        opt_param["F2_itype"] = 1
     if param.mp:
         Pool = mp.Pool(param.nproc)     # if multiprocessing, creates slaves early, while memory is empty !
     param.report()
@@ -964,13 +987,15 @@ def main(argv = None):
     imported = False
     print("""
 =============================
-    preparating files
+    preparing files
 =============================""")
     if not os.path.exists(param.infile):
         print("importing %s into %s"%(".", param.infile))  #To be corrected MAD
         d0 = Import_2D[param.format](param.apex, param.infile)
         imported = True
+        print("opt_param: ", opt_param)
         if opt_param != {}: # if some parameters were overloaded in config file
+            print("opt_param not empty")
             # hum close, open, close, open ...
             d0.hdf5file.close()
             del(d0)
@@ -988,15 +1013,18 @@ def main(argv = None):
                     hf.axes_update(axis = 1, infos = {item:opt_param[item]})
                     hf.axes_update(axis = 2, infos = {item:opt_param[item]})
                     print("Updating all axes %s to %f"%(item, opt_param[item]))
+
             hf.close()
             d0 = load_input(param.infile)
     else:
         d0 = load_input(param.infile)
     d0.check2D()    # raise error if not a 2D
+    print("itype:", d0.axis2.itype)
     try:
         d0.params
     except:
         d0.params = {}  # create empty dummy params block
+    print("itype:", d0.axis2.itype)
     if imported:
         print_time( time.time()-t0, "Import")
     else:
@@ -1019,6 +1047,7 @@ def main(argv = None):
     else:
         interfile = param.interfile
     ### in F2
+    print("itype:", d0.axis2.itype)
     if param.do_F2:     # create
         temp =  HDF5File(interfile, "w")
         datatemp = FTICRData(dim = 2)
@@ -1034,6 +1063,8 @@ def main(argv = None):
     else:                # already existing
         datatemp = load_input(param.interfile)
     datatemp.params = d0.params
+    print("d0 itype:", d0.axis2.itype)
+    print("datatemp itype:", datatemp.axis2.itype)
     logflux.log.flush()     # flush logfile
     ### prepare output file
     if debug>0: print("preparing output file ")
@@ -1062,6 +1093,7 @@ def main(argv = None):
     FT processing
 =============================""")
     t0 = time.time()
+    print("itype:", d0.axis2.itype)
     do_process2D(d0, datatemp, d1, param) # d0 original, d1 processed
     # close temp file
     # try:

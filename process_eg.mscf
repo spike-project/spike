@@ -132,7 +132,7 @@ pgsane_iterations = 10
 # - multiprocessing
 #     - multiprocessing is chosen from the configuration file:
 #     - to use the multiprocessing mode, mp is set to True 
-mp = False
+use_multiprocessing = False
 
 #     - nproc is the number of process on which the computation is done ( +1 for control)
 # when using multiprocessing - it is not used when using mPI
