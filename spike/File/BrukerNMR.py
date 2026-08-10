@@ -7,7 +7,7 @@
 partly based on NPK v1 code
 """
 
-from __future__ import print_function
+# from __future__ import print_function
 
 __author__ = "Marc Andre' Delsuc"
 __date__ = "november 2014"
@@ -745,10 +745,16 @@ def Export_proc(d, filename, template=None,  verbose=VERBOSE):
         write_param(proc, op.join(filename, 'procs') )
     if d.dim == 2:
         proc['$SI'] = str(d.axis2.cpxsize)
+        if int(proc['$XDIM']) > d.axis2.cpxsize:   # XDIM truncated to SI
+            if verbose: print('trunctating $XDIM-F2 to',d.axis2.cpxsize)
+            proc['$XDIM'] = str(d.axis2.cpxsize)
         proc['$SF'] = str(d.axis2.frequency)
         proc['$SW_p'] = str(d.axis2.specwidth)
         proc['$OFFSET'] = str(revoffset(d.axis2.offset, acqu, proc))
         proc2['$SI'] = str(d.axis1.cpxsize)
+        if int(proc2['$XDIM']) > d.axis1.cpxsize:   # XDIM truncated to SI
+            if verbose: print('trunctating $XDIM-F1 to',d.axis1.cpxsize)
+            proc2['$XDIM'] = str(d.axis1.cpxsize)
         if isinstance(d.axis1, LaplaceAxis):  # if DOSY
             print('Warning, storing DOSY parameters to Topspin dataset still not fully tested !')
         else:                                               # else 2D NMR

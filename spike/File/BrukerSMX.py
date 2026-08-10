@@ -7,11 +7,14 @@ used internally by BrukerNMR, not for final use
 Original code from L.Chiron
 adapted my M-A Delsuc
 """
-from __future__ import print_function
+
+#from __future__ import print_function
 
 import os.path as op
 import numpy as np
 from . import BrukerNMR as Bruker
+from .. NPKError import NPKError
+
 
 debug = False
 class BrukerSMXHandler(object):
@@ -75,6 +78,14 @@ class BrukerSMXHandler(object):
         if debug:
             print ("writing 2D")
             print ("2rr.shape ", self.data_2d_2rr.shape)
+        if self.xd1 > self.si1:
+            raise NPKError('$XDIM1 should not be larger than $SI1')
+            self.xd1 = self.si1
+
+        if self.xd2 > self.si2:
+            raise NPKError('$XDIM2 should not be larger than $SI2')
+            self.xd2 = self.si2
+
         self.prepare_mat()
         for name in ('2rr','2ir','2ri','2ii'):
             try:
@@ -118,6 +129,7 @@ class BrukerSMXHandler(object):
         self.acqu['$XDIM'] : size submatrix
         """
         if debug:   print ("reorder matrix back")
+
         interm = data.reshape(self.dim_mat)
         mat = []
         for sub_num, sub_idx in enumerate(np.ndindex(tuple(self.sub_per_dim))):
@@ -149,24 +161,24 @@ class BrukerSMXHandler(object):
             rdata[tuple(sub_slices)] = interm[slt2, slt1]
         return rdata
 
-    def read_file(self, filename):
-        '''
-        data read as integers.
-        '''
-        if self.proc['$BYTORDP'] == '0':
-            fmt = '<i4'       # little endian
-        else:
-            fmt = '>i4'      # big endian
-        d = np.fromfile(filename, fmt)
-        return d
-    def write_file(self, data, filename):
-        '''
-        data written as integers.
-        '''
-        if self.proc['$BYTORDP'] == '0':
-            fmt = '<i4'       # little endian
-        else:
-            fmt = '>i4'      # big endian
-        with open(filename, 'wb') as f:
-            f.write(data.astype(fmt).tobytes())
+    # def read_file(self, filename):
+    #     '''
+    #     data read as integers.
+    #     '''
+    #     if self.proc['$BYTORDP'] == '0':
+    #         fmt = '<i4'       # little endian
+    #     else:
+    #         fmt = '>i4'      # big endian
+    #     d = np.fromfile(filename, fmt)
+    #     return d
+    # def write_file(self, data, filename):
+    #     '''
+    #     data written as integers.
+    #     '''
+    #     if self.proc['$BYTORDP'] == '0':
+    #         fmt = '<i4'       # little endian
+    #     else:
+    #         fmt = '>i4'      # big endian
+    #     with open(filename, 'wb') as f:
+    #         f.write(data.astype(fmt).tobytes())
 
