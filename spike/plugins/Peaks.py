@@ -394,7 +394,7 @@ class Peak1DList(PeakList):
         # create arg for display
         # default
         mark = {'linestyle':'',
-                'marker':'x',
+                'marker':marker,
                 'markersize':markersize,
                 'color':color}
         label = {'color':color,
