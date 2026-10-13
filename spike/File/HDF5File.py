@@ -43,8 +43,9 @@ __file_version__ 0.7 has the ability to update the axes
 __file_version__ 0.6 is first stabilized multiresolution version
 """
 # version is the library version number
-__version__ = "0.902"
+__version__ = "0.903"
 """
+v 0.903  corrects for a wrong hdf5 open that was creating file note closed warnings
 v 0.902  0.901 correction was incomplete - now, all textual parameters, stored as bytes are converted to string
 v 0.901  when storing a string 'None' it will be read back as the python object None - no change on the file format
 v 0.9 porting from pytables v2 to v3.x / new list of attributes for FTMS axes / storage for files and objects / better compression
@@ -910,10 +911,10 @@ class HDF5_Tests(unittest.TestCase):
         rootfiles = os.getcwd()
         print ('Setting up tests')
         cls.TestFolder = directory()
-        cls.DataFolder = filename('ubiquitine_2D_000002.d')#'cytoC_2D_000001.d')
-        cls.name_file1 = filename("test_file.msh5")
-        cls.name_file2 = filename("test_file2.msh5")
-        cls.name_chunk = filename("test_chunk.msh5")
+        cls.DataFolder = filename('MS/FTICR/ubiquitine_2D_000002.d')#'cytoC_2D_000001.d')
+        cls.name_file1 = filename("temp/test_file.msh5", mode='w')
+        cls.name_file2 = filename("temp/test_file2.msh5", mode='w')
+#        cls.name_chunk = filename("MS/FTICR/test_chunk.msh5")
         # Testing the creation of a HDF5 file according to a given nparray - and creating for next tests
         data_init = 10*np.random.random((2048, 32*1024))  # example of buffer (numpy array) from which you might create a HDF5 file
         threshold = data_init.std()
@@ -1029,7 +1030,7 @@ class HDF5_Tests(unittest.TestCase):
         self.assertEqual(objt[1]['bar'][2],1.0)
         with self.assertRaises(Exception):
             objt2 = h5f.retrieve_object('foo')
-        h5f = HDF5File(self.name_file1, "r")
+#        h5f = HDF5File(self.name_file1, "r")
         F = h5f.open_internal_file(h5name=name)
         for i in range(17):
             l = F.readline()
