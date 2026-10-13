@@ -287,10 +287,9 @@ def Import_2D(folder,outfile = "",F1specwidth = None):
             tbuf = f.read(4*sizeF2)
             abuf = np.array(array.array(flag,tbuf))
             data.buffer[i1,:] = abuf[:]
-    # if (outfile):
-    #     HF.close()
     if (outfile):
         HF.flush()
+        HF.close()
     return data
 #-----------------------------------------
 def read_2D(sizeF1, sizeF2, filename="ser"):
@@ -358,7 +357,7 @@ class Apex_Tests(unittest.TestCase):
         
         rootfiles = os.getcwd()
         self.TestFolder = directory()
-        self.DataFolder = filename('ubiquitine_2D_000002.d')#'cytoC_2D_000001.d')
+        self.DataFolder = filename('MS/FTICR/ubiquitine_2D_000002.d')#'cytoC_2D_000001.d')
         # self.serfile = filename('cytoC_2D_000001.d/ser')
         # self.outHDF = filename('cytoC_2D_000001_direct.msh5')
         # self.name_write = filename("file_write")
@@ -366,7 +365,7 @@ class Apex_Tests(unittest.TestCase):
         # self.name_npar = filename("file_npar")
         # self.npar_fticr = filename("npar_fticr")
         # self.name_chunk = filename("Chunk.hf")
-        self.name_get = filename("file_fticr_2D.msh5")
+        self.name_get = filename("temp/file_fticr_2D.msh5", mode='w')
         
         self.verbose = 1    # verbose > 0 switches messages on
     def announce(self):
@@ -380,7 +379,7 @@ class Apex_Tests(unittest.TestCase):
         t0 = time()
         d = Import_2D(self.DataFolder, self.name_get)
         #d = Import_2D("/Volumes/XeonData/Developement/MS-FTICR/cytoC_2D_000006.d")
-        print("import",time()-t0,"secondes")
+        print("import to file",time()-t0,"secondes")
         """
         sur mon ordi
         d = Import_2D("/DATA/FT-ICR-Cyto/cytoC_2D_000006.d")                prend 1080Mo de mémoire en 18 secondes
@@ -394,7 +393,7 @@ class Apex_Tests(unittest.TestCase):
         t0 = time()
         d = Import_2D( self.DataFolder )
         #d = Import_2D("/Volumes/XeonData/Developement/MS-FTICR/cytoC_2D_000006.d")
-        print("import",time()-t0,"secondes")
+        print("import to memory",time()-t0,"secondes")
         """
         sur mon ordi
         d = Import_2D("/DATA/FT-ICR-Cyto/cytoC_2D_000006.d")                prend 1080Mo de mémoire en 18 secondes
