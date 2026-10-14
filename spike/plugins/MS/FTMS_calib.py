@@ -273,7 +273,7 @@ def read_ref(fname):
             print('m/z not valid - skipping line:',li.strip())
             continue
         try:
-            m = re.search('\d+',lis[2])
+            m = re.search(r'\d+',lis[2])
             charge = float(m.group())
             if '-' in lis[2]:
                 charge *= -1

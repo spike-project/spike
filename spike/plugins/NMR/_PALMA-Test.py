@@ -19,8 +19,11 @@ print('Run date:', datetime.now().isoformat() )
 # start chronometer
 t0 = time.time()
 # ### Import dataset
-selected = filename("HEKmedia/30/ser")
-
+#try:
+selected = filename("NMR/HEKmedia_DOSY/30/ser")
+#except:
+#    print("No DATA_test - exiting")
+print("selected",selected)
 d2 = Import_DOSY(selected)
 d2.axis1.dmin = 10        # diffusion axis limits, values are in µm²/cm
 d2.axis1.dmax = 10000     # only indicative à this level

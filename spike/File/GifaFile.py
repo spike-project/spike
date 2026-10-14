@@ -605,9 +605,9 @@ class GifaFileTests(unittest.TestCase):
         from ..Tests import filename, directory
         self.announce()
         # 1D
-        name1D = filename("proj.gs1")
-        name2D = filename("dosy-cluster2.gs2")       # Byteorder = big_endian
-        name2D_little_endian = filename("dosy-cluster2-corr.gs2")   # Byteorder = little_endian
+        name1D = filename("NMR/proj.gs1")
+        name2D = filename("NMR/dosy-cluster2.gs2")       # Byteorder = big_endian
+        name2D_little_endian = filename("NMR/dosy-cluster2-corr.gs2")   # Byteorder = little_endian
         G = GifaFile(name1D,"r")
         # show header
         G.load_header() # load header
@@ -654,7 +654,7 @@ class GifaFileTests(unittest.TestCase):
         import os
         from ..Tests import filename
         self.announce()
-        nameout = filename("test_write.gs1")
+        nameout = filename("NMR/test_write.gs1", mode='w')
         G = GifaFile(nameout,"w")
         # generate data
         x = np.arange(1024)/1000.   # 1000 Hz on 1024 points
@@ -673,7 +673,7 @@ class GifaFileTests(unittest.TestCase):
         G2 = GifaFile(nameout,"r")
         B2 = G2.get_data()
         G2.close()
-#        os.unlink(nameout)
+        os.unlink(nameout)
         print("===============\n",B2.report())
         self.assertEqual(B2.axis1.itype, 1)
         self.assertAlmostEqual(B2.buffer[20], 18.7938525625, places=5)  # places=5 because GifaFile are single precision !
@@ -685,7 +685,7 @@ class GifaFileTests(unittest.TestCase):
         self.announce()
         # first read
         #G = GifaFile(self.name2D,"r")
-        G = GifaFile(filename("dosy-cluster2.gs2"), "r")
+        G = GifaFile(filename("NMR/dosy-cluster2.gs2"), "r")
         G.load()        # load dataset
         A = G.get_data()
         A.buffer *= 3   # modify trivially
@@ -693,7 +693,7 @@ class GifaFileTests(unittest.TestCase):
         G.close()
         del(G)
         # then save it
-        nameout = filename("test_write2D2.gs2")
+        nameout = filename("NMR/test_write2D2.gs2", mode='w')
         #f.close()
         H = GifaFile(nameout,"w")
         H.set_data(A)
@@ -714,7 +714,7 @@ class GifaFileTests(unittest.TestCase):
     def base(self):
         "test basic function"
         from ..Tests import filename
-        nameout = filename("toto.gs2")
+        nameout = filename("NMR/toto.gs2")
         try:
             os.unlink(nameout)
         except:

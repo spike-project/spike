@@ -33,30 +33,30 @@ from .Display import testplot
 __version__ = "2.1"
 
 #############################################################################
-# configuration - overwriten by arguments at run time
+# configuration - overridden by arguments at run time
 
 # when CLEAN is set to true, unwanted files in test directory will be removed.
-CLEAN = True
-
+CLEAN = False # True      #   "--clean"
+ 
 # when MAIL is set to true, a mail with results is sent to e-mail add defined in list_of_mails
 # defined with
-MAIL = False
-list_of_mails = []
+MAIL = False      # --mail
+list_of_mails = []  
 
-#DATA_dir defines where the DATA for tests are located
-DATA_dir = "/DATA/DATA_test"
+#DATA_dir defines where the DATA for tests are located -
+DATA_dir = "/DATA/DATA_test"      # "-D"
 
-RUN = True
+RUN = True              #   "--dry"
 
 # Add your module here
 mod_util = ("plugins", 'util.dynsubplot', 'util.debug_tools')  #'util.read_msh5', 
-mod_algo = ('Algo.Cadzow', 'Algo.Linpredic', 'Algo.urQRd', 'Algo.sane', 'Algo.SL0', 'Algo.maxent', 'Algo.BC') 
-mod_plugins = ("plugins.Peaks", "plugins.Fitter", "plugins.NMR.Bruker_NMR_FT", "plugins.Linear_prediction", "plugins.NMR._PALMA-Test")
+mod_algo = ('Algo.Cadzow', 'Algo.Linpredic', 'Algo.urQRd', 'Algo.sane',   'Algo.BC')  #'Algo.SL0', 'Algo.maxent',
+mod_plugins = ("plugins.Peaks", "plugins.Fitter", "plugins.NMR.Bruker_NMR_FT", "plugins.Linear_prediction", "plugins.NMR._PALMA-Test") #, "plugins.NMR._PALMA-Test"
 mod_file = ("File.BrukerNMR", "File.GifaFile", 'File.HDF5File', 'File.Apex', 'File.csv', 'File.Solarix', 'File.mzXML')
 mod_basicproc = ("NPKData", "NMR", "FTICR", "Orbitrap", 'NPKConfigParser')
 mod_user = ('processing', )
 
-list_of_modules = mod_basicproc + mod_file  + mod_util + mod_algo + mod_plugins + mod_user
+list_of_modules = mod_basicproc + mod_file  + mod_util + mod_algo + mod_plugins + mod_user   #  --test_modules
 
 # end of configuration
 #############################################################################
@@ -68,11 +68,18 @@ def directory():
     try:
         dd = testplot.config["DATA_dir"]
     except AttributeError:  # may happen 
-        dd = DATA_dir
+        dd = DATA_dir       # back to default
+    if not os.path.exists(dd):
+        raise Exception("DATA_test not found")
     return dd
-def filename(name):
+def filename(name, mode='r'):
     "returns the full name of a test dataset located in the test directory"
-    return op.join(directory(), name)
+    ff = op.join(directory(), name)
+    print(ff)
+    if mode == 'r':
+        if not os.path.exists(ff):
+            raise Exception(f"{ff} test file not found") 
+    return ff
 
 def msg(st, sep = '='):
     '''
@@ -111,6 +118,11 @@ def cleandir(verbose=True):
                 'Sampling_file_aposteriori_cytoCpnas.list','angio_ms_000005.d',
                 'SubsP_220615_2DFT_2k_128k_000001.d', 'HEKmedia',
                 'testsmzXML')
+    try:
+        filename('*')
+    except:
+        print("No DATA_test found")
+        return
     for i in glob.glob(filename("*")):
         if verbose: print(i, end=' ')
         if os.path.basename(i) in files_to_keep:
@@ -163,6 +175,7 @@ def do_Test():
     if not RUN:
         print ("\nDry run - stopping now, without executing the tests")
         sys.exit(0)
+
     print(msg("First removing leftover files"))
     cleandir()   # (CLEAN is handeld internally )
     if CLEAN:
@@ -173,6 +186,9 @@ def do_Test():
     t0 = time.time()
     suite = unittest.defaultTestLoader.loadTestsFromNames( list_of_modules )
     nbtests = suite.countTestCases()
+    print(suite)
+    print(f"running for {nbtests} tests")
+
     Alltests += nbtests
     results = unittest.TextTestRunner(verbosity = 2).run(suite)
     elaps = time.time()-t0
@@ -224,8 +240,7 @@ def main():
     parser.add_argument('-D', '--Data', help="the location of the folder containing files for the tests")
     parser.add_argument('-t', '--test_modules', action='append', help="overwrite the list of modules to test - multiple entries possible -")
     parser.add_argument('-n', '--dry',  action='store_true', help="list parameters and do not run the tests")
-    parser.add_argument('-d', '--dirty', action='store_true', help="do not remove temporary files")
-    parser.add_argument('-c', '--clean', action='store_true', help="just remove left-over temporary files")
+    parser.add_argument('-c', '--clean', action='store_true', help="remove left-over temporary files and do not run")
     parser.add_argument('-g', '--graphic',  action='store_true', help="restore graphic output (off by default for background testing)")
     parser.add_argument('-W', '--Warnings',  action='store_true', help="Activate all warnings")
     
@@ -235,10 +250,16 @@ def main():
     print( "data", args.Data)
     print( "module", args.test_modules)
     print("dry", args.dry)
-    print('dirty', args.dirty)
     print('clean', args.clean)
     print('graphic', args.graphic)
     print('Warnings', args.Warnings)
+
+    os.environ['TESTING_SPIKE'] = 'TRUE'    # indicate to tested modules that we are in debuging mode
+    # # in your code, you can use it this way :
+    # try:
+    #     RunningTests = os.environ['TESTING_SPIKE'] == 'TRUE'
+    # except:
+    #     RunningTests = False
 
     if args.Warnings:
 # disable eventual warning blocking
@@ -255,8 +276,6 @@ def main():
         list_of_modules = args.test_modules
     if args.Data is not None:
         DATA_dir = args.Data
-    if args.dirty:
-        CLEAN = False
     if args.graphic:
         testplot.PLOT = True
     else:
@@ -266,6 +285,9 @@ def main():
     # BUT ALSO to monkey patch at Tests run time to store in testplot.config values used by the tests (DATA_dir)
     testplot.config = {}
     testplot.config["DATA_dir"] = DATA_dir
+    os.environ['SPIKE_DATA_TEST'] = DATA_dir
+    if  not os.path.exists( os.path.join(directory(), 'temp') ):
+        os.mkdir( os.path.join(directory(), 'temp') )
 
 #    print(sys.modules)
     if args.clean:

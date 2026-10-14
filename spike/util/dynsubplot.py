@@ -67,7 +67,7 @@ class subpl():
     def __init__(self, nbsub_h = 1, which_plot = None):
         global plt
         if which_plot:
-            print("using injected pyplot")
+            # print("using injected pyplot")
             plt = which_plot # possibility to replace plot by fakeplot with testplot.
         else:
             plt = globals()['plt']
@@ -85,7 +85,7 @@ class subpl():
         And calculates the number of vertical lines. 
         '''
         subpl.numplot += 1          # number of plot created.
-        self.nbsub_v = (subpl.numplot-1)/self.nbsub_h +1        # vertical number of lines used for the whole plot. 
+        self.nbsub_v = (subpl.numplot-1)//self.nbsub_h +1        # vertical number of lines used for the whole plot. 
     
     def read_kargs(self, l):
         '''

@@ -120,7 +120,7 @@ class Tests(unittest.TestCase):
         from .Tests import filename
         self.announce()
         cp = NPKConfigParser()
-        cp.read(filename("test.mscf"))
+        cp.read(filename("MS/FTICR/test.mscf"))
         print('sections:', list(cp.sections()))
         for sec in ['import', 'processing']:   # check sections
             self.assertTrue(sec in  list(cp.sections()) )

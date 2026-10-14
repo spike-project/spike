@@ -109,14 +109,15 @@ class csvTests(unittest.TestCase):
         from ..Tests import filename, directory
         from ..FTICR import FTICRData
         from ..NMR import NMRData
-        name2D = filename("dosy-cluster2.gs2")
-        A = FTICRData(buffer=np.zeros(10000))
+        name2D = filename("NMR/dosy-cluster2.gs2")
+        A = FTICRData(buffer=np.ones(10000))
         A.specwidth = 1667000
         A.ref_mass = 344.0974
         A.ref_freq = 419620.0
         A.highmass = 1000.0
         A.currentunit="m/z"
-        A.save_txt(filename("1D_test.txt"))
+        A.apod_em(100.0)  # add a damped signal to verify
+        A.save_txt(filename("1D_test.txt", mode='w'))
         B = FTICRData(dim=2)
         B.load_txt(filename("1D_test.txt"))
         print(B)
@@ -124,12 +125,13 @@ class csvTests(unittest.TestCase):
         self.assertAlmostEqual(A.axis1.calibA, B.axis1.calibA)
         self.assertAlmostEqual(A.axis1.specwidth, B.axis1.specwidth)
         self.assertAlmostEqual((A-B).get_buffer().max(), 0.0)
+        self.assertAlmostEqual(B[181-15],9.900914084003168414E-01)
         os.unlink(filename("1D_test.txt"))
         
         d = NMRData(name=name2D)
         r = d.row(133)
         r.currentunit = "ppm"
-        r.save_csv(filename("test2.csv.gz"), fmt="%.14g")
+        r.save_csv(filename("test2.csv.gz", mode='w'), fmt="%.14g")
         rr = Import_1D(filename("test2.csv.gz"),column=1)
         self.assertAlmostEqual((r-rr).get_buffer().max(), 0.0)
         self.assertAlmostEqual(r.axis1.frequency, rr.axis1.frequency)

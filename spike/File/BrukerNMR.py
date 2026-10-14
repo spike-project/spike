@@ -1064,7 +1064,7 @@ class Bruker_Tests(unittest.TestCase):
             print("\n========",self.shortDescription(),'===============')
     def test_import(self):
         from ..Tests import filename
-        name = filename("Lasalocid-Tocsy/dataset/ser")
+        name = filename("NMR/Lasalocid-Tocsy/dataset/ser")
         d = Import_2D(name)
         self.assertEqual(d.axis1.itype, 1)
         self.assertEqual(d.axis2.itype, 1)

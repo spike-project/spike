@@ -356,7 +356,7 @@ class FTICR_Tests(unittest.TestCase):
         A.ref_freq = REF_FREQ
         A.highmass = 1000.0
         print(A.report())
-        A.save_msh5(filename("1D_test.msh5"))
+        A.save_msh5(filename("temp/1D_test.msh5", mode='w'))
 #-------------------------------------------------------------------------------
 if __name__ == '__main__':
     # minitest

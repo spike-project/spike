@@ -831,10 +831,10 @@ class Test(unittest.TestCase):
         for i in range(16,33):
             r.append(intelliround(i))
         self.assertEqual(r, [16, 16, 18, 20, 20, 20, 24, 24, 24, 24, 24, 24, 30, 30, 30, 32, 32])
-                        #   [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]
-    def test_zf(self):
+                            #   [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]
+    def test_azf(self):
         "testing zerofilling computation"
-        print(self.test_zf.__doc__)
+        print(self.test_azf.__doc__)
         d = FTICRData(dim = 2)
         d.axis1.size = 1024
         d.axis2.size = 10*1024-10    # 10240 - 10 = 10230
@@ -848,7 +848,7 @@ class Test(unittest.TestCase):
         "apply a complete processing test"
         # test is run from above spike
         from .Tests import directory    # tells where DATAsets for tests are located
-        os.chdir(directory())
+        os.chdir(os.path.join(directory(),'MS','FTICR'))
         # process
         main(["prgm", "test.mscf"])
         # and check results
@@ -917,7 +917,7 @@ def main(argv = None):
     print('CONFIG:', os.path.realpath( os.curdir), os.path.exists(sys.argv[1]))
     stdate = dt.datetime.strftime(dt.datetime.now(),"%Y-%m-%d_%Hh%M")
     logflux = TeeLogger(erase=True, log_name="processing_%s.log"%stdate)
-    print("Processing 2D FT-MS data -", dt.datetime.strftime(dt.datetime.now(),"%Y-%h-%d %Hh%M"))
+    print("Processing 2D FT-MS data -", dt.datetime.strftime(dt.datetime.now(),"%Y-%h-%d %Hh%M"))        
     print("""
 =============================
     reading configuration
@@ -1148,6 +1148,15 @@ def main(argv = None):
 
 # default values
 if __name__ == '__main__':
+    # try:
+    #     debuging_spike = os.environ['DEBUGING_SPIKE'] == 'TRUE'
+    # except:
+    #     debuging_spike = False
+    
+    # if debuging_spike:
+    #     print( "==== DEBUGGING ! ====")
+    #     exit(0)
+    # else:
     if len(sys.argv) == 0:
         print(__doc__)
         sys.exit(0)
